@@ -12,6 +12,7 @@ Laravel Backend Server for Productize
 - **Payment Integration:** Seamless payment processing with various payment gateways.
 - **Seller Integration:** Platform for sellers to list their products and manage inventory.
 - **Product Recommendations:** Personalized recommendations for users based on browsing and purchase history.
+- **Default Filesystem for the application is digital ocean spaces. configurations are saved as spaces
 
 ## Installation
 
@@ -55,6 +56,12 @@ Laravel Backend Server for Productize
    ```bash
    php artisan migrate --seed
    ```
+
+7. Create create a symbolic link from `public/storage` to `storage/app/public` to public file
+
+   ```bash
+   php artisan storage:link
+   ```    
 
 7. Start the development server:
 

@@ -1,6 +1,4 @@
-### 
-
-Laravel Backend Server for Productize
+### Laravel Backend Server for Productize
 
 ## Features
 

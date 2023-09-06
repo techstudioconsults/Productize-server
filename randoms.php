@@ -25,3 +25,14 @@ echo asset('videos/video.mp3');
  $path  = Storage::putFileAs('images', $request->file('photo'), $originalName);
  $url = env('DO_CDN_SPACE_ENDPOINT').'/'.$path;
  */
+
+/**
+ * Php ide helper for vs code
+ * composer require --dev barryvdh/laravel-ide-helper
+ *
+ * Add this to the providers array in config/app.php
+ * Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class
+ *
+ * Usage
+ * php artisan ide-helper:generate
+ */

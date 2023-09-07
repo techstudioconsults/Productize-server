@@ -11,6 +11,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Auth;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,22 +26,30 @@ class AuthController extends Controller
     ) {
     }
 
+    private function createUser($credentials)
+    {
+        $user = User::create([
+            'full_name' => $credentials['full_name'],
+            'email' => $credentials['email'],
+            'password' => $credentials['password'] && bcrypt($credentials['password'])
+        ]);
+        event(new Registered($user));
+
+        return $user;
+    }
+
     public function register(RegisterRequest $request)
     {
         $validatedData = $request->validated();
 
         $result = DB::transaction(function () use ($validatedData) {
-            $user = User::create([
-                'full_name' => $validatedData['full_name'],
-                'email' => $validatedData['email'],
-                'password' => bcrypt($validatedData['password'])
-            ]);
+
+            $user = $this->createUser($validatedData);
+
             $token = $user->createToken('access-token')->plainTextToken;
 
             return ['user' => $user, 'token' => $token];
         });
-
-
 
         return new JsonResponse($result);
     }
@@ -100,11 +109,13 @@ class AuthController extends Controller
         $user = null;
 
         if (!Auth::attempt(['email' => $oauthUser->email])) {
-            // Sign up user
-            $user = User::create([
+
+            $credentials = [
                 'full_name' => $oauthUser->name,
                 'email' => $oauthUser->email,
-            ]);
+            ];
+            // Sign up user
+            $user = $this->createUser($credentials);
         } else {
             // Login user
             $user = Auth::user();

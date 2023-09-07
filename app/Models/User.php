@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    use HasUuids; // I am using this so User primary ids can be uuids
+    use HasUuids; // I am using this so User primary ids are uuids
 
     /**
      * All three have to be included in other to use uuids as ids
@@ -29,7 +29,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'full_name',
         'email',
         'password',
     ];

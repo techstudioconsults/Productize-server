@@ -1,7 +1,6 @@
 <?php
 
-// use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -12,13 +11,15 @@ Route::group([
     'namespace' => "\App\Http\Controllers",
     'prefix' => 'auth'
 ], function () {
-    Route::post('/test', function(Request $request) {
-        $originalName = $request->photo->getClientOriginalName();
-        $path  = Storage::putFileAs('images', $request->file('photo'), $originalName);
-        $url = env('DO_CDN_SPACE_ENDPOINT').'/'.$path;
+    // Route::post('/test', function(Request $request) {
+    //     $originalName = $request->photo->getClientOriginalName();
+    //     $path  = Storage::putFileAs('images', $request->file('photo'), $originalName);
+    //     $url = env('DO_CDN_SPACE_ENDPOINT').'/'.$path;
 
-        return new JsonResponse([
-            'data' => $url
-        ]);
-    });
+    //     return new JsonResponse([
+    //         'data' => $url
+    //     ]);
+    // });
+
+    Route::post('/register', [AuthController::class, 'register']);
 });

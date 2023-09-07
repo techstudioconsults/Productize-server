@@ -6,6 +6,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -13,12 +14,19 @@ class AuthController extends Controller
     {
         $validatedData = $request->validated();
 
-        $user = User::create([
-            'full_name' => $validatedData['full_name'],
-            'email' => $validatedData['email'],
-            'password' => bcrypt($validatedData['password'])
-        ]);
+        $result = DB::transaction(function () use ($validatedData) {
+            $user = User::create([
+                'full_name' => $validatedData['full_name'],
+                'email' => $validatedData['email'],
+                'password' => bcrypt($validatedData['password'])
+            ]);
+            $token = $user->createToken('access-token')->plainTextToken;
 
-        return new JsonResponse($user);
+            return ['user' => $user, 'token' => $token];
+        });
+
+
+
+        return new JsonResponse($result);
     }
 }

@@ -9,8 +9,9 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
-class EmailVerification extends Mailable
+class EmailVerification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -19,8 +20,33 @@ class EmailVerification extends Mailable
      */
     public function __construct(protected User $user)
     {
-        //
+        /**
+         * Email will only be dispatched after database transaction is closed.
+         */
+        $this->afterCommit();
     }
+
+    /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 5;
+
+    /**
+     * Indicate if the job should be marked as failed on timeout.
+     *
+     * @var bool
+     */
+    public $failOnTimeout = true;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $backoff = 3;
+
 
     /**
      * Get the message envelope.
@@ -55,4 +81,14 @@ class EmailVerification extends Mailable
     {
         return [];
     }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(Throwable $exception): void
+    {
+        // Send user notification of failure, etc...
+    }
 }
+
+

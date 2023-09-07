@@ -11,16 +11,8 @@ Route::group([
     'namespace' => "\App\Http\Controllers",
     'prefix' => 'auth'
 ], function () {
-    // Route::post('/test', function(Request $request) {
-    //     $originalName = $request->photo->getClientOriginalName();
-    //     $path  = Storage::putFileAs('images', $request->file('photo'), $originalName);
-    //     $url = env('DO_CDN_SPACE_ENDPOINT').'/'.$path;
-
-    //     return new JsonResponse([
-    //         'data' => $url
-    //     ]);
-    // });
-
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/redirect', [AuthController::class, 'oAuthRedirect']);
+    Route::post('/callback', [AuthController::class, 'oAuthCallback']);
 });

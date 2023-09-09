@@ -3,11 +3,14 @@
 namespace App\Listeners;
 
 use App\Mail\WelcomeMail;
+use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\InteractsWithQueue;
 use Mail;
+use Notification;
 
 class SendWelcomeEmail
 {
@@ -24,6 +27,7 @@ class SendWelcomeEmail
      */
     public function handle(Registered $event): void
     {
-        Mail::to($event->user)->send(new WelcomeMail($event->user));
+        $user = $event->user;
+        Notification::send($user, new WelcomeNotification($user));
     }
 }

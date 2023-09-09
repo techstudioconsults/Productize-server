@@ -58,3 +58,5 @@ echo asset('videos/video.mp3');
    * php artisan queue:restart
    * Install the server https://laravel.com/docs/10.x/queues#supervisor-configuration
    */
+
+// php artisan queue:work   

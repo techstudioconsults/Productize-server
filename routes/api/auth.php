@@ -15,4 +15,6 @@ Route::group([
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/redirect', [AuthController::class, 'oAuthRedirect']);
     Route::post('/callback', [AuthController::class, 'oAuthCallback']);
+
+    Route::get('/test', [AuthController::class, 'test']);
 });

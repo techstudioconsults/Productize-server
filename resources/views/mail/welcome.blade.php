@@ -1,12 +1,7 @@
 <x-mail::message>
-# Introduction
-
-The body of your message.
-
-<x-mail::button :url="''">
-Button Text
-</x-mail::button>
-
-Thanks,<br>
-{{ config('app.name') }}
+    <h1>Welcome to PRODUCTIZE!</h1>
+    <p>Lorem ipsum dolor sit amet consectetur. Habitant aliquet suscipit sed facilisi sit. Nibh at nisl augue viverra vitae amet orci lorem. Luctus faucibus laoreet eu parturient in. Elementum consectetur enim fames velit sit donec.</p>
+    <x-mail::button url="https://intuneteq.tk" color="#6D5DD3">
+        Complete your Profiile
+    </x-mail::button>
 </x-mail::message>

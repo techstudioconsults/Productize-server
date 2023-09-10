@@ -12,3 +12,4 @@ Thanks,<br>
 Tobi Olanitori, <br>
 {{ config('app.name') }}
 </x-mail::message>
+

@@ -127,4 +127,11 @@ class AuthController extends Controller
 
         return new JsonResponse($result);
     }
+
+    public function test()
+    {
+        $user = User::find("9a188fda-69a2-4af6-ae7a-059d3733bd26");
+        event(new Registered($user));
+        return response('', 200);
+    }
 }

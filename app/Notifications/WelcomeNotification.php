@@ -60,7 +60,10 @@ class WelcomeNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->markdown('mail.welcome')->subject('Welcome To Productize');
+        return (new MailMessage)->markdown('mail.welcome')->subject('Welcome To Productize')->with([
+            'url' => 'https://intuneteq.tk',
+            'message' => 'welcome'
+        ]);
     }
 
     /**

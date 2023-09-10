@@ -47,16 +47,23 @@ echo asset('videos/video.mp3');
  */
 
 
- /**
-  * Add to ci/cd to clean up expired tokens
-  * php artisan sanctum:prune-expired
-  */
+/**
+ * Add to ci/cd to clean up expired tokens
+ * php artisan sanctum:prune-expired
+ */
 
 
-  /**
-   * CICD
-   * php artisan queue:restart
-   * Install the server https://laravel.com/docs/10.x/queues#supervisor-configuration
-   */
+/**
+ * CICD
+ * php artisan queue:restart
+ * Install the server https://laravel.com/docs/10.x/queues#supervisor-configuration
+ */
 
 // php artisan queue:work
+
+/**
+ * Rendering mailables in browser
+ * $user = User::find("9a188fda-69a2-4af6-ae7a-059d3733bd26");
+ * return (new WelcomeNotification($user))->toMail($user); // Notification
+ * return new EmailVerification($user); // Mails
+ */

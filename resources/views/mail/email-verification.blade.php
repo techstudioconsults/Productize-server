@@ -1,15 +1,10 @@
 <x-mail::message>
-# Hi {{$name}},
+    <h1>Hi {{ $name }}, Welcome To Productize.
+        Verify Your Email Address.</h1>
 
-<p>Thank you for registering with us.</p>
-<small>click on the button below to verify your email address</small>
+    <p>Lorem ipsum dolor sit amet consectetur. Habitant aliquet suscipit sed facilisi sit. Nibh at nisl augue viverra vitae amet orci lorem. Luctus faucibus laoreet eu parturient in. Elementum consectetur enim fames velit sit donec.</p>
 
-<x-mail::button :url="$url" color="success">
-Verify Email Address
-</x-mail::button>
-
-Thanks,<br>
-Tobi Olanitori, <br>
-{{ config('app.name') }}
+    <x-mail::button :url="$url" color="success">
+        Verify Email
+    </x-mail::button>
 </x-mail::message>
-

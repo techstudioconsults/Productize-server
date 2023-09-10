@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Socialite\Facades\Socialite;
 use Mail;
+use URL;
 
 class AuthController extends Controller
 {
@@ -132,22 +133,47 @@ class AuthController extends Controller
         return new JsonResponse($result);
     }
 
-    public function verificationLink()
+    public function verify($user_id, Request $request)
     {
-        $user = Auth::user();
-        Mail::to($user)->send(new EmailVerification($user));
 
-        return new JsonResponse(['user' => $user, 'message' => 'email sent']);
+        if (!$request->hasValidSignature()) {
+            return response()->json(["msg" => "Invalid/Expired url provided."], 401);
+        }
+
+        $user = User::where('id', $user_id)->first();
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        $redirectUrl = 'http://localhost:3000/dashboard'; // Replace with your actual React frontend URL
+
+        return redirect($redirectUrl);
     }
 
-    public function emailVerification()
+    public function resendLink()
     {
+        if (Auth::user()->hasVerifiedEmail()) {
+            return response()->json(["msg" => "Email already verified."], 400);
+        }
+
+        Auth::user()->sendEmailVerificationNotification();
+
+        return response()->json(["msg" => "Email verification link sent on your email id"]);
     }
 
     public function test()
     {
-        $user = User::find("9a188fda-69a2-4af6-ae7a-059d3733bd26");
-        event(new Registered($user));
-        return response('', 200);
+        $user = User::find("9a1966fa-1e31-46cd-bdbd-31acbd64d27f");
+        // event(new Registered($user));
+        // return response('', 200);
+
+        $url = URL::temporarySignedRoute(
+            'auth.verification.verify', // Route name
+            now()->addMinutes(60), // Expiry time
+            ['id' => $user->getKey()]
+        );
+
+        return $url;
     }
 }

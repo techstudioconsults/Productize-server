@@ -18,5 +18,9 @@ Route::group([
 
     Route::get('/verification-link', [AuthController::class, 'verificationLink'])->middleware('auth:sanctum');
 
+    Route::get('email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify'); // Make sure to keep this as your route name
+
+    Route::get('email/resend', [AuthController::class, 'resendLink'])->name('verification.resend');
+
     Route::get('/test', [AuthController::class, 'test']);
 });

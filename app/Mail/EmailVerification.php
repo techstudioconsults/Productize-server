@@ -10,8 +10,9 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Throwable;
+use URL;
 
-class EmailVerification extends Mailable implements ShouldQueue
+class EmailVerification extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -20,13 +21,13 @@ class EmailVerification extends Mailable implements ShouldQueue
     /**
      * Create a new message instance.
      */
-    public function __construct(protected User $user)
+    public function __construct(public User $user)
     {
-        // Assign the user's name to the public property.
+        // Initialize the $name property here.
         $this->name = $user->full_name;
 
         /**
-         * Email will only be dispatched after database transaction is closed.
+         * Email will only be dispatched after the database transaction is closed.
          */
         $this->afterCommit();
     }
@@ -68,13 +69,18 @@ class EmailVerification extends Mailable implements ShouldQueue
      */
     public function content(): Content
     {
-        $token = $this->user->createToken('email-verification-token', ['email-verification'])->plainTextToken;
+        $url = URL::temporarySignedRoute(
+            'auth.verification.verify',
+            now()->addMinutes(15),
+            ['id' => $this->user->getKey()]
+        );
+
         $name = $this->user->full_name;
 
         return new Content(
             markdown: 'mail.email-verification',
             with: [
-                'url' => 'http://localhost:3000/dashboard/token/?token='.$token,
+                'url' => $url,
                 'name' => $name
             ],
         );
@@ -98,5 +104,3 @@ class EmailVerification extends Mailable implements ShouldQueue
         // Send user notification of failure, etc...
     }
 }
-
-

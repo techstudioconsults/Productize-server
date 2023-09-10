@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OAuthTypeEnum;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\OAuthRequest;
@@ -137,7 +138,7 @@ class AuthController extends Controller
     {
 
         if (!$request->hasValidSignature()) {
-            return response()->json(["msg" => "Invalid/Expired url provided."], 401);
+            throw new UnAuthorizedException('Invalid/Expired url provided');
         }
 
         $user = User::where('id', $user_id)->first();
@@ -154,10 +155,11 @@ class AuthController extends Controller
     public function resendLink()
     {
         if (Auth::user()->hasVerifiedEmail()) {
-            return response()->json(["msg" => "Email already verified."], 400);
+            throw new BadRequestException("Email already verified.");
         }
 
-        Auth::user()->sendEmailVerificationNotification();
+        $user = Auth::user();
+        Mail::to($user)->send(new EmailVerification($user));
 
         return response()->json(["msg" => "Email verification link sent on your email id"]);
     }

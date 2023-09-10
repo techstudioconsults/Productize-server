@@ -53,9 +53,4 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-
-    public function getUserNameAttribute()
-    {
-        return $this->full_name;
-    }
 }

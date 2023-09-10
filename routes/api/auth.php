@@ -16,5 +16,7 @@ Route::group([
     Route::get('/redirect', [AuthController::class, 'oAuthRedirect']);
     Route::post('/callback', [AuthController::class, 'oAuthCallback']);
 
+    Route::get('/verification-link', [AuthController::class, 'verificationLink'])->middleware('auth:sanctum');
+
     Route::get('/test', [AuthController::class, 'test']);
 });

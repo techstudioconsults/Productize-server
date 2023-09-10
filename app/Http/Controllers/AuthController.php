@@ -8,16 +8,18 @@ use App\Exceptions\UnprocessableException;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\OAuthRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Mail\EmailVerification;
 use App\Models\User;
 use App\Repositories\UserRepository;
-use Auth;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Socialite\Facades\Socialite;
+use Mail;
 
 class AuthController extends Controller
 {
@@ -31,11 +33,11 @@ class AuthController extends Controller
         $user = User::create([
             'full_name' => $credentials['full_name'],
             'email' => $credentials['email'],
-            'password' => $credentials['password'] && bcrypt($credentials['password'])
+            'password' => $credentials['password']
         ]);
 
         event(new Registered($user));
-        
+
         return $user;
     }
 
@@ -68,6 +70,7 @@ class AuthController extends Controller
         if (!Auth::attempt($credentials, $remember)) {
             throw new UnprocessableException('The Provided credentials are not correct');
         }
+        // $request->session()->regenerate();
         $user = Auth::user();
         $token = $user->createToken('access-token')->plainTextToken;
 
@@ -127,6 +130,18 @@ class AuthController extends Controller
         $result = ['user' => $user, 'token' => $token];
 
         return new JsonResponse($result);
+    }
+
+    public function verificationLink()
+    {
+        $user = Auth::user();
+        Mail::to($user)->send(new EmailVerification($user));
+
+        return new JsonResponse(['user' => $user, 'message' => 'email sent']);
+    }
+
+    public function emailVerification()
+    {
     }
 
     public function test()

@@ -11,7 +11,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Throwable;
 
-class EmailVerification extends Mailable
+class EmailVerification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -68,11 +68,14 @@ class EmailVerification extends Mailable
      */
     public function content(): Content
     {
+        $token = $this->user->createToken('email-verification-token', ['email-verification'])->plainTextToken;
+        $name = $this->user->full_name;
+
         return new Content(
             markdown: 'mail.email-verification',
             with: [
-                'url' => 'http://localhost:3000/dashboard/token/?token=',
-                'name' => $this->user->full_name
+                'url' => 'http://localhost:3000/dashboard/token/?token='.$token,
+                'name' => $name
             ],
         );
     }

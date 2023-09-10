@@ -33,8 +33,9 @@ class AuthController extends Controller
             'email' => $credentials['email'],
             'password' => $credentials['password'] && bcrypt($credentials['password'])
         ]);
-        event(new Registered($user));
 
+        event(new Registered($user));
+        
         return $user;
     }
 

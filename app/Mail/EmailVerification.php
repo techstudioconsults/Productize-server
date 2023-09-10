@@ -11,15 +11,20 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Throwable;
 
-class EmailVerification extends Mailable implements ShouldQueue
+class EmailVerification extends Mailable
 {
     use Queueable, SerializesModels;
+
+    public $name; // Add a public property to store the user's name
 
     /**
      * Create a new message instance.
      */
     public function __construct(protected User $user)
     {
+        // Assign the user's name to the public property.
+        $this->name = $user->full_name;
+
         /**
          * Email will only be dispatched after database transaction is closed.
          */

@@ -11,11 +11,10 @@
 }
 
 .mail-body {
-    background-color: #cfcfd0;
-    min-height: 36.75rem;
+    background-color: #F3F2FB;
     width: 37rem;
     padding: 0rem 0rem 2rem;
-    margin: auto;
+    margin: 5rem auto;
 }
 
 .header {
@@ -52,7 +51,6 @@ p {
 }
 
 .main {
-    min-height: 435px;
     padding: 1.88rem 0 1.5rem;
 }
 
@@ -80,7 +78,12 @@ p {
 
 .footer-container {
     margin: 0 auto;
-    width: 10.125rem;
+    width: 35%;
+}
+
+.footer-holder {
+    margin: 0 auto;
+    width: fit-content;
 }
 
 .footer-link {
@@ -116,4 +119,9 @@ p {
     font-style: normal;
     font-weight: 500;
     line-height: 1.5rem;
+}
+
+.bottom {
+    margin-bottom: 30px;
+    border: 1px solid red;
 }

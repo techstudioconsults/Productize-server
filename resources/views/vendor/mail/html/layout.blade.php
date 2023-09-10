@@ -22,15 +22,6 @@
             .button {
                 width: 100% !important;
             }
-
-            .main {
-                border: 1px solid blue !important;
-                min-height: 300px !important;
-            }
-
-            .footer-container {
-                width: 13rem !important;
-            }
         }
     </style>
 </head>

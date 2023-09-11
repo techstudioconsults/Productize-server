@@ -17,10 +17,12 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v3
 
-      - name: Setup Enviroment
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.1"
+      - name: Setup Environment
+        run: |
+          echo "$MY_PASSWORD" | sudo -S shivammathur/setup-php@v2 --php-version "8.1"
+        env:
+          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
+
 
       # - name: Use Node.js ${{ matrix.node-version }}
       #   uses: actions/setup-node@v3

@@ -67,3 +67,12 @@ echo asset('videos/video.mp3');
  * return (new WelcomeNotification($user))->toMail($user); // Notification
  * return new EmailVerification($user); // Mails
  */
+
+    //    # - name: Use Node.js ${{ matrix.node-version }}
+    //   #   uses: actions/setup-node@v3
+    //   #   with:
+    //   #     node-version: ${{ matrix.node-version }}
+    //   #     cache: 'npm'
+
+    //   # - name: Copy env files from client config folder
+    //   #   run: cp -rf /var/www/config/.* /var/www/application/_work/Techstudio-site/Techstudio-site

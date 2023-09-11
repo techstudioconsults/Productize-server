@@ -14,9 +14,6 @@ jobs:
         node-version: [18.x]
 
     steps:
-      - name: Check User
-        run: whoami
-
       - name: 🚚 Get latest code
         uses: actions/checkout@v3
 
@@ -24,11 +21,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.1"
-        env:
-          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
 
       - name: Install Packages
-        run: composer install --no-dev
+        run: composer install --optimize-autoloader --no-dev
 
       - name: Autoload
         run: composer dump-autoload

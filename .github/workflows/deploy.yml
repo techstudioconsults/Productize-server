@@ -1,0 +1,61 @@
+name: Productize CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build and Deploy
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+
+      - name: Setup Enviroment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+
+      # - name: Use Node.js ${{ matrix.node-version }}
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: ${{ matrix.node-version }}
+      #     cache: 'npm'
+
+      # - name: Copy env files from client config folder
+      #   run: cp -rf /var/www/config/.* /var/www/application/_work/Techstudio-site/Techstudio-site
+
+      - name: Install Packages
+        run: composer install --no-dev
+
+      - name: Autoload
+        run: composer dump-autoload
+
+      - name: Clear route
+        run: php artisan route:clear
+
+      - name: Clear Cache
+        run: php artisan cache:clear
+
+      - name: Clear Config
+        run: php artisan config:clear
+
+      - name: Generate storage link
+        run: php artisan storage:link
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Build Node dependencies
+        run: npm run build
+
+      # - name: Prune sanctum
+
+      # - name: Reload server instances
+      #   run: pm2 reload live-app --update-env --wait-ready

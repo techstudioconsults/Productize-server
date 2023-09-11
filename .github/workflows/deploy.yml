@@ -22,6 +22,9 @@ jobs:
         with:
           php-version: "8.1"
 
+      - name: Require helper
+        run: composer require --dev barryvdh/laravel-ide-helper
+
       - name: Install Packages
         run: composer install --optimize-autoloader --no-dev
 

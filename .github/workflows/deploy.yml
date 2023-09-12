@@ -43,12 +43,6 @@ jobs:
       - name: Generate storage link
         run: php artisan storage:link
 
-      - name: Install Node dependencies
-        run: npm install
-
-      - name: Build Node dependencies
-        run: npm run build
-
       - name: Migrate Database
         run: php artisan migrate --force
 

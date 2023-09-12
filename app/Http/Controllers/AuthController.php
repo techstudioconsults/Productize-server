@@ -95,9 +95,9 @@ class AuthController extends Controller
             throw new UnprocessableException($validator->errors()->first());
         }
 
-        $auth_code = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
+        $redirect_url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
 
-        return response(['code' => $auth_code], 200)
+        return response(['provider' => $provider, 'redirect_url' => $redirect_url], 200)
             ->header('Content-Type', 'application/json')
             ->header('Access-Control-Allow-Origin', '*');
     }
@@ -135,7 +135,7 @@ class AuthController extends Controller
         return new JsonResponse($result);
     }
 
-    public function verify($user_id, Request $request)
+    public function verify(string $user_id, Request $request)
     {
 
         if (!$request->hasValidSignature()) {

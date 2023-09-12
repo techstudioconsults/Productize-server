@@ -23,7 +23,7 @@ jobs:
           php-version: "8.1"
 
       - name: Copy env files from client config folder
-        run: cp -rf /var/www/config/.* /var/www/productize/_work/Productize-server/Productize-server
+        run: cp /var/www/config/.env /var/www/productize/_work/Productize-server/Productize-server/
 
       - name: Install Packages
         run: composer install --optimize-autoloader --no-dev
@@ -49,7 +49,7 @@ jobs:
       - name: Build Node dependencies
         run: npm run build
 
-      # - name: Migrate Database
-      #   run: php artisan migrate --force
+      - name: Migrate Database
+        run: php artisan migrate --force
 
       # - name: Prune sanctum

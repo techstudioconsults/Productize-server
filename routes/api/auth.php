@@ -10,8 +10,8 @@ Route::group([
 ], function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::get('/redirect', [AuthController::class, 'oAuthRedirect']);
-    Route::post('/callback', [AuthController::class, 'oAuthCallback']);
+    Route::get('/oauth/redirect', [AuthController::class, 'oAuthRedirect']);
+    Route::post('/oauth/callback', [AuthController::class, 'oAuthCallback']);
 
     Route::get('email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify'); // Make sure to keep this as your route name
 

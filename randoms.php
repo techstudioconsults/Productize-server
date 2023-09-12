@@ -68,12 +68,11 @@ echo asset('videos/video.mp3');
  * return new EmailVerification($user); // Mails
  */
 
-    //    # - name: Use Node.js ${{ matrix.node-version }}
-    //   #   uses: actions/setup-node@v3
-    //   #   with:
-    //   #     node-version: ${{ matrix.node-version }}
-    //   #     cache: 'npm'
+/**
+ * Give write access to directory on server
+ *sudo chown -R www-data:www-data /var/www/productize/_work/Productize-server/Productize-server/storage/framework/views
+ */
 
-    //   # - name: Copy env files from client config folder
-    //   #   run: cp -rf /var/www/config/.* /var/www/application/_work/Techstudio-site/Techstudio-site
-    // sudo chown -R www-data:www-data /var/www/productize/_work/Productize-server/Productize-server/storage/framework/views
+ /**
+  * php artisan make:controller PaymentController --api --model=Payments -r -R
+  */

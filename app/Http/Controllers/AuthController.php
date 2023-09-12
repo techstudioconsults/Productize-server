@@ -9,6 +9,7 @@ use App\Exceptions\UnprocessableException;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\OAuthRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -53,7 +54,7 @@ class AuthController extends Controller
 
             $token = $user->createToken('access-token')->plainTextToken;
 
-            return ['user' => $user, 'token' => $token];
+            return ['user' => new UserResource($user), 'token' => $token];
         });
 
         return new JsonResponse($result);
@@ -76,7 +77,7 @@ class AuthController extends Controller
         $user = Auth::user();
         $token = $user->createToken('access-token')->plainTextToken;
 
-        $result = ['user' => $user, 'token' => $token];
+        $result = ['user' => new UserResource($user), 'token' => $token];
 
         return new JsonResponse($result);
     }
@@ -129,7 +130,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('access-token')->plainTextToken;
 
-        $result = ['user' => $user, 'token' => $token];
+        $result = ['user' => new UserResource($user), 'token' => $token];
 
         return new JsonResponse($result);
     }

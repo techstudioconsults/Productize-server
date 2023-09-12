@@ -15,6 +15,8 @@ return new class extends Migration
             $table->uuid('id')->primary();  // Primary Ids are UUIDs. Check User model for more info.
             $table->string('full_name');
             $table->string('email')->unique();
+            $table->string('username', 20)->unique()->nullable();
+            $table->string('phone_number', 14)->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('account_type', ['free', 'premium'])->default('free');

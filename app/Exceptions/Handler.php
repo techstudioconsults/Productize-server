@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -26,5 +28,15 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        // $this->renderable(function (AuthenticationException $e, Request $request) {
+        //     // throw new UnAuthorizedException('User not Authenticated');
+        //     var_dump('here');
+        //     if ($request->is('api/*')) {
+        //         return response()->json([
+        //             'message' => 'Record not found.'
+        //         ], 404);
+        //     }
+        // });
     }
 }

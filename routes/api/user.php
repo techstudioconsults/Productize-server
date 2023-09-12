@@ -1,8 +1,15 @@
 <?php
 
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group([
+    'as' => 'user.',
+    'namespace' => "\App\Http\Controllers",
+    'prefix' => 'users',
+    'middleware' => 'auth:sanctum'
+], function () {
+    Route::get('/me', [UserController::class, 'show']);
+
+    Route::patch('/me', [UserController::class, 'update']);
 });

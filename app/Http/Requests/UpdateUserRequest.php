@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -30,12 +31,21 @@ class UpdateUserRequest extends FormRequest
             'email' => 'email|string|unique:users,email',
             'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
             'username' => 'string|unique:users,username|max:20',
-            'phone_number' => 'string|unique:users,phone_number|max:14'
+            'phone_number' => 'string|unique:users,phone_number|max:14',
+            'twitter_account' => 'string',
+            'facebook_account' => 'string',
+            'youtube_account' => 'string',
+            'logo' => 'image'
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
         throw new UnprocessableException($validator->errors()->first());
+    }
+
+    protected function failedAuthorization()
+    {
+        throw new ForbiddenException('Email Address not verified');
     }
 }

@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('phone_number', 14)->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('logo')->nullable();
+            $table->string('twitter_account')->nullable();
+            $table->string('facebook_account')->nullable();
+            $table->string('youtube_account')->nullable();
             $table->enum('account_type', ['free', 'premium'])->default('free');
             $table->rememberToken();
             $table->timestamps();

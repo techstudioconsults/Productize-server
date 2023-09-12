@@ -8,7 +8,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Auth;
-use PhpParser\Node\Stmt\TryCatch;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class UserController extends Controller
@@ -47,6 +47,23 @@ class UserController extends Controller
         $userId = Auth::user()->id;
 
         $validated = $request->validated();
+
+         $logo = $validated['logo'];
+
+         unset($validated['logo']);
+
+         $originalName = $logo->getClientOriginalName();
+
+         $logoUrl = null;
+         try {
+            $path  = Storage::putFileAs('avatars', $logo, $originalName);
+
+             $logoUrl = env('DO_CDN_SPACE_ENDPOINT').'/'.$path;
+         } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+         }
+
+         $validated['logo'] = $logoUrl;
 
         try {
             User::where('id', $userId)->update($validated);

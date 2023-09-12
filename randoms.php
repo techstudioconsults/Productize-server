@@ -76,3 +76,4 @@ echo asset('videos/video.mp3');
 
     //   # - name: Copy env files from client config folder
     //   #   run: cp -rf /var/www/config/.* /var/www/application/_work/Techstudio-site/Techstudio-site
+    // sudo chown -R www-data:www-data /var/www/productize/_work/Productize-server/Productize-server/storage/framework/views

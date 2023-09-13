@@ -2,49 +2,56 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentGateway;
+use App\Exceptions\ServerErrorException;
 use App\Models\Payment;
-use App\Http\Requests\StorePaymentRequest;
-use App\Http\Requests\UpdatePaymentRequest;
+use App\Repositories\PaystackRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Request;
 
 class PaymentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+
+    public function __construct(
+        protected PaystackRepository $paystackRepository
+    ) {
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePaymentRequest $request)
+    public function createSubscription(Request $request)
     {
-        //
-    }
+        $paymentGatewayProvider = $request->query('provider');
+        $user = Auth::user();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Payment $payment)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePaymentRequest $request, Payment $payment)
-    {
-        //
-    }
+        $userPaymentProfile = $user->payments;
+        $customer = null;
+        $customer_code = null;
+        $subscription = null;
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Payment $payment)
-    {
-        //
+        if ($paymentGatewayProvider === PaymentGateway::Paystack) {
+            try {
+                if (!$userPaymentProfile || !$userPaymentProfile->paystack_customer_code) {
+                    $customer = $this->paystackRepository->createCustomer($user);
+                    $customer_code = $customer['customer_code'];
+
+                    Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
+                } else {
+                    $customer_code = $userPaymentProfile->paystack_customer_code;
+                }
+
+                $subscription = $this->paystackRepository->createSubscription($customer_code);
+            } catch (\Throwable $th) {
+                throw new ServerErrorException($th->getMessage());
+            }
+
+            $toUpdate = [
+                'paystack_subscription_id' => $subscription['subscription_code']
+            ];
+
+            Payment::where('id', $userPaymentProfile->id)->update($toUpdate);
+        }
+
+        return new JsonResponse($subscription);
     }
 }

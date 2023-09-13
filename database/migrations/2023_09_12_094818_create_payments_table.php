@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->string('paystack_subscription_id')->nullable();
+            $table->string('paystack_customer_code')->nullable();
+            $table->foreignIdFor(\App\Models\User::class, 'user_id');
             $table->timestamps();
         });
     }

@@ -32,6 +32,7 @@ class UpdateUserRequest extends FormRequest
             'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
             'username' => 'string|unique:users,username|max:20',
             'phone_number' => 'string|unique:users,phone_number|max:14',
+            'bio' => 'string|max:1000',
             'twitter_account' => 'string',
             'facebook_account' => 'string',
             'youtube_account' => 'string',

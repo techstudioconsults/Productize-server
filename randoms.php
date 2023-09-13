@@ -50,6 +50,7 @@ echo asset('videos/video.mp3');
 /**
  * Add to ci/cd to clean up expired tokens
  * php artisan sanctum:prune-expired
+ * sudo chmod -R 777 storage
  */
 
 

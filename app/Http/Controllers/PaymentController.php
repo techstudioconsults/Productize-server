@@ -61,7 +61,7 @@ class PaymentController extends Controller
 
     public function handlePaystackWebHook(Request $request)
     {
-        Log::critical('webhook came in');
+        // Log::critical('webhook came in');
 
         $payload = $request->getContent();
 

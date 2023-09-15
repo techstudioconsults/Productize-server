@@ -42,6 +42,7 @@ class PaymentController extends Controller
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
             } else {
                 // Uppdate subscription
+                $subscription = $this->paystackRepository->createSubscription($userPaymentProfile->paystack_customer_code);
             }
 
         } catch (\Throwable $th) {

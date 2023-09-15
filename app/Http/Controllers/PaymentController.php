@@ -11,6 +11,7 @@ use App\Repositories\PaystackRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -56,19 +57,27 @@ class PaymentController extends Controller
     public function handlePaystackWebHook(Request $request)
     {
         // Take this out and implement policy
-        $ipAddress = $request->ip();
+        // $ipAddress = $request->ip();
 
-        /**
-         * Malicious user detected
-         */
-        if (!in_array($ipAddress, $this->paystackRepository->WhiteList)) {
-            throw new UnAuthorizedException('Malicious Ip');
+        // /**
+        //  * Malicious user detected
+        //  */
+        // if (!in_array($ipAddress, $this->paystackRepository->WhiteList)) {
+        //     throw new UnAuthorizedException('Malicious Ip');
+        // }
+
+
+
+        $payload = $request->getContent();
+
+        $paystackHeader = $request->header('x-paystack-signature');
+
+        if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
+            $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
+
+            return response();
+        } else {
+            Log::info('message', ['error' => 'Invalid webhook signature']);
         }
-
-        $body = $request->all();
-
-        $this->paystackRepository->webhookEvents($body['event'], $body['data']);
-
-        return response();
     }
 }

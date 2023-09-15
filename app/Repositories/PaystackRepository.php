@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PaystackRepository
 {
@@ -42,7 +43,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
             'Content-Type' => 'application/json'
         ])->post($this->baseUrl . '/customer', $payload);
 
@@ -62,11 +63,11 @@ class PaystackRepository
         ];
 
         if ($isSubscription) {
-            $payload['plan'] = env('STRIPE_PREMIUM_PLAN_CODE');
+            $payload['plan'] = env('PAYSTACK_PREMIUM_PLAN_CODE');
         }
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
             "Cache-Control"  => "no-cache",
             'Content-Type' => 'application/json'
         ])->post($this->initializeTransactionUrl, $payload);
@@ -98,59 +99,70 @@ class PaystackRepository
      */
     public function webhookEvents(string $type, $data)
     {
-        switch ($type) {
-            case 'subscription.create':
-                $subcription_code = $data['subscription_code'];
-                $customerCode = $data['customer']['customer_code'];
+        try {
+            switch ($type) {
+                case 'subscription.create':
+                    $subcription_code = $data['subscription_code'];
+                    $customerCode = $data['customer']['customer_code'];
 
-                $update = [
-                    'paystack_subscription_id' => $subcription_code
-                ];
+                    $update = [
+                        'paystack_subscription_id' => $subcription_code
+                    ];
 
-                $this->paymentRepository->update('paystack_customer_code', $customerCode, $update);
-                break;
+                    $this->paymentRepository->update('paystack_customer_code', $customerCode, $update);
+                    break;
 
-            case 'charge.success':
-                $email = $data['customer']['email'];
+                case 'charge.success':
+                    $email = $data['customer']['email'];
 
-                $update = [
-                    'account_type' => 'premium'
-                ];
+                    $update = [
+                        'account_type' => 'premium'
+                    ];
 
-                $this->userRepository->update('email', $email, $update);
-                break;
+                    $this->userRepository->update('email', $email, $update);
+                    break;
 
-            case 'invoice.create':
-                # code...
-                break;
+                case 'invoice.create':
+                    # code...
+                    break;
 
-            case 'invoice.update':
-                # code...
-                break;
+                case 'invoice.update':
+                    # code...
+                    break;
 
-                /**
-                 * Cancelling a subscription will also trigger the following events:
-                 */
+                    /**
+                     * Cancelling a subscription will also trigger the following events:
+                     */
 
-            case 'invoice.payment_failed':
-                # code...
-                break;
+                case 'invoice.payment_failed':
+                    # code...
+                    break;
 
-            case 'subscription.disable':
-                $email = $data['customer']['email'];
+                case 'subscription.disable':
+                    $email = $data['customer']['email'];
 
-                $update = [
-                    'account_type' => 'free'
-                ];
+                    $update = [
+                        'account_type' => 'free'
+                    ];
 
-                $this->userRepository->update('email', $email, $update);
-                break;
+                    $this->userRepository->update('email', $email, $update);
+                    break;
+            }
+        } catch (\Throwable $th) {
+            Log::critical('paystack webhook error', ['error_message' => $th->getMessage()]);
         }
+
+    }
+
+    public function isValidPaystackWebhook($payload, $signature)
+    {
+        $computedSignature = hash_hmac('sha512', $payload, env('PAYSTACK_SECRET_KEY'));
+        return $computedSignature === $signature;
     }
 }
 
 /**
  * Needs
  * 1. Invoice created templated.
- * 
+ *
  */

@@ -61,14 +61,14 @@ class PaymentController extends Controller
 
     public function handlePaystackWebHook(Request $request)
     {
-        Log::critical('webhook came in', ['message' => 'message']);
+        Log::critical('webhook came in');
 
         $payload = $request->getContent();
 
         $paystackHeader = $request->header('x-paystack-signature');
 
         if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
-            Log::critical('event', $payload);
+            Log::critical($payload);
             // $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
 
             return response();

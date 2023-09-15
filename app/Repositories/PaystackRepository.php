@@ -96,7 +96,6 @@ class PaystackRepository
 
     public function cancelSubscription()
     {
-
     }
 
     /**
@@ -158,7 +157,32 @@ class PaystackRepository
         } catch (\Throwable $th) {
             Log::critical('paystack webhook error', ['error_message' => $th->getMessage()]);
         }
+    }
 
+    public function fetchSubscription($subscriptionId)
+    {
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
+        ])->get($this->baseUrl . '/subscription/:' . $subscriptionId);
+
+        return $response['data'];
+    }
+
+    public function enableSubscription($subscriptionId)
+    {
+        $subscription = $this->fetchSubscription($subscriptionId);
+
+        $payload = [
+            "code" => $subscriptionId,
+            "token" => $subscription['email_token']
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
+            "Content-Type" => "application/json",
+        ])->post($this->baseUrl . "/subscription/enable", $payload);
+
+        return $response['data'];
     }
 
     public function isValidPaystackWebhook($payload, $signature)

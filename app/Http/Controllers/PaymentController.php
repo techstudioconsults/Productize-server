@@ -20,12 +20,20 @@ class PaymentController extends Controller
     ) {
     }
 
-    public function createPaystackSubscription()
+    private function getUserPaymentInfo()
     {
         // Authenticated user
         $user = Auth::user();
 
-        $userPaymentProfile = User::find($user->id)->payment;
+        return ['user' => $user, 'userPaymentInfo' => User::find($user->id)->payment];
+    }
+
+    public function createPaystackSubscription()
+    {
+        $userPaymentProfile = $this->getUserPaymentInfo();
+
+        $userPaymentInfo = $userPaymentProfile['userPaymentInfo'];
+        $user = $userPaymentProfile['user'];
 
         $customer = null;
         $customer_code = null;
@@ -33,7 +41,7 @@ class PaymentController extends Controller
 
         try {
             // First timer ? Create customer Anyways
-            if (!$userPaymentProfile || !$userPaymentProfile->paystack_customer_code) {
+            if (!$userPaymentInfo || !$userPaymentInfo->paystack_customer_code) {
                 $customer = $this->paystackRepository->createCustomer($user);
                 $customer_code = $customer['customer_code'];
 
@@ -58,18 +66,25 @@ class PaymentController extends Controller
         return new JsonResponse($subscription);
     }
 
+    public function enablePaystackSubscription()
+    {
+        ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
+
+
+    }
+
     public function handlePaystackWebHook(Request $request)
     {
-        Log::critical('webhook came in', []);
+        Log::critical('webhook came in', ['value' => 'test']);
 
         $payload = $request->getContent();
 
         $paystackHeader = $request->header('x-paystack-signature');
 
         if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
-            Log::critical('payload', $payload);
-            Log::critical('data', $payload['data']);
-            Log::critical('event', $payload['event']);
+            Log::critical('payload', ['value' => $payload]);
+            Log::critical('data', ['value' => $payload['data']]);
+            Log::critical('event', ['value' => $payload['event']]);
             // $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
 
             return response();

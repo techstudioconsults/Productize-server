@@ -2,8 +2,10 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\ServerErrorException;
 use App\Models\Payment;
 use App\Models\User;
+use Error;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -45,7 +47,7 @@ class PaystackRepository
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
             'Content-Type' => 'application/json'
-        ])->post($this->baseUrl . '/customer', $payload);
+        ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
         return $response['data'];
     }
@@ -70,7 +72,7 @@ class PaystackRepository
             "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
             "Cache-Control"  => "no-cache",
             'Content-Type' => 'application/json'
-        ])->post($this->initializeTransactionUrl, $payload);
+        ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
 
         return $response['data'];
     }
@@ -87,15 +89,61 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
             "Content-Type" => "application/json",
-        ])->post($this->subscriptionEndpoint, $payload);
+        ])->post($this->subscriptionEndpoint, $payload)->throw()->json();
 
-        return $response;
+        return $response['data'];
     }
 
-    public function cancelSubscription()
+    public function manageSubscription(string $subscriptionId)
     {
+        $url = "{$this->baseUrl}/subscription/{$subscriptionId}/manage/link";
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+        ])->get($url);
+
+        if ($response->successful()) {
+            $data = json_decode($response->body(), true);
+            return $data['data'];
+        } else {
+            Log::critical('Manage Paystack error', ['status' => $response->status()]);
+        }
+    }
+
+
+    public function fetchSubscription($subscriptionId)
+    {
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+        ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
+
+        if ($response->successful()) {
+            $data = json_decode($response->body(), true);
+
+            return $data['data'];
+        } else {
+            Log::critical('Fetch subscription error', ['status' => $response->status()]);
+        }
+    }
+
+    public function enableSubscription($subscriptionId)
+    {
+        $subscription = $this->fetchSubscription($subscriptionId);
+
+        $payload = [
+            "code" => $subscriptionId,
+            "token" => $subscription['email_token']
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
+
+        return $response['data'];
     }
 
     /**
@@ -106,7 +154,6 @@ class PaystackRepository
         try {
             switch ($type) {
                 case 'subscription.create':
-                    Log::critical('subscription created');
 
                     $subcription_code = $data['subscription_code'];
                     $customerCode = $data['customer']['customer_code'];
@@ -153,36 +200,17 @@ class PaystackRepository
 
                     $this->userRepository->update('email', $email, $update);
                     break;
+
+                case 'subscription.expiring_cards':
+                    /**
+                     * Might want to reach out to customers
+                     * https://paystack.com/docs/payments/subscriptions/#handling-subscription-payment-issues
+                     */
+                    break;
             }
         } catch (\Throwable $th) {
             Log::critical('paystack webhook error', ['error_message' => $th->getMessage()]);
         }
-    }
-
-    public function fetchSubscription($subscriptionId)
-    {
-        $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
-        ])->get($this->baseUrl . '/subscription/:' . $subscriptionId);
-
-        return $response['data'];
-    }
-
-    public function enableSubscription($subscriptionId)
-    {
-        $subscription = $this->fetchSubscription($subscriptionId);
-
-        $payload = [
-            "code" => $subscriptionId,
-            "token" => $subscription['email_token']
-        ];
-
-        $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
-            "Content-Type" => "application/json",
-        ])->post($this->baseUrl . "/subscription/enable", $payload);
-
-        return $response['data'];
     }
 
     public function isValidPaystackWebhook($payload, $signature)
@@ -191,9 +219,3 @@ class PaystackRepository
         return $computedSignature === $signature;
     }
 }
-
-/**
- * Needs
- * 1. Invoice created templated.
- *
- */

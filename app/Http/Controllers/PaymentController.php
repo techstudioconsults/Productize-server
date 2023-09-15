@@ -30,10 +30,7 @@ class PaymentController extends Controller
 
     public function createPaystackSubscription()
     {
-        $userPaymentProfile = $this->getUserPaymentInfo();
-
-        $userPaymentInfo = $userPaymentProfile['userPaymentInfo'];
-        $user = $userPaymentProfile['user'];
+        ['user' => $user, 'userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
 
         $customer = null;
         $customer_code = null;
@@ -57,55 +54,53 @@ class PaymentController extends Controller
             throw new ServerErrorException($th->getMessage());
         }
 
-
-
         /**
          * Return Authorization url to the client for payment.
          * Note that this is the user's first time payment with us so we need at least one authorization from them.
          */
-        return new JsonResponse($subscription);
+        return new JsonResponse(['data' => $subscription]);
     }
 
     public function enablePaystackSubscription(Request $request)
     {
         ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
-        $subscriptionId = $userPaymentInfo->subscriptionId;
-
-        $subscription = null;
-var_dump('1');
+        $subscriptionId = $userPaymentInfo->paystack_subscription_id;
         try {
             $subscription = $this->paystackRepository->enableSubscription($subscriptionId);
+            return new JsonResponse(['data' => $subscription]);
+        } catch (\Exception $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
+    }
+
+    public function managePaystackSubscription()
+    {
+        ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
+        $subscriptionId = $userPaymentInfo->paystack_subscription_id;
+
+        try {
+            $response = $this->paystackRepository->manageSubscription($subscriptionId);
+            return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
-        var_dump('2');
-        return new JsonResponse(['SUB' => $subscription]);
     }
 
     public function handlePaystackWebHook(Request $request)
     {
-        Log::critical('webhook came in', ['value' => 'test']);
-
         $payload = $request->getContent();
 
         $paystackHeader = $request->header('x-paystack-signature');
 
-        try {
-            //code...
-        } catch (\Throwable $th) {
-            //throw $th;
-        }
-
         if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
 
             try {
-                Log::critical('payload', ['value' => $payload]);
-
                 $data = json_decode($payload, true);
+
                 Log::critical('data', ['value' => $data['data']]);
                 Log::critical('event', ['value' => $data['event']]);
-                $this->paystackRepository->webhookEvents($data['event'], $data['data']);
 
+                $this->paystackRepository->webhookEvents($data['event'], $data['data']);
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }

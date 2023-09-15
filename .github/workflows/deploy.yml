@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Give permissions
-        run:  chmod -R 777 storage
+        run:  chmod +x storage
 
       - name: 🚚 Get latest code
         uses: actions/checkout@v3

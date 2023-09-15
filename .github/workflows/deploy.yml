@@ -14,9 +14,6 @@ jobs:
         node-version: [18.x]
 
     steps:
-      - name: Give permissions
-        run:  chmod +x storage
-
       - name: 🚚 Get latest code
         uses: actions/checkout@v3
 

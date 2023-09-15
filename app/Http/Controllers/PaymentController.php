@@ -103,7 +103,7 @@ var_dump('1');
 
                 $data = json_decode($payload, true);
                 Log::critical('data', ['value' => $data['data']]);
-                // Log::critical('event', ['value' => $payload['event']]);
+                Log::critical('event', ['value' => $data['event']]);
                 // $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
 
             } catch (\Throwable $th) {

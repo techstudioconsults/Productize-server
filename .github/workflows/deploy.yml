@@ -14,8 +14,8 @@ jobs:
         node-version: [18.x]
 
     steps:
-      # - name: Give permissions
-      #   run:  chmod -R 777 storage
+      - name: Give permissions
+        run:  chmod -R 777 storage
 
       - name: 🚚 Get latest code
         uses: actions/checkout@v3

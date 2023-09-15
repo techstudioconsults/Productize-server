@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Models\Payment;
 use App\Models\User;
@@ -42,7 +43,7 @@ class PaymentController extends Controller
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
             } else {
                 // Uppdate subscription
-                $subscription = $this->paystackRepository->createSubscription($userPaymentProfile->paystack_customer_code);
+                throw new BadRequestException('user currently has a subscription plan');
             }
 
         } catch (\Throwable $th) {
@@ -60,7 +61,7 @@ class PaymentController extends Controller
 
     public function handlePaystackWebHook(Request $request)
     {
-        Log::critical('webhook came in');
+        Log::critical('webhook came in', ['message' => 'message']);
 
         $payload = $request->getContent();
 

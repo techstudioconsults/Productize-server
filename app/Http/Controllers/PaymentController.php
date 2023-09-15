@@ -104,13 +104,13 @@ var_dump('1');
                 $data = json_decode($payload, true);
                 Log::critical('data', ['value' => $data['data']]);
                 Log::critical('event', ['value' => $data['event']]);
-                // $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
+                $this->paystackRepository->webhookEvents($data['event'], $data['data']);
 
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
 
-            return response('test', 200);
+            return response('webhook success', 200);
         } else {
             Log::critical('message', ['error' => 'Invalid webhook signature']);
         }

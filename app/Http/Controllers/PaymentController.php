@@ -45,7 +45,6 @@ class PaymentController extends Controller
                 // Uppdate subscription
                 throw new BadRequestException('user currently has a subscription plan');
             }
-
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
@@ -61,14 +60,16 @@ class PaymentController extends Controller
 
     public function handlePaystackWebHook(Request $request)
     {
-        // Log::critical('webhook came in');
+        Log::critical('webhook came in', []);
 
         $payload = $request->getContent();
 
         $paystackHeader = $request->header('x-paystack-signature');
 
         if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
-            Log::critical($payload);
+            Log::critical('payload', $payload);
+            Log::critical('data', $payload['data']);
+            Log::critical('event', $payload['event']);
             // $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
 
             return response();

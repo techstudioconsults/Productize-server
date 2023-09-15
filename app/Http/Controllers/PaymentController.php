@@ -110,7 +110,7 @@ var_dump('1');
                 throw new ServerErrorException($th->getMessage());
             }
 
-            return response();
+            return response('test', 200);
         } else {
             Log::critical('message', ['error' => 'Invalid webhook signature']);
         }

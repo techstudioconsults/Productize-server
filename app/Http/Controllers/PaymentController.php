@@ -66,11 +66,20 @@ class PaymentController extends Controller
         return new JsonResponse($subscription);
     }
 
-    public function enablePaystackSubscription()
+    public function enablePaystackSubscription(Request $request)
     {
         ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
+        $subscriptionId = $userPaymentInfo->subscriptionId;
 
-
+        $subscription = null;
+var_dump('1');
+        try {
+            $subscription = $this->paystackRepository->enableSubscription($subscriptionId);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
+        var_dump('2');
+        return new JsonResponse(['SUB' => $subscription]);
     }
 
     public function handlePaystackWebHook(Request $request)
@@ -83,8 +92,10 @@ class PaymentController extends Controller
 
         if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
             Log::critical('payload', ['value' => $payload]);
-            Log::critical('data', ['value' => $payload['data']]);
-            Log::critical('event', ['value' => $payload['event']]);
+
+            $data = json_decode($payload['data'], true);
+            Log::critical('data', ['value' => $data]);
+            // Log::critical('event', ['value' => $payload['event']]);
             // $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
 
             return response();

@@ -11,4 +11,5 @@ Route::group([
 ], function () {
     Route::get('/paystack/subscribe', [PaymentController::class, 'createPaystackSubscription']);
     Route::post('/paystack/webhooks', [PaymentController::class, 'handlePaystackWebHook'])->withoutMiddleware('auth:sanctum');
+    Route::get('/paystack/subscribe/enable', [PaymentController::class, 'enablePaystackSubscription']);
 });

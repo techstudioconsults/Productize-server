@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Give permissions
         run:  |
-         chown -R {tobi}:www-data /var/www/productize/_work/Productize-server/Productize-server
+         chown -R tobi:www-data /var/www/productize/_work/Productize-server/Productize-server
          chmod -R 777 storage
          chmod -R 777 bootstrap/cache/
 

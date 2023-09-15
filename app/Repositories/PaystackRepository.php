@@ -94,6 +94,11 @@ class PaystackRepository
         return $response;
     }
 
+    public function cancelSubscription()
+    {
+
+    }
+
     /**
      * Api Doc: https://paystack.com/docs/payments/subscriptions/#listen-for-subscription-events
      */
@@ -102,6 +107,8 @@ class PaystackRepository
         try {
             switch ($type) {
                 case 'subscription.create':
+                    Log::critical('subscription created');
+
                     $subcription_code = $data['subscription_code'];
                     $customerCode = $data['customer']['customer_code'];
 

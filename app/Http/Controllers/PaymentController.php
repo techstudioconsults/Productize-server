@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\PaymentGateway;
 use App\Exceptions\ServerErrorException;
-use App\Exceptions\UnAuthorizedException;
 use App\Models\Payment;
 use App\Models\User;
 use App\Repositories\PaystackRepository;
@@ -39,13 +37,18 @@ class PaymentController extends Controller
                 $customer_code = $customer['customer_code'];
 
                 Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
+
+                // initialize customer transaction as a first timer
+                $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+            } else {
+                // Uppdate subscription
             }
+
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
 
-        // initialize customer transaction as a first timer
-        $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+
 
         /**
          * Return Authorization url to the client for payment.
@@ -56,17 +59,7 @@ class PaymentController extends Controller
 
     public function handlePaystackWebHook(Request $request)
     {
-        // Take this out and implement policy
-        // $ipAddress = $request->ip();
-
-        // /**
-        //  * Malicious user detected
-        //  */
-        // if (!in_array($ipAddress, $this->paystackRepository->WhiteList)) {
-        //     throw new UnAuthorizedException('Malicious Ip');
-        // }
-
-
+        Log::critical('webhook came in');
 
         $payload = $request->getContent();
 
@@ -77,7 +70,7 @@ class PaymentController extends Controller
 
             return response();
         } else {
-            Log::info('message', ['error' => 'Invalid webhook signature']);
+            Log::critical('message', ['error' => 'Invalid webhook signature']);
         }
     }
 }

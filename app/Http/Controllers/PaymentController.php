@@ -93,8 +93,8 @@ var_dump('1');
         if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
             Log::critical('payload', ['value' => $payload]);
 
-            $data = json_decode($payload['data'], true);
-            Log::critical('data', ['value' => $data]);
+            $data = json_decode($payload, true);
+            Log::critical('data', ['value' => $data['data']]);
             // Log::critical('event', ['value' => $payload['event']]);
             // $this->paystackRepository->webhookEvents($payload['event'], $payload['data']);
 

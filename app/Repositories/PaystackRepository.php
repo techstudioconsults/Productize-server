@@ -148,3 +148,9 @@ class PaystackRepository
         }
     }
 }
+
+/**
+ * Needs
+ * 1. Invoice created templated.
+ * 
+ */

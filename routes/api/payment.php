@@ -10,5 +10,5 @@ Route::group([
     'middleware' => 'auth:sanctum'
 ], function () {
     Route::get('/paystack/subscribe', [PaymentController::class, 'createPaystackSubscription']);
-    Route::post('/paystack/webhook', [PaymentController::class, 'handlePaystackWebHook']);
+    Route::post('/paystack/webhooks', [PaymentController::class, 'handlePaystackWebHook'])->withoutMiddleware('auth:sanctum');
 });

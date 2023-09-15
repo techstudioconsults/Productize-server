@@ -14,10 +14,10 @@ jobs:
         node-version: [18.x]
 
     steps:
-      - name: Give permissions
-        run:  |
-         chmod -R 777 storage
-         chmod -R 777 bootstrap/cache/
+      # - name: Give permissions
+      #   run:  |
+      #    chmod -R 777 storage
+      #    chmod -R 777 bootstrap/cache/
 
       - name: 🚚 Get latest code
         uses: actions/checkout@v3

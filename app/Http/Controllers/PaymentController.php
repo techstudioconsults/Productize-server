@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentGateway;
 use App\Exceptions\ServerErrorException;
+use App\Exceptions\UnAuthorizedException;
 use App\Models\Payment;
+use App\Models\User;
 use App\Repositories\PaystackRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Request;
 
 class PaymentController extends Controller
 {
@@ -18,40 +20,55 @@ class PaymentController extends Controller
     ) {
     }
 
-    public function createSubscription(Request $request)
+    public function createPaystackSubscription()
     {
-        $paymentGatewayProvider = $request->query('provider');
+        // Authenticated user
         $user = Auth::user();
 
+        $userPaymentProfile = User::find($user->id)->payment;
 
-        $userPaymentProfile = $user->payments;
         $customer = null;
         $customer_code = null;
         $subscription = null;
 
-        if ($paymentGatewayProvider === PaymentGateway::Paystack) {
-            try {
-                if (!$userPaymentProfile || !$userPaymentProfile->paystack_customer_code) {
-                    $customer = $this->paystackRepository->createCustomer($user);
-                    $customer_code = $customer['customer_code'];
+        try {
+            // First timer ? Create customer Anyways
+            if (!$userPaymentProfile || !$userPaymentProfile->paystack_customer_code) {
+                $customer = $this->paystackRepository->createCustomer($user);
+                $customer_code = $customer['customer_code'];
 
-                    Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
-                } else {
-                    $customer_code = $userPaymentProfile->paystack_customer_code;
-                }
-
-                $subscription = $this->paystackRepository->createSubscription($customer_code);
-            } catch (\Throwable $th) {
-                throw new ServerErrorException($th->getMessage());
+                Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
             }
-
-            $toUpdate = [
-                'paystack_subscription_id' => $subscription['subscription_code']
-            ];
-
-            Payment::where('id', $userPaymentProfile->id)->update($toUpdate);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
         }
 
+        // initialize customer transaction as a first timer
+        $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+
+        /**
+         * Return Authorization url to the client for payment.
+         * Note that this is the user's first time payment with us so we need at least one authorization from them.
+         */
         return new JsonResponse($subscription);
+    }
+
+    public function handlePaystackWebHook(Request $request)
+    {
+        // Take this out and implement policy
+        $ipAddress = $request->ip();
+
+        /**
+         * Malicious user detected
+         */
+        if (!in_array($ipAddress, $this->paystackRepository->WhiteList)) {
+            throw new UnAuthorizedException('Malicious Ip');
+        }
+
+        $body = $request->all();
+
+        $this->paystackRepository->webhookEvents($body['event'], $body['data']);
+
+        return response();
     }
 }

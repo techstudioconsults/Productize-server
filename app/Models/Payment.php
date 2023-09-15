@@ -17,9 +17,19 @@ class Payment extends Model
 
     public $incrementing = false;
 
+    protected $fillable = [
+        'paystack_customer_code',
+        'paystack_subscription_id',
+        'user_id',
+    ];
+
+    protected $hidden = [
+        'paystack_customer_code',
+        'paystack_subscription_id',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
 }

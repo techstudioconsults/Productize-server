@@ -2,16 +2,29 @@
 
 namespace App\Repositories;
 
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
 class PaystackRepository
 {
+    public function __construct(
+        protected PaymentRepository $paymentRepository,
+        protected UserRepository $userRepository
+    ) {
+    }
+
     private $initializeTransactionUrl = "https://api.paystack.co/transaction/initialize";
 
     private $subscriptionEndpoint = "https://api.paystack.co/subscription";
 
     private $baseUrl = "https://api.paystack.co";
+
+    /**
+     * Api Doc: https://paystack.com/docs/payments/webhooks/#ip-whitelisting
+     * Paystack will only send webhook requests from their Ips
+     */
+    public $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
 
     /**
      * Create a plan on the dashboard - https://dashboard.paystack.com/#/plans
@@ -31,7 +44,7 @@ class PaystackRepository
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
             'Content-Type' => 'application/json'
-        ])->post($this->baseUrl.'/customer', $payload);
+        ])->post($this->baseUrl . '/customer', $payload);
 
         return $response['data'];
     }
@@ -45,6 +58,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
+            "callback_url" => env('CLIENT_URL') . '/dashboard'
         ];
 
         if ($isSubscription) {
@@ -54,9 +68,10 @@ class PaystackRepository
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . env('STRIPE_SECRET_KEY'),
             "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
         ])->post($this->initializeTransactionUrl, $payload);
 
-        return $response;
+        return $response['data'];
     }
 
     /**
@@ -75,56 +90,34 @@ class PaystackRepository
             "Content-Type" => "application/json",
         ])->post($this->subscriptionEndpoint, $payload);
 
-        return $response['data'];
-
-        // {
-        //     "status": true,
-        //     "message": "Subscription successfully created",
-        //     "data": {
-        //       "customer": 1173,
-        //       "plan": 28,
-        //       "integration": 100032,
-        //       "domain": "test",
-        //       "start": 1459296064,
-        //       "status": "active",
-        //       "quantity": 1,
-        //       "amount": 50000,
-        //       "authorization": {
-        //         "authorization_code": "AUTH_6tmt288t0o",
-        //         "bin": "408408",
-        //         "last4": "4081",
-        //         "exp_month": "12",
-        //         "exp_year": "2020",
-        //         "channel": "card",
-        //         "card_type": "visa visa",
-        //         "bank": "TEST BANK",
-        //         "country_code": "NG",
-        //         "brand": "visa",
-        //         "reusable": true,
-        //         "signature": "SIG_uSYN4fv1adlAuoij8QXh",
-        //         "account_name": "BoJack Horseman"
-        //       },
-        //       "subscription_code": "SUB_vsyqdmlzble3uii",
-        //       "email_token": "d7gofp6yppn3qz7",
-        //       "id": 9,
-        //       "createdAt": "2016-03-30T00:01:04.687Z",
-        //       "updatedAt": "2016-03-30T00:01:04.687Z"
-        //     }
-        //   }
+        return $response;
     }
 
     /**
      * Api Doc: https://paystack.com/docs/payments/subscriptions/#listen-for-subscription-events
      */
-    public function webhookEvents(string $eventType)
+    public function webhookEvents(string $type, $data)
     {
-        switch ($eventType) {
+        switch ($type) {
             case 'subscription.create':
-                # code...
+                $subcription_code = $data['subscription_code'];
+                $customerCode = $data['customer']['customer_code'];
+
+                $update = [
+                    'paystack_subscription_id' => $subcription_code
+                ];
+
+                $this->paymentRepository->update('paystack_customer_code', $customerCode, $update);
                 break;
 
             case 'charge.success':
-                # code...
+                $email = $data['customer']['email'];
+
+                $update = [
+                    'account_type' => 'premium'
+                ];
+
+                $this->userRepository->update('email', $email, $update);
                 break;
 
             case 'invoice.create':
@@ -132,10 +125,6 @@ class PaystackRepository
                 break;
 
             case 'invoice.update':
-                # code...
-                break;
-
-            case 'invoice.payment_failed':
                 # code...
                 break;
 
@@ -148,11 +137,13 @@ class PaystackRepository
                 break;
 
             case 'subscription.disable':
-                # code...
-                break;
+                $email = $data['customer']['email'];
 
-            default:
-                # code...
+                $update = [
+                    'account_type' => 'free'
+                ];
+
+                $this->userRepository->update('email', $email, $update);
                 break;
         }
     }

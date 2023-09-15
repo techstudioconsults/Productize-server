@@ -31,7 +31,7 @@ class User extends Authenticatable
         'full_name',
         'email',
         'password',
-        'role'
+        'account_type'
     ];
 
     /**
@@ -53,4 +53,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
 }

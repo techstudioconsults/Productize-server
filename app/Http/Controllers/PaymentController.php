@@ -48,7 +48,7 @@ class PaymentController extends Controller
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
             } else {
                 // Uppdate subscription
-                throw new BadRequestException('user currently has a subscription plan');
+                throw new BadRequestException('user currently have a subscription plan');
             }
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());

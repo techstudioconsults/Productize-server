@@ -168,11 +168,17 @@ class PaystackRepository
                 case 'charge.success':
                     $email = $data['customer']['email'];
 
-                    $update = [
-                        'account_type' => 'premium'
-                    ];
+                    // $update = [
+                    //     'account_type' => 'premium'
+                    // ];
 
-                    $this->userRepository->update('email', $email, $update);
+                    // $this->userRepository->update('email', $email, $update);
+
+                    /**
+                     * Experimental
+                     * yet to test
+                     */
+                    $this->userRepository->guardedUpdate($email, 'account_type', 'premium');
                     break;
 
                 case 'invoice.create':

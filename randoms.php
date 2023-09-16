@@ -74,6 +74,14 @@ echo asset('videos/video.mp3');
  *sudo chown -R www-data:www-data /var/www/productize/_work/Productize-server/Productize-server/storage/framework/views
  */
 
- /**
-  * php artisan make:controller PaymentController --api --model=Payments -r -R
-  */
+/**
+ * php artisan make:controller PaymentController --api --model=Payments -r -R
+ */
+
+// $flight = Flight::findOr(1, function () {
+//     // ...
+// });
+
+// $flight = Flight::where('legs', '>', 3)->firstOr(function () {
+//     // ...
+// });

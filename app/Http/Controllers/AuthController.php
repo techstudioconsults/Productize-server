@@ -30,19 +30,6 @@ class AuthController extends Controller
     ) {
     }
 
-    // private function createUser($credentials)
-    // {
-    //     $user = User::create([
-    //         'full_name' => $credentials['full_name'],
-    //         'email' => $credentials['email'],
-    //         'password' => $credentials['password']
-    //     ]);
-
-    //     event(new Registered($user));
-
-    //     return $user;
-    // }
-
     public function register(RegisterRequest $request)
     {
         $validatedData = $request->validated();
@@ -72,7 +59,7 @@ class AuthController extends Controller
         if (!Auth::attempt($credentials, $remember)) {
             throw new UnprocessableException('The Provided credentials are not correct');
         }
-        // $request->session()->regenerate();
+
         $user = Auth::user();
         $token = $user->createToken('access-token')->plainTextToken;
 
@@ -141,13 +128,13 @@ class AuthController extends Controller
             throw new UnAuthorizedException('Invalid/Expired url provided');
         }
 
-        $user = User::where('id', $user_id)->first();
+        $user = User::find($user_id);
 
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = 'http://localhost:3000/dashboard'; // Replace with your actual React frontend URL
+        $redirectUrl = env('CLIENT_URL') . '/dashboard';
 
         return redirect($redirectUrl);
     }

@@ -44,7 +44,7 @@ class UserRepository
      * @param column - column to be updated
      * @param value - value of column to be updated
      */
-    public function guardedUpdate(string $email, string $column, string $value)
+    public function guardedUpdate(string $email, string $column, string $value): User
     {
         $user = User::where('email', $email)->firstOr(function () use ($email, $column, $value) {
             Log::critical('Guarded update on user failed', ['email' => $email, $column => $value]);

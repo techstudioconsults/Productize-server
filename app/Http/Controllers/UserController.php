@@ -7,31 +7,29 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(
+        protected UserRepository $userRepository
+    ) {
+    }
+
+
     public function index()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Request $request)
     {
         $user = $request->user();
@@ -39,9 +37,6 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateUserRequest $request)
     {
         $userId = Auth::user()->id;
@@ -66,7 +61,7 @@ class UserController extends Controller
          $validated['logo'] = $logoUrl;
 
         try {
-            User::where('id', $userId)->update($validated);
+            $this->userRepository->update('id', $userId, $validated);
         }catch(Throwable $e) {
             throw new ServerErrorException($e->getMessage());
         }

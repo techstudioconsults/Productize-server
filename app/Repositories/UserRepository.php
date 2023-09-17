@@ -2,23 +2,47 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\BadRequestException;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Log;
 
 class UserRepository
 {
-    public function createUser()
+    public function createUser(array $credentials): User
     {
-        
-    }
+        $user = new User;
 
-    public function update(string $column, string $value, array $array)
-    {
-        return User::where($column, $value)->update($array);
+        if (!isset($credentials['email'])) {
+            throw new BadRequestException('No Email Provided');
+        }
+
+        foreach ($credentials as $column => $value) {
+            $user->$column = $value;
+        }
+
+        $user->save();
+
+        event(new Registered($user));
+
+        return $user;
     }
 
     /**
-     * Use guarded update for columns that are not fillable for mass assignment
+     * @param filter - is the table column to be used to query
+     * @param value - is the value of the column for the user
+     * @param updatables - is an associative array of items to be updated
+     */
+    public function update(string $filter, string $value, array $updatables): User
+    {
+        return User::where($filter, $value)->update($updatables);
+    }
+
+    /**
+     * Use guarded update for columns that are not available for mass assignment.
+     * @param email - User email
+     * @param column - column to be updated
+     * @param value - value of column to be updated
      */
     public function guardedUpdate(string $email, string $column, string $value)
     {

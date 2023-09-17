@@ -13,7 +13,6 @@ use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
 use App\Models\User;
 use App\Repositories\UserRepository;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,18 +30,18 @@ class AuthController extends Controller
     ) {
     }
 
-    private function createUser($credentials)
-    {
-        $user = User::create([
-            'full_name' => $credentials['full_name'],
-            'email' => $credentials['email'],
-            'password' => $credentials['password']
-        ]);
+    // private function createUser($credentials)
+    // {
+    //     $user = User::create([
+    //         'full_name' => $credentials['full_name'],
+    //         'email' => $credentials['email'],
+    //         'password' => $credentials['password']
+    //     ]);
 
-        event(new Registered($user));
+    //     event(new Registered($user));
 
-        return $user;
-    }
+    //     return $user;
+    // }
 
     public function register(RegisterRequest $request)
     {
@@ -50,7 +49,7 @@ class AuthController extends Controller
 
         $result = DB::transaction(function () use ($validatedData) {
 
-            $user = $this->createUser($validatedData);
+            $user = $this->userRepository->createUser($validatedData);
 
             $token = $user->createToken('access-token')->plainTextToken;
 
@@ -122,7 +121,7 @@ class AuthController extends Controller
                 'email' => $oauthUser->email,
             ];
             // Sign up user
-            $user = $this->createUser($credentials);
+            $user = $this->userRepository->createUser($credentials);
         } else {
             // Login user
             $user = Auth::user();

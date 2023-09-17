@@ -2,7 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\ApiException;
 use App\Models\User;
+use Error;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -101,12 +103,13 @@ class PaystackRepository
             "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
         ])->get($url);
 
-        if ($response->successful()) {
-            $data = json_decode($response->body(), true);
-            return $data['data'];
-        } else {
-            Log::critical('Manage Paystack error', ['status' => $response->status()]);
+        $data = json_decode($response->body());
+
+        if($response->failed()){
+            Log::critical('Manage Paystack error', ['message' => $response]);
+            $response->throw();
         }
+            return $data['data'];
     }
 
 

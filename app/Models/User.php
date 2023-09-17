@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Payment::class);
     }
+
+    public function isPremium()
+    {
+        return $this->account_type === 'premium' ? true : false;
+    }
 }

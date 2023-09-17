@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Models\Payment;
@@ -36,9 +37,9 @@ class PaymentController extends Controller
         $customer_code = null;
         $subscription = null;
 
-        try {
-            // First timer ? Create customer Anyways
-            if (!$userPaymentInfo || !$userPaymentInfo->paystack_customer_code) {
+        // First timer ? Create customer Anyways
+        if (!$userPaymentInfo || !$userPaymentInfo->paystack_customer_code) {
+            try {
                 $customer = $this->paystackRepository->createCustomer($user);
                 $customer_code = $customer['customer_code'];
 
@@ -46,12 +47,12 @@ class PaymentController extends Controller
 
                 // initialize customer transaction as a first timer
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
-            } else {
-                // Uppdate subscription
-                throw new BadRequestException('user currently have a subscription plan');
+            } catch (\Throwable $th) {
+                throw new ServerErrorException($th->getMessage());
             }
-        } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+        } else {
+            // Uppdate subscription
+            throw new BadRequestException('user currently have a subscription plan');
         }
 
         /**
@@ -61,10 +62,11 @@ class PaymentController extends Controller
         return new JsonResponse(['data' => $subscription]);
     }
 
-    public function enablePaystackSubscription(Request $request)
+    public function enablePaystackSubscription()
     {
         ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
         $subscriptionId = $userPaymentInfo->paystack_subscription_id;
+
         try {
             $subscription = $this->paystackRepository->enableSubscription($subscriptionId);
             return new JsonResponse(['data' => $subscription]);
@@ -82,7 +84,7 @@ class PaymentController extends Controller
             $response = $this->paystackRepository->manageSubscription($subscriptionId);
             return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
     }
 

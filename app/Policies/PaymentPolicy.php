@@ -2,65 +2,33 @@
 
 namespace App\Policies;
 
-use App\Models\Payment;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
 class PaymentPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function allowed(User $user)
     {
-        return true;
+        return $user->hasVerifiedEmail()
+            ? Response::allow()
+            : throw new ForbiddenException('Email Address not verified');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Payment $payment): bool
+    public function subscribed(User $user)
     {
-        return true;
+        $payment = User::find($user->id)->payment;
+        return $payment->paystack_subscription_id
+            ? Response::allow()
+            : throw new BadRequestException('User is not subscribed');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function owner(User $user)
     {
-        return true;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Payment $payment): bool
-    {
-        return true;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Payment $payment): bool
-    {
-        return true;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Payment $payment): bool
-    {
-        return true;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Payment $payment): bool
-    {
-        return true;
+        $payment = User::find($user->id)->payment;
+        return $payment
+            ? Response::allow()
+            : throw new ForbiddenException('Forbidden');
     }
 }

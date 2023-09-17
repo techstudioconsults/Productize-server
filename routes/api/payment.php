@@ -7,10 +7,16 @@ Route::group([
     'as' => 'payment.',
     'namespace' => "\App\Http\Controllers",
     'prefix' => 'payments',
-    'middleware' => 'auth:sanctum'
+    'middleware' => ['auth:sanctum', 'can:allowed,App\Models\Payment']  // Payment Policy
 ], function () {
     Route::get('/paystack/subscribe', [PaymentController::class, 'createPaystackSubscription']);
-    Route::post('/paystack/webhooks', [PaymentController::class, 'handlePaystackWebHook'])->withoutMiddleware('auth:sanctum');
-    Route::get('/paystack/subscribe/enable', [PaymentController::class, 'enablePaystackSubscription']);
-    Route::get('/paystack/subscribe/manage', [PaymentController::class, 'managePaystackSubscription']);
+
+    Route::get('/paystack/subscribe/enable', [PaymentController::class, 'enablePaystackSubscription'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::get('/paystack/subscribe/manage', [PaymentController::class, 'managePaystackSubscription'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::post('/paystack/webhooks', [PaymentController::class, 'handlePaystackWebHook'])
+        ->withoutMiddleware(['auth:sanctum', 'can:subscribe,App\Models\Payment']);
 });

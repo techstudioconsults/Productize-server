@@ -103,13 +103,14 @@ class PaystackRepository
             "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
         ])->get($url);
 
-        $data = json_decode($response->body());
+        $data = json_decode($response->body(), true);
 
-        if($response->failed()){
+        if ($response->failed()) {
             Log::critical('Manage Paystack error', ['message' => $response]);
             $response->throw();
         }
-            return $data['data'];
+
+        return $data['data'];
     }
 
 

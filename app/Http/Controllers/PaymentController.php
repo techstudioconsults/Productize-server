@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
+use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Models\User;
 use App\Repositories\PaystackRepository;
@@ -29,13 +30,14 @@ class PaymentController extends Controller
         return ['user' => $user, 'userPaymentInfo' => User::find($user->id)->payment];
     }
 
-    public function createPaystackSubscription()
+    public function createSubscription()
     {
         ['user' => $user, 'userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
 
         $customer = null;
         $customer_code = null;
         $subscription = null;
+        $payment = null;
 
         // First timer ? Create customer Anyways
         if (!$userPaymentInfo || !$userPaymentInfo->paystack_customer_code) {
@@ -43,7 +45,7 @@ class PaymentController extends Controller
                 $customer = $this->paystackRepository->createCustomer($user);
                 $customer_code = $customer['customer_code'];
 
-                Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
+                $payment =  Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
 
                 // initialize customer transaction as a first timer
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
@@ -59,10 +61,10 @@ class PaymentController extends Controller
          * Return Authorization url to the client for payment.
          * Note that this is the user's first time payment with us so we need at least one authorization from them.
          */
-        return new JsonResponse(['data' => $subscription]);
+        return new PaymentResource($payment, $subscription);
     }
 
-    public function enablePaystackSubscription()
+    public function enablePaystackSubscription(Payment $payment)
     {
         ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
         $subscriptionId = $userPaymentInfo->paystack_subscription_id;
@@ -75,14 +77,14 @@ class PaymentController extends Controller
         }
     }
 
-    public function managePaystackSubscription()
+    public function managePaystackSubscription(Payment $payment)
     {
-        ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
-        $subscriptionId = $userPaymentInfo->paystack_subscription_id;
+        $subscriptionId = $payment->paystack_subscription_id;
 
         try {
             $response = $this->paystackRepository->manageSubscription($subscriptionId);
-            return new JsonResponse(['data' => $response]);
+
+            return new PaymentResource($payment, $response);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }

@@ -43,26 +43,31 @@ class UserController extends Controller
 
         $validated = $request->validated();
 
-         $logo = $validated['logo'];
 
-         unset($validated['logo']);
+        if (isset($validated['logo'])) {
+            $logo = $validated['logo'];
 
-         $originalName = $logo->getClientOriginalName();
+            unset($validated['logo']);
 
-         $logoUrl = null;
-         try {
-            $path  = Storage::putFileAs('avatars', $logo, $originalName);
+            $originalName = $logo->getClientOriginalName();
 
-             $logoUrl = env('DO_CDN_SPACE_ENDPOINT').'/'.$path;
-         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
-         }
+            $logoUrl = null;
 
-         $validated['logo'] = $logoUrl;
+            try {
+                $path  = Storage::putFileAs('avatars', $logo, $originalName);
+
+                $logoUrl = env('DO_CDN_SPACE_ENDPOINT') . '/' . $path;
+            } catch (\Throwable $th) {
+                throw new ServerErrorException($th->getMessage());
+            }
+
+            $validated['logo'] = $logoUrl;
+        }
+
 
         try {
             $this->userRepository->update('id', $userId, $validated);
-        }catch(Throwable $e) {
+        } catch (Throwable $e) {
             throw new ServerErrorException($e->getMessage());
         }
 

@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone_number' => $this->phone_number,
             'bio' => $this->bio,
-            'email_verified' => $this->email_verified_at ? true : false,
+            'email_verified' => $this->hasVerifiedEmail(),
             'account_type' => $this->account_type,
             'logo' => $this->logo,
             'twitter_account' => $this->twitter_account,

@@ -33,7 +33,7 @@ class UserRepository
      * @param value - is the value of the column for the user
      * @param updatables - is an associative array of items to be updated
      */
-    public function update(string $filter, string $value, array $updatables): User
+    public function update(string $filter, string $value, array $updatables)
     {
         return User::where($filter, $value)->update($updatables);
     }

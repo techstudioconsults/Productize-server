@@ -16,7 +16,7 @@ class UpdateUserRequest extends FormRequest
     public function authorize(): bool
     {
         $user = $this->user();
-        return $user->email_verified_at ? true : false;
+        return $user->hasVerifiedEmail();
     }
 
     /**
@@ -28,7 +28,6 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'full_name' => 'string',
-            'email' => 'email|string|unique:users,email',
             'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
             'username' => 'string|unique:users,username|max:20',
             'phone_number' => 'string|unique:users,phone_number|max:14',

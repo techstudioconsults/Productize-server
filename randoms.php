@@ -85,3 +85,9 @@ echo asset('videos/video.mp3');
 // $flight = Flight::where('legs', '>', 3)->firstOr(function () {
 //     // ...
 // });
+
+// $comment = Post::find(1)->comments()
+//     ->where('title', 'foo')
+//     ->first();
+
+// $posts = Post::whereBelongsTo($user)->get();

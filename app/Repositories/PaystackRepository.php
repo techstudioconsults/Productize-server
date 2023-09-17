@@ -2,10 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Exceptions\ServerErrorException;
-use App\Models\Payment;
 use App\Models\User;
-use Error;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -200,11 +197,17 @@ class PaystackRepository
                 case 'subscription.disable':
                     $email = $data['customer']['email'];
 
-                    $update = [
-                        'account_type' => 'free'
-                    ];
+                    // $update = [
+                    //     'account_type' => 'free'
+                    // ];
 
-                    $this->userRepository->update('email', $email, $update);
+                    // $this->userRepository->update('email', $email, $update);
+
+                    /**
+                     * Experimental
+                     * yet to test
+                     */
+                    $this->userRepository->guardedUpdate($email, 'account_type', 'free');
                     break;
 
                 case 'subscription.expiring_cards':

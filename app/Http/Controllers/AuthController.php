@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\OAuthTypeEnum;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ServerErrorException;
+use App\Exceptions\TooManyRequestException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\OAuthRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
 use App\Models\User;
@@ -20,7 +25,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Password;
 use Mail;
+use SebastianBergmann\Invoker\TimeoutException;
+use Str;
 use URL;
 
 class AuthController extends Controller
@@ -149,6 +157,56 @@ class AuthController extends Controller
         Mail::to($user)->send(new EmailVerification($user));
 
         return response()->json(["msg" => "Email verification link sent on your email id"]);
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+
+        /**
+         * Implementing Laravel 10 Password reset functionality manually
+         * https://laravel.com/docs/10.x/passwords
+         */
+        $response = Password::broker()->sendResetLink(
+            $request->only('email')
+        );
+
+        if ($response == Password::RESET_LINK_SENT) {
+            return new JsonResponse(['message' => 'Password reset email sent successfully']);
+        } else if ($response == Password::INVALID_USER) {
+            throw new NotFoundException('User not found');
+        } else if ($response == Password::RESET_THROTTLED) {
+            throw new TooManyRequestException();
+        } else {
+            throw new ServerErrorException('Password reset email could not be sent');
+        }
+    }
+
+    public function ResetPassword(ResetPasswordRequest $request)
+    {
+        /**
+         * Implementing Laravel 10 Password reset functionality manually
+         * https://laravel.com/docs/10.x/passwords
+         */
+        $res = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => $password
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                // event(new PasswordReset($user));
+            }
+        );
+
+        if ($res ===  Password::PASSWORD_RESET) {
+            return new JsonResponse(['message' => "Password Reset Successful"]);
+        } else if ($res === Password::INVALID_TOKEN) {
+            throw new UnAuthorizedException('Invalid Token');
+        } else {
+            throw new BadRequestException('Password Reset Failed');
+        }
     }
 
     public function test()

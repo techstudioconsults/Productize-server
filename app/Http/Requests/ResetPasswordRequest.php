@@ -2,21 +2,19 @@
 
 namespace App\Http\Requests;
 
-use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\Rules\Password;
 
-class UpdateUserRequest extends FormRequest
+class ResetPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        $user = $this->user();
-        return $user->hasVerifiedEmail();
+        return true;
     }
 
     /**
@@ -27,25 +25,17 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'full_name' => 'string',
-            'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
-            'username' => 'string,username|max:20',
-            'phone_number' => 'string|unique:users,phone_number|max:14',
-            'bio' => 'string|max:1000',
-            'twitter_account' => 'string',
-            'facebook_account' => 'string',
-            'youtube_account' => 'string',
-            'logo' => 'image'
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()]
         ];
     }
 
+    /**
+     *  Use Validator contract to use this method
+     */
     protected function failedValidation(Validator $validator)
     {
         throw new UnprocessableException($validator->errors()->first());
-    }
-
-    protected function failedAuthorization()
-    {
-        throw new ForbiddenException('Email Address not verified');
     }
 }

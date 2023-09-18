@@ -1,4 +1,5 @@
 <x-mail::message>
+    <x-slot name="imageUrl">https://productize.nyc3.cdn.digitaloceanspaces.com/productize/logo%20circle.png</x-slot>
     <h1>Hi {{ $name }}, Welcome To Productize.
         Verify Your Email Address.</h1>
 

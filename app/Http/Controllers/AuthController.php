@@ -27,7 +27,6 @@ use Illuminate\Validation\Rules\Enum;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Password;
 use Mail;
-use SebastianBergmann\Invoker\TimeoutException;
 use Str;
 use URL;
 
@@ -207,6 +206,13 @@ class AuthController extends Controller
         } else {
             throw new BadRequestException('Password Reset Failed');
         }
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return new JsonResponse(['message' => "Logout Successful"]);
     }
 
     public function test()

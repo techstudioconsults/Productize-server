@@ -10,6 +10,7 @@ Route::group([
 ], function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
     Route::get('/oauth/redirect', [AuthController::class, 'oAuthRedirect']);
     Route::post('/oauth/callback', [AuthController::class, 'oAuthCallback']);
@@ -20,5 +21,5 @@ Route::group([
     Route::get('email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify'); // Make sure to keep this as your route name
     Route::get('email/resend', [AuthController::class, 'resendLink'])->name('verification.resend')->middleware('auth:sanctum');
 
-    Route::get('/test', [AuthController::class, 'test']);
+    // Route::get('/test', [AuthController::class, 'test']);
 });

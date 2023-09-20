@@ -25,9 +25,6 @@ jobs:
       - name: Copy env files from client config folder
         run: cp /var/www/config/.env /var/www/productize/_work/Productize-server/Productize-server/
 
-      - name: Install Packages
-        run: composer install --optimize-autoloader --no-dev
-
       - name: Clear route
         run: php artisan route:clear
 
@@ -37,8 +34,12 @@ jobs:
       - name: Clear Config
         run: php artisan config:clear
 
+      - name: Install Packages
+        run: composer install --optimize-autoloader --no-dev
+
       - name: Autoload
         run: composer dump-autoload
+
 
       - name: Generate storage link
         run: php artisan storage:link

@@ -34,8 +34,8 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        // 'redirect' => config('app.client_url').'/auth/fetching-data/google',
-        'redirect' => 'http://localhost:4200/auth/fetching-data/google'
+        'redirect' => config('app.client_url').'/auth/fetching-data/google',
+        // 'redirect' => 'http://localhost:4200/auth/fetching-data/google'
     ],
 
 ];

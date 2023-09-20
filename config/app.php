@@ -57,17 +57,19 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    'client_url' => env('CLIENT_URL', function () {
-        // Check the request host and return the appropriate URL
-        if (request()->getHost() === 'localhost') {
-            return 'http://localhost:4200';
-        } elseif (request()->getHost() === 'netlify.app') {
-            return 'https://productize.netlify.app';
-        } else {
-            // Default URL if the host doesn't match any condition
-            return 'https://productize.techstudio.academy';
-        }
-    }),
+    // 'client_url' => env('CLIENT_URL', function () {
+    //     // Check the request host and return the appropriate URL
+    //     if (request()->getHost() === 'localhost') {
+    //         return 'http://localhost:4200';
+    //     } elseif (request()->getHost() === 'netlify.app') {
+    //         return 'https://productize.netlify.app';
+    //     } else {
+    //         // Default URL if the host doesn't match any condition
+    //         return 'https://productize.techstudio.academy';
+    //     }
+    // }),
+
+    'client_url' => 'http://localhost:4200',
 
     'asset_url' => env('ASSET_URL'),
 

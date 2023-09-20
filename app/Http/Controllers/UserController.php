@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
+use App\Exceptions\UnprocessableException;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -72,6 +77,30 @@ class UserController extends Controller
         }
 
         $user = User::find($userId);
+
+        return new UserResource($user);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required',
+            'new_password' => ['required', Password::min(8)->mixedCase()->numbers()->symbols()],
+        ]);
+
+        if ($validator->fails()) {
+            throw new UnprocessableException($validator->errors()->first());
+        }
+
+        $validated = $validator->validated();
+
+        $user = Auth::user();
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            throw new BadRequestException('Incorrect Password');
+        }
+
+        $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['new_password']);
 
         return new UserResource($user);
     }

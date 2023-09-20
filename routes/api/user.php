@@ -11,6 +11,9 @@ Route::group([
     'middleware' => 'auth:sanctum'
 ], function () {
     Route::get('/me', [UserController::class, 'show']);
-    
+
     Route::post('/me', [UserController::class, 'update']);
+
+
+    Route::post('/change-password', [UserController::class, 'changePassword']);
 });

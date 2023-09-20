@@ -141,7 +141,7 @@ class AuthController extends Controller
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = env('CLIENT_URL') . '/dashboard';
+        $redirectUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/dashboard';
 
         return redirect($redirectUrl);
     }

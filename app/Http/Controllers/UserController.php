@@ -61,7 +61,7 @@ class UserController extends Controller
             try {
                 $path  = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = env('DO_CDN_SPACE_ENDPOINT') . '/' . $path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }

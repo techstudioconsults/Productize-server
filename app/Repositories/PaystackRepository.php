@@ -19,6 +19,7 @@ class PaystackRepository
     ) {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
+        $this->client_url = request()->getHttpHost();
     }
 
     private $initializeTransactionUrl = "https://api.paystack.co/transaction/initialize";
@@ -30,6 +31,8 @@ class PaystackRepository
     private $secret_key;
 
     private $premium_plan_code;
+
+    private $client_url;
 
     /**
      * Api Doc: https://paystack.com/docs/payments/webhooks/#ip-whitelisting
@@ -69,7 +72,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            "callback_url" => config('app.client_url') . '/dashboard'
+            "callback_url" => $this->client_url . '/dashboard'
         ];
 
         if ($isSubscription) {

@@ -63,6 +63,7 @@ return [
             'region' => env('DO_SPACES_REGION'),
             'bucket' => env('DO_SPACES_BUCKET'),
             'endpoint' => env('DO_SPACES_ENDPOINT', 'https://nyc3.digitaloceanspaces.com'),
+            'cdn_endpoint' => env('DO_CDN_SPACE_ENDPOINT'),
             'visibility' => 'public',
             'throw' => true,
         ],

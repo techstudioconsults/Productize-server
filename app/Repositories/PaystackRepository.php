@@ -10,10 +10,15 @@ use Illuminate\Support\Facades\Log;
 
 class PaystackRepository
 {
+
+
+
     public function __construct(
         protected PaymentRepository $paymentRepository,
-        protected UserRepository $userRepository
+        protected UserRepository $userRepository,
     ) {
+        $this->secret_key = config('payment.paystack.secret');
+        $this->premium_plan_code = config('payment.paystack.plan_code');
     }
 
     private $initializeTransactionUrl = "https://api.paystack.co/transaction/initialize";
@@ -21,6 +26,10 @@ class PaystackRepository
     private $subscriptionEndpoint = "https://api.paystack.co/subscription";
 
     private $baseUrl = "https://api.paystack.co";
+
+    private $secret_key;
+
+    private $premium_plan_code;
 
     /**
      * Api Doc: https://paystack.com/docs/payments/webhooks/#ip-whitelisting
@@ -44,7 +53,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json'
         ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
@@ -60,15 +69,15 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            "callback_url" => env('CLIENT_URL') . '/dashboard'
+            "callback_url" => config('app.client_url') . '/dashboard'
         ];
 
         if ($isSubscription) {
-            $payload['plan'] = env('PAYSTACK_PREMIUM_PLAN_CODE');
+            $payload['plan'] = $this->premium_plan_code;
         }
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . $this->secret_key,
             "Cache-Control"  => "no-cache",
             'Content-Type' => 'application/json'
         ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
@@ -84,11 +93,11 @@ class PaystackRepository
     {
         $payload = [
             "customer" => $customerId,
-            "plan" => env('STRIPE_PREMIUM_PLAN_CODE')
+            "plan" => $this->premium_plan_code
         ];
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . $this->secret_key,
             "Content-Type" => "application/json",
         ])->post($this->subscriptionEndpoint, $payload)->throw()->json();
 
@@ -100,7 +109,7 @@ class PaystackRepository
         $url = "{$this->baseUrl}/subscription/{$subscriptionId}/manage/link";
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . $this->secret_key,
         ])->get($url);
 
         $data = json_decode($response->body(), true);
@@ -117,7 +126,7 @@ class PaystackRepository
     public function fetchSubscription($subscriptionId)
     {
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
 
         if ($response->successful()) {
@@ -139,7 +148,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            "Authorization" => 'Bearer ' . $this->secret_key,
             "Cache-Control"  => "no-cache",
             'Content-Type' => 'application/json'
         ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
@@ -228,7 +237,7 @@ class PaystackRepository
 
     public function isValidPaystackWebhook($payload, $signature)
     {
-        $computedSignature = hash_hmac('sha512', $payload, env('PAYSTACK_SECRET_KEY'));
+        $computedSignature = hash_hmac('sha512', $payload, $this->secret_key);
         return $computedSignature === $signature;
     }
 }

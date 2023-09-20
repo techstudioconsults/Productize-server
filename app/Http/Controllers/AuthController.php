@@ -217,16 +217,17 @@ class AuthController extends Controller
 
     public function test()
     {
-        $user = User::find("9a1966fa-1e31-46cd-bdbd-31acbd64d27f");
-        // event(new Registered($user));
-        // return response('', 200);
+        // return config('payment.paystack.secret');
+        // $user = User::find("9a1966fa-1e31-46cd-bdbd-31acbd64d27f");
+        // // event(new Registered($user));
+        // // return response('', 200);
 
-        $url = URL::temporarySignedRoute(
-            'auth.verification.verify', // Route name
-            now()->addMinutes(60), // Expiry time
-            ['id' => $user->getKey()]
-        );
+        // $url = URL::temporarySignedRoute(
+        //     'auth.verification.verify', // Route name
+        //     now()->addMinutes(60), // Expiry time
+        //     ['id' => $user->getKey()]
+        // );
 
-        return $url;
+        // return $url;
     }
 }

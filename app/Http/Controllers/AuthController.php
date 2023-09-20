@@ -217,6 +217,8 @@ class AuthController extends Controller
 
     public function test()
     {
+        // return request()->getHost();
+        // return config('app.client_url');
         // return config('payment.paystack.secret');
         // $user = User::find("9a1966fa-1e31-46cd-bdbd-31acbd64d27f");
         // // event(new Registered($user));

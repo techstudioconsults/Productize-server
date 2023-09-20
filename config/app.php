@@ -59,9 +59,9 @@ return [
 
     'client_url' => env('CLIENT_URL', function () {
         // Check the request host and return the appropriate URL
-        if (request()->getHttpHost() === 'localhost') {
+        if (request()->getHost() === 'localhost') {
             return 'http://localhost:4200';
-        } elseif (request()->getHttpHost() === 'netlify.app') {
+        } elseif (request()->getHost() === 'netlify.app') {
             return 'https://productize.netlify.app';
         } else {
             // Default URL if the host doesn't match any condition

@@ -2,24 +2,19 @@
 
 namespace App\Repositories;
 
-use App\Exceptions\ApiException;
 use App\Models\User;
-use Error;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaystackRepository
 {
-
-
-
     public function __construct(
         protected PaymentRepository $paymentRepository,
         protected UserRepository $userRepository,
     ) {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
-        $this->client_url = request()->getSchemeAndHttpHost();
+        $this->client_url = config('app.client_url');
     }
 
     private $initializeTransactionUrl = "https://api.paystack.co/transaction/initialize";

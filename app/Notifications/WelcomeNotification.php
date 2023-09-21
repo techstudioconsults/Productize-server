@@ -24,7 +24,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
          */
         $this->afterCommit();
 
-        $this->client_url = request()->getSchemeAndHttpHost();
+        $this->client_url = config('app.client_url');
     }
 
     /**

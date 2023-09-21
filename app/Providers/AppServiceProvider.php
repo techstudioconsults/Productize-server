@@ -19,6 +19,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        /**
+         * Set client url dynamically based on the request origin.
+         */
+        $client_url = request()->header('origin') ?? 'https://productize.techstudio.academy';
+        config(['app.client_url' => $client_url]);
+        
+        config(['services.google.redirect' => $client_url.'/auth/fetching-data/google']);
     }
 }

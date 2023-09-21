@@ -26,7 +26,7 @@ class ResetPassword extends Notification
     public function __construct($token)
     {
         $this->token = $token;
-        $this->client_url = request()->getSchemeAndHttpHost();
+        $this->client_url = config('app.client_url');
     }
 
     /**
@@ -48,7 +48,7 @@ class ResetPassword extends Notification
 
         $email = $notifiable->getEmailForPasswordReset();
 
-        $resetUrl = config('app.client_url') . '/forgot-password?token=' . $this->token . '&email=' . $email;
+        $resetUrl = $this->client_url . '/forgot-password?token=' . $this->token . '&email=' . $email;
 
         $count = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire');
 

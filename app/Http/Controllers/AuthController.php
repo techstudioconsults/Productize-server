@@ -106,10 +106,9 @@ class AuthController extends Controller
             throw new BadRequestException($th->getMessage());
         }
 
-        $user = null;
+        $user = User::firstWhere('email', $oauthUser->email);
 
-        if (!Auth::attempt(['email' => $oauthUser->email])) {
-
+        if (!$user) {
             $credentials = [
                 'full_name' => $oauthUser->name,
                 'email' => $oauthUser->email,
@@ -118,6 +117,8 @@ class AuthController extends Controller
             $user = $this->userRepository->createUser($credentials);
         } else {
             // Login user
+            Auth::login($user);
+            
             $user = Auth::user();
         }
 

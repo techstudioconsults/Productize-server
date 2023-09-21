@@ -48,7 +48,7 @@ class ResetPassword extends Notification
 
         $email = $notifiable->getEmailForPasswordReset();
 
-        $resetUrl = $this->client_url . '/forgot-password?token=' . $this->token . '&email=' . $email;
+        $resetUrl = $this->client_url . '/auth/forgot-password?token=' . $this->token . '&email=' . $email;
 
         $count = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire');
 

@@ -90,4 +90,4 @@ echo asset('videos/video.mp3');
 //     ->where('title', 'foo')
 //     ->first();
 
-// $posts = Post::whereBelongsTo($user)->get();
+// $posts = Post::whereBelongsTo($user)->get(); //

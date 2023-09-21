@@ -91,3 +91,10 @@ echo asset('videos/video.mp3');
 //     ->first();
 
 // $posts = Post::whereBelongsTo($user)->get(); //
+
+/**
+ * Request helpers
+ * request()->getSchemeAndHttpHost();
+ * request()->getHost();
+ * request()->getHttpHost();
+ */

@@ -12,6 +12,8 @@ class WelcomeNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    private $client_url;
+
     /**
      * Create a new notification instance.
      */
@@ -21,6 +23,8 @@ class WelcomeNotification extends Notification implements ShouldQueue
          * Email will only be dispatched after database transaction is closed.
          */
         $this->afterCommit();
+
+        $this->client_url = request()->getSchemeAndHttpHost();
     }
 
     /**
@@ -61,7 +65,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)->markdown('mail.welcome')->subject('Welcome To Productize')->with([
-            'url' => 'https://intuneteq.tk',
+            'url' => $this->client_url,
             'message' => 'welcome'
         ]);
     }

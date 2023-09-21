@@ -18,12 +18,15 @@ class ResetPassword extends Notification
      */
     public $token;
 
+    private $client_url;
+
     /**
      * Create a new notification instance.
      */
     public function __construct($token)
     {
         $this->token = $token;
+        $this->client_url = request()->getSchemeAndHttpHost();
     }
 
     /**

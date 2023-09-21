@@ -19,7 +19,7 @@ class PaystackRepository
     ) {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
-        $this->client_url = request()->getHttpHost();
+        $this->client_url = request()->getSchemeAndHttpHost();
     }
 
     private $initializeTransactionUrl = "https://api.paystack.co/transaction/initialize";

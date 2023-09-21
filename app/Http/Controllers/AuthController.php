@@ -118,7 +118,7 @@ class AuthController extends Controller
         } else {
             // Login user
             Auth::login($user);
-            
+
             $user = Auth::user();
         }
 
@@ -142,7 +142,7 @@ class AuthController extends Controller
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/dashboard';
+        $redirectUrl = config('app.client_url') . '/dashboard';
 
         return redirect($redirectUrl);
     }

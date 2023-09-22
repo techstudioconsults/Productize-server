@@ -18,7 +18,8 @@ class UserPolicy
 
     public function verified(User $user)
     {
-        $user->hasVerifiedEmail()
+
+        return $user->hasVerifiedEmail()
             ? Response::allow()
             : throw new ForbiddenException('Email Address not verified');
     }

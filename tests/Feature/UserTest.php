@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Policies\UserPolicy;
 use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -134,24 +136,28 @@ class UserTest extends TestCase
     {
         $user = User::factory()->create([
             'password' => 'password',
+            'email_verified_at' => now(),
         ]);
 
         $user->markEmailAsVerified();
 
-        $user->save();
+        $this->assertTrue($user->hasVerifiedEmail(), true);
 
         // Generate a valid new password
         $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
 
         $response = $this->actingAs($user, 'web')
-            ->withoutExceptionHandling()
             ->postJson('/api/users/change-password', [
                 'password' => 'password',
                 'new_password' => $newPassword,
                 'new_password_confirmation' => $newPassword,
             ]);
 
-            // $response->dd();
-        $response->assertStatus(200);
+        $updatedUser = User::find($user->id);
+
+        $this->assertTrue(Hash::check($newPassword, $updatedUser->password));
+
+        $response->assertStatus(200)
+            ->assertJson(UserResource::make($updatedUser)->response()->getData(true));
     }
 }

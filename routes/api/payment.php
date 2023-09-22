@@ -18,5 +18,5 @@ Route::group([
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::post('/paystack/webhooks', [PaymentController::class, 'handlePaystackWebHook'])
-        ->withoutMiddleware(['auth:sanctum', 'can:allowed,App\Models\Payment']);
+        ->withoutMiddleware(['auth:sanctum', 'can:allowed,App\Models\Payment', 'csrf']);
 });

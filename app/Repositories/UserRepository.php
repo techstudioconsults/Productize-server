@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
+
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Log;
@@ -72,7 +74,7 @@ class UserRepository
 
         $user = User::where('email', $email)->firstOr(function () use ($email, $column, $value) {
             Log::critical('Guarded update on user failed', ['email' => $email, $column => $value]);
-            abort(500);
+            throw new NotFoundException("user with '$email' not found");
         });
 
         $user->$column = $value;

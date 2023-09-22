@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\UnprocessableException;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
@@ -10,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class UserTest extends TestCase
@@ -64,5 +67,42 @@ class UserTest extends TestCase
         $this->assertModelExists($updatedUser);
         $this->assertEquals('Tobi Olanitori', $updatedUser->full_name);
         $this->assertInstanceOf(User::class, $updatedUser);
+    }
+
+    public function test_update_repository_no_filter_in_schema()
+    {
+        $userRepository = new UserRepository();
+
+        // It should throw error if filter column is not in the schema.
+        $this->expectException(UnprocessableException::class);
+
+        $user = User::factory()->create();
+
+        $userRepository->update('emails', $user->email, ['full_name' => 'Tobi Olanitori']);
+    }
+
+    public function test_guarded_update_repository()
+    {
+        $userRepository = new UserRepository();
+
+        $user = User::factory()->create();
+
+        $updatedUser = $userRepository->guardedUpdate($user->email, 'password', 'password123');
+
+        $this->assertTrue(Hash::check('password123', $updatedUser->password));
+        $this->assertEquals($updatedUser->email, $user->email);
+    }
+
+    public function test_guarded_update_user_not_found()
+    {
+        $userRepository = new UserRepository();
+
+        // Mock the critical log method so it doesn't actually log during the test.
+        Log::shouldReceive('critical')->andReturnNull();
+
+        // It should throw error if filter column is not in the schema.
+        $this->expectException(NotFoundException::class);
+
+        $userRepository->guardedUpdate('tobiolanitori@gmail.com', 'password', 'password123');
     }
 }

@@ -9,13 +9,11 @@ use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Policies\UserPolicy;
 use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
@@ -159,5 +157,67 @@ class UserTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson(UserResource::make($updatedUser)->response()->getData(true));
+    }
+
+    public function test_change_password_user_email_unverified()
+    {
+        $this->expectException(ForbiddenException::class);
+
+        $user = User::factory()->create([
+            'password' => 'password',
+            'email_verified_at' => null
+        ]);
+
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+
+        $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/change-password', [
+                'password' => 'password',
+                'new_password' => $newPassword,
+                'new_password_confirmation' => $newPassword,
+            ]);
+    }
+
+    public function test_change_password_incomplete_payload()
+    {
+        $this->expectException(UnprocessableException::class);
+
+        $user = User::factory()->create([
+            'password' => 'password',
+        ]);
+
+        $user->markEmailAsVerified();
+
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+
+        $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/change-password', [
+                'password' => 'password',
+                'new_password' => $newPassword,
+            ]);
+    }
+
+    public function test_change_password_incorrect_password()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $user = User::factory()->create([
+            'password' => 'password',
+        ]);
+
+        $user->markEmailAsVerified();
+
+        // Generate a valid new password
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+
+        $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/change-password', [
+                'password' => 'wrong password',
+                'new_password' => $newPassword,
+                'new_password_confirmation' => $newPassword,
+            ]);
     }
 }

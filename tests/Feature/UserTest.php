@@ -4,13 +4,16 @@ namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
@@ -18,6 +21,7 @@ use Tests\TestCase;
 class UserTest extends TestCase
 {
     use RefreshDatabase;
+    use WithFaker;
 
     /**
      * It should create a new user
@@ -104,5 +108,50 @@ class UserTest extends TestCase
         $this->expectException(NotFoundException::class);
 
         $userRepository->guardedUpdate('tobiolanitori@gmail.com', 'password', 'password123');
+    }
+
+    public function test_user_controller_show()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'web')->get('/api/users/me');
+
+        $response
+            ->assertStatus(200)
+            ->assertJson(UserResource::make($user)->response()->getData(true));
+    }
+
+    public function test_user_controller_show_unauthenticated()
+    {
+        $this->expectException(UnAuthorizedException::class);
+
+        $this->withoutExceptionHandling()
+            ->withoutDeprecationHandling()
+            ->get('/api/users/me');
+    }
+
+    public function test_change_password()
+    {
+        $user = User::factory()->create([
+            'password' => 'password',
+        ]);
+
+        $user->markEmailAsVerified();
+
+        $user->save();
+
+        // Generate a valid new password
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+
+        $response = $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/change-password', [
+                'password' => 'password',
+                'new_password' => $newPassword,
+                'new_password_confirmation' => $newPassword,
+            ]);
+
+            // $response->dd();
+        $response->assertStatus(200);
     }
 }

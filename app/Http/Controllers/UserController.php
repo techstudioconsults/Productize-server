@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
-use App\Models\User;
 use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Support\Facades\Hash;
@@ -71,14 +71,12 @@ class UserController extends Controller
 
 
         try {
-            $this->userRepository->update('id', $userId, $validated);
+            $user = $this->userRepository->update('id', $userId, $validated);
+
+            return new UserResource($user);
         } catch (Throwable $e) {
-            throw new ServerErrorException($e->getMessage());
+            throw new ApiException($e->getMessage(), $e->getCode());
         }
-
-        $user = User::find($userId);
-
-        return new UserResource($user);
     }
 
     public function changePassword(Request $request)

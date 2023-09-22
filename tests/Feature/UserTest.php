@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
+use App\Models\User;
 use App\Repositories\UserRepository;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
@@ -12,18 +14,12 @@ use Tests\TestCase;
 
 class UserTest extends TestCase
 {
-    // create a user
-    // try to create a user without email and throw a BAD exception
-    // mock register event
-    //
-
-
     use RefreshDatabase;
 
     /**
      * It should create a new user
      */
-    public function test_create(): void
+    public function test_create_repository(): void
     {
         Event::fake();
 
@@ -38,14 +34,14 @@ class UserTest extends TestCase
         $user = $userRepository->createUser($credentials);
 
         $this->assertModelExists($user);
-        $this->assertNotNull($user);
+        $this->assertInstanceOf(User::class, $user);
         $this->assertEquals('Tobi Olanitori', $user->full_name);
         $this->assertEquals('tobiolanitori@gmail.com', $user->email);
         $this->assertTrue(Hash::check('password123', $user->password));
         Event::assertDispatched(Registered::class);
     }
 
-    public function test_create_with_no_email()
+    public function test_create_with_no_email_repository()
     {
         $this->expectException(BadRequestException::class);
 
@@ -55,5 +51,18 @@ class UserTest extends TestCase
             'full_name' => 'Tobi Olanitori',
             'password' => 'password123'
         ]);
+    }
+
+    public function test_update_repository()
+    {
+        $userRepository = new UserRepository();
+
+        $user = User::factory()->create();
+
+        $updatedUser = $userRepository->update('email', $user->email, ['full_name' => 'Tobi Olanitori']);
+
+        $this->assertModelExists($updatedUser);
+        $this->assertEquals('Tobi Olanitori', $updatedUser->full_name);
+        $this->assertInstanceOf(User::class, $updatedUser);
     }
 }

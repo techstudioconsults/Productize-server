@@ -29,12 +29,12 @@ class UpdateUserRequest extends FormRequest
         return [
             'full_name' => 'string',
             'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
-            'username' => 'string,username|max:20',
+            'username' => 'string|max:20',
             'phone_number' => 'string|unique:users,phone_number|max:14',
             'bio' => 'string|max:1000',
-            'twitter_account' => 'string',
-            'facebook_account' => 'string',
-            'youtube_account' => 'string',
+            'twitter_account' => 'string|url',
+            'facebook_account' => 'string|url',
+            'youtube_account' => 'string|url',
             'logo' => 'image'
         ];
     }

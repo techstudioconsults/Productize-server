@@ -13,9 +13,11 @@ use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class UserTest extends TestCase
@@ -219,5 +221,36 @@ class UserTest extends TestCase
                 'new_password' => $newPassword,
                 'new_password_confirmation' => $newPassword,
             ]);
+    }
+
+    public function test_controller_update()
+    {
+        $user = User::factory()->create();
+
+        $user->markEmailAsVerified();
+
+        $this->assertTrue($user->hasVerifiedEmail(), true);
+
+        // Mock the critical log method so it doesn't actually log during the test.
+        Log::shouldReceive('error')->andReturnNull();
+
+        Storage::fake('logo');
+
+        $logo = UploadedFile::fake()->image('avatar.jpg');
+
+        $response = $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->post('/api/users/me', [
+                'logo' => $logo,
+                'bio' => 'this is a bio',
+                'username' => 'updated'
+            ]);
+
+        Storage::disk('public')->assertExists($logo->hashName());
+
+        $updatedUser = User::find($user->id);
+
+        $response->assertStatus(200)
+            ->assertJson(UserResource::make($updatedUser)->response()->getData(true));
     }
 }

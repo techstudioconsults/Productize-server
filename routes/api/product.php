@@ -14,6 +14,8 @@ Route::group([
     ]
 ], function () {
     Route::post('/', [ProductController::class, 'store']);
-    
+
     Route::get('/', [ProductController::class, 'index']);
+
+    Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
 });

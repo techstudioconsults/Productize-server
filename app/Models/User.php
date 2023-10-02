@@ -73,6 +73,11 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasOne(Payment::class);
     }
 
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function isPremium()
     {
         return $this->account_type === 'premium' ? true : false;

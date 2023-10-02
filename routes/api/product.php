@@ -7,7 +7,11 @@ Route::group([
     'as' => 'product.',
     'namespace' => "\App\Http\Controllers",
     'prefix' => 'products',
-    'middleware' => ['auth:sanctum', 'can:allowed,App\Models\Product']
+    'middleware' => [
+        'auth:sanctum',
+        'can:allowed,App\Models\Product',
+        'can:premium,App\Models\Product',
+    ]
 ], function () {
     Route::post('/', [UserController::class, 'store']);
 });

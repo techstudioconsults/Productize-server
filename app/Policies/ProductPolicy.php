@@ -15,6 +15,13 @@ class ProductPolicy
             ? Response::allow()
             : throw new ForbiddenException('Email Address Not Verified');
     }
+
+    public function premium(User $user)
+    {
+        return $user->isPremium()
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name.' is not a subscribed user');
+    }
     /**
      * Determine whether the user can view any models.
      */

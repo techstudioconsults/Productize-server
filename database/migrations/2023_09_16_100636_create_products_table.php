@@ -18,8 +18,13 @@ return new class extends Migration
             $table->enum('product_type', ['digital_product', 'print_on_demand', 'video_streaming', 'subscription']);
             $table->string('description');
             $table->string('data');
-            $table->string('cover_photo');
+            $table->jsonb('cover_photos');
             $table->string('thumbnail');
+            $table->jsonb('highlights');
+            $table->json('tags');
+            $table->boolean('stock_count');
+            $table->boolean('choose_quantity');
+            $table->boolean('show_sales_count');
             $table->softDeletes('deleted_at', 0);
             $table->timestamps();
         });

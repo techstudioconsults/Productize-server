@@ -27,6 +27,7 @@ class Product extends Model
         'highlights' => AsArrayObject::class,
         'tags' => AsArrayObject::class,
         'cover_photos' => AsArrayObject::class,
+        'data' => AsArrayObject::class,
     ];
 
     protected $guarded = [

@@ -12,19 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignIdFor(\App\Models\User::class, 'user_id');
             $table->string('title');
             $table->integer('price');
             $table->enum('product_type', ['digital_product', 'print_on_demand', 'video_streaming', 'subscription']);
             $table->string('description');
-            $table->string('data');
+            $table->json('data');
             $table->jsonb('cover_photos');
             $table->string('thumbnail');
             $table->jsonb('highlights');
             $table->json('tags');
-            $table->boolean('stock_count');
-            $table->boolean('choose_quantity');
-            $table->boolean('show_sales_count');
+            $table->boolean('stock_count')->default(false);
+            $table->boolean('choose_quantity')->default(false);
+            $table->boolean('show_sales_count')->default(false);
             $table->softDeletes('deleted_at', 0);
             $table->timestamps();
         });

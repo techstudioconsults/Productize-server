@@ -20,32 +20,18 @@ class ProductPolicy
     {
         return $user->isPremium()
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name.' is not a subscribed user');
+            : throw new ForbiddenException($user->full_name . ' is not a subscribed user');
     }
-    /**
-     * Determine whether the user can view any models.
-     */
-    // public function viewAny(User $user): bool
-    // {
-    //     //
-    // }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    // public function view(User $user, Product $product): bool
-    // {
-    //     //
-    // }
-
-    /**
-     * Determine whether the user can create models.
-     */
+    public function view(User $user, Product $product)
+    {
+        return $user->id === $product->user_id
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to request this resource');
+    }
+    
     public function create(User $user)
     {
-        // return $user->hasVerifiedEmail()
-        //     ? Response::allow()
-        //     : throw new ForbiddenException('Email Address not verified');
         return $user->hasVerifiedEmail()
             ? Response::allow()
             : Response::deny('Email Address not verified', 401);

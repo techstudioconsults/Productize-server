@@ -14,4 +14,6 @@ Route::group([
     ]
 ], function () {
     Route::post('/', [ProductController::class, 'store']);
+    
+    Route::get('/', [ProductController::class, 'index']);
 });

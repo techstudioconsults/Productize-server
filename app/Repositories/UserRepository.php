@@ -29,6 +29,8 @@ class UserRepository
             $user->$column = $value;
         }
 
+        $user->account_type = 'free';
+
         $user->save();
 
         event(new Registered($user));

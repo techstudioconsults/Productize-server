@@ -20,7 +20,7 @@ jobs:
       - name: Setup Enviroment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.1"
+          php-version: "8.2"
 
       # - name: Copy env files from client config folder
       #   run: cp /var/www/config/.env /var/www/productize/_work/Productize-server/Productize-server/

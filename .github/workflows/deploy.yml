@@ -53,5 +53,5 @@ jobs:
 
       - name: Give permissions
         run:  |
-         chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/storage
-         chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache
+         sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/storage
+         sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache

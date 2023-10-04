@@ -58,5 +58,5 @@ jobs:
         run:  |
          sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/storage
          sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache
-         sudo chown -R www-data:www-data /var/www/productize/_work/Productize-server/Productize-server/storage/framework/views
          sudo chmod -R 775 /var/www/productize/_work/Productize-server/Productize-server/storage
+         sudo chmod -R 775 /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache

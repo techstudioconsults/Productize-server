@@ -58,6 +58,19 @@ echo asset('videos/video.mp3');
  * CICD
  * php artisan queue:restart
  * Install the server https://laravel.com/docs/10.x/queues#supervisor-configuration
+
+ [program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /home/forge/app.com/artisan queue:work sqs --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=forge
+numprocs=8
+redirect_stderr=true
+stdout_logfile=/home/forge/app.com/worker.log
+stopwaitsecs=3600
  */
 
 // php artisan queue:work

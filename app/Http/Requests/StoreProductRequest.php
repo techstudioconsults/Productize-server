@@ -47,7 +47,6 @@ class StoreProductRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        var_dump('why');
         throw new UnprocessableException($validator->errors()->first());
     }
 }

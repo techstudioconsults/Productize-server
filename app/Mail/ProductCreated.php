@@ -2,34 +2,27 @@
 
 namespace App\Mail;
 
-use App\Models\User;
+use App\Models\Product;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Throwable;
-use URL;
 
-class EmailVerification extends Mailable
+class ProductCreated extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public $name; // Add a public property to store the user's namephp artisan make:mail OrderShipped
+    private $client_url;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(public User $user)
-    {
-        // Initialize the $name property here.
-        $this->name = $user->full_name;
-
-        /**
-         * Email will only be dispatched after the database transaction is closed.
-         */
-        $this->afterCommit();
+    public function __construct(
+        public Product $product
+    ) {
+        $this->client_url = config('app.client_url');
     }
 
     /**
@@ -53,14 +46,13 @@ class EmailVerification extends Mailable
      */
     public $backoff = 3;
 
-
     /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Email Verification',
+            subject: 'Product Created',
         );
     }
 
@@ -69,19 +61,11 @@ class EmailVerification extends Mailable
      */
     public function content(): Content
     {
-        $url = URL::temporarySignedRoute(
-            'auth.verification.verify',
-            now()->addMinutes(15),
-            ['id' => $this->user->getKey()]
-        );
-
-        $name = $this->user->full_name;
 
         return new Content(
-            markdown: 'mail.email-verification',
+            markdown: 'mail.product-created',
             with: [
-                'url' => $url,
-                'name' => $name
+                'thumbnail' => $this->product->thumbnail,
             ],
         );
     }
@@ -94,13 +78,5 @@ class EmailVerification extends Mailable
     public function attachments(): array
     {
         return [];
-    }
-
-    /**
-     * Handle a job failure.
-     */
-    public function failed(Throwable $exception): void
-    {
-        // Send user notification of failure, etc...
     }
 }

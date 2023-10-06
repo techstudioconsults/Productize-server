@@ -2,12 +2,27 @@
 
 namespace App\Repositories;
 
+use App\Events\Products;
 use App\Models\Product;
 use Illuminate\Support\Facades\Storage;
 
 class ProductRepository
 {
-    public function create(array $credentials, mixed $thumbnail, mixed $data, mixed $cover_photos)
+    /**
+     * @Intuneteq
+     *
+     * @param credentials {array} - All products properties except uploadables e.g thumbanails, cover photos etc.
+     * @param thumbnail {mixed} - Uploaded thumbnail file object. Must be an Image
+     * @param data {mixed} - uploaded Product file object
+     * @param cover_photos {array} - Array of image file objects. Must be an array of Image.
+     *
+     * @uses App\Events\Products
+     * 
+     * @return Product
+     *
+     * For more details, see {@link \App\Http\Requests\StoreProductRequest}.
+     */
+    public function create(array $credentials, mixed $thumbnail, mixed $data, array $cover_photos)
     {
         $thumbnail = $this->uploadThumbnail($thumbnail);
 
@@ -19,7 +34,11 @@ class ProductRepository
         $credentials['cover_photos'] = $cover_photos;
         $credentials['thumbnail'] = $thumbnail;
 
-        return Product::create($credentials);
+        $product = Product::create($credentials);
+
+        event(new Products($product));
+
+        return $product;
     }
 
     private function uploadData(mixed $data)

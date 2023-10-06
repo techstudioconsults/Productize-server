@@ -28,7 +28,9 @@ class ProductController extends Controller
 
         $products = Product::where('user_id', $user->id);
 
-        // Dashboard filter by status
+        /**
+         * Filter products by Product status
+         */
         if ($request->status) {
             $status = $request->status;
 
@@ -42,6 +44,30 @@ class ProductController extends Controller
             }
 
             $products->where('status', $request->status);
+        }
+
+        /**
+         * Filter by date of creation
+         * start date reps the date to start filtering from
+         * end_date reps the date to end the filtering
+         */
+        if ($request->start_date && $request->end_date) {
+            $start_date = $request->start_date;
+            $end_date = $request->end_date;
+
+            $validator = Validator::make([
+                'start_date' => $start_date,
+                'end_date' => $end_date
+            ], [
+                'start_date' => 'date',
+                'end_date' => 'date'
+            ]);
+
+            if ($validator->fails()) {
+                throw new UnprocessableException($validator->errors()->first());
+            }
+
+            $products->whereBetween('created_at', [$start_date, $end_date]);
         }
 
         return ProductResource::collection($products->paginate(10));

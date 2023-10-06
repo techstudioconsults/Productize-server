@@ -52,9 +52,19 @@ class ProductRepository
         return Product::where('user_id', $user->id)->count();
     }
 
+    public function getTotalSales(User $user): int
+    {
+        return $this->userRepository->getTotalSales($user);
+    }
+
     public function getUserTotalRevenues(User $user): int
     {
         return $this->userRepository->getTotalRevenues($user);
+    }
+
+    public function getTotalCustomers(User $user): int
+    {
+        return $this->userRepository->getTotalCustomers($user);
     }
 
     private function uploadData(mixed $data)

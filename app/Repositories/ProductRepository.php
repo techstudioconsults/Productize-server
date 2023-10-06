@@ -2,16 +2,71 @@
 
 namespace App\Repositories;
 
+use App\Enums\ProductStatusEnum;
 use App\Events\Products;
+use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Models\User;
+use DateTime;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Enum;
 
 class ProductRepository
 {
     public function __construct(
         public UserRepository $userRepository
     ) {
+    }
+
+    public function getUserProducts(
+        User $user,
+        ?ProductStatusEnum $status = null,
+        ?string $start_date = null,
+        ?string $end_date = null
+    )
+    {
+        $products = Product::where('user_id', $user->id);
+
+        /**
+         * Filter products by Product status
+         */
+        if ($status) {
+            // Validate status
+            $validator = Validator::make(['status' => $status], [
+                'status' => ['required', new Enum(ProductStatusEnum::class)]
+            ]);
+
+            if ($validator->fails()) {
+                throw new UnprocessableException($validator->errors()->first());
+            }
+
+            $products->where('status', $status);
+        }
+
+        /**
+         * Filter by date of creation
+         * start date reps the date to start filtering from
+         * end_date reps the date to end the filtering
+         */
+        if ($start_date && $end_date) {
+
+            $validator = Validator::make([
+                'start_date' => $start_date,
+                'end_date' => $end_date
+            ], [
+                'start_date' => 'date',
+                'end_date' => 'date'
+            ]);
+
+            if ($validator->fails()) {
+                throw new UnprocessableException($validator->errors()->first());
+            }
+
+            $products->whereBetween('created_at', [$start_date, $end_date]);
+        }
+
+        return $products;
     }
 
     /**

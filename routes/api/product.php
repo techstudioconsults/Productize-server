@@ -19,5 +19,9 @@ Route::group([
 
     Route::get('/analytics', [ProductController::class, 'analytics']);
 
+    Route::get('/download', [ProductController::class, 'downloadList']);
+
     Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
+
+
 });

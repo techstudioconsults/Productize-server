@@ -12,6 +12,7 @@ use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 
@@ -26,49 +27,12 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $products = Product::where('user_id', $user->id);
-
-        /**
-         * Filter products by Product status
-         */
-        if ($request->status) {
-            $status = $request->status;
-
-            // Validate status
-            $validator = Validator::make(['status' => $status], [
-                'status' => ['required', new Enum(ProductStatusEnum::class)]
-            ]);
-
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
-
-            $products->where('status', $request->status);
-        }
-
-        /**
-         * Filter by date of creation
-         * start date reps the date to start filtering from
-         * end_date reps the date to end the filtering
-         */
-        if ($request->start_date && $request->end_date) {
-            $start_date = $request->start_date;
-            $end_date = $request->end_date;
-
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
-
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
-
-            $products->whereBetween('created_at', [$start_date, $end_date]);
-        }
+        $products = $this->productRepository->getUserProducts(
+            $user,
+            $request->status,
+            $request->start_date,
+            $request->end_date
+        );
 
         return ProductResource::collection($products->paginate(10));
     }
@@ -135,6 +99,60 @@ class ProductController extends Controller
 
         return new JsonResponse(['data' => $result]);
     }
+
+
+    public function downloadList(Request $request)
+    {
+        $user = Auth::user();
+
+        $products = $this->productRepository->getUserProducts(
+            $user,
+            $request->status,
+            $request->start_date,
+            $request->end_date
+        )->get();
+
+        $fileName = 'products.csv';
+
+        $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
+
+        $csvData = [];
+        $csvData[] = $columns;
+
+        foreach ($products as $product) {
+            $row['Title']  = $product->title;
+            $row['Price']  = $product->price;
+            $row['Sales']  = 30;
+            $row['Type']   = $product->product_type;
+            $row['Status'] = $product->status;
+
+            $csvData[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
+        }
+
+        $csvContent = '';
+        foreach ($csvData as $csvRow) {
+            $csvContent .= implode(',', $csvRow) . "\n";
+        }
+
+        $filePath = 'csv/' . $fileName;
+
+        // Store the CSV content in the storage/app/csv directory
+        Storage::disk('local')->put($filePath, $csvContent);
+
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        // Return the response with the file from storage
+        return response()->stream(function () use ($filePath) {
+            readfile(storage_path('app/' . $filePath));
+        }, 200, $headers);
+    }
+
 
 
     public function update(UpdateProductRequest $request, Product $product)

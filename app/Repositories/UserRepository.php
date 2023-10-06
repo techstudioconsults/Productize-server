@@ -84,4 +84,9 @@ class UserRepository
 
         return $user;
     }
+
+    public function getTotalRevenues(User $user): int
+    {
+        return $user->products->sum('price');
+    }
 }

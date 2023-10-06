@@ -4,10 +4,16 @@ namespace App\Repositories;
 
 use App\Events\Products;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
 class ProductRepository
 {
+    public function __construct(
+        public UserRepository $userRepository
+    ) {
+    }
+
     /**
      * @Intuneteq
      *
@@ -17,7 +23,7 @@ class ProductRepository
      * @param cover_photos {array} - Array of image file objects. Must be an array of Image.
      *
      * @uses App\Events\Products
-     * 
+     *
      * @return Product
      *
      * For more details, see {@link \App\Http\Requests\StoreProductRequest}.
@@ -39,6 +45,16 @@ class ProductRepository
         event(new Products($product));
 
         return $product;
+    }
+
+    public function getTotalProductCountPerUser(User $user): int
+    {
+        return Product::where('user_id', $user->id)->count();
+    }
+
+    public function getUserTotalRevenues(User $user): int
+    {
+        return $this->userRepository->getTotalRevenues($user);
     }
 
     private function uploadData(mixed $data)

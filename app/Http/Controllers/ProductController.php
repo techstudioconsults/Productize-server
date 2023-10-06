@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -58,6 +59,28 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         return new ProductResource($product);
+    }
+
+    /**
+     * Endpoint returns User Dashboard product Analytic numbers
+     * @return
+     */
+    public function analytics()
+    {
+        $user = Auth::user();
+
+        $total_products = $this->productRepository->getTotalProductCountPerUser($user);
+
+        $total_revenues = $this->productRepository->getUserTotalRevenues($user);
+
+        $result = [
+            'total_products' => $total_products,
+            'total_sales' => 20,
+            'total_customers' => 50,
+            'total_revenues' => $total_revenues
+        ];
+
+        return new JsonResponse(['data' => $result]);
     }
 
 

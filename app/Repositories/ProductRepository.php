@@ -122,6 +122,18 @@ class ProductRepository
         return $this->userRepository->getTotalCustomers($user);
     }
 
+    public function update(Product $product, array $updatables)
+    {
+
+        foreach ($updatables as $column => $value) {
+            $product->$column = $value;
+        }
+
+        $product->save();
+
+        return $product;
+    }
+
     private function uploadData(mixed $data)
     {
         $uploadedData = [];

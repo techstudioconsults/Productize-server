@@ -4,9 +4,9 @@ namespace App\Exceptions;
 
 class ForbiddenException extends ApiException
 {
-    public function __construct(string $message = "Forbidden", int $code = 403)
+    public function __construct(string $message = "Forbidden")
     {
         $this->message = $message;
-        $this->code = $code;
+        $this->code = 403;
     }
 }

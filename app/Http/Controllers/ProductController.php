@@ -6,6 +6,7 @@ use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Http\Requests\UpdateProductStatusRequest;
 use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
@@ -187,11 +188,18 @@ class ProductController extends Controller
         }
     }
 
-
-
     public function update(UpdateProductRequest $request, Product $product)
     {
         //
+    }
+
+    public function updateStatus(UpdateProductStatusRequest $request, Product $product)
+    {
+        $validated = $request->validated();
+
+        $product = $this->productRepository->update($product, $validated);
+
+        return new ProductResource($product);
     }
 
 

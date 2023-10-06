@@ -23,5 +23,5 @@ Route::group([
 
     Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
 
-
+    Route::patch('/{product}/status', [ProductController::class, 'updateStatus'])->middleware('can:update,product');
 });

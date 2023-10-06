@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ProductStatusEnum;
 use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
@@ -13,8 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Enum;
+use PDF;
 
 class ProductController extends Controller
 {
@@ -23,6 +21,11 @@ class ProductController extends Controller
     ) {
     }
 
+    /**
+     * @param status - Request query of enum ProductStatusEnum. Used to filter products by status
+     * @param start_date - Request query of type Date. Used aslong with end_date to filter range by date.
+     * @param end_date - Request query of type Date. Used aslong with start_date to filter range by date.
+     */
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -101,6 +104,12 @@ class ProductController extends Controller
     }
 
 
+    /**
+     * @param status - Request query of enum ProductStatusEnum. Used to filter products by status
+     * @param start_date - Request query of type Date. Used aslong with end_date to filter range by date.
+     * @param end_date - Request query of type Date. Used aslong with start_date to filter range by date.
+     * @param format - Request of type csv | pdf. Used to filter download to either csv or pdf.
+     */
     public function downloadList(Request $request)
     {
         $user = Auth::user();
@@ -112,45 +121,70 @@ class ProductController extends Controller
             $request->end_date
         )->get();
 
-        $fileName = 'products.csv';
+        if ($request->format === 'csv') {
 
-        $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
+            $fileName = 'products.csv';
 
-        $csvData = [];
-        $csvData[] = $columns;
+            $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
 
-        foreach ($products as $product) {
-            $row['Title']  = $product->title;
-            $row['Price']  = $product->price;
-            $row['Sales']  = 30;
-            $row['Type']   = $product->product_type;
-            $row['Status'] = $product->status;
+            $csvData = [];
+            $csvData[] = $columns;
 
-            $csvData[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
+            foreach ($products as $product) {
+                $row['Title']  = $product->title;
+                $row['Price']  = $product->price;
+                $row['Sales']  = 30;
+                $row['Type']   = $product->product_type;
+                $row['Status'] = $product->status;
+
+                $csvData[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
+            }
+
+            $csvContent = '';
+            foreach ($csvData as $csvRow) {
+                $csvContent .= implode(',', $csvRow) . "\n";
+            }
+
+            $filePath = 'csv/' . $fileName;
+
+            // Store the CSV content in the storage/app/csv directory
+            Storage::disk('local')->put($filePath, $csvContent);
+
+            $headers = array(
+                "Content-type"        => "text/csv",
+                "Content-Disposition" => "attachment; filename=$fileName",
+                "Pragma"              => "no-cache",
+                "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+                "Expires"             => "0"
+            );
+
+            // Return the response with the file from storage
+            return response()->stream(function () use ($filePath) {
+                readfile(storage_path('app/' . $filePath));
+            }, 200, $headers);
+        } else if ($request->format === 'pdf') {
+
+            $data = [];
+            foreach ($products as $product) {
+                $row['Title']  = $product->title;
+                $row['Price']  = $product->price;
+                $row['Sales']  = 30;
+                $row['Type']   = $product->product_type;
+                $row['Status'] = $product->status;
+
+                $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
+            }
+
+            $pdfData = [
+                'title' => 'What do we have here'
+            ];
+
+            $pdf = PDF::loadView('products-pdf', $pdfData);
+
+            return $pdf->download('products.pdf');
+        } else {
+            throw new UnprocessableException('Invalid File Format');
         }
-
-        $csvContent = '';
-        foreach ($csvData as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
-        }
-
-        $filePath = 'csv/' . $fileName;
-
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
-
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
-
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
-        }, 200, $headers);
     }
 
 

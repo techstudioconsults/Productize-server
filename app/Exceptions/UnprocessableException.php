@@ -4,9 +4,9 @@ namespace App\Exceptions;
 
 class UnprocessableException extends ApiException
 {
-    public function __construct(string $message = "", int $code = 422)
+    public function __construct(string $message = "")
     {
         $this->message = $message;
-        $this->code = $code;
+        $this->code = 422;
     }
 }

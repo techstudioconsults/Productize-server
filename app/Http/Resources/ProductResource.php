@@ -29,6 +29,7 @@ class ProductResource extends JsonResource
             'stock_count' => (bool) $this->stock_count,
             'choose_quantity' => (bool) $this->choose_quantity,
             'show_sales_count' => (bool) $this->show_sales_count,
+            'status' => $this->status ?? 'draft',
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

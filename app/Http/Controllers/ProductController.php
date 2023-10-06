@@ -213,7 +213,7 @@ class ProductController extends Controller
     }
 
     /**
-     * @see \APP\Providers\RouteServiceProvider
+     * @see \App\Providers\RouteServiceProvider
      * I had to bind the product to the route so laravel could inject the soft deleted model into the controller
      * function.
      * @see https://laracasts.com/discuss/channels/laravel/route-model-binding-with-soft-deleted-model?page=1&replyId=379334

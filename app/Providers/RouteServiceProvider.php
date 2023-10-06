@@ -38,6 +38,9 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/web.php'));
         });
 
+        /**
+         * @see restore method in \App\Http\Controllers\ProductController
+         */
         Route::bind('product', function ($product) {
             return Product::withTrashed()->find($product);
         });

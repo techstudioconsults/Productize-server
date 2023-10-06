@@ -3,6 +3,9 @@
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * @see \App\Policies\ProductPolicy for Authorization middleware
+ */
 Route::group([
     'as' => 'product.',
     'namespace' => "\App\Http\Controllers",

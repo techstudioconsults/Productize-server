@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProductStatusEnum;
+use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Enum;
 
 class ProductController extends Controller
 {
@@ -17,13 +22,29 @@ class ProductController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        $products = Product::where('user_id', $user->id)->get();
+        $products = Product::where('user_id', $user->id);
 
-        return ProductResource::collection($products);
+        // Dashboard filter by status
+        if ($request->status) {
+            $status = $request->status;
+
+            // Validate status
+            $validator = Validator::make(['status' => $status], [
+                'status' => ['required', new Enum(ProductStatusEnum::class)]
+            ]);
+
+            if ($validator->fails()) {
+                throw new UnprocessableException($validator->errors()->first());
+            }
+
+            $products->where('status', $request->status);
+        }
+
+        return ProductResource::collection($products->paginate(10));
     }
 
 

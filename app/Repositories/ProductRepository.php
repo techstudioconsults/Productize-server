@@ -21,17 +21,18 @@ class ProductRepository
 
     public function getUserProducts(
         User $user,
-        ?ProductStatusEnum $status = null,
+        ?string $status = null,
         ?string $start_date = null,
         ?string $end_date = null
-    )
-    {
+    ) {
         $products = Product::where('user_id', $user->id);
 
         /**
          * Filter products by Product status
          */
-        if ($status) {
+        if ($status && $status === 'deleted') {
+            $products->withTrashed();
+        } else if ($status && $status !== 'deleted') {
             // Validate status
             $validator = Validator::make(['status' => $status], [
                 'status' => ['required', new Enum(ProductStatusEnum::class)]

@@ -44,6 +44,25 @@ class ProductPolicy
             : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to update this resource');
     }
 
+    public function delete(User $user, Product $product)
+    {
+        return $user->id === $product->user_id
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to delete this resource');
+    }
+
+    public function restore(User $user, Product $product)
+    {
+        if (!$user->id === $product->user_id) {
+            throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to restore this resource');
+        }
+
+        if (!$product->trashed()) {
+            throw new ForbiddenException("The requested product has a $product->status status");
+        }
+        return Response::allow();
+    }
+
     /**
      * Determine whether the user can update the model.
      */
@@ -55,10 +74,7 @@ class ProductPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    // public function delete(User $user, Product $product): bool
-    // {
-    //     //
-    // }
+
 
     /**
      * Determine whether the user can restore the model.

@@ -23,5 +23,9 @@ Route::group([
 
     Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
 
+    Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
+
     Route::patch('/{product}/status', [ProductController::class, 'updateStatus'])->middleware('can:update,product');
+
+    Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
 });

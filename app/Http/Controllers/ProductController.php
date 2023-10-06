@@ -203,8 +203,32 @@ class ProductController extends Controller
     }
 
 
-    public function destroy(Product $product)
+    public function delete(Product $product)
     {
-        //
+        $product->status = 'draft';
+        $product->save();
+        $product->delete();
+
+        return new ProductResource($product);
+    }
+
+    /**
+     * @see \APP\Providers\RouteServiceProvider
+     * I had to bind the product to the route so laravel could inject the soft deleted model into the controller
+     * function.
+     * @see https://laracasts.com/discuss/channels/laravel/route-model-binding-with-soft-deleted-model?page=1&replyId=379334
+     */
+    public function restore(Product $product)
+    {
+        $product->restore();
+
+        return new ProductResource($product);
+    }
+
+    public function forceDelete(Product $product)
+    {
+        $product->forceDelete();
+
+        return response('product is permanently deleted');
     }
 }

@@ -188,6 +188,16 @@ class ProductController extends Controller
         }
     }
 
+    public function publish(Product $product)
+    {
+        $product = $this->productRepository->update(
+            $product,
+            ['status' => 'published']
+        );
+
+        return new ProductResource($product);
+    }
+
     public function update(UpdateProductRequest $request, Product $product)
     {
         //

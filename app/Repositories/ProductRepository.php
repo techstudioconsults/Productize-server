@@ -4,10 +4,10 @@ namespace App\Repositories;
 
 use App\Enums\ProductStatusEnum;
 use App\Events\Products;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Models\User;
-use DateTime;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
@@ -39,7 +39,7 @@ class ProductRepository
             ]);
 
             if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
+                throw new BadRequestException($validator->errors()->first());
             }
 
             $products->where('status', $status);

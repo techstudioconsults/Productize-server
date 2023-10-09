@@ -28,6 +28,8 @@ Route::group([
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
+    Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
+
     Route::patch('/{product}/status', [ProductController::class, 'updateStatus'])->middleware('can:update,product');
 
     Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');

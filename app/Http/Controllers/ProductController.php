@@ -200,7 +200,35 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        $validated = $request->validated();
+
+        // Aissign the product data to a variable
+        $data = $validated['data'] ?? null;
+        $cover_photos = $validated['cover_photos'] ?? null;
+        $thumbnail = $validated['thumbnail'] ?? null;
+
+        // Take out the uploadables from the validated array to allow for mass assignment
+        if ($data) {
+            unset($validated['data']);
+            $data = $this->productRepository->uploadData($data);
+            $validated['data'] = $data;
+        }
+
+        if ($cover_photos) {
+            unset($validated['cover_photos']);
+            $cover_photos = $this->productRepository->uploadCoverPhoto($cover_photos);
+            $validated['cover_photos'] = $cover_photos;
+        }
+
+        if ($thumbnail) {
+            unset($validated['thumbnail']);
+            $thumbnail = $this->productRepository->uploadThumbnail($thumbnail);
+            $validated['thumbnail'] = $thumbnail;
+        }
+
+        $updated = $this->productRepository->update($product, $validated);
+
+        return new ProductResource($updated);
     }
 
     public function updateStatus(UpdateProductStatusRequest $request, Product $product)

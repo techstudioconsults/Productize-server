@@ -135,7 +135,7 @@ class ProductRepository
         return $product;
     }
 
-    private function uploadData(mixed $data)
+    public function uploadData(mixed $data)
     {
         $uploadedData = [];
 
@@ -152,7 +152,7 @@ class ProductRepository
         return $uploadedData;
     }
 
-    private function uploadCoverPhoto(mixed $cover_photos)
+    public function uploadCoverPhoto(mixed $cover_photos)
     {
         $uploadedCoverPhotos = [];
         foreach ($cover_photos as $item => $file) {
@@ -168,7 +168,7 @@ class ProductRepository
         return $uploadedCoverPhotos;
     }
 
-    private function uploadThumbnail($thumbnail)
+    public function uploadThumbnail($thumbnail)
     {
         $thumbnailPath = Storage::putFileAs(
             'products-thumbnail',

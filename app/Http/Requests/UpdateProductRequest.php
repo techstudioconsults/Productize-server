@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -11,7 +14,7 @@ class UpdateProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +25,25 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => 'string',
+            'price' => 'integer',
+            'product_type' => [new Enum(ProductEnum::class)],
+            'description' => 'string',
+            'data.*' => 'file',
+            'cover_photos.*' => 'image',
+            'thumbnail' => 'image',
+            'highlights' => 'array',
+            'highlights.*' => 'string',
+            'tags' => 'array',
+            'tags*' => 'string',
+            'stock_count' => 'boolean',
+            'choose_quantity' => 'boolean',
+            'show_sales_count' => 'boolean'
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

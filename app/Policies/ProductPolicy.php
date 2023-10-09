@@ -63,32 +63,15 @@ class ProductPolicy
         return Response::allow();
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    // public function update(User $user, Product $product): bool
-    // {
-    //     //
-    // }
+    public function forceDelete(User $user, Product $product)
+    {
+        if (!$user->id === $product->user_id) {
+            throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to parmenently delete this resource');
+        }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    // public function restore(User $user, Product $product): bool
-    // {
-    //     //
-    // }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    // public function forceDelete(User $user, Product $product): bool
-    // {
-    //     //
-    // }
+        if (!$product->trashed()) {
+            throw new ForbiddenException("Product must be soft-deleted (archived) before it can be permanently deleted.");
+        }
+        return Response::allow();
+    }
 }

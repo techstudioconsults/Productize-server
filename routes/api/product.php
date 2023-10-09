@@ -34,5 +34,5 @@ Route::group([
 
     Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
 
-    Route::delete('/{product}/force', [ProductController::class, 'forceDelete'])->middleware('can:delete,product');
+    Route::delete('/{product}/force', [ProductController::class, 'forceDelete'])->middleware('can:forceDelete,product');
 });

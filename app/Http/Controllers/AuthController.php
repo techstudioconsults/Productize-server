@@ -50,7 +50,7 @@ class AuthController extends Controller
             return ['user' => new UserResource($user), 'token' => $token];
         });
 
-        return new JsonResponse($result);
+        return new JsonResponse($result, 201);
     }
 
     /**
@@ -214,22 +214,5 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return new JsonResponse(['message' => "Logout Successful"]);
-    }
-
-    public function test()
-    {
-        // return config('app.client_url');
-        // return config('app.client_url');
-        // $user = User::find("9a1966fa-1e31-46cd-bdbd-31acbd64d27f");
-        // // event(new Registered($user));
-        // // return response('', 200);
-
-        // $url = URL::temporarySignedRoute(
-        //     'auth.verification.verify', // Route name
-        //     now()->addMinutes(60), // Expiry time
-        //     ['id' => $user->getKey()]
-        // );
-
-        // return $url;
     }
 }

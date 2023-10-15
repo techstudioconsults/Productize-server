@@ -138,6 +138,10 @@ class AuthController extends Controller
 
         $user = User::find($user_id);
 
+        if(!$user) {
+            throw new UnAuthorizedException('Invalid/Expired url provided');
+        }
+
         if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }

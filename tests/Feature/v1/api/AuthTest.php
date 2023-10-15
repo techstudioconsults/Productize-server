@@ -10,8 +10,11 @@ use App\Repositories\UserRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Laravel\Sanctum\Sanctum;
+use Laravel\Socialite\Facades\Socialite;
 use Mockery\MockInterface;
 use Tests\TestCase;
+use URL;
 
 class AuthTest extends TestCase
 {
@@ -98,6 +101,10 @@ class AuthTest extends TestCase
             fn (AssertableJson $json) =>
             $json->hasAll(['token', 'user'])
         );
+
+        // $response->dd();
+
+        // $response->assertJsonPath('user', UserResource::make($user)->response()->getData(true));
     }
 
     public function test_login_with_bad_credentials()
@@ -112,5 +119,110 @@ class AuthTest extends TestCase
             'email' => $user->email,
             'password' => 'badpassword'
         ]);
+    }
+
+    public function test_oAuthRedirect(): void
+    {
+        // Mock the Socialite driver's behavior
+        $provider = 'google'; // Replace with the actual provider
+        Socialite::shouldReceive('driver')
+            ->with($provider)
+            ->once()
+            ->andReturnSelf();
+        Socialite::shouldReceive('stateless')
+            ->once()
+            ->andReturnSelf();
+        Socialite::shouldReceive('redirect')
+            ->once()
+            ->andReturnSelf();
+        Socialite::shouldReceive('getTargetUrl')
+            ->once()
+            ->andReturn('https://example.com/oauth/redirect-url');
+
+        // Make a request to the oAuthRedirect endpoint
+        $response = $this->get('/api/auth/oauth/redirect?provider=' . $provider);
+
+        // Assert the response
+        $response->assertStatus(200)
+            ->assertJson([
+                'provider' => $provider,
+                'redirect_url' => 'https://example.com/oauth/redirect-url',
+            ]);
+    }
+
+    public function test_OAuthCallback(): void
+    {
+        $this->withoutExceptionHandling();
+
+        // Mock the Socialite driver's behavior
+        $provider = 'google'; // Replace with the actual provider
+        Socialite::shouldReceive('driver')
+            ->with($provider)
+            ->once()
+            ->andReturnSelf();
+        Socialite::shouldReceive('stateless')
+            ->once()
+            ->andReturnSelf();
+        Socialite::shouldReceive('user')
+            ->once()
+            ->andReturn((object)[
+                'name' => 'Test User',
+                'email' => 'testuser@example.com',
+            ]);
+
+        // Create a test user
+        $user = User::factory()->create([
+            'email' => 'testuser@example.com',
+        ]);
+
+
+        $response = $this->postJson('/api/auth/oauth/callback', [
+            'provider' => $provider,
+            'code' => '123'
+        ]);
+
+        // Assert the response
+        $response->assertStatus(200);
+    }
+
+    public function test_verify(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        // Generate a signed URL for email verification
+        $url = URL::temporarySignedRoute(
+            'auth.verification.verify',
+            now()->addMinutes(15),
+            ['id' => $user->getKey()]
+        );
+
+        // Simulate a request to your verification endpoint with the signed URL
+        $response = $this->get($url);
+
+        // Assert the response
+        $response->assertStatus(302);
+
+        // Assert that the user's email is now verified
+        $this->assertNotNull(User::find($user->id)->email_verified_at);
+    }
+
+    public function test_verify_with_invalid_signature(): void
+    {
+        $this->expectException(UnAuthorizedException::class);
+
+        // Generate a signed URL with an invalid signature
+        $url = URL::temporarySignedRoute(
+            'auth.verification.verify',
+            now()->addMinutes(15),
+            ['id' => 'invalid_user']
+        );
+
+        // Simulate a request to your verification endpoint with the signed URL
+        $response = $this->withoutExceptionHandling()->get($url);
+
+        // Assert the response
+        $response->assertJson(['message' => 'Invalid/Expired url provided']);
     }
 }

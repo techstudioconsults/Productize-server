@@ -42,6 +42,19 @@ class ProductController extends Controller
         return ProductResource::collection($products->paginate(10));
     }
 
+    public function findByUser(Request $request)
+    {
+        $user = Auth::user();
+
+        $products = $this->productRepository->getUserProducts(
+            $user,
+            $request->status,
+            $request->start_date,
+            $request->end_date
+        );
+
+        return ProductResource::collection($products->paginate(10));
+    }
 
     public function store(StoreProductRequest $request)
     {

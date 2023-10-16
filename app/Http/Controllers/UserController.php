@@ -7,7 +7,10 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\ProductResource;
 use App\Http\Resources\UserResource;
+use App\Models\Product;
+use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;
 use Auth;
@@ -20,7 +23,8 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
     public function __construct(
-        protected UserRepository $userRepository
+        protected UserRepository $userRepository,
+        protected ProductRepository $productRepository
     ) {
     }
 

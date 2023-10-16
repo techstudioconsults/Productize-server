@@ -11,6 +11,7 @@ use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use PDF;
@@ -122,16 +123,17 @@ class ProductController extends Controller
             $request->end_date
         )->get();
 
+        $now = Carbon::today()->isoFormat('MMMM_YYYY');
+
+        $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
+
+        $data = [];
+
+        $data[] = $columns;
+
         if ($request->format === 'csv') {
 
-            $now = now();
-
             $fileName = "products_$now.csv";
-
-            $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
-
-            $csvData = [];
-            $csvData[] = $columns;
 
             foreach ($products as $product) {
                 $row['Title']  = $product->title;
@@ -140,11 +142,11 @@ class ProductController extends Controller
                 $row['Type']   = $product->product_type;
                 $row['Status'] = $product->status;
 
-                $csvData[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
+                $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
             }
 
             $csvContent = '';
-            foreach ($csvData as $csvRow) {
+            foreach ($data as $csvRow) {
                 $csvContent .= implode(',', $csvRow) . "\n";
             }
 
@@ -167,20 +169,11 @@ class ProductController extends Controller
             }, 200, $headers);
         } else if ($request->format === 'pdf') {
 
-            $data = [];
-            foreach ($products as $product) {
-                $row['Title']  = $product->title;
-                $row['Price']  = $product->price;
-                $row['Sales']  = 30;
-                $row['Type']   = $product->product_type;
-                $row['Status'] = $product->status;
-
-                $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
-            }
-
             $pdfData = [
-                'title' => 'What do we have here'
+                'columns' => $columns,
+                'products' => $products
             ];
+
 
             $pdf = PDF::loadView('pdf/products-list', $pdfData);
 

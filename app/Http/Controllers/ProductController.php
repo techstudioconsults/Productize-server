@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Requests\UpdateProductStatusRequest;
+use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
@@ -30,16 +31,9 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
+        $products = Product::paginate();
 
-        $products = $this->productRepository->getUserProducts(
-            $user,
-            $request->status,
-            $request->start_date,
-            $request->end_date
-        );
-
-        return ProductResource::collection($products->paginate(10));
+        return new ProductCollection($products);
     }
 
     public function findByUser(Request $request)

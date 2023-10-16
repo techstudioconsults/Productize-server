@@ -124,7 +124,9 @@ class ProductController extends Controller
 
         if ($request->format === 'csv') {
 
-            $fileName = 'products.csv';
+            $now = now();
+
+            $fileName = "products_$now.csv";
 
             $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
 

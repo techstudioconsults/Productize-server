@@ -173,7 +173,7 @@ class AuthController extends Controller
          * https://laravel.com/docs/10.x/passwords
          */
         $response = Password::broker()->sendResetLink($email);
-        
+
         if ($response == Password::RESET_LINK_SENT) {
             return new JsonResponse(['message' => 'Password reset email sent successfully']);
         } else if ($response == Password::INVALID_USER) {
@@ -187,22 +187,20 @@ class AuthController extends Controller
 
     public function ResetPassword(ResetPasswordRequest $request)
     {
+        $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
+
+        $forceChangePassword = function (User $user, string $password) {
+            $user->forceFill([
+                'password' => $password
+            ])->setRememberToken(Str::random(60));
+
+            $user->save();
+        };
         /**
          * Implementing Laravel 10 Password reset functionality manually
          * https://laravel.com/docs/10.x/passwords
          */
-        $res = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password) {
-                $user->forceFill([
-                    'password' => $password
-                ])->setRememberToken(Str::random(60));
-
-                $user->save();
-
-                // event(new PasswordReset($user));
-            }
-        );
+        $res = Password::reset($credentials, $forceChangePassword);
 
         if ($res ===  Password::PASSWORD_RESET) {
             return new JsonResponse(['message' => "Password Reset Successful"]);

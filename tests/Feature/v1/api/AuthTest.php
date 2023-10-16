@@ -324,41 +324,110 @@ class AuthTest extends TestCase
 
     public function test_forgotPassword_reset_throttled(): void
     {
-         // Expect a NotFoundException to be thrown
-         $this->expectException(TooManyRequestException::class);
+        // Expect a NotFoundException to be thrown
+        $this->expectException(TooManyRequestException::class);
 
-         $user = User::factory()->create([
-             'email_verified_at' => now(),
-         ]);
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
 
-         Password::shouldReceive('broker')
-             ->once()
-             ->andReturnSelf();
-         Password::shouldReceive('sendResetLink')
-             ->once()
-             ->andReturn(Password::RESET_THROTTLED);
+        Password::shouldReceive('broker')
+            ->once()
+            ->andReturnSelf();
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andReturn(Password::RESET_THROTTLED);
 
-         $this->withoutExceptionHandling()
-             ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
+        $this->withoutExceptionHandling()
+            ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
     }
 
     public function test_forgotPassword_server_error(): void
     {
-         // Expect a NotFoundException to be thrown
-         $this->expectException(ServerErrorException::class);
+        // Expect a NotFoundException to be thrown
+        $this->expectException(ServerErrorException::class);
 
-         $user = User::factory()->create([
-             'email_verified_at' => now(),
-         ]);
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
 
-         Password::shouldReceive('broker')
-             ->once()
-             ->andReturnSelf();
-         Password::shouldReceive('sendResetLink')
-             ->once()
-             ->andReturn('unknown_response');
+        Password::shouldReceive('broker')
+            ->once()
+            ->andReturnSelf();
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andReturn('unknown_response');
 
-         $this->withoutExceptionHandling()
-             ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
+        $this->withoutExceptionHandling()
+            ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
+    }
+
+    public function test_resetPassword_success(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        // Mock the Password reset method to return a success response
+        Password::shouldReceive('reset')->andReturn(Password::PASSWORD_RESET);
+
+        $credentials = [
+            'email' => $user->email,
+            'password' => 'New_password1-',
+            'password_confirmation' => 'New_password1-',
+            'token' => 'd0823a454761c349b9b81234f0a2869f1270237444f5b8e3890876105fab7af6'
+        ];
+
+        $response = $this->withoutExceptionHandling()
+            ->postJson('/api/auth/reset-password', $credentials);
+
+        $response->assertStatus(200);
+        $this->assertJsonStringEqualsJsonString('{"message":"Password Reset Successful"}', $response->getContent());
+    }
+
+    public function test_resetPassword_invalid_token(): void
+    {
+        // Expect an UnAuthorizedException to be thrown
+        $this->expectException(UnAuthorizedException::class);
+
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        // Mock the Password reset method to return an invalid token response
+        Password::shouldReceive('reset')->andReturn(Password::INVALID_TOKEN);
+
+        $credentials = [
+            'email' =>  $user->email,
+            'password' => 'New_password1-',
+            'password_confirmation' => 'New_password1-',
+            'token' => 'invalid_token'
+        ];
+
+        $this->withoutExceptionHandling()
+            ->postJson('/api/auth/reset-password', $credentials);
+    }
+
+    public function test_resetPassword_failure(): void
+    {
+        // Expect an BadRequestException to be thrown
+        $this->expectException(BadRequestException::class);
+
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        // Mock the Password reset method to return an invalid token response
+        Password::shouldReceive('reset')->andReturn('generic_failure');
+
+        $credentials = [
+            'email' =>  $user->email,
+            'password' => 'New_password1-',
+            'password_confirmation' => 'New_password1-',
+            'token' => 'invalid_token'
+        ];
+
+        $this->withoutExceptionHandling()
+            ->postJson('/api/auth/reset-password', $credentials);
     }
 }

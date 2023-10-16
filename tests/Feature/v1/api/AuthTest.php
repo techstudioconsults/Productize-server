@@ -3,14 +3,20 @@
 namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ServerErrorException;
+use App\Exceptions\TooManyRequestException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Mail\EmailVerification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Socialite\Facades\Socialite;
 use Tests\TestCase;
@@ -274,111 +280,85 @@ class AuthTest extends TestCase
             ->get('/api/auth/email/resend');
     }
 
-    // public function test_forgotPassword_success(): void
-    // {
-    //     $user = User::factory()->create([
-    //         'email_verified_at' => now(),
-    //     ]);
+    public function test_forgotPassword_success(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
 
-    //     $user->markEmailAsVerified();
+        Password::shouldReceive('broker')
+            ->once()
+            ->andReturnSelf();
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andReturn(Password::RESET_LINK_SENT);
 
+        $response = $this->withoutExceptionHandling()
+            ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
 
-    //     // Create a test request with a valid email
-    //     // $request = new ForgotPasswordRequest();
-    //     // $request->merge(['email' => 'test@example.com']);
+        $response->assertStatus(200);
 
-    //     // Mock the Password broker to return a success response
-    //     Password::shouldReceive('broker')->andReturn(
-    //         new class {
-    //             public function sendResetLink($credentials) {
-    //                 return Password::RESET_LINK_SENT;
-    //             }
-    //         }
-    //     );
+        // Assert the response is a JsonResponse with a success message
+        $this->assertJsonStringEqualsJsonString('{"message":"Password reset email sent successfully"}', $response->getContent());
+    }
 
-    //     // Create an instance of your controller
-    //     $controller = new YourController(); // Replace with the actual controller class
+    public function test_forgotPassword_user_not_found(): void
+    {
+        // Expect a NotFoundException to be thrown
+        $this->expectException(NotFoundException::class);
 
-    //     // Call the forgotPassword method
-    //     $response = $controller->forgotPassword($request);
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
 
-    //     // Assert the response is a JsonResponse with a success message
-    //     $this->assertInstanceOf(JsonResponse::class, $response);
-    //     $this->assertJsonStringEqualsJsonString('{"message":"Password reset email sent successfully"}', $response->getContent());
-    // }
+        Password::shouldReceive('broker')
+            ->once()
+            ->andReturnSelf();
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andReturn(Password::INVALID_USER);
 
-    // public function test_forgotPassword_user_not_found(): void
-    // {
-    //     // Create a test request with an invalid email
-    //     $request = new ForgotPasswordRequest();
-    //     $request->merge(['email' => 'nonexistent@example.com']);
+        $this->withoutExceptionHandling()
+            ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
+    }
 
-    //     // Mock the Password broker to return a user not found response
-    //     Password::shouldReceive('broker')->andReturn(
-    //         new class {
-    //             public function sendResetLink($credentials) {
-    //                 return Password::INVALID_USER;
-    //             }
-    //         }
-    //     );
+    public function test_forgotPassword_reset_throttled(): void
+    {
+         // Expect a NotFoundException to be thrown
+         $this->expectException(TooManyRequestException::class);
 
-    //     // Create an instance of your controller
-    //     $controller = new YourController(); // Replace with the actual controller class
+         $user = User::factory()->create([
+             'email_verified_at' => now(),
+         ]);
 
-    //     // Expect a NotFoundException to be thrown
-    //     $this->expectException(NotFoundException::class);
+         Password::shouldReceive('broker')
+             ->once()
+             ->andReturnSelf();
+         Password::shouldReceive('sendResetLink')
+             ->once()
+             ->andReturn(Password::RESET_THROTTLED);
 
-    //     // Call the forgotPassword method
-    //     $controller->forgotPassword($request);
-    // }
+         $this->withoutExceptionHandling()
+             ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
+    }
 
-    // public function test_forgotPassword_reset_throttled(): void
-    // {
-    //     // Create a test request with a valid email
-    //     $request = new ForgotPasswordRequest();
-    //     $request->merge(['email' => 'test@example.com']);
+    public function test_forgotPassword_server_error(): void
+    {
+         // Expect a NotFoundException to be thrown
+         $this->expectException(ServerErrorException::class);
 
-    //     // Mock the Password broker to return a reset throttled response
-    //     Password::shouldReceive('broker')->andReturn(
-    //         new class {
-    //             public function sendResetLink($credentials) {
-    //                 return Password::RESET_THROTTLED;
-    //             }
-    //         }
-    //     );
+         $user = User::factory()->create([
+             'email_verified_at' => now(),
+         ]);
 
-    //     // Create an instance of your controller
-    //     $controller = new YourController(); // Replace with the actual controller class
+         Password::shouldReceive('broker')
+             ->once()
+             ->andReturnSelf();
+         Password::shouldReceive('sendResetLink')
+             ->once()
+             ->andReturn('unknown_response');
 
-    //     // Expect a TooManyRequestException to be thrown
-    //     $this->expectException(TooManyRequestException::class);
-
-    //     // Call the forgotPassword method
-    //     $controller->forgotPassword($request);
-    // }
-
-    // public function test_forgotPassword_server_error(): void
-    // {
-    //     // Create a test request with a valid email
-    //     $request = new ForgotPasswordRequest();
-    //     $request->merge(['email' => 'test@example.com']);
-
-    //     // Mock the Password broker to return an unknown response
-    //     Password::shouldReceive('broker')->andReturn(
-    //         new class {
-    //             public function sendResetLink($credentials) {
-    //                 return 'unknown_response';
-    //             }
-    //         }
-    //     );
-
-    //     // Create an instance of your controller
-    //     $controller = new YourController(); // Replace with the actual controller class
-
-    //     // Expect a ServerErrorException to be thrown
-    //     $this->expectException(ServerErrorException::class);
-
-    //     // Call the forgotPassword method
-    //     $controller->forgotPassword($request);
-    // }
+         $this->withoutExceptionHandling()
+             ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
+    }
 }

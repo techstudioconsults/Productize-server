@@ -11,6 +11,7 @@ use App\Policies\PaymentPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+// use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,13 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Gate::define('email-verified', function (User $user) {
+
+        //     if ($user->hasVerifiedEmail()) {
+        //         return true;
+        //     } else {
+        //         return false;
+        //     }
+        // });
     }
 }

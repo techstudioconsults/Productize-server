@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OAuthTypeEnum;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\TooManyRequestException;
@@ -28,7 +29,6 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Password;
 use Mail;
 use Str;
-use URL;
 
 class AuthController extends Controller
 {
@@ -138,7 +138,7 @@ class AuthController extends Controller
 
         $user = User::find($user_id);
 
-        if(!$user) {
+        if (!$user) {
             throw new UnAuthorizedException('Invalid/Expired url provided');
         }
 
@@ -166,14 +166,14 @@ class AuthController extends Controller
     public function forgotPassword(ForgotPasswordRequest $request)
     {
 
+        $email = $request->only('email');
+
         /**
          * Implementing Laravel 10 Password reset functionality manually
          * https://laravel.com/docs/10.x/passwords
          */
-        $response = Password::broker()->sendResetLink(
-            $request->only('email')
-        );
-
+        $response = Password::broker()->sendResetLink($email);
+        
         if ($response == Password::RESET_LINK_SENT) {
             return new JsonResponse(['message' => 'Password reset email sent successfully']);
         } else if ($response == Password::INVALID_USER) {

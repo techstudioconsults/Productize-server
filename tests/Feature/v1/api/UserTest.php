@@ -120,7 +120,11 @@ class UserTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertJson(UserResource::make($user)->response()->getData(true));
+            ->assertJson(
+                UserResource::make($user)
+                    ->response()
+                    ->getData(true)
+            );
     }
 
     public function test_user_controller_show_unauthenticated()
@@ -234,7 +238,7 @@ class UserTest extends TestCase
         // Mock the critical log method so it doesn't actually log during the test.
         Log::shouldReceive('error')->andReturnNull();
 
-        Storage::fake('logo');
+        Storage::fake('s3');
 
         $logo = UploadedFile::fake()->image('avatar.jpg');
 
@@ -246,7 +250,7 @@ class UserTest extends TestCase
                 'username' => 'updated'
             ]);
 
-        Storage::disk('public')->assertExists($logo->hashName());
+        Storage::disk('s3')->assertExists('avatars/avatar.jpg');
 
         $updatedUser = User::find($user->id);
 

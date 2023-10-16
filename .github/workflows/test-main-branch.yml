@@ -1,8 +1,6 @@
 name: Laravel
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -32,4 +30,4 @@ jobs:
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
-      run: vendor/bin/phpunit
+      run: php artisan test

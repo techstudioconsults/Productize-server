@@ -24,17 +24,6 @@ class UserController extends Controller
     ) {
     }
 
-
-    public function index()
-    {
-        //
-    }
-
-    public function store(Request $request)
-    {
-        //
-    }
-
     public function show(Request $request)
     {
         $user = $request->user();
@@ -105,13 +94,5 @@ class UserController extends Controller
         $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['new_password']);
 
         return new UserResource($user);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

@@ -180,7 +180,7 @@ class ProductController extends Controller
                 'title' => 'What do we have here'
             ];
 
-            $pdf = PDF::loadView('products-pdf', $pdfData);
+            $pdf = PDF::loadView('pdf/products-list', $pdfData);
 
             return $pdf->download('products.pdf');
         } else {

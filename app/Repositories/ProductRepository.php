@@ -32,7 +32,7 @@ class ProductRepository
          */
         if ($status && $status === 'deleted') {
             $products->withTrashed();
-            $products->where('deleted_at', !null);
+            $products = $products->whereNotNull('deleted_at');
         } else if ($status && $status !== 'deleted') {
             // Validate status
             $validator = Validator::make(['status' => $status], [

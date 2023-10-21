@@ -51,6 +51,9 @@ jobs:
       - name: Migrate Database
         run: php artisan migrate:fresh --force
 
+      - name: Database Seed
+        run: run artisan db:seed
+
       - name: Prune sanctum
         run: php artisan sanctum:prune-expired
 

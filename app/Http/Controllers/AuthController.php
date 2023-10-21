@@ -132,6 +132,9 @@ class AuthController extends Controller
     public function verify(string $user_id, Request $request)
     {
 
+        /**
+         * Dont throw an error, render error page instead.
+         */
         if (!$request->hasValidSignature()) {
             throw new UnAuthorizedException('Invalid/Expired url provided');
         }
@@ -150,6 +153,7 @@ class AuthController extends Controller
 
         return redirect($redirectUrl);
     }
+    // teting
 
     public function resendLink()
     {

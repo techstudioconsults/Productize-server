@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('price');
             $table->enum('product_type', ['digital_product', 'print_on_demand', 'video_streaming', 'subscription']);
             $table->enum('status', ['draft', 'published'])->default('draft');
-            $table->string('description');
+            $table->longText('description');
             $table->json('data');
             $table->jsonb('cover_photos');
             $table->string('thumbnail');

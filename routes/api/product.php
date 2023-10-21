@@ -18,7 +18,13 @@ Route::group([
 ], function () {
     Route::post('/', [ProductController::class, 'store']);
 
-    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/', [ProductController::class, 'index'])->withoutMiddleware([
+        'auth:sanctum',
+        'can:allowed,App\Models\Product',
+        'can:premium,App\Models\Product',
+    ]);
+
+    Route::get('/users', [ProductController::class, 'findByUser']);
 
     Route::get('/analytics', [ProductController::class, 'analytics']);
 

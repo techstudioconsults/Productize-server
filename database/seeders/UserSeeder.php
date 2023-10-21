@@ -16,6 +16,22 @@ class UserSeeder extends Seeder
     {
         $this->disableForeignKeys();
         $this->truncate('users');
+
+        User::factory()->create([
+            'full_name' => 'Kingsley Solomon',
+            'email' => 'kinxly@gmail.com',
+        ]);
+
+        User::factory()->create([
+            'full_name' => 'Kingsley Solomon Free',
+            'email' => 'kinxly@testemail.com',
+        ]);
+
+        User::factory()->create([
+            'full_name' => 'Tobi Olanitori',
+            'email' => 'tobiolanitori1@gmail.com',
+        ]);
+
         User::factory(2)->create();
         $this->enableForeignKeys();
     }

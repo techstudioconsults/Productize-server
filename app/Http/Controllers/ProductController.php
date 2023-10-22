@@ -181,7 +181,9 @@ class ProductController extends Controller
             ['status' => 'published']
         );
 
-        return new ProductResource($product);
+        return new JsonResponse([
+            'data' => config('app.client_url') . "/products/$product->slug"
+        ]);
     }
 
     public function update(UpdateProductRequest $request, Product $product)

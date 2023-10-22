@@ -130,7 +130,7 @@ class ProductController extends Controller
             $request->end_date
         )->get();
 
-        $now = Carbon::today()->isoFormat('MMMM_YYYY');
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 
         $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
 
@@ -138,56 +138,40 @@ class ProductController extends Controller
 
         $data[] = $columns;
 
-        if ($request->format === 'csv') {
+        $fileName = "products_$now.csv";
 
-            $fileName = "products_$now.csv";
+        foreach ($products as $product) {
+            $row['Title']  = $product->title;
+            $row['Price']  = $product->price;
+            $row['Sales']  = 30;
+            $row['Type']   = $product->product_type;
+            $row['Status'] = $product->status;
 
-            foreach ($products as $product) {
-                $row['Title']  = $product->title;
-                $row['Price']  = $product->price;
-                $row['Sales']  = 30;
-                $row['Type']   = $product->product_type;
-                $row['Status'] = $product->status;
-
-                $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
-            }
-
-            $csvContent = '';
-            foreach ($data as $csvRow) {
-                $csvContent .= implode(',', $csvRow) . "\n";
-            }
-
-            $filePath = 'csv/' . $fileName;
-
-            // Store the CSV content in the storage/app/csv directory
-            Storage::disk('local')->put($filePath, $csvContent);
-
-            $headers = array(
-                "Content-type"        => "text/csv",
-                "Content-Disposition" => "attachment; filename=$fileName",
-                "Pragma"              => "no-cache",
-                "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-                "Expires"             => "0"
-            );
-
-            // Return the response with the file from storage
-            return response()->stream(function () use ($filePath) {
-                readfile(storage_path('app/' . $filePath));
-            }, 200, $headers);
-        } else if ($request->format === 'pdf') {
-
-            $pdfData = [
-                'columns' => $columns,
-                'products' => $products
-            ];
-
-
-            $pdf = PDF::loadView('pdf/products-list', $pdfData);
-
-            return $pdf->download('products.pdf');
-        } else {
-            throw new UnprocessableException('Invalid File Format');
+            $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
         }
+
+        $csvContent = '';
+        foreach ($data as $csvRow) {
+            $csvContent .= implode(',', $csvRow) . "\n";
+        }
+
+        $filePath = 'csv/' . $fileName;
+
+        // Store the CSV content in the storage/app/csv directory
+        Storage::disk('local')->put($filePath, $csvContent);
+
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        // Return the response with the file from storage
+        return response()->stream(function () use ($filePath) {
+            readfile(storage_path('app/' . $filePath));
+        }, 200, $headers);
     }
 
     public function publish(Product $product)

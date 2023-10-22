@@ -19,6 +19,9 @@ class ProductRepository
     ) {
     }
 
+    /**
+     * @return PRODUCT This will return a pre called instance of PRODUCT
+     */
     public function getUserProducts(
         User $user,
         ?string $status = null,

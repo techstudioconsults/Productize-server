@@ -34,8 +34,7 @@ class ProductRepository
          * Filter products by Product status
          */
         if ($status && $status === 'deleted') {
-            $products->withTrashed();
-            $products = $products->whereNotNull('deleted_at');
+            $products->onlyTrashed();
         } else if ($status && $status !== 'deleted') {
             // Validate status
             $validator = Validator::make(['status' => $status], [
@@ -72,6 +71,17 @@ class ProductRepository
         }
 
         return $products;
+    }
+
+    public function getProductExternal(Product $product)
+    {
+        return [
+            'id' => $product->id,
+            'title' => $product->title,
+            'thumbnail' => $product->thumbnail,
+            'price' => $product->price,
+            'publisher' => $product->user->full_name
+        ];
     }
 
     /**

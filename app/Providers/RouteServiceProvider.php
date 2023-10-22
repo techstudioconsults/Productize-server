@@ -42,7 +42,9 @@ class RouteServiceProvider extends ServiceProvider
          * @see restore method in \App\Http\Controllers\ProductController
          */
         Route::bind('product', function ($product) {
-            return Product::withTrashed()->find($product);
+            return Product::withTrashed()->findOr($product, function () use ($product) {
+                return Product::withTrashed()->firstWhere('slug', $product);
+            });
         });
     }
 }

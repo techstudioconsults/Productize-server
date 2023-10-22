@@ -4,9 +4,9 @@ namespace App\Exceptions;
 
 class BadRequestException extends ApiException
 {
-    public function __construct(string $message = "", int $code = 400)
+    public function __construct(string $message = "")
     {
         $this->message = $message;
-        $this->code = $code;
+        $this->code = 400;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
@@ -48,6 +49,14 @@ class ProductController extends Controller
         );
 
         return ProductResource::collection($products->paginate(10));
+    }
+
+    public function findBySlug(Product $product)
+    {
+        if($product->trashed()){
+            throw new BadRequestException('Product deleted');
+        }
+        return $this->productRepository->getProductExternal($product);
     }
 
     public function store(StoreProductRequest $request)
@@ -218,16 +227,6 @@ class ProductController extends Controller
 
         return new ProductResource($updated);
     }
-
-    public function updateStatus(UpdateProductStatusRequest $request, Product $product)
-    {
-        $validated = $request->validated();
-
-        $product = $this->productRepository->update($product, $validated);
-
-        return new ProductResource($product);
-    }
-
 
     public function delete(Product $product)
     {

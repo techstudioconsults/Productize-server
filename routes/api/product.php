@@ -31,7 +31,9 @@ Route::group([
 
     Route::get('/download', [ProductController::class, 'downloadList']);
 
-    Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product')->scopeBindings();
+    Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
+
+    Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'findBySlug'])
     ->withoutMiddleware([
@@ -39,8 +41,6 @@ Route::group([
         'can:allowed,App\Models\Product',
         'can:premium,App\Models\Product',
     ]);
-
-    Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
     Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
 

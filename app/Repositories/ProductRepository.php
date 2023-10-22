@@ -76,11 +76,12 @@ class ProductRepository
     public function getProductExternal(Product $product)
     {
         return [
-            'id' => $product->id,
             'title' => $product->title,
             'thumbnail' => $product->thumbnail,
+            'description' => $product->description,
             'price' => $product->price,
-            'publisher' => $product->user->full_name
+            'publisher' => $product->user->full_name,
+            'slug' => $product->slug
         ];
     }
 
@@ -191,5 +192,20 @@ class ProductRepository
         );
 
         return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+    }
+
+    public function getFileMetaData(string $filePath)
+    {
+        if (Storage::disk('spaces')->exists($filePath)) {
+            $size = Storage::size($filePath);
+            $mime_Type = Storage::mimeType($filePath);
+
+            return [
+                'size' =>  round($size / 1048576, 2) . 'MB', // Convert byte to MB
+                'mime_type' => $mime_Type
+            ];
+        } else {
+            return null;
+        }
     }
 }

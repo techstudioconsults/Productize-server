@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Http\Requests\UpdateProductStatusRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
@@ -16,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use PDF;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -53,10 +51,30 @@ class ProductController extends Controller
 
     public function findBySlug(Product $product)
     {
-        if($product->trashed()){
+        if ($product->trashed()) {
             throw new BadRequestException('Product deleted');
         }
-        return $this->productRepository->getProductExternal($product);
+
+        $data = $product->data;
+
+        $meta_data_array = [];
+        foreach ($data as $value) {
+            $filePath =  Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
+
+            $meta_data = $this->productRepository->getFileMetaData($filePath);
+
+            if ($meta_data) {
+                array_push($meta_data_array, $meta_data);
+            }
+        }
+
+        $product_info = $this->productRepository->getProductExternal($product);
+
+        return new JsonResponse([
+            ...$product_info,
+            'no_of_resources' => count($meta_data_array),
+            'resources_info' => $meta_data_array,
+        ]);
     }
 
     public function store(StoreProductRequest $request)

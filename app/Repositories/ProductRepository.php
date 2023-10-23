@@ -19,6 +19,9 @@ class ProductRepository
     ) {
     }
 
+    /**
+     * @return PRODUCT This will return a pre called instance of PRODUCT
+     */
     public function getUserProducts(
         User $user,
         ?string $status = null,
@@ -31,8 +34,7 @@ class ProductRepository
          * Filter products by Product status
          */
         if ($status && $status === 'deleted') {
-            $products->withTrashed();
-            $products = $products->whereNotNull('deleted_at');
+            $products->onlyTrashed();
         } else if ($status && $status !== 'deleted') {
             // Validate status
             $validator = Validator::make(['status' => $status], [
@@ -69,6 +71,18 @@ class ProductRepository
         }
 
         return $products;
+    }
+
+    public function getProductExternal(Product $product)
+    {
+        return [
+            'title' => $product->title,
+            'thumbnail' => $product->thumbnail,
+            'description' => $product->description,
+            'price' => $product->price,
+            'publisher' => $product->user->full_name,
+            'slug' => $product->slug
+        ];
     }
 
     /**
@@ -178,5 +192,20 @@ class ProductRepository
         );
 
         return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+    }
+
+    public function getFileMetaData(string $filePath)
+    {
+        if (Storage::disk('spaces')->exists($filePath)) {
+            $size = Storage::size($filePath);
+            $mime_Type = Storage::mimeType($filePath);
+
+            return [
+                'size' =>  round($size / 1048576, 2) . 'MB', // Convert byte to MB
+                'mime_type' => $mime_Type
+            ];
+        } else {
+            return null;
+        }
     }
 }

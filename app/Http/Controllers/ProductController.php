@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\UnprocessableException;
+use App\Enums\ProductStatusEnum;
+use App\Exceptions\BadRequestException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Http\Requests\UpdateProductStatusRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
@@ -15,7 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use PDF;
+use Illuminate\Support\Str;
+use ReflectionEnum;
 
 class ProductController extends Controller
 {
@@ -24,18 +25,20 @@ class ProductController extends Controller
     ) {
     }
 
+    public function index()
+    {
+        $status = ProductStatusEnum::Published->value;
+
+        $products = Product::where('status', $status)->paginate();
+
+        return new ProductCollection($products);
+    }
+
     /**
      * @param status - Request query of enum ProductStatusEnum. Used to filter products by status
      * @param start_date - Request query of type Date. Used aslong with end_date to filter range by date.
      * @param end_date - Request query of type Date. Used aslong with start_date to filter range by date.
      */
-    public function index(Request $request)
-    {
-        $products = Product::paginate();
-
-        return new ProductCollection($products);
-    }
-
     public function findByUser(Request $request)
     {
         $user = Auth::user();
@@ -48,6 +51,36 @@ class ProductController extends Controller
         );
 
         return ProductResource::collection($products->paginate(10));
+    }
+
+    public function findBySlug(Product $product)
+    {
+        $status = ProductStatusEnum::Published->value;
+
+        if ($product->status !== $status) {
+            throw new BadRequestException();
+        }
+
+        $data = $product->data;
+
+        $meta_data_array = [];
+        foreach ($data as $value) {
+            $filePath =  Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
+
+            $meta_data = $this->productRepository->getFileMetaData($filePath);
+
+            if ($meta_data) {
+                array_push($meta_data_array, $meta_data);
+            }
+        }
+
+        $product_info = $this->productRepository->getProductExternal($product);
+
+        return new JsonResponse([
+            ...$product_info,
+            'no_of_resources' => count($meta_data_array),
+            'resources_info' => $meta_data_array,
+        ]);
     }
 
     public function store(StoreProductRequest $request)
@@ -130,7 +163,7 @@ class ProductController extends Controller
             $request->end_date
         )->get();
 
-        $now = Carbon::today()->isoFormat('MMMM_YYYY');
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 
         $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
 
@@ -138,66 +171,58 @@ class ProductController extends Controller
 
         $data[] = $columns;
 
-        if ($request->format === 'csv') {
+        $fileName = "products_$now.csv";
 
-            $fileName = "products_$now.csv";
+        foreach ($products as $product) {
+            $row['Title']  = $product->title;
+            $row['Price']  = $product->price;
+            $row['Sales']  = 30;
+            $row['Type']   = $product->product_type;
+            $row['Status'] = $product->status;
 
-            foreach ($products as $product) {
-                $row['Title']  = $product->title;
-                $row['Price']  = $product->price;
-                $row['Sales']  = 30;
-                $row['Type']   = $product->product_type;
-                $row['Status'] = $product->status;
-
-                $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
-            }
-
-            $csvContent = '';
-            foreach ($data as $csvRow) {
-                $csvContent .= implode(',', $csvRow) . "\n";
-            }
-
-            $filePath = 'csv/' . $fileName;
-
-            // Store the CSV content in the storage/app/csv directory
-            Storage::disk('local')->put($filePath, $csvContent);
-
-            $headers = array(
-                "Content-type"        => "text/csv",
-                "Content-Disposition" => "attachment; filename=$fileName",
-                "Pragma"              => "no-cache",
-                "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-                "Expires"             => "0"
-            );
-
-            // Return the response with the file from storage
-            return response()->stream(function () use ($filePath) {
-                readfile(storage_path('app/' . $filePath));
-            }, 200, $headers);
-        } else if ($request->format === 'pdf') {
-
-            $pdfData = [
-                'columns' => $columns,
-                'products' => $products
-            ];
-
-
-            $pdf = PDF::loadView('pdf/products-list', $pdfData);
-
-            return $pdf->download('products.pdf');
-        } else {
-            throw new UnprocessableException('Invalid File Format');
+            $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
         }
+
+        $csvContent = '';
+        foreach ($data as $csvRow) {
+            $csvContent .= implode(',', $csvRow) . "\n";
+        }
+
+        $filePath = 'csv/' . $fileName;
+
+        // Store the CSV content in the storage/app/csv directory
+        Storage::disk('local')->put($filePath, $csvContent);
+
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        // Return the response with the file from storage
+        return response()->stream(function () use ($filePath) {
+            readfile(storage_path('app/' . $filePath));
+        }, 200, $headers);
     }
 
     public function publish(Product $product)
     {
+        if ($product->trashed()) {
+            throw new BadRequestException('Deleted products cannot be published.');
+        }
+
+        $status = ProductStatusEnum::Published->value;
+
         $product = $this->productRepository->update(
             $product,
-            ['status' => 'published']
+            ['status' => $status]
         );
 
-        return new ProductResource($product);
+        return new JsonResponse([
+            'data' => config('app.client_url') . "/products/$product->slug"
+        ]);
     }
 
     public function update(UpdateProductRequest $request, Product $product)
@@ -232,16 +257,6 @@ class ProductController extends Controller
 
         return new ProductResource($updated);
     }
-
-    public function updateStatus(UpdateProductStatusRequest $request, Product $product)
-    {
-        $validated = $request->validated();
-
-        $product = $this->productRepository->update($product, $validated);
-
-        return new ProductResource($product);
-    }
-
 
     public function delete(Product $product)
     {

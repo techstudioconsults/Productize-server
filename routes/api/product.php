@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 /**
  * @see \App\Policies\ProductPolicy for Authorization middleware
+ * @see https://laravel.com/docs/10.x/routing#route-group-controllers
  */
 Route::group([
     'as' => 'product.',
@@ -34,9 +35,16 @@ Route::group([
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
+    Route::get('/{product:slug}/{slug}', [ProductController::class, 'findBySlug'])
+    ->withoutMiddleware([
+        'auth:sanctum',
+        'can:allowed,App\Models\Product',
+        'can:premium,App\Models\Product',
+    ]);
+
     Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
 
-    Route::patch('/{product}/status', [ProductController::class, 'updateStatus'])->middleware('can:update,product');
+    Route::patch('/{product}/publish', [ProductController::class, 'publish'])->middleware('can:update,product');
 
     Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
 

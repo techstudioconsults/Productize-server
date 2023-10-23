@@ -114,4 +114,9 @@ class PaymentController extends Controller
             Log::critical('message', ['error' => 'Invalid webhook signature']);
         }
     }
+
+    public function pay()
+    {
+        $user = Auth::user();
+    }
 }

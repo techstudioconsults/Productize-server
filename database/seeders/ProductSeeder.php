@@ -17,7 +17,7 @@ class ProductSeeder extends Seeder
     {
             $this->disableForeignKeys();
             $this->truncate('products');
-            Product::factory(20)->create();
+            Product::factory(50)->create();
             $this->enableForeignKeys();
     }
 }

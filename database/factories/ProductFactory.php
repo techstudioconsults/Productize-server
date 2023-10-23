@@ -25,11 +25,11 @@ class ProductFactory extends Factory
             'product_type' => 'digital_product',
             'status' => 'draft',
             'description' => '<p>lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem </p>',
-            'data' => '["https://productize.nyc3.cdn.digitaloceanspaces.com/digital-products/3d_collection_showcase-20210110-0001.jpg"]',
-            'cover_photos' => '["https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg"]',
+            'data' => ["https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg"],
+            'cover_photos' => ["https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/insidious-emoticon-puzzled-face-isolated-260nw-1939421848(1).png"],
             'thumbnail' => 'https://productize.nyc3.cdn.digitaloceanspaces.com/products-thumbnail/3d_collection_showcase-20210110-0001.jpg',
-            'highlights' => '["k", "ki", "kin", "king", "kings", "kingsl", "kingsle", "kingsley", "kingsley", "kingsley"]',
-            'tags' => '["Design/painting", "Design"]'
+            'highlights' => ["arrow", "oliver", "queen"],
+            'tags' => ["Audio", "Business/Finance", "3D"]
         ];
     }
 }

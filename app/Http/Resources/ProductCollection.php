@@ -17,11 +17,11 @@ class ProductCollection extends ResourceCollection
         return [
             'data' => $this->collection->map(function ($product) {
                 return [
-                    'id' => $product->id,
                     'title' => $product->title,
                     'thumbnail' => $product->thumbnail,
                     'price' => $product->price,
-                    'publisher' => $product->user->full_name
+                    'publisher' => $product->user->full_name,
+                    'slug' => $product->slug
                 ];
             }),
         ];

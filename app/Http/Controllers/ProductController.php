@@ -209,6 +209,10 @@ class ProductController extends Controller
 
     public function publish(Product $product)
     {
+        if ($product->trashed()) {
+            throw new BadRequestException('Deleted products cannot be published.');
+        }
+
         $status = ProductStatusEnum::Published->value;
 
         $product = $this->productRepository->update(

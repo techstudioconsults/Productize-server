@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProductStatusEnum;
 use App\Exceptions\BadRequestException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
@@ -23,18 +24,18 @@ class ProductController extends Controller
     ) {
     }
 
+    public function index()
+    {
+        $products = Product::where('status', ProductStatusEnum::Published)->paginate();
+
+        return new ProductCollection($products);
+    }
+
     /**
      * @param status - Request query of enum ProductStatusEnum. Used to filter products by status
      * @param start_date - Request query of type Date. Used aslong with end_date to filter range by date.
      * @param end_date - Request query of type Date. Used aslong with start_date to filter range by date.
      */
-    public function index()
-    {
-        $products = Product::where('status', 'published')->paginate();
-
-        return new ProductCollection($products);
-    }
-
     public function findByUser(Request $request)
     {
         $user = Auth::user();
@@ -51,8 +52,8 @@ class ProductController extends Controller
 
     public function findBySlug(Product $product)
     {
-        if ($product->trashed()) {
-            throw new BadRequestException('Product deleted');
+        if (ProductStatusEnum::from($product->status) !== ProductStatusEnum::Published) {
+            throw new BadRequestException();
         }
 
         $data = $product->data;

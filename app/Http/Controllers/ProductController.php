@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use ReflectionEnum;
 
 class ProductController extends Controller
 {
@@ -26,7 +27,9 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::where('status', ProductStatusEnum::Published)->paginate();
+        $status = ProductStatusEnum::Published->value;
+
+        $products = Product::where('status', $status)->paginate();
 
         return new ProductCollection($products);
     }
@@ -52,7 +55,9 @@ class ProductController extends Controller
 
     public function findBySlug(Product $product)
     {
-        if (ProductStatusEnum::from($product->status) !== ProductStatusEnum::Published) {
+        $status = ProductStatusEnum::Published->value;
+
+        if ($product->status !== $status) {
             throw new BadRequestException();
         }
 
@@ -204,9 +209,11 @@ class ProductController extends Controller
 
     public function publish(Product $product)
     {
+        $status = ProductStatusEnum::Published->value;
+
         $product = $this->productRepository->update(
             $product,
-            ['status' => 'published']
+            ['status' => $status]
         );
 
         return new JsonResponse([

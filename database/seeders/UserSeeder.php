@@ -24,6 +24,7 @@ class UserSeeder extends Seeder
         User::factory()->create([
             'full_name' => 'Kingsley Solomon Free',
             'email' => 'kinxly@testemail.com',
+            'account_type' => 'free'
         ]);
 
         User::factory()->create([

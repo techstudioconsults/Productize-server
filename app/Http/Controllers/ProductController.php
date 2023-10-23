@@ -28,9 +28,9 @@ class ProductController extends Controller
      * @param start_date - Request query of type Date. Used aslong with end_date to filter range by date.
      * @param end_date - Request query of type Date. Used aslong with start_date to filter range by date.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $products = Product::paginate();
+        $products = Product::where('status', 'published')->paginate();
 
         return new ProductCollection($products);
     }

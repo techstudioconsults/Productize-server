@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\OAuthTypeEnum;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\TooManyRequestException;
@@ -153,7 +152,6 @@ class AuthController extends Controller
 
         return redirect($redirectUrl);
     }
-    // teting
 
     public function resendLink()
     {

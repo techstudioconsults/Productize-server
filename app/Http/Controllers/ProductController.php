@@ -12,6 +12,7 @@ use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -220,8 +221,11 @@ class ProductController extends Controller
             ['status' => $status]
         );
 
+        $data = new ProductResource($product);
+        
         return new JsonResponse([
-            'data' => config('app.client_url') . "/products/$product->slug"
+            'link' => config('app.client_url') . "/products/$product->slug",
+            'data' => $data
         ]);
     }
 

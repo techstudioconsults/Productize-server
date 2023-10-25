@@ -39,7 +39,6 @@ class UpdateProductRequest extends FormRequest
             'stock_count' => 'boolean',
             'choose_quantity' => 'boolean',
             'show_sales_count' => 'boolean',
-            'status' => 'string|in:draft'
         ];
     }
 

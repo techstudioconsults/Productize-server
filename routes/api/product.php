@@ -44,7 +44,7 @@ Route::group([
 
     Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
 
-    Route::patch('/{product}/publish', [ProductController::class, 'publish'])->middleware('can:update,product');
+    Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware('can:update,product');
 
     Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
 

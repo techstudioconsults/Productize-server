@@ -12,7 +12,6 @@ use App\Http\Resources\ProductResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -208,13 +207,18 @@ class ProductController extends Controller
         }, 200, $headers);
     }
 
-    public function publish(Product $product)
+    public function togglePublish(Product $product)
     {
         if ($product->trashed()) {
-            throw new BadRequestException('Deleted products cannot be published.');
+            throw new BadRequestException('Deleted products cannot be published or unPublished.');
         }
 
-        $status = ProductStatusEnum::Published->value;
+        $current_status = $product->status;
+        $status = ProductStatusEnum::Draft->value;
+
+        if ($current_status === ProductStatusEnum::Draft->value) {
+            $status = ProductStatusEnum::Published->value;
+        }
 
         $product = $this->productRepository->update(
             $product,
@@ -222,7 +226,7 @@ class ProductController extends Controller
         );
 
         $data = new ProductResource($product);
-        
+
         return new JsonResponse([
             'link' => config('app.client_url') . "/products/$product->slug",
             'data' => $data

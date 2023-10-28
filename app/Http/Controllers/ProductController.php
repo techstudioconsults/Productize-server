@@ -212,11 +212,10 @@ class ProductController extends Controller
         if ($product->trashed()) {
             throw new BadRequestException('Deleted products cannot be published or unPublished.');
         }
-
-        $current_status = $product->status;
+        
         $status = ProductStatusEnum::Draft->value;
 
-        if ($current_status === ProductStatusEnum::Draft->value) {
+        if ($product->status === $status) {
             $status = ProductStatusEnum::Published->value;
         }
 

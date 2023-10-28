@@ -15,14 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    $products = Product::where('user_id', '9a27144d-7a1e-459b-87d4-797cf78d9c0b')->get();
-
-    $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
-
-    
-
-    return view('pdf.products-list', ['products' => $products, 'columns' => $columns]);
-    // return view('welcome');
+    return view('welcome');
 });
 
 /**

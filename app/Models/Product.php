@@ -55,4 +55,9 @@ class Product extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // public function customers(): HasManyThrough
+    // {
+    //     return $this->hasManyThrough(Deployment::class, Environment::class);
+    // }
 }

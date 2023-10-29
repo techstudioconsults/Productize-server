@@ -88,4 +88,9 @@ class User extends Authenticatable implements CanResetPassword
     {
         return $this->hasManyThrough(Customer::class, Product::class);
     }
+
+    public function orders(): HasManyThrough
+    {
+        return $this->hasManyThrough(Order::class, Product::class);
+    }
 }

@@ -11,16 +11,12 @@ use Illuminate\Database\Seeder;
 class ProductSeeder extends Seeder
 {
     use TruncateTable, DisableForeignKeys;
-    /**
-     * Run the database seeds.
-     */
+
     public function run(): void
     {
         $this->disableForeignKeys();
         $this->truncate('products');
-        Product::factory(50)->create()->each(function ($product) {
-            Customer::factory(10)->create(['product_id' => $product->id]);
-        });
+        // Product::factory(50)->create();
         $this->enableForeignKeys();
     }
 }

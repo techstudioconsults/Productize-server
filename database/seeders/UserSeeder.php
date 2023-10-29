@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\Traits\DisableForeignKeys;
 use Database\Seeders\Traits\TruncateTable;
@@ -20,7 +19,7 @@ class UserSeeder extends Seeder
         User::factory()->create([
             'full_name' => 'Kingsley Solomon',
             'email' => 'kinxly@gmail.com',
-        ])->products()->saveMany(Product::factory(5)->create());
+        ]);
 
         User::factory()->create([
             'full_name' => 'Kingsley Solomon Free',
@@ -31,11 +30,9 @@ class UserSeeder extends Seeder
         User::factory()->create([
             'full_name' => 'Tobi Olanitori',
             'email' => 'tobiolanitori1@gmail.com',
-        ])->products()->saveMany(Product::factory(5)->create());
+        ]);
 
-        User::factory(2)->create()->each(function ($user) {
-            $user->products()->saveMany(Product::factory(5)->create());
-        });
+        User::factory(2)->create();
 
         $this->enableForeignKeys();
     }

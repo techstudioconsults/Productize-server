@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -25,6 +27,15 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'account_type' => 'premium'
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            if($user->account_type === 'premium') {
+                Product::factory(10)->create(['user_id' => $user->id]);
+            }
+        });
     }
 
     /**

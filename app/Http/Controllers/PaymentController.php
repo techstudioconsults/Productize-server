@@ -8,6 +8,7 @@ use App\Exceptions\ServerErrorException;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
 use App\Models\User;
+use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,8 @@ class PaymentController extends Controller
 {
 
     public function __construct(
-        protected PaystackRepository $paystackRepository
+        protected PaystackRepository $paystackRepository,
+        protected PaymentRepository $paymentRepository
     ) {
     }
 
@@ -45,7 +47,12 @@ class PaymentController extends Controller
                 $customer = $this->paystackRepository->createCustomer($user);
                 $customer_code = $customer['customer_code'];
 
-                $payment =  Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
+                $payment = $this->paymentRepository->create(
+                    ['paystack_customer_code' => $customer_code],
+                    $user
+                );
+
+                // $payment =  Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
 
                 // initialize customer transaction as a first timer
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
@@ -118,5 +125,53 @@ class PaymentController extends Controller
     public function pay()
     {
         $user = Auth::user();
+
+        $data = [
+            [
+                'product_slug' => '',
+                'quantity' => '',
+                'customer_id' => $user->id
+            ]
+        ];
+
+
+
+        $user_payment = $user->payment;
+
+        if (!$user_payment) {
+            $user_payment = $this->paymentRepository->create([], $user);
+        }
+
+
+        $paystack_sub_account_code = $user_payment->paystack_sub_account_code;
+
+        if (!$paystack_sub_account_code) {
+            $paystack_sub_account = $this->paystackRepository->createSubAcount();
+
+            $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
+
+            $user_payment = $this->paymentRepository->update('user_id', $user->id, [
+                'paystack_sub_account_code' => $paystack_sub_account_code
+            ]);
+        }
+
+        // return 
+
+        // if (!$paystack_sub_account_code) {
+        //     try {
+        //         $paystack_sub_account = $this->paystackRepository->createSubAcount();
+
+        //         $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
+
+        //         $payment = $this->paymentRepository->create(
+        //             ['paystack_sub_account_code' => $paystack_sub_account_code],
+        //             $user
+        //         );
+        //     } catch (\Throwable $th) {
+        //         throw new ServerErrorException($th->getMessage());
+        //     }
+        // }
+
+        return $user_payment;
     }
 }

@@ -176,16 +176,6 @@ class PaystackRepository
                 case 'charge.success':
                     $email = $data['customer']['email'];
 
-                    // $update = [
-                    //     'account_type' => 'premium'
-                    // ];
-
-                    // $this->userRepository->update('email', $email, $update);
-
-                    /**
-                     * Experimental
-                     * yet to test
-                     */
                     $this->userRepository->guardedUpdate($email, 'account_type', 'premium');
                     break;
 
@@ -208,16 +198,6 @@ class PaystackRepository
                 case 'subscription.disable':
                     $email = $data['customer']['email'];
 
-                    // $update = [
-                    //     'account_type' => 'free'
-                    // ];
-
-                    // $this->userRepository->update('email', $email, $update);
-
-                    /**
-                     * Experimental
-                     * yet to test
-                     */
                     $this->userRepository->guardedUpdate($email, 'account_type', 'free');
                     break;
 
@@ -237,5 +217,32 @@ class PaystackRepository
     {
         $computedSignature = hash_hmac('sha512', $payload, $this->secret_key);
         return $computedSignature === $signature;
+    }
+
+    public function createSubAcount()
+    {
+        $payload = [
+            "business_name" => "Test business name",
+            "settlement_bank" => "00103",
+            "account_number" => "2003953831",
+            "percentage_charge" => 18.2
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/subaccount", $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
+    public function getBankList()
+    {
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/bank?country=nigeria");
+
+        return $response['data'];
     }
 }

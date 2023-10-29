@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\Product::class, 'product_id');
-            $table->string('name', 200);
-            $table->string('email');
+            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            // $table->integer('account_number');
+            // $table->text('paystack_sub_account');
+
             $table->timestamps();
         });
     }

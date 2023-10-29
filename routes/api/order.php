@@ -13,4 +13,6 @@ Route::controller(OrderController::class)
     ])
     ->group(function () {
         Route::get('/', 'index');
+        
+        Route::get('/{order}', 'show')->middleware('can:view,order');
     });

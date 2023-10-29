@@ -13,4 +13,6 @@ Route::controller(CustomerController::class)
     ])
     ->group(function () {
         Route::get('/', 'index');
+
+        Route::get('/{customer}', 'show')->middleware('can:view,customer');
     });

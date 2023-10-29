@@ -4,9 +4,13 @@ namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
 
+use App\Models\Customer;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
+use App\Policies\CustomerPolicy;
+use App\Policies\OrderPolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\UserPolicy;

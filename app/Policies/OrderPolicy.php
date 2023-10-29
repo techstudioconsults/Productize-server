@@ -22,4 +22,12 @@ class OrderPolicy
             ? Response::allow()
             : throw new ForbiddenException($user->full_name . ' is not a subscribed user');
     }
+
+    public function view(User $user, Order $order)
+    {
+
+        return $user->id === $order->product->user->id
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name. ' is not permitted to request this resource');
+    }
 }

@@ -90,6 +90,8 @@ stopwaitsecs=3600
 /**
  * php artisan make:model Flight -mfs
  * php artisan make:controller PhotoController --model=Photo --resource --requests
+ *
+ * php artisan migrate:rollback --step=5
  */
 
 // $flight = Flight::findOr(1, function () {

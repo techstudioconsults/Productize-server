@@ -12,13 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('customers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\Product::class, 'product_id');
             $table->string('name', 200);
             $table->string('email');
-            $table->string('product_title');
-            $table->integer('product_price');
             $table->timestamps();
         });
     }

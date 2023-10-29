@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Customer extends Model
 {
@@ -17,8 +18,14 @@ class Customer extends Model
 
     public $incrementing = false;
 
-    public function user()
+
+    public function user(): HasOneThrough
     {
-        return $this->belongsTo(User::class);
+        return $this->hasOneThrough(User::class, Product::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }

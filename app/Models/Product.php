@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
@@ -56,8 +57,8 @@ class Product extends Model
         return $this->belongsTo(User::class);
     }
 
-    // public function customers(): HasManyThrough
-    // {
-    //     return $this->hasManyThrough(Deployment::class, Environment::class);
-    // }
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
 }

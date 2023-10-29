@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Customer;
+use App\Models\Order;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,5 +22,17 @@ class CustomerFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->email(),
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Customer $customer) {
+            Order::factory(5)->create(
+                [
+                    'product_id' => $customer->product_id,
+                    'customer_id' => $customer->id
+                ]
+            );
+        });
     }
 }

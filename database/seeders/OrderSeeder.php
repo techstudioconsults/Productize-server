@@ -6,14 +6,14 @@ use Database\Seeders\Traits\DisableForeignKeys;
 use Database\Seeders\Traits\TruncateTable;
 use Illuminate\Database\Seeder;
 
-class ProductSeeder extends Seeder
+class OrderSeeder extends Seeder
 {
     use TruncateTable, DisableForeignKeys;
 
     public function run(): void
     {
         $this->disableForeignKeys();
-        $this->truncate('products');
+        $this->truncate('orders');
         $this->enableForeignKeys();
     }
 }

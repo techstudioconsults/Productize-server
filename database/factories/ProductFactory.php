@@ -2,7 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Customer;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,10 +18,8 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $user = User::where('account_type', 'premium')->inRandomOrder()->first();
         return [
             'title' => fake()->text('20'),
-            'user_id' => $user->id,
             'price' => fake()->randomNumber(4),
             'product_type' => 'digital_product',
             'status' => 'draft',
@@ -31,5 +30,12 @@ class ProductFactory extends Factory
             'highlights' => ["arrow", "oliver", "queen"],
             'tags' => ["Audio", "Business/Finance", "3D"]
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Product $product) {
+            Customer::factory(10)->create(['product_id' => $product->id]);
+        });
     }
 }

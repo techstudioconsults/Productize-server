@@ -9,6 +9,7 @@ Route::controller(CustomerController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
+        'can:premium,App\Models\Customer',
     ])
     ->group(function () {
         Route::get('/', 'index');

@@ -13,7 +13,6 @@ Route::group([
     'prefix' => 'products',
     'middleware' => [
         'auth:sanctum',
-        'can:allowed,App\Models\Product',
         'can:premium,App\Models\Product',
     ]
 ], function () {

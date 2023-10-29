@@ -19,7 +19,7 @@ class CustomerResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'product_title' => $this->product->title,
-            'product_price' => $this->price,
+            'product_price' => $this->product->price,
             'created_at' => $this->created_at
         ];
     }

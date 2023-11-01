@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
+use App\Http\Requests\UploadPayoutAccountRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
@@ -51,8 +53,6 @@ class PaymentController extends Controller
                     ['paystack_customer_code' => $customer_code],
                     $user
                 );
-
-                // $payment =  Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
 
                 // initialize customer transaction as a first timer
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
@@ -122,56 +122,74 @@ class PaymentController extends Controller
         }
     }
 
-    public function pay()
+    public function payOutAccount(UploadPayoutAccountRequest $request)
     {
         $user = Auth::user();
 
+        $credentials = $request->validated();
+
+        $payload = array_merge($credentials, ["percentage_charge" => 18.2]);
+
+        try {
+            $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
+
+            $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
+
+            $updatables = array_merge($credentials, [
+                'paystack_sub_account_code' => $paystack_sub_account_code
+            ]);
+
+            $this->paymentRepository->update('user_id', $user->id, $updatables);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
+
+        return response('Account set up complete');
+    }
+
+    public function pay(Request $request)
+    {
+        $user = Auth::user();
+
+        // $subaccounts =  {
+        //     "subaccount": "ACCT_pwwualwty4nhq9d",
+        //     "share": 6000
+        //   },
+        //   {
+        //     "subaccount": "ACCT_hdl8abxl8drhrl3",
+        //     "share": 4000
+        //   },;
+
         $data = [
+            'email' => $user->email,
+            'amount' => 20000,
+            'split' => [
+                'type' => 'flat',
+                'bearer_type' => 'account',
+                'subaccounts' => [
+                    []
+                ]
+            ],
             [
                 'product_slug' => '',
-                'quantity' => '',
+                'quantity' => 5,
                 'customer_id' => $user->id
             ]
         ];
 
+        $payload = [];
+        foreach ($data as $sale) {
+            $product = Product::firstWhere('slug', $sale['slug']);
 
+            $paystack_sub_account = $product->user->payment->paystack_sub_account_code;
 
-        $user_payment = $user->payment;
+            $share = $product->price * $sale['quanity'];
 
-        if (!$user_payment) {
-            $user_payment = $this->paymentRepository->create([], $user);
+            array_push(
+                []
+            );
         }
 
-
-        $paystack_sub_account_code = $user_payment->paystack_sub_account_code;
-
-        if (!$paystack_sub_account_code) {
-            $paystack_sub_account = $this->paystackRepository->createSubAcount();
-
-            $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
-
-            $user_payment = $this->paymentRepository->update('user_id', $user->id, [
-                'paystack_sub_account_code' => $paystack_sub_account_code
-            ]);
-        }
-
-        // return 
-
-        // if (!$paystack_sub_account_code) {
-        //     try {
-        //         $paystack_sub_account = $this->paystackRepository->createSubAcount();
-
-        //         $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
-
-        //         $payment = $this->paymentRepository->create(
-        //             ['paystack_sub_account_code' => $paystack_sub_account_code],
-        //             $user
-        //         );
-        //     } catch (\Throwable $th) {
-        //         throw new ServerErrorException($th->getMessage());
-        //     }
-        // }
-
-        return $user_payment;
+        // for each product slug, get user payout account and product price
     }
 }

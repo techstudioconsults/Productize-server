@@ -219,15 +219,11 @@ class PaystackRepository
         return $computedSignature === $signature;
     }
 
-    public function createSubAcount()
+    /**
+     * 
+     */
+    public function createSubAcount(array $payload)
     {
-        $payload = [
-            "business_name" => "Test business name",
-            "settlement_bank" => "00103",
-            "account_number" => "2003953831",
-            "percentage_charge" => 18.2
-        ];
-
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . $this->secret_key,
             "Cache-Control"  => "no-cache",

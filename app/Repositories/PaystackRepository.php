@@ -83,6 +83,17 @@ class PaystackRepository
         return $response['data'];
     }
 
+    public function initializePurchaseTransaction(mixed $payload)
+    {
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
     /**
      * Api Doc: https://paystack.com/docs/api/subscription#create
      * You can also pass a start_date parameter, which lets you set the date for the first debit incase of free trial.
@@ -220,7 +231,7 @@ class PaystackRepository
     }
 
     /**
-     * 
+     *
      */
     public function createSubAcount(array $payload)
     {

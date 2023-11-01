@@ -85,6 +85,11 @@ class ProductRepository
         ];
     }
 
+    public function getProductBySlug(string $slug)
+    {
+        return Product::firstWhere('slug', $slug);
+    }
+
     /**
      * @Intuneteq
      *

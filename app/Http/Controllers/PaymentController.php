@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
+use App\Http\Requests\PurchaseRequest;
 use App\Http\Requests\UploadPayoutAccountRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
@@ -12,8 +13,10 @@ use App\Models\Product;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
+use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -22,7 +25,8 @@ class PaymentController extends Controller
 
     public function __construct(
         protected PaystackRepository $paystackRepository,
-        protected PaymentRepository $paymentRepository
+        protected PaymentRepository $paymentRepository,
+        protected ProductRepository $productRepository
     ) {
     }
 
@@ -128,7 +132,7 @@ class PaymentController extends Controller
 
         $credentials = $request->validated();
 
-        $payload = array_merge($credentials, ["percentage_charge" => 18.2]);
+        $payload = array_merge($credentials, ["percentage_charge" => 5]);
 
         try {
             $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
@@ -147,49 +151,58 @@ class PaymentController extends Controller
         return response('Account set up complete');
     }
 
-    public function pay(Request $request)
+    public function purchase(PurchaseRequest $request)
     {
         $user = Auth::user();
 
-        // $subaccounts =  {
-        //     "subaccount": "ACCT_pwwualwty4nhq9d",
-        //     "share": 6000
-        //   },
-        //   {
-        //     "subaccount": "ACCT_hdl8abxl8drhrl3",
-        //     "share": 4000
-        //   },;
+        $validated = $request->validated();
 
-        $data = [
+        $products = $validated['products'];
+
+        $sub_accounts = Arr::map($products, function ($obj) {
+            $slug = $obj['product_slug'];
+
+            $product = $this->productRepository->getProductBySlug($slug);
+
+            $sub_account = $product->user->payment->paystack_sub_account_code;
+
+            $amount = $product->price * $obj['quantity'];
+
+            $deduction = $amount * 0.2;
+
+            $share = $product->price * $obj['quantity'] - $deduction;
+
+            return [
+                "subaccount" => $sub_account,
+                "amount" => $amount,
+                "share" => $share
+            ];
+        });
+
+        $total_amount = array_reduce($sub_accounts, function ($carry, $item) {
+            return $carry +( $item['amount']);
+        }, 0);
+
+        if ($total_amount !== $validated['amount']) {
+            throw new BadRequestException('Total amount does not match quantity');
+        }
+
+        $payload = [
             'email' => $user->email,
-            'amount' => 20000,
+            'amount' => $total_amount,
             'split' => [
                 'type' => 'flat',
                 'bearer_type' => 'account',
-                'subaccounts' => [
-                    []
-                ]
-            ],
-            [
-                'product_slug' => '',
-                'quantity' => 5,
-                'customer_id' => $user->id
+                'subaccounts' => $sub_accounts
             ]
         ];
 
-        $payload = [];
-        foreach ($data as $sale) {
-            $product = Product::firstWhere('slug', $sale['slug']);
+        try {
+            $response = $this->paystackRepository->initializePurchaseTransaction($payload);
 
-            $paystack_sub_account = $product->user->payment->paystack_sub_account_code;
-
-            $share = $product->price * $sale['quanity'];
-
-            array_push(
-                []
-            );
+            return $response;
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
         }
-
-        // for each product slug, get user payout account and product price
     }
 }

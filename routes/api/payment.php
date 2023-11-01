@@ -14,7 +14,7 @@ Route::group([
     Route::post('/account', [PaymentController::class, 'payOutAccount'])
         ->middleware('can:subscribed,App\Models\Payment');
 
-    Route::post('/pay', [PaymentController::class, 'pay']);
+    Route::post('/purchase', [PaymentController::class, 'purchase']);
 
     Route::get('{payment}/subscription/enable', [PaymentController::class, 'enablePaystackSubscription'])
         ->middleware('can:subscribed,App\Models\Payment');

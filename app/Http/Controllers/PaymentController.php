@@ -201,7 +201,9 @@ class PaymentController extends Controller
             throw new BadRequestException('Total amount does not match quantity');
         }
 
-        $metadata = json_encode(array_merge($validated, ['email' => $user->email]));
+        $metadata = json_encode(array_merge($validated, [
+            'purchase_user_id' => $user->id,
+        ]));
 
         $payload = [
             'email' => $user->email,

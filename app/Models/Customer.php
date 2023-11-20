@@ -19,8 +19,8 @@ class Customer extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'email',
-        'user_id',
+        'product_owner_id',
+        'purchase_user_id',
         'latest_puchase_id'
     ];
 
@@ -28,6 +28,11 @@ class Customer extends Model
     public function user(): HasOneThrough
     {
         return $this->hasOneThrough(User::class, Product::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function product()

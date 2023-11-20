@@ -198,7 +198,7 @@ class PaystackRepository
                     if ($data['split'] && count($data['split'])) {
 
                         $metadata = $data['metadata'];
-                        $email = $metadata['email'];
+                        $purchase_user_id = $metadata['purchase_user_id'];
 
                         // SaveCustomerOrder::dispatch(
                         //     $data['reference'],
@@ -211,7 +211,7 @@ class PaystackRepository
                             foreach ($metadata['products'] as $product) {
 
                                 // $product_slug =
-                                $customer = $this->customerRepository->createOrUpdate($email, $product['product_slug']);
+                                $customer = $this->customerRepository->createOrUpdate($purchase_user_id, $product['product_slug']);
 
                                 $buildOrder = [
                                     'reference_no' => $data['reference'],

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('paystack_sub_account_code')->nullable();
             $table->text('business_name')->nullable();
             $table->text('bank_code')->nullable();
+            $table->text('bank_name')->nullable();
             $table->timestamps();
         });
     }

@@ -20,6 +20,12 @@ class Order extends Model
 
     public $incrementing = false;
 
+    protected $fillable = [
+        'reference_no',
+        'product_id',
+        'customer_id'
+    ];
+
     public function user(): HasOneThrough
     {
         return $this->hasOneThrough(User::class, Product::class);

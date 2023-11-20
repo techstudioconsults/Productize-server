@@ -18,6 +18,12 @@ class Customer extends Model
 
     public $incrementing = false;
 
+    protected $fillable = [
+        'email',
+        'user_id',
+        'latest_puchase_id'
+    ];
+
 
     public function user(): HasOneThrough
     {

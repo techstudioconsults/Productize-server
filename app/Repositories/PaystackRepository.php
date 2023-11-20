@@ -11,6 +11,8 @@ class PaystackRepository
     public function __construct(
         protected PaymentRepository $paymentRepository,
         protected UserRepository $userRepository,
+        protected CustomerRepository $customerRepository,
+        protected OrderRepository $orderRepository,
     ) {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
@@ -85,6 +87,11 @@ class PaystackRepository
 
     public function initializePurchaseTransaction(mixed $payload)
     {
+
+        $payload = array_merge($payload, [
+            "callback_url" => $this->client_url . '/dashboard'
+        ]);
+
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . $this->secret_key,
             "Cache-Control"  => "no-cache",
@@ -174,20 +181,51 @@ class PaystackRepository
             switch ($type) {
                 case 'subscription.create':
 
-                    $subcription_code = $data['subscription_code'];
-                    $customerCode = $data['customer']['customer_code'];
+                    // update sub code
+                    $customer = $data['customer'];
 
-                    $update = [
-                        'paystack_subscription_id' => $subcription_code
-                    ];
+                    $this->addUserPaymentSubscriptionCode(
+                        $data['subscription_code'],
+                        $customer['customer_code']
+                    );
 
-                    $this->paymentRepository->update('paystack_customer_code', $customerCode, $update);
+                    // update user to premium
+                    $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
+
                     break;
 
                 case 'charge.success':
-                    $email = $data['customer']['email'];
+                    if ($data['split'] && count($data['split'])) {
 
-                    $this->userRepository->guardedUpdate($email, 'account_type', 'premium');
+                        $metadata = $data['metadata'];
+                        $email = $metadata['email'];
+
+                        // SaveCustomerOrder::dispatch(
+                        //     $data['reference'],
+                        //     $metadata,
+                        //     $email
+                        // );
+
+                        try {
+                            // Update user customer list for each product
+                            foreach ($metadata['products'] as $product) {
+
+                                // $product_slug =
+                                $customer = $this->customerRepository->createOrUpdate($email, $product['product_slug']);
+
+                                $buildOrder = [
+                                    'reference_no' => $data['reference'],
+                                    'product_id' => $customer->latest_puchase_id,
+                                    'customer_id' => $customer->id
+                                ];
+
+                                $this->orderRepository->create($buildOrder);
+                            }
+                        } catch (\Throwable $th) {
+                            Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
+                        }
+                    }
+
                     break;
 
                 case 'invoice.create':
@@ -251,5 +289,14 @@ class PaystackRepository
         ])->get("{$this->baseUrl}/bank?country=nigeria");
 
         return $response['data'];
+    }
+
+    private function addUserPaymentSubscriptionCode(string $sub_code, string $customer_code)
+    {
+        $update = [
+            'paystack_subscription_id' => $sub_code
+        ];
+
+        $this->paymentRepository->update('paystack_customer_code', $customer_code, $update);
     }
 }

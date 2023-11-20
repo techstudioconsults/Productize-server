@@ -28,6 +28,7 @@ class UploadPayoutAccountRequest extends FormRequest
         return [
             'business_name' => 'string|required',
             'bank_code' => ['required', new Enum(PaystackBankCodesEnum::class)],
+            'bank_name' => 'string|required',
             'account_number' => 'string|max:10'
         ];
     }

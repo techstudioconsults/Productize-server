@@ -24,7 +24,6 @@ class PurchaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
             'amount' => 'required|numeric|min:0',
             'products' => 'required|array',
             'products.*.product_slug' => 'required|string',

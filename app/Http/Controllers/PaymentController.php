@@ -112,8 +112,11 @@ class PaymentController extends Controller
             try {
                 $data = json_decode($payload, true);
 
-                Log::critical('data', ['value' => $data['data']]);
-                Log::critical('event', ['value' => $data['event']]);
+                // Log::alert('data', ['value' => $data['data']]);
+                // Log::alert('event', ['value' => $data['event']]);
+
+                Log::channel('webhook')->info('data', ['value' => $data['data']]);
+                Log::channel('webhook')->info('event', ['value' => $data['event']]);
 
                 $this->paystackRepository->webhookEvents($data['event'], $data['data']);
             } catch (\Throwable $th) {
@@ -126,6 +129,9 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * set up user payout account
+     */
     public function payOutAccount(UploadPayoutAccountRequest $request)
     {
         $user = Auth::user();
@@ -133,6 +139,14 @@ class PaymentController extends Controller
         $credentials = $request->validated();
 
         $payload = array_merge($credentials, ["percentage_charge" => 5]);
+
+        /** Get user payment Info from DB */
+        $payments = $this->getUserPaymentInfo()['userPaymentInfo'];
+
+        /** Check for sub account */
+        if ($payments->paystack_sub_account_code) {
+            throw new BadRequestException('Sub Account Exist');
+        }
 
         try {
             $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
@@ -180,12 +194,14 @@ class PaymentController extends Controller
         });
 
         $total_amount = array_reduce($sub_accounts, function ($carry, $item) {
-            return $carry +( $item['amount']);
+            return $carry + ($item['amount']);
         }, 0);
 
         if ($total_amount !== $validated['amount']) {
             throw new BadRequestException('Total amount does not match quantity');
         }
+
+        $metadata = json_encode(array_merge($validated, ['email' => $user->email]));
 
         $payload = [
             'email' => $user->email,
@@ -194,7 +210,8 @@ class PaymentController extends Controller
                 'type' => 'flat',
                 'bearer_type' => 'account',
                 'subaccounts' => $sub_accounts
-            ]
+            ],
+            'metadata' => $metadata,
         ];
 
         try {
@@ -204,5 +221,23 @@ class PaymentController extends Controller
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
+    }
+
+    /**
+     * Get a List of all banks supported by paystack
+     * @return array - keys name, code
+     */
+    public function getBankList()
+    {
+        $banks = $this->paystackRepository->getBankList();
+
+        $response = Arr::map($banks, function ($bank) {
+            return [
+                'name' => $bank['name'],
+                'code' => $bank['code']
+            ];
+        });
+
+        return new JsonResponse($response, 200);
     }
 }

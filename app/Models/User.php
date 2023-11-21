@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class User extends Authenticatable implements CanResetPassword
@@ -84,9 +85,9 @@ class User extends Authenticatable implements CanResetPassword
         return $this->account_type === 'premium' ? true : false;
     }
 
-    public function customers(): HasManyThrough
+    public function customers(): HasMany
     {
-        return $this->hasManyThrough(Customer::class, Product::class);
+        return $this->hasMany(Customer::class, 'product_owner_id');
     }
 
     public function orders(): HasManyThrough

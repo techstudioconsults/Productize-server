@@ -5,12 +5,18 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
+use App\Http\Requests\PurchaseRequest;
+use App\Http\Requests\UploadPayoutAccountRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\User;
+use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
+use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -18,7 +24,9 @@ class PaymentController extends Controller
 {
 
     public function __construct(
-        protected PaystackRepository $paystackRepository
+        protected PaystackRepository $paystackRepository,
+        protected PaymentRepository $paymentRepository,
+        protected ProductRepository $productRepository
     ) {
     }
 
@@ -45,7 +53,10 @@ class PaymentController extends Controller
                 $customer = $this->paystackRepository->createCustomer($user);
                 $customer_code = $customer['customer_code'];
 
-                $payment =  Payment::create(['paystack_customer_code' => $customer_code, 'user_id' => $user->id]);
+                $payment = $this->paymentRepository->create(
+                    ['paystack_customer_code' => $customer_code],
+                    $user
+                );
 
                 // initialize customer transaction as a first timer
                 $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
@@ -101,8 +112,11 @@ class PaymentController extends Controller
             try {
                 $data = json_decode($payload, true);
 
-                Log::critical('data', ['value' => $data['data']]);
-                Log::critical('event', ['value' => $data['event']]);
+                // Log::alert('data', ['value' => $data['data']]);
+                // Log::alert('event', ['value' => $data['event']]);
+
+                Log::channel('webhook')->info('data', ['value' => $data['data']]);
+                Log::channel('webhook')->info('event', ['value' => $data['event']]);
 
                 $this->paystackRepository->webhookEvents($data['event'], $data['data']);
             } catch (\Throwable $th) {
@@ -115,8 +129,117 @@ class PaymentController extends Controller
         }
     }
 
-    public function pay()
+    /**
+     * set up user payout account
+     */
+    public function payOutAccount(UploadPayoutAccountRequest $request)
     {
         $user = Auth::user();
+
+        $credentials = $request->validated();
+
+        $payload = array_merge($credentials, ["percentage_charge" => 5]);
+
+        /** Get user payment Info from DB */
+        $payments = $this->getUserPaymentInfo()['userPaymentInfo'];
+
+        /** Check for sub account */
+        if ($payments->paystack_sub_account_code) {
+            throw new BadRequestException('Sub Account Exist');
+        }
+
+        try {
+            $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
+
+            $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
+
+            $updatables = array_merge($credentials, [
+                'paystack_sub_account_code' => $paystack_sub_account_code
+            ]);
+
+            $this->paymentRepository->update('user_id', $user->id, $updatables);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
+
+        return response('Account set up complete');
+    }
+
+    public function purchase(PurchaseRequest $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validated();
+
+        $products = $validated['products'];
+
+        $sub_accounts = Arr::map($products, function ($obj) {
+            $slug = $obj['product_slug'];
+
+            $product = $this->productRepository->getProductBySlug($slug);
+
+            $sub_account = $product->user->payment->paystack_sub_account_code;
+
+            $amount = $product->price * $obj['quantity'];
+
+            $deduction = $amount * 0.2;
+
+            $share = $product->price * $obj['quantity'] - $deduction;
+
+            return [
+                "subaccount" => $sub_account,
+                "amount" => $amount,
+                "share" => $share
+            ];
+        });
+
+        $total_amount = array_reduce($sub_accounts, function ($carry, $item) {
+            return $carry + ($item['amount']);
+        }, 0);
+
+        if ($total_amount !== $validated['amount']) {
+            throw new BadRequestException('Total amount does not match quantity');
+        }
+
+        $metadata = json_encode(array_merge($validated, [
+            'purchase_user_id' => $user->id,
+        ]));
+
+        $payload = [
+            'email' => $user->email,
+            'amount' => $total_amount,
+            'split' => [
+                'type' => 'flat',
+                'bearer_type' => 'account',
+                'subaccounts' => $sub_accounts
+            ],
+            'metadata' => $metadata,
+        ];
+
+        try {
+            $response = $this->paystackRepository->initializePurchaseTransaction($payload);
+
+            return $response;
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
+    }
+
+    /**
+     * Get a List of all banks supported by paystack
+     * @return array - keys name, code
+     */
+    public function getBankList()
+    {
+        $banks = $this->paystackRepository->getBankList();
+
+        $response = Arr::map($banks, function ($bank) {
+            return [
+                'name' => $bank['name'],
+                'code' => $bank['code']
+            ];
+        });
+
+        return new JsonResponse($response, 200);
     }
 }

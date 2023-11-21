@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\UserResource;
 use App\Models\Product;
+use App\Repositories\PaymentRepository;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;

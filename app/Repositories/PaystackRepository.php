@@ -11,6 +11,8 @@ class PaystackRepository
     public function __construct(
         protected PaymentRepository $paymentRepository,
         protected UserRepository $userRepository,
+        protected CustomerRepository $customerRepository,
+        protected OrderRepository $orderRepository,
     ) {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
@@ -73,6 +75,22 @@ class PaystackRepository
         if ($isSubscription) {
             $payload['plan'] = $this->premium_plan_code;
         }
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
+    public function initializePurchaseTransaction(mixed $payload)
+    {
+
+        $payload = array_merge($payload, [
+            "callback_url" => $this->client_url . '/dashboard'
+        ]);
 
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . $this->secret_key,
@@ -163,30 +181,51 @@ class PaystackRepository
             switch ($type) {
                 case 'subscription.create':
 
-                    $subcription_code = $data['subscription_code'];
-                    $customerCode = $data['customer']['customer_code'];
+                    // update sub code
+                    $customer = $data['customer'];
 
-                    $update = [
-                        'paystack_subscription_id' => $subcription_code
-                    ];
+                    $this->addUserPaymentSubscriptionCode(
+                        $data['subscription_code'],
+                        $customer['customer_code']
+                    );
 
-                    $this->paymentRepository->update('paystack_customer_code', $customerCode, $update);
+                    // update user to premium
+                    $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
+
                     break;
 
                 case 'charge.success':
-                    $email = $data['customer']['email'];
+                    if ($data['split'] && count($data['split'])) {
 
-                    // $update = [
-                    //     'account_type' => 'premium'
-                    // ];
+                        $metadata = $data['metadata'];
+                        $purchase_user_id = $metadata['purchase_user_id'];
 
-                    // $this->userRepository->update('email', $email, $update);
+                        // SaveCustomerOrder::dispatch(
+                        //     $data['reference'],
+                        //     $metadata,
+                        //     $email
+                        // );
 
-                    /**
-                     * Experimental
-                     * yet to test
-                     */
-                    $this->userRepository->guardedUpdate($email, 'account_type', 'premium');
+                        try {
+                            // Update user customer list for each product
+                            foreach ($metadata['products'] as $product) {
+
+                                // $product_slug =
+                                $customer = $this->customerRepository->createOrUpdate($purchase_user_id, $product['product_slug']);
+
+                                $buildOrder = [
+                                    'reference_no' => $data['reference'],
+                                    'product_id' => $customer->latest_puchase_id,
+                                    'customer_id' => $customer->id
+                                ];
+
+                                $this->orderRepository->create($buildOrder);
+                            }
+                        } catch (\Throwable $th) {
+                            Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
+                        }
+                    }
+
                     break;
 
                 case 'invoice.create':
@@ -208,16 +247,6 @@ class PaystackRepository
                 case 'subscription.disable':
                     $email = $data['customer']['email'];
 
-                    // $update = [
-                    //     'account_type' => 'free'
-                    // ];
-
-                    // $this->userRepository->update('email', $email, $update);
-
-                    /**
-                     * Experimental
-                     * yet to test
-                     */
                     $this->userRepository->guardedUpdate($email, 'account_type', 'free');
                     break;
 
@@ -237,5 +266,37 @@ class PaystackRepository
     {
         $computedSignature = hash_hmac('sha512', $payload, $this->secret_key);
         return $computedSignature === $signature;
+    }
+
+    /**
+     *
+     */
+    public function createSubAcount(array $payload)
+    {
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/subaccount", $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
+    public function getBankList()
+    {
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/bank?country=nigeria");
+
+        return $response['data'];
+    }
+
+    private function addUserPaymentSubscriptionCode(string $sub_code, string $customer_code)
+    {
+        $update = [
+            'paystack_subscription_id' => $sub_code
+        ];
+
+        $this->paymentRepository->update('paystack_customer_code', $customer_code, $update);
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Customer;
+use App\Models\User;
 use Database\Factories\ProductFactory;
 use Database\Seeders\Traits\DisableForeignKeys;
 use Database\Seeders\Traits\TruncateTable;
@@ -16,9 +17,13 @@ class CustomerSeeder extends Seeder
 
     public function run(): void
     {
+        // $customer = User::find(['email' => 'kinxly@testemail.com'])->first();
+
         $this->disableForeignKeys();
         $this->truncate('customers');
         // Customer::factory(10)->create();
+
+
         $this->enableForeignKeys();
     }
 }

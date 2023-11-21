@@ -11,6 +11,17 @@ Route::group([
 ], function () {
     Route::post('/subscription', [PaymentController::class, 'createSubscription']);
 
+    Route::post('/account', [PaymentController::class, 'payOutAccount'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::post('/account', [PaymentController::class, 'payOutAccount'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::get('/bank-list', [PaymentController::class, 'getBankList'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::post('/purchase', [PaymentController::class, 'purchase']);
+
     Route::get('{payment}/subscription/enable', [PaymentController::class, 'enablePaystackSubscription'])
         ->middleware('can:subscribed,App\Models\Payment');
 

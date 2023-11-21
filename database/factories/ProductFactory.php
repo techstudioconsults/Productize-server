@@ -32,10 +32,10 @@ class ProductFactory extends Factory
         ];
     }
 
-    public function configure(): static
-    {
-        return $this->afterCreating(function (Product $product) {
-            Customer::factory(10)->create(['product_id' => $product->id]);
-        });
-    }
+    // public function configure(): static
+    // {
+    //     return $this->afterCreating(function (Product $product) {
+    //         Customer::factory(10)->create(['product_id' => $product->id]);
+    //     });
+    // }
 }

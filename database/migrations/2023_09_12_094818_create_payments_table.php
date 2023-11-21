@@ -13,9 +13,14 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignIdFor(\App\Models\User::class, 'user_id');
             $table->string('paystack_subscription_id')->nullable();
             $table->string('paystack_customer_code')->nullable();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            $table->integer('account_number')->nullable();
+            $table->text('paystack_sub_account_code')->nullable();
+            $table->text('business_name')->nullable();
+            $table->text('bank_code')->nullable();
+            $table->text('bank_name')->nullable();
             $table->timestamps();
         });
     }

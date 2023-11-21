@@ -29,7 +29,7 @@ class CustomerFactory extends Factory
         return $this->afterCreating(function (Customer $customer) {
             Order::factory(5)->create(
                 [
-                    'product_id' => $customer->product_id,
+                    'product_id' => $customer->latest_puchase_id,
                     'customer_id' => $customer->id
                 ]
             );

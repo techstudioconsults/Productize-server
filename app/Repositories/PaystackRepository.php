@@ -228,6 +228,10 @@ class PaystackRepository
 
                     break;
 
+                case 'subscription.not_renew':
+                    # code...
+                    break;
+
                 case 'invoice.create':
                     # code...
                     break;

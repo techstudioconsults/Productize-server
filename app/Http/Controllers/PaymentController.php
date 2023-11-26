@@ -47,6 +47,10 @@ class PaymentController extends Controller
         $subscription = null;
         $payment = null;
 
+        // check if customer exist on paystack
+
+        // and check if they have an active subscription.
+
         // First timer ? Create customer Anyways
         if (!$userPaymentInfo || !$userPaymentInfo->paystack_customer_code) {
             try {

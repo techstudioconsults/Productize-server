@@ -180,6 +180,8 @@ class PaymentController extends Controller
 
             $sub_account = $product->user->payment->paystack_sub_account_code;
 
+            if (!$sub_account) throw new BadRequestException('Merchant Payout Account Not Found');
+
             $amount = $product->price * $obj['quantity'];
 
             $deduction = $amount * 0.2;

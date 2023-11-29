@@ -23,6 +23,13 @@ class ProductPolicy
             : throw new ForbiddenException($user->full_name . ' is not a subscribed user');
     }
 
+    public function publish(User $user)
+    {
+        return $user->hasSubAccount()
+            ? Response::allow()
+            : throw new ForbiddenException("Action Required: To proceed with the payout, please update your payout account information, $user->full_name");
+    }
+
     public function view(User $user, Product $product)
     {
         return $user->id === $product->user_id

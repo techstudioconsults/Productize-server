@@ -35,15 +35,15 @@ Route::group([
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'findBySlug'])
-    ->withoutMiddleware([
-        'auth:sanctum',
-        'can:allowed,App\Models\Product',
-        'can:premium,App\Models\Product',
-    ]);
+        ->withoutMiddleware([
+            'auth:sanctum',
+            'can:allowed,App\Models\Product',
+            'can:premium,App\Models\Product',
+        ]);
 
     Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
 
-    Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware('can:update,product');
+    Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware('can:update,product', 'can:publish,App\Models\Product');
 
     Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
 

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -26,7 +27,8 @@ class PaymentController extends Controller
     public function __construct(
         protected PaystackRepository $paystackRepository,
         protected PaymentRepository $paymentRepository,
-        protected ProductRepository $productRepository
+        protected ProductRepository $productRepository,
+        protected UserRepository $userRepository,
     ) {
     }
 
@@ -47,30 +49,53 @@ class PaymentController extends Controller
         $subscription = null;
         $payment = null;
 
+
+
         // check if customer exist on paystack
+        $paystack_customer = $this->paystackRepository->fetchCustomer($user->email);
 
-        // and check if they have an active subscription.
+        // check for active subscription
+        if (count($paystack_customer['subscriptions']) && $paystack_customer['subscriptions'][0]['status'] === 'active') {
 
-        // First timer ? Create customer Anyways
-        if (!$userPaymentInfo || !$userPaymentInfo->paystack_customer_code) {
-            try {
-                $customer = $this->paystackRepository->createCustomer($user);
-                $customer_code = $customer['customer_code'];
-
-                $payment = $this->paymentRepository->create(
-                    ['paystack_customer_code' => $customer_code],
-                    $user
-                );
-
-                // initialize customer transaction as a first timer
-                $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
-            } catch (\Throwable $th) {
-                throw new ServerErrorException($th->getMessage());
+            // Everything is fine in paradise.
+            if ($userPaymentInfo && $userPaymentInfo->paystack_customer_code && $userPaymentInfo->paystack_subscription_id) {
+                throw new BadRequestException('user currently have a subscription plan');
             }
-        } else {
-            // Uppdate subscription
+
+            // How come? We should have the customer code and subcriptionID already stored in the DB so this code should never run.
+            Log::channel('slack')->alert('NO SUBSCRIPTION ID', ['context' => [
+                'email' => $user->email,
+                'paystack_customer_code' => $paystack_customer['customer_code']
+            ]]);
+
+            // Update subsciption code and customer code
+            $this->paymentRepository->update('user_id', $user->id, [
+                'paystack_customer_code' => $paystack_customer['customer_code'],
+                'paystack_subscription_id' =>  $paystack_customer['subscriptions'][0]['subscription_code']
+            ]);
+
+            // Ensure the user remains a premium user
+            $this->userRepository->guardedUpdate($user->email, 'account_type', 'premium');
+
             throw new BadRequestException('user currently have a subscription plan');
         }
+
+        // First timer ? Create customer Anyways
+        try {
+            $customer = $this->paystackRepository->createCustomer($user);
+            $customer_code = $customer['customer_code'];
+
+            $payment = $this->paymentRepository->create(
+                ['paystack_customer_code' => $customer_code],
+                $user
+            );
+
+            // initialize customer transaction as a first timer
+            $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
+
 
         /**
          * Return Authorization url to the client for payment.

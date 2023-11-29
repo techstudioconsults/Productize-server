@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\ApiException;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -58,6 +59,30 @@ class PaystackRepository
         ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
         return $response['data'];
+    }
+
+    /**
+     * https://paystack.com/docs/api/customer/#fetch
+     */
+    public function fetchCustomer(string $email)
+    {
+        $url = $this->baseUrl . "/customer/$email";
+
+        try {
+            $response = Http::withHeaders([
+                "Authorization" => 'Bearer ' . $this->secret_key,
+            ])->get($url)->throw()->json();
+
+            return $response['data'];
+        } catch (\Throwable $th) {
+            $status_code = $th->getCode();
+
+            if ($status_code === 404) {
+                return null;
+            } else {
+                throw new ApiException($th->getMessage(), $status_code);
+            }
+        }
     }
 
     /**

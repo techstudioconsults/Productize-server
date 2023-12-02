@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\PurchaseRequest;
 use App\Http\Requests\UploadPayoutAccountRequest;
@@ -63,13 +64,14 @@ class PaymentController extends Controller
             }
 
             // How come? We should have the customer code and subcriptionID already stored in the DB so this code should never run.
+            // Set up a problem log on slack for this
             Log::channel('slack')->alert('NO SUBSCRIPTION ID', ['context' => [
                 'email' => $user->email,
                 'paystack_customer_code' => $paystack_customer['customer_code']
             ]]);
 
             // Update subsciption code and customer code
-            $this->paymentRepository->update('user_id', $user->id, [
+            $this->paymentRepository->updateOrCreate($user->id, [
                 'paystack_customer_code' => $paystack_customer['customer_code'],
                 'paystack_subscription_id' =>  $paystack_customer['subscriptions'][0]['subscription_code']
             ]);
@@ -167,7 +169,10 @@ class PaymentController extends Controller
 
         $credentials = $request->validated();
 
-        $payload = array_merge($credentials, ["percentage_charge" => 5]);
+        $payload = array_merge($credentials, [
+            "percentage_charge" => 5,
+            "primary_contact_email" => $user->email
+        ]);
 
         /** Get user payment Info from DB */
         $payments = $this->getUserPaymentInfo()['userPaymentInfo'];
@@ -191,7 +196,11 @@ class PaymentController extends Controller
             throw new ServerErrorException($th->getMessage());
         }
 
-        return response('Account set up complete');
+        $response = [
+            'message' => 'Account set up complete'
+        ];
+
+        return new PaymentResource($payments, $response);
     }
 
     public function purchase(PurchaseRequest $request)
@@ -207,20 +216,25 @@ class PaymentController extends Controller
 
             $product = $this->productRepository->getProductBySlug($slug);
 
+            if (!$product) throw new NotFoundException("Product with slug $slug not found");
+
             $sub_account = $product->user->payment->paystack_sub_account_code;
 
             if (!$sub_account) throw new BadRequestException('Merchant Payout Account Not Found');
 
+            // Total Product Amount
             $amount = $product->price * $obj['quantity'];
 
-            $deduction = $amount * 0.2;
+            // Productize's %
+            $deduction = $amount * 0.05;
 
-            $share = $product->price * $obj['quantity'] - $deduction;
+            // Take it off total amount to sub account
+            $share = $amount - $deduction;
 
             return [
                 "subaccount" => $sub_account,
                 "amount" => $amount,
-                "share" => $share
+                "share" => $share * 100 // Convert to naira. Paystack values at kobo
             ];
         });
 
@@ -238,7 +252,7 @@ class PaymentController extends Controller
 
         $payload = [
             'email' => $user->email,
-            'amount' => $total_amount,
+            'amount' => $total_amount * 100,
             'split' => [
                 'type' => 'flat',
                 'bearer_type' => 'account',

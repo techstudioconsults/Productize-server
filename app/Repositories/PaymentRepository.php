@@ -25,4 +25,9 @@ class PaymentRepository
     {
         return Payment::where($key, $value)->update($updatables);
     }
+
+    public function updateOrCreate(string $user_id, array $updatables)
+    {
+        return Payment::updateOrCreate(["user_id" => $user_id], $updatables);
+    }
 }

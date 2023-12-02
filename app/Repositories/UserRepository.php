@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
-
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Log;
@@ -90,7 +90,7 @@ class UserRepository
      */
     public function getTotalSales(User $user): int
     {
-        return 50;
+        return $user->orders()->count();
     }
 
     /**
@@ -108,6 +108,6 @@ class UserRepository
 
     public function getTotalCustomers(User $user): int
     {
-        return 10;
+        return Customer::where('product_owner_id', $user->id)->count();
     }
 }

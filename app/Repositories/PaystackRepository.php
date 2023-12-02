@@ -241,7 +241,11 @@ class PaystackRepository
                                 $buildOrder = [
                                     'reference_no' => $data['reference'],
                                     'product_id' => $customer->latest_puchase_id,
-                                    'customer_id' => $customer->id
+                                    'customer_id' => $customer->id,
+                                    // Total amount
+
+                                    // what defines new order
+                                    // new order revenue?
                                 ];
 
                                 $this->orderRepository->create($buildOrder);

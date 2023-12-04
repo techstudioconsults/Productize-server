@@ -99,11 +99,7 @@ class UserRepository
      */
     public function getTotalRevenues(User $user): int
     {
-        // get all products sold
-        // total revenue per product sold
-        //sum of all total revenue per product sold
-        $totalSales = $this->getTotalSales($user);
-        return 348000;
+        return $user->orders()->sum('total_amount');
     }
 
     public function getTotalCustomers(User $user): int

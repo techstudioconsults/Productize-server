@@ -6,6 +6,7 @@ use App\Enums\ProductStatusEnum;
 use App\Events\Products;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -130,6 +131,11 @@ class ProductRepository
     public function getTotalProductCountPerUser(User $user): int
     {
         return Product::where('user_id', $user->id)->count();
+    }
+
+    public function getTotalOrder(Product $product)
+    {
+        return Order::where('product_id', $product->id)->count();
     }
 
     public function getTotalSales(User $user): int

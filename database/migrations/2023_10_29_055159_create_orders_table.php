@@ -16,6 +16,8 @@ return new class extends Migration
             $table->text('reference_no');
             $table->foreignIdFor(\App\Models\Product::class, 'product_id');
             $table->foreignIdFor(\App\Models\Customer::class, 'customer_id');
+            $table->text('total_amount');
+            $table->text('quantity');
             $table->timestamps();
         });
     }

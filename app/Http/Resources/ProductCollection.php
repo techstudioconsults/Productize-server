@@ -21,7 +21,12 @@ class ProductCollection extends ResourceCollection
                     'thumbnail' => $product->thumbnail,
                     'price' => $product->price,
                     'publisher' => $product->user->full_name,
-                    'slug' => $product->slug
+                    'slug' => $product->slug,
+                    'highlights' => $product->highlights,
+                    'product_type' => $product->product_type,
+                    'cover_photos' => $product->cover_photos,
+                    'tags' => $product->tags,
+                    'description' => $product->description,
                 ];
             }),
         ];

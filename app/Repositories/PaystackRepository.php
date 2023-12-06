@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\ApiException;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ class PaystackRepository
         protected UserRepository $userRepository,
         protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
+        protected ProductRepository $productRepository,
     ) {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
@@ -58,6 +60,30 @@ class PaystackRepository
         ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
         return $response['data'];
+    }
+
+    /**
+     * https://paystack.com/docs/api/customer/#fetch
+     */
+    public function fetchCustomer(string $email)
+    {
+        $url = $this->baseUrl . "/customer/$email";
+
+        try {
+            $response = Http::withHeaders([
+                "Authorization" => 'Bearer ' . $this->secret_key,
+            ])->get($url)->throw()->json();
+
+            return $response['data'];
+        } catch (\Throwable $th) {
+            $status_code = $th->getCode();
+
+            if ($status_code === 404) {
+                return null;
+            } else {
+                throw new ApiException($th->getMessage(), $status_code);
+            }
+        }
     }
 
     /**
@@ -210,13 +236,20 @@ class PaystackRepository
                             // Update user customer list for each product
                             foreach ($metadata['products'] as $product) {
 
-                                // $product_slug =
-                                $customer = $this->customerRepository->createOrUpdate($purchase_user_id, $product['product_slug']);
+                                $product_slug = $product['product_slug'];
+
+                                $quantity = $product['quantity'];
+
+                                $product = $this->productRepository->getProductBySlug($product_slug);
+
+                                $customer = $this->customerRepository->createOrUpdate($purchase_user_id, $product_slug);
 
                                 $buildOrder = [
                                     'reference_no' => $data['reference'],
                                     'product_id' => $customer->latest_puchase_id,
-                                    'customer_id' => $customer->id
+                                    'customer_id' => $customer->id,
+                                    'total_amount' => $product->price * $quantity,
+                                    'quantity' => $quantity
                                 ];
 
                                 $this->orderRepository->create($buildOrder);

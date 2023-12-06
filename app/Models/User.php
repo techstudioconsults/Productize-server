@@ -85,6 +85,12 @@ class User extends Authenticatable implements CanResetPassword
         return $this->account_type === 'premium' ? true : false;
     }
 
+    public function subAccount(): bool
+    {
+        $payment = $this->payment()->first();
+        return $payment->paystack_sub_account_code ? true : false;
+    }
+
     public function customers(): HasMany
     {
         return $this->hasMany(Customer::class, 'product_owner_id');

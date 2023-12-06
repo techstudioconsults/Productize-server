@@ -23,11 +23,11 @@ class CustomerRepository
         $product = $this->productRepository->getProductBySlug($product_slug);
 
         $customer = Customer::updateOrCreate(
-            ['purchase_user_id' => $purchase_user_id],
             [
+                'purchase_user_id' => $purchase_user_id,
                 'product_owner_id' => $product->user_id,
-                'latest_puchase_id' => $product->id
-            ]
+            ],
+            ['latest_puchase_id' => $product->id]
         );
 
         return $customer;

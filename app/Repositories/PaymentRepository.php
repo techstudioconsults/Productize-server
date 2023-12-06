@@ -15,8 +15,19 @@ class PaymentRepository
         return $payment;
     }
 
-    public function update(string $key, string $value, array $array)
+    /**
+     * @param key filter column.
+     * @param value filter column value.
+     * @param updatables key pair values to be updated.
+     * @return Payment
+     */
+    public function update(string $key, string $value, array $updatables)
     {
-        return Payment::where($key, $value)->update($array);
+        return Payment::where($key, $value)->update($updatables);
+    }
+
+    public function updateOrCreate(string $user_id, array $updatables)
+    {
+        return Payment::updateOrCreate(["user_id" => $user_id], $updatables);
     }
 }

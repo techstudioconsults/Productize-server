@@ -23,7 +23,9 @@ class Order extends Model
     protected $fillable = [
         'reference_no',
         'product_id',
-        'customer_id'
+        'customer_id',
+        'total_amount',
+        'quantity'
     ];
 
     public function user(): HasOneThrough

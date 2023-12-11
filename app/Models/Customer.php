@@ -36,10 +36,17 @@ class Customer extends Model
         return $this->belongsTo(User::class, 'buyer_id');
     }
 
-    public function orders()
+    public function order()
     {
-        return $this->hasManyThrough(ProductOrder::class, Order::class, 'buyer_id', 'order_id');
+        return $this->belongsTo(Order::class);
     }
+
+    // public function orders()
+    // {
+    //     // return $this->user;
+    //     // return $this->hasManyThrough(User::class,  'buyer_id');
+    //     // return $this->hasManyThrough(ProductOrder::class, Order::class, 'buyer_id', 'order_id');
+    // }
 
     public function product()
     {

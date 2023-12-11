@@ -67,6 +67,9 @@ class UserController extends Controller
         try {
             $user = $this->userRepository->update('id', $userId, $validated);
 
+            // Check for profile completion
+            $this->userRepository->profileCompletedAt($user);
+            
             return new UserResource($user);
         } catch (Throwable $e) {
             throw new ApiException($e->getMessage(), $e->getCode());

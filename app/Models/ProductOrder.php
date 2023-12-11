@@ -5,10 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
-class Order extends Model
+class ProductOrder extends Model
 {
     use HasFactory;
     use HasUuids;
@@ -20,24 +18,15 @@ class Order extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'reference_no',
-        'buyer_id',
+        'order_id',
+        'product_id',
         'total_amount',
+        'quantity'
     ];
 
-    public function user(): HasOneThrough
+    public function order()
     {
-        return $this->hasOneThrough(User::class, Product::class);
-    }
-
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function buyer()
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Order::class);
     }
 
     public function product()

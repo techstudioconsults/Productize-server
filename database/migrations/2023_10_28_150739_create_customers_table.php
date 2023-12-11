@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\User::class, 'purchase_user_id');
+            $table->foreignIdFor(\App\Models\User::class, 'buyer_id');
             $table->foreignIdFor(\App\Models\User::class, 'product_owner_id');
             $table->foreignIdFor(\App\Models\Product::class, 'latest_puchase_id');
             $table->timestamps();

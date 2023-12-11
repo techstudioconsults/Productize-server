@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('product_orders', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->text('reference_no');
-            $table->foreignIdFor(\App\Models\User::class, 'buyer_id');
             $table->integer('total_amount');
+            $table->integer('quantity');
+            $table->foreignIdFor(\App\Models\Order::class, 'order_id');
+            $table->foreignIdFor(\App\Models\Product::class, 'product_id');
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('product_orders');
     }
 };

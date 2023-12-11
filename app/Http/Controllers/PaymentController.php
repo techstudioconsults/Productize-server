@@ -19,6 +19,7 @@ use App\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -192,6 +193,8 @@ class PaymentController extends Controller
             ]);
 
             $this->paymentRepository->update('user_id', $user->id, $updatables);
+
+            $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
@@ -216,11 +219,13 @@ class PaymentController extends Controller
 
             $product = $this->productRepository->getProductBySlug($slug);
 
+            $merchant = $product->user;
+
             if (!$product) throw new NotFoundException("Product with slug $slug not found");
 
-            $sub_account = $product->user->payment->paystack_sub_account_code;
+            $sub_account = $product->user?->payment?->paystack_sub_account_code;
 
-            if (!$sub_account) throw new BadRequestException('Merchant Payout Account Not Found');
+            if (!$sub_account) throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
 
             // Total Product Amount
             $amount = $product->price * $obj['quantity'];
@@ -247,7 +252,7 @@ class PaymentController extends Controller
         }
 
         $metadata = json_encode(array_merge($validated, [
-            'purchase_user_id' => $user->id,
+            'buyer_id' => $user->id,
         ]));
 
         $payload = [

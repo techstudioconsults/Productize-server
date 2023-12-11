@@ -9,10 +9,10 @@ Route::controller(OrderController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
-        'can:premium,App\Models\Order',
+        'can:premium,App\Models\ProductOrder',
     ])
     ->group(function () {
         Route::get('/', 'index');
-        
+
         Route::get('/{order}', 'show')->middleware('can:view,order');
     });

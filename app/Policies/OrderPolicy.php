@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Exceptions\ForbiddenException;
-use App\Models\Order;
+use App\Models\ProductOrder;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -23,9 +23,8 @@ class OrderPolicy
             : throw new ForbiddenException($user->full_name . ' is not a subscribed user');
     }
 
-    public function view(User $user, Order $order)
+    public function view(User $user, ProductOrder $order)
     {
-
         return $user->id === $order->product->user->id
             ? Response::allow()
             : throw new ForbiddenException($user->full_name. ' is not permitted to request this resource');

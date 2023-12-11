@@ -9,6 +9,7 @@ use App\Exceptions\UnprocessableException;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
@@ -151,6 +152,20 @@ class ProductRepository
     public function getTotalCustomers(User $user): int
     {
         return $this->userRepository->getTotalCustomers($user);
+    }
+
+    public function getNewOrders(User $user)
+    {
+        $two_days_ago = Carbon::now()->subDays(2);
+
+        $new_orders = $user->orders->whereBetween('created_at', [$two_days_ago, now()]);
+
+        $result = [
+            'count' => $new_orders->count(),
+            'revenue' => $new_orders->sum('total_amount')
+        ];
+
+        return $result;
     }
 
     public function update(Product $product, array $updatables)

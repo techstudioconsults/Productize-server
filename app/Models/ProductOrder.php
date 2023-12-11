@@ -23,4 +23,14 @@ class ProductOrder extends Model
         'total_amount',
         'quantity'
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

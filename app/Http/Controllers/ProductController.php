@@ -135,11 +135,15 @@ class ProductController extends Controller
 
         $total_customers = $this->productRepository->getTotalCustomers($user);
 
+        $new_orders = $this->productRepository->getNewOrders($user);
+
         $result = [
             'total_products' => $total_products,
             'total_sales' => $total_sales,
             'total_customers' => $total_customers,
-            'total_revenues' => $total_revenues
+            'total_revenues' => $total_revenues,
+            'new_orders' => $new_orders['count'],
+            'new_orders_revenue' => $new_orders['revenue'],
         ];
 
         return new JsonResponse(['data' => $result]);
@@ -212,7 +216,7 @@ class ProductController extends Controller
         if ($product->trashed()) {
             throw new BadRequestException('Deleted products cannot be published or unPublished.');
         }
-        
+
         $status = ProductStatusEnum::Draft->value;
 
         if ($product->status === $status) {

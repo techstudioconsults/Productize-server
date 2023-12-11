@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\UnprocessableException;
-use App\Models\Order;
-use App\Http\Requests\StoreOrderRequest;
-use App\Http\Resources\OrderResource;
+use App\Http\Resources\ProductOrderResource;
+use App\Models\ProductOrder;
 use Auth;
 use Illuminate\Http\Request;
 use Validator;
@@ -39,16 +38,11 @@ class OrderController extends Controller
 
         $orders = $orders->paginate(10);
 
-        return OrderResource::collection($orders);
+        return ProductOrderResource::collection($orders);
     }
 
-    public function store(StoreOrderRequest $request)
+    public function show(ProductOrder $order)
     {
-        //
-    }
-
-    public function show(Order $order)
-    {
-        return new OrderResource($order);
+        return new ProductOrderResource($order);
     }
 }

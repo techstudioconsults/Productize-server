@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Customer extends Model
@@ -25,14 +26,19 @@ class Customer extends Model
     ];
 
 
-    public function user(): HasOneThrough
+    // public function user(): HasOneThrough
+    // {
+    //     return $this->hasOneThrough(User::class, Product::class);
+    // }
+
+    public function user()
     {
-        return $this->hasOneThrough(User::class, Product::class);
+        return $this->belongsTo(User::class, 'buyer_id');
     }
 
-    public function customer()
+    public function orders()
     {
-        return $this->belongsTo(User::class, 'purchase_user_id');
+        return $this->hasManyThrough(ProductOrder::class, Order::class, 'buyer_id', 'order_id');
     }
 
     public function product()

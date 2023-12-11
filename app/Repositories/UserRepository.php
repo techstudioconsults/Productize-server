@@ -105,7 +105,7 @@ class UserRepository
 
     public function getTotalCustomers(User $user): int
     {
-        return Customer::where('product_owner_id', $user->id)->count();
+        return $user->customers()->count();
     }
 
     public function profileCompletedAt(User $user)
@@ -128,7 +128,7 @@ class UserRepository
 
         $un_filled = $collection->whereNull();
 
-        if($un_filled->isEmpty() && !$user->profile_completed_at) {
+        if ($un_filled->isEmpty() && !$user->profile_completed_at) {
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }

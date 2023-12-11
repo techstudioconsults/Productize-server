@@ -8,6 +8,7 @@ use App\Exceptions\UnprocessableException;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -105,5 +106,31 @@ class UserRepository
     public function getTotalCustomers(User $user): int
     {
         return Customer::where('product_owner_id', $user->id)->count();
+    }
+
+    public function profileCompletedAt(User $user)
+    {
+        /**
+         * Make a collection of profile properties to be tracked
+         * check if they are null
+         * If all not null and and profile_completed_at is also not null
+         * set profile_completed_at to current date.
+         */
+        $collection = collect([
+            $user->username,
+            $user->phone_number,
+            $user->bio,
+            $user->logo,
+            $user->twitter_account,
+            $user->facebook_account,
+            $user->youtube_account,
+        ]);
+
+        $un_filled = $collection->whereNull();
+
+        if($un_filled->isEmpty() && !$user->profile_completed_at) {
+            $user->profile_completed_at = Carbon::now();
+            $user->save();
+        }
     }
 }

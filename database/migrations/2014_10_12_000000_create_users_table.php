@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('phone_number', 14)->unique()->nullable();
             $table->string('bio', 1000)->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('profile_completed_at')->nullable();
+            $table->timestamp('first_product_created_at')->nullable();
+            $table->timestamp('payout_setup_at')->nullable();
+            $table->timestamp('first_sale_at')->nullable();
             $table->string('password')->nullable();
             $table->string('logo')->nullable();
             $table->string('twitter_account')->nullable();

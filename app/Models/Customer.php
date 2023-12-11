@@ -20,7 +20,7 @@ class Customer extends Model
 
     protected $fillable = [
         'product_owner_id',
-        'purchase_user_id',
+        'buyer_id',
         'latest_puchase_id'
     ];
 

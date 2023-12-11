@@ -15,16 +15,16 @@ class CustomerRepository
 
     /**
      * Create a new customer for a user
-     * @param purchase_user_id Customer's Id
+     * @param buyer_id Customer's Id
      * @param product_slug Product slugified
      */
-    public function createOrUpdate(string $purchase_user_id, string $product_slug)
+    public function createOrUpdate(string $buyer_id, string $product_slug)
     {
         $product = $this->productRepository->getProductBySlug($product_slug);
 
         $customer = Customer::updateOrCreate(
             [
-                'purchase_user_id' => $purchase_user_id,
+                'buyer_id' => $buyer_id,
                 'product_owner_id' => $product->user_id,
             ],
             ['latest_puchase_id' => $product->id]

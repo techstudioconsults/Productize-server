@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Exceptions\ApiException;
+use App\Models\ProductOrder;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -222,9 +223,8 @@ class PaystackRepository
 
                 case 'charge.success':
                     if ($data['split'] && count($data['split'])) {
-
                         $metadata = $data['metadata'];
-                        $purchase_user_id = $metadata['purchase_user_id'];
+                        $buyer_id = $metadata['buyer_id'];
 
                         // SaveCustomerOrder::dispatch(
                         //     $data['reference'],
@@ -232,7 +232,19 @@ class PaystackRepository
                         //     $email
                         // );
 
+
+
                         try {
+                            // Create Order
+                            $buildOrder = [
+                                'reference_no' => $data['reference'],
+                                'buyer_id' => $buyer_id,
+                                'total_amount' => $metadata['amount']
+                            ];
+
+                            $order = $this->orderRepository->create($buildOrder);
+
+
                             // Update user customer list for each product
                             foreach ($metadata['products'] as $product) {
 
@@ -242,17 +254,16 @@ class PaystackRepository
 
                                 $product = $this->productRepository->getProductBySlug($product_slug);
 
-                                $customer = $this->customerRepository->createOrUpdate($purchase_user_id, $product_slug);
+                                $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
 
-                                $buildOrder = [
-                                    'reference_no' => $data['reference'],
-                                    'product_id' => $customer->latest_puchase_id,
-                                    'customer_id' => $customer->id,
+                                $buildProductOrder = [
+                                    'product_id' => $product->id,
+                                    'order_id' => $order->id,
                                     'total_amount' => $product->price * $quantity,
                                     'quantity' => $quantity
                                 ];
 
-                                $this->orderRepository->create($buildOrder);
+                                ProductOrder::create($buildProductOrder);
                             }
                         } catch (\Throwable $th) {
                             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);

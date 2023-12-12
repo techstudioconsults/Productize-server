@@ -62,7 +62,7 @@ class Product extends Model
         return $this->hasManyThrough(User::class, Sale::class, 'customer_id');
     }
 
-    public function orders()
+    public function sales()
     {
         return $this->hasMany(Sale::class);
     }

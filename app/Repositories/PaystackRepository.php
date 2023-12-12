@@ -14,7 +14,6 @@ class PaystackRepository
     public function __construct(
         protected PaymentRepository $paymentRepository,
         protected UserRepository $userRepository,
-        // protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
         protected ProductRepository $productRepository,
     ) {

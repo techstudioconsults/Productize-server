@@ -9,6 +9,8 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
+     // user_id, product_id, order_id
     public function up(): void
     {
         Schema::create('customers', function (Blueprint $table) {

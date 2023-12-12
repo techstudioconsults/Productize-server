@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Exceptions\ApiException;
+use App\Models\Cart;
 use App\Models\ProductOrder;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
@@ -225,6 +226,9 @@ class PaystackRepository
                     if ($data['split'] && count($data['split'])) {
                         $metadata = $data['metadata'];
                         $buyer_id = $metadata['buyer_id'];
+
+                        // Delete Cart
+                        Cart::where('user_id', $buyer_id)->delete();
 
                         // SaveCustomerOrder::dispatch(
                         //     $data['reference'],

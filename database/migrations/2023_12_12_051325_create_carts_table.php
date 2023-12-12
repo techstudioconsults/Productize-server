@@ -9,16 +9,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-
-     // sales table total_amount, orderId, customer_id, product_id, owner_id
     public function up(): void
     {
-        Schema::create('product_orders', function (Blueprint $table) {
+        Schema::create('carts', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignIdFor(\App\Models\User::class, 'user_id')->unique();
             $table->integer('total_amount');
-            $table->integer('quantity');
-            $table->foreignIdFor(\App\Models\Order::class, 'order_id');
-            $table->foreignIdFor(\App\Models\Product::class, 'product_id');
+            $table->jsonb('products');
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_orders');
+        Schema::dropIfExists('carts');
     }
 };

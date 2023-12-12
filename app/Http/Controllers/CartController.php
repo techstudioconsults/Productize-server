@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
-use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
 use Auth;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +29,9 @@ class CartController extends Controller
         $cart = $user->cart;
 
         if (!$cart) {
-            return new JsonResponse([]);
+            return new JsonResponse([
+                'data' => []
+            ]);
         }
 
         return new CartResource($cart);

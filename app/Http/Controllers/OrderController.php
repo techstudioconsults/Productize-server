@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\UnprocessableException;
-use App\Http\Resources\SaleResource;
+use App\Http\Resources\SalesResource;
 use App\Models\Sale;
 use Auth;
 use Illuminate\Http\Request;
@@ -38,11 +38,11 @@ class OrderController extends Controller
 
         $orders = $orders->paginate(10);
 
-        return SaleResource::collection($orders);
+        return SalesResource::collection($orders);
     }
 
     public function show(Sale $order)
     {
-        return new SaleResource($order);
+        return new SalesResource($order);
     }
 }

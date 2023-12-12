@@ -18,8 +18,12 @@ class SalesResource extends JsonResource
             'product_title' => $this->product->title,
             'product_price' => $this->product->price,
             'quantity' => $this->quantity,
+            'total_amount' => $this->total_amount,
             'customer_name' => $this->customer->full_name,
             'customer_email' => $this->customer->email,
+            'total_order' => $this->product->sales->count(),
+            'total_sales' => $this->product->sales->sum('total_amount'),
+            'total_views' => 1,
             'date' => $this->created_at
         ];
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Sale extends Model
 {
@@ -35,8 +36,8 @@ class Sale extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function customers()
+    public function customer(): BelongsTo
     {
-        return $this->hasOne(User::class, 'customer_id');
+        return $this->belongsTo(User::class, 'customer_id');
     }
 }

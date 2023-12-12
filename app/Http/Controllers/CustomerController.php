@@ -52,12 +52,12 @@ class CustomerController extends Controller
         //
     }
 
-    public function show(Customer $customer)
+    public function show()
     {
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        // $orders = Order::where('buyer_id', '=', $customer->buyer_id && )->get();
-        // Find in sales where the order->buyer is customer->buyer and product->user->id = customer->product_owner_id
-        return new CustomerResource($customer);
+        // // $orders = Order::where('buyer_id', '=', $customer->buyer_id && )->get();
+        // // Find in sales where the order->buyer is customer->buyer and product->user->id = customer->product_owner_id
+        // return new CustomerResource($customer);
     }
 }

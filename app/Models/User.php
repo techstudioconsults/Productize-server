@@ -91,19 +91,19 @@ class User extends Authenticatable implements CanResetPassword
         return $payment->paystack_sub_account_code ? true : false;
     }
 
-    public function customers(): HasMany
-    {
-        return $this->hasMany(Customer::class, 'product_owner_id');
-    }
+    // public function customers(): HasMany
+    // {
+    //     return $this->hasMany(Customer::class, 'product_owner_id');
+    // }
 
     public function orders(): HasManyThrough
     {
-        return $this->hasManyThrough(ProductOrder::class, Product::class);
+        return $this->hasManyThrough(Sale::class, Product::class);
     }
 
     public function purchases()
     {
-        return $this->hasManyThrough(ProductOrder::class, Order::class, 'buyer_id', 'order_id');
+        return $this->hasManyThrough(Sale::class, Order::class, 'buyer_id', 'order_id');
     }
 
     public function cart()

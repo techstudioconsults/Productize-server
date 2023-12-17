@@ -28,6 +28,8 @@ class CartController extends Controller
 
         $cart = $user->cart;
 
+
+
         if (!$cart) {
             return new JsonResponse([
                 'data' => []

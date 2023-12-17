@@ -16,6 +16,7 @@ class SalesResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'product_id' => $this->product->id,
             'product_title' => $this->product->title,
             'product_price' => $this->product->price,
             'product_thumbnail' => $this->product->thumbnail,

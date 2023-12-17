@@ -4,10 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\UnprocessableException;
 use App\Models\Customer;
-use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Resources\CustomerResource;
-use App\Http\Resources\SalesResource;
-use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -46,18 +43,6 @@ class CustomerController extends Controller
         $customers = $customers->paginate(10);
 
         return CustomerResource::collection($customers);
-    }
-
-    public function latestPurchases(Customer $customer)
-    {
-        $total_purchase = $customer->user->purchases()
-            ->whereHas('product', function ($query) use ($customer) {
-                $query->where('user_id', $customer->product_owner_id);
-            })->orderBy('created_at', 'desc')
-            ->take(3)
-            ->get();
-
-        return SalesResource::collection($total_purchase);
     }
 
     public function show(Customer $customer)

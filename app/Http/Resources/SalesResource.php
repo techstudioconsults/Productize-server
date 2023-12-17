@@ -15,8 +15,10 @@ class SalesResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'product_title' => $this->product->title,
             'product_price' => $this->product->price,
+            'product_thumbnail' => $this->product->thumbnail,
             'quantity' => $this->quantity,
             'total_amount' => $this->total_amount,
             'customer_name' => $this->customer->full_name,

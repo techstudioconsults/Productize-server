@@ -14,6 +14,7 @@ class PaystackRepository
     public function __construct(
         protected PaymentRepository $paymentRepository,
         protected UserRepository $userRepository,
+        protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
         protected ProductRepository $productRepository,
     ) {
@@ -247,6 +248,8 @@ class PaystackRepository
                                 $quantity = $product['quantity'];
 
                                 $product = $this->productRepository->getProductBySlug($product_slug);
+
+                                $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
 
                                 $buildSale = [
                                     'product_id' => $product->id,

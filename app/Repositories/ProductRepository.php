@@ -192,18 +192,7 @@ class ProductRepository
 
             $url = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
 
-            $format = Storage::mimeType('digital-products/' . $originalName);
-            $sizeInBytes = Storage::size('digital-products/' . $originalName);
-            $sizeInMB = $sizeInBytes / (1024 * 1024); // Convert bytes to megabytes
-
-            // Round the result to two decimal places
-            $sizeInMB = round($sizeInMB, 2);
-
-            array_push($uploadedData, [
-                'url' => $url,
-                'format' => $format,
-                'size' => $sizeInMB
-            ]);
+            array_push($uploadedData, $url);
         }
 
         return $uploadedData;

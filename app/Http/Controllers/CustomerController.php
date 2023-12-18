@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\UnprocessableException;
 use App\Models\Customer;
-use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Resources\CustomerResource;
-use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -47,17 +45,8 @@ class CustomerController extends Controller
         return CustomerResource::collection($customers);
     }
 
-    public function store(StoreCustomerRequest $request)
-    {
-        //
-    }
-
     public function show(Customer $customer)
     {
-        $user = Auth::user();
-
-        // $orders = Order::where('buyer_id', '=', $customer->buyer_id && )->get();
-        // Find in sales where the order->buyer is customer->buyer and product->user->id = customer->product_owner_id
         return new CustomerResource($customer);
     }
 }

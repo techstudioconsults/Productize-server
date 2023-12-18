@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
@@ -57,13 +58,13 @@ class Product extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function customers(): HasMany
+    public function customers(): HasManyThrough
     {
-        return $this->hasMany(Customer::class);
+        return $this->hasManyThrough(User::class, Sale::class, 'product_id', 'id', 'id', 'customer_id');
     }
 
-    public function orders()
+    public function sales(): HasMany
     {
-        return $this->hasMany(ProductOrder::class);
+        return $this->hasMany(Sale::class);
     }
 }

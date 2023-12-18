@@ -9,6 +9,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\SalesResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use ReflectionEnum;
 
 class ProductController extends Controller
 {
@@ -296,5 +296,12 @@ class ProductController extends Controller
         $product->forceDelete();
 
         return response('product is permanently deleted');
+    }
+
+    public function sales(Product $product)
+    {
+        $sales = $product->sales;
+
+        return SalesResource::collection($sales);
     }
 }

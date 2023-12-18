@@ -15,22 +15,28 @@ class CustomerResource extends JsonResource
     public function toArray(Request $request): array
     {
 
-        $totalOrders = $this->user->purchases()
-        ->whereHas('product', function ($query) {
-            $query->where('user_id', $this->product_owner_id);
-        });
+        $total_purchase = $this->user->purchases()
+            ->whereHas('product', function ($query) {
+                $query->where('user_id', $this->product_owner_id);
+            });
 
+
+        // name, email, latest purchase, price, date (last product purchase date - updated at), joined(created at), total order, total_transaction
         return [
             'id' => $this->id,
             'name' => $this->user->full_name,
             'email' => $this->user->email,
-            'product_title' => $this->product->title,
-            'product_price' => $this->product->price,
             'free_products' => 5,
             'sale_products' => 5,
-            'total_orders' => $totalOrders->count(),
-            'total_transactions' => $totalOrders->sum('product_orders.total_amount'),
-            'created_at' => $this->created_at
+            'total_order' => $total_purchase->count(),
+            'total_transactions' => $total_purchase->sum('sales.total_amount'),
+            'latest_purchase_title' => $this->product->title,
+            'latest_purchase_price' => $this->product->price,
+            'latest_purchase_date' => $this->updated_at,
+            'joined' => $this->created_at,
+            'latest_purchases' => SalesResource::collection($total_purchase->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get())
         ];
     }
 }

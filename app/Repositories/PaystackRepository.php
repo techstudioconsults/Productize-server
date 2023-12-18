@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Exceptions\ApiException;
 use App\Models\Cart;
-use App\Models\ProductOrder;
+use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -230,14 +230,6 @@ class PaystackRepository
                         // Delete Cart
                         Cart::where('user_id', $buyer_id)->delete();
 
-                        // SaveCustomerOrder::dispatch(
-                        //     $data['reference'],
-                        //     $metadata,
-                        //     $email
-                        // );
-
-
-
                         try {
                             // Create Order
                             $buildOrder = [
@@ -247,7 +239,6 @@ class PaystackRepository
                             ];
 
                             $order = $this->orderRepository->create($buildOrder);
-
 
                             // Update user customer list for each product
                             foreach ($metadata['products'] as $product) {
@@ -260,14 +251,15 @@ class PaystackRepository
 
                                 $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
 
-                                $buildProductOrder = [
+                                $buildSale = [
                                     'product_id' => $product->id,
                                     'order_id' => $order->id,
+                                    'customer_id' => $buyer_id,
                                     'total_amount' => $product->price * $quantity,
                                     'quantity' => $quantity
                                 ];
 
-                                ProductOrder::create($buildProductOrder);
+                                Sale::create($buildSale);
                             }
                         } catch (\Throwable $th) {
                             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);

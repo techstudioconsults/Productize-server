@@ -31,7 +31,8 @@ class ProductResource extends JsonResource
             'show_sales_count' => (bool) $this->show_sales_count,
             'status' => $this->status ?? 'draft',
             'slug' => $this->slug,
-            'total_order'=> $this->orders()->count(),
+            'total_order' => $this->sales()->count(),
+            'total_sales' => (int) $this->sales()->sum('total_amount'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at

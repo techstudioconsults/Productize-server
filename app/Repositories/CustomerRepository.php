@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Models\Customer;
-use Illuminate\Support\Facades\Log;
 
 class CustomerRepository
 {

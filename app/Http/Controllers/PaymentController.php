@@ -57,7 +57,7 @@ class PaymentController extends Controller
         $paystack_customer = $this->paystackRepository->fetchCustomer($user->email);
 
         // check for active subscription
-        if (count($paystack_customer['subscriptions']) && $paystack_customer['subscriptions'][0]['status'] === 'active') {
+        if ($paystack_customer && count($paystack_customer['subscriptions']) && $paystack_customer['subscriptions'][0]['status'] === 'active') {
 
             // Everything is fine in paradise.
             if ($userPaymentInfo && $userPaymentInfo->paystack_customer_code && $userPaymentInfo->paystack_subscription_id) {

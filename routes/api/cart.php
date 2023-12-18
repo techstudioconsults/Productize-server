@@ -14,5 +14,4 @@ Route::controller(CartController::class)
         Route::post('/', 'store');
 
         Route::get('/', 'show');
-        // Route::get('/', 'show')->middleware('can:view,cart');
     });

@@ -17,9 +17,7 @@ class ProductCollection extends ResourceCollection
     {
         return [
             'data' => $this->collection->map(function ($product) {
-                $data = $product->data->getArrayCopy();
-                $dataInfo = Arr::only($data, ['size', 'format']);
-                
+
                 return [
                     'title' => $product->title,
                     'thumbnail' => $product->thumbnail,
@@ -31,7 +29,6 @@ class ProductCollection extends ResourceCollection
                     'cover_photos' => $product->cover_photos,
                     'tags' => $product->tags,
                     'description' => $product->description,
-                    'data_info' => $dataInfo
                 ];
             }),
         ];

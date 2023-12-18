@@ -24,11 +24,7 @@ class ProductFactory extends Factory
             'product_type' => 'digital_product',
             'status' => 'draft',
             'description' => '<p>lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem </p>',
-            'data' => [
-                'url' => "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
-                'format' => 'PDF',
-                'size' => 0.35
-            ],
+            'data' => ["https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg"],
             'cover_photos' => ["https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/insidious-emoticon-puzzled-face-isolated-260nw-1939421848(1).png"],
             'thumbnail' => 'https://productize.nyc3.cdn.digitaloceanspaces.com/products-thumbnail/3d_collection_showcase-20210110-0001.jpg',
             'highlights' => ["arrow", "oliver", "queen"],

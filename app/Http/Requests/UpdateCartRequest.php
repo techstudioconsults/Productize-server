@@ -6,7 +6,7 @@ use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCartRequest extends FormRequest
+class UpdateCartRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,6 @@ class StoreCartRequest extends FormRequest
     {
         return [
             'quantity' => 'required|numeric|min:0',
-            'product_slug' => 'required|string'
         ];
     }
 

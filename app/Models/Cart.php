@@ -20,11 +20,12 @@ class Cart extends Model
 
     protected $fillable = [
         'user_id',
-        'total_amount',
-        'products'
+        'quantity',
+        'product_slug'
     ];
 
-    protected $casts = [
-        'products' => AsArrayObject::class,
-    ];
+    public function product()
+    {
+        return $this->hasOne(Product::class, 'slug', 'product_slug');
+    }
 }

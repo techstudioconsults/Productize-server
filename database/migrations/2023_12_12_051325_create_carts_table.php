@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('carts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id')->unique();
-            $table->integer('total_amount');
-            $table->jsonb('products');
+            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            $table->foreignIdFor(\App\Models\Product::class, 'product_slug');
+            $table->integer('quantity');
             $table->timestamps();
         });
     }

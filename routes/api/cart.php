@@ -13,5 +13,9 @@ Route::controller(CartController::class)
     ->group(function () {
         Route::post('/', 'store');
 
-        Route::get('/', 'show');
+        Route::get('/', 'index');
+
+        Route::patch('/{cart}', 'update')->middleware('can:update,cart');
+
+        Route::delete('/{cart}', 'delete')->middleware('can:delete,cart');
     });

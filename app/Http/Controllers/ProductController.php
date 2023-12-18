@@ -114,8 +114,28 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        return new ProductResource($product);
+        $data = $product->data;
+        $meta_data_array = [];
+
+        foreach ($data as $value) {
+            $filePath = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
+            $meta_data = $this->productRepository->getFileMetaData($filePath);
+
+            if ($meta_data) {
+                $meta_data_array[] = $meta_data; // Simplified array pushing
+            }
+        }
+
+        $productData = (new ProductResource($product))->toArray(request());
+
+        $response = array_merge($productData, [
+            'no_of_resources' => count($meta_data_array),
+            'resources_info' => $meta_data_array,
+        ]);
+
+        return $response;
     }
+
 
     /**
      * Endpoint returns User Dashboard product Analytic numbers

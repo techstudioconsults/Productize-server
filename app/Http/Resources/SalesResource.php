@@ -20,6 +20,7 @@ class SalesResource extends JsonResource
             'product_title' => $this->product->title,
             'product_price' => $this->product->price,
             'product_thumbnail' => $this->product->thumbnail,
+            'product_publish_date' => $this->product->created_at,
             'quantity' => $this->quantity,
             'total_amount' => $this->total_amount,
             'customer_name' => $this->customer->full_name,

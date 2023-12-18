@@ -88,6 +88,7 @@ class User extends Authenticatable implements CanResetPassword
     public function subAccount(): bool
     {
         $payment = $this->payment()->first();
+        if(!$payment) return false;
         return $payment->paystack_sub_account_code ? true : false;
     }
 

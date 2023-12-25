@@ -8,6 +8,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\PurchaseRequest;
 use App\Http\Requests\StoreSubAccountRequest;
+use App\Http\Requests\UpdateSubAccountRequest;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\SubaccountResource;
 use App\Models\Payment;
@@ -201,11 +202,27 @@ class PaymentController extends Controller
             throw new ServerErrorException($th->getMessage());
         }
 
-        $response = [
-            'message' => 'Account set up complete'
-        ];
+        return new SubaccountResource($sub_account);
+    }
 
-        return new SubaccountResource($sub_account, $response);
+    public function getAllSubAccounts()
+    {
+        $user = Auth::user();
+
+        $sub_accounts = $user->subaccounts()->get();
+
+        return SubaccountResource::collection($sub_accounts);
+    }
+
+    public function updateSubaccount(Subaccounts $account, UpdateSubAccountRequest $request)
+    {
+        $validated = $request->validated();
+
+        $account->active = $validated['active'];
+
+        $account->save();
+
+        return new SubaccountResource($account);
     }
 
     public function purchase(PurchaseRequest $request)

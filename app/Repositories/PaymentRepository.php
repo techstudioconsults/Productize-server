@@ -36,4 +36,9 @@ class PaymentRepository
     {
         return Subaccounts::create($credentials);
     }
+
+    public function updateSubaccount(string $key, string $value, array $updatables)
+    {
+        return Subaccounts::where($key, $value)->update($updatables);
+    }
 }

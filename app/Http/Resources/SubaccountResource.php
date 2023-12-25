@@ -7,13 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class SubaccountResource extends JsonResource
 {
-    protected $extraData;
-
-    public function __construct($resource, $extraData = [])
-    {
-        parent::__construct($resource);
-        $this->extraData = $extraData;
-    }
     /**
      * Transform the resource into an array.
      *
@@ -21,8 +14,12 @@ class SubaccountResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return array_merge([
+        return [
             'id' => $this->id,
-        ], $this->extraData);
+            'bank_name' => $this->bank_name,
+            'business_name' => $this->business_name,
+            'account_number' => $this->account_number,
+            'active' => (bool) $this->active,
+        ];
     }
 }

@@ -25,7 +25,7 @@ class ProductPolicy
 
     public function publish(User $user)
     {
-        return $user->subAccount()
+        return $user->hasSubaccount()
             ? Response::allow()
             : throw new ForbiddenException("Action Required: To proceed with the payout, please update your payout account information, $user->full_name");
     }

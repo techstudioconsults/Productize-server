@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Payment;
+use App\Models\Subaccounts;
 use App\Models\User;
 
 class PaymentRepository
@@ -29,5 +30,10 @@ class PaymentRepository
     public function updateOrCreate(string $user_id, array $updatables)
     {
         return Payment::updateOrCreate(["user_id" => $user_id], $updatables);
+    }
+
+    public function createSubAccount(array $credentials)
+    {
+        return Subaccounts::create($credentials);
     }
 }

@@ -7,10 +7,11 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\PurchaseRequest;
-use App\Http\Requests\UploadPayoutAccountRequest;
+use App\Http\Requests\StoreSubAccountRequest;
 use App\Http\Resources\PaymentResource;
+use App\Http\Resources\SubaccountResource;
 use App\Models\Payment;
-use App\Models\Product;
+use App\Models\Subaccounts;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
@@ -164,7 +165,7 @@ class PaymentController extends Controller
     /**
      * set up user payout account
      */
-    public function payOutAccount(UploadPayoutAccountRequest $request)
+    public function createSubAccount(StoreSubAccountRequest $request)
     {
         $user = Auth::user();
 
@@ -175,11 +176,10 @@ class PaymentController extends Controller
             "primary_contact_email" => $user->email
         ]);
 
-        /** Get user payment Info from DB */
-        $payments = $this->getUserPaymentInfo()['userPaymentInfo'];
+        $account_exists = Subaccounts::where('account_number', $credentials['account_number'])->exists();
 
         /** Check for sub account */
-        if ($payments->paystack_sub_account_code) {
+        if ($account_exists) {
             throw new BadRequestException('Sub Account Exist');
         }
 
@@ -188,11 +188,13 @@ class PaymentController extends Controller
 
             $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
 
-            $updatables = array_merge($credentials, [
-                'paystack_sub_account_code' => $paystack_sub_account_code
+            $sub_account_payload = array_merge($credentials, [
+                'sub_account_code' => $paystack_sub_account_code,
+                'user_id' => $user->id,
+                'active' => 1
             ]);
 
-            $this->paymentRepository->update('user_id', $user->id, $updatables);
+            $sub_account = $this->paymentRepository->createSubAccount($sub_account_payload);
 
             $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
         } catch (\Throwable $th) {
@@ -203,7 +205,7 @@ class PaymentController extends Controller
             'message' => 'Account set up complete'
         ];
 
-        return new PaymentResource($payments, $response);
+        return new SubaccountResource($sub_account, $response);
     }
 
     public function purchase(PurchaseRequest $request)

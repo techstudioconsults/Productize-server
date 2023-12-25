@@ -2,13 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\PaystackBankCodesEnum;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Validation\Rules\Enum;
 
-class UploadPayoutAccountRequest extends FormRequest
+class StoreSubAccountRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

@@ -85,11 +85,14 @@ class User extends Authenticatable implements CanResetPassword
         return $this->account_type === 'premium' ? true : false;
     }
 
-    public function subAccount(): bool
+    public function subaccounts(): HasMany
     {
-        $payment = $this->payment()->first();
-        if(!$payment) return false;
-        return $payment->paystack_sub_account_code ? true : false;
+        return $this->hasMany(Subaccounts::class);
+    }
+
+    public function hasSubaccount(): bool
+    {
+        return $this->subaccounts()->exists();
     }
 
     public function orders(): HasManyThrough

@@ -25,10 +25,13 @@ Route::group([
 
     Route::post('/purchase', [PaymentController::class, 'purchase']);
 
-    Route::get('{payment}/subscription/enable', [PaymentController::class, 'enablePaystackSubscription'])
+    Route::get('/subscription/enable', [PaymentController::class, 'enablePaystackSubscription'])
         ->middleware('can:subscribed,App\Models\Payment');
 
-    Route::get('{payment}/subscription/manage', [PaymentController::class, 'managePaystackSubscription'])
+    Route::get('/subscription/manage', [PaymentController::class, 'managePaystackSubscription'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::get('/subscription/billing', [PaymentController::class, 'billing'])
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::post('/paystack/webhooks', [PaymentController::class, 'handlePaystackWebHook'])

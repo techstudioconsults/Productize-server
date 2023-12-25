@@ -109,7 +109,7 @@ class PaymentController extends Controller
         return new PaymentResource($payment, $subscription);
     }
 
-    public function enablePaystackSubscription(Payment $payment)
+    public function enablePaystackSubscription()
     {
         ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
         $subscriptionId = $userPaymentInfo->paystack_subscription_id;
@@ -122,14 +122,16 @@ class PaymentController extends Controller
         }
     }
 
-    public function managePaystackSubscription(Payment $payment)
+    public function managePaystackSubscription()
     {
-        $subscriptionId = $payment->paystack_subscription_id;
+        $user = Auth::user();
+
+        $subscriptionId = $user->payment->paystack_subscription_id;
 
         try {
             $response = $this->paystackRepository->manageSubscription($subscriptionId);
 
-            return new PaymentResource($payment, $response);
+            return new PaymentResource($user->payment, $response);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }
@@ -311,5 +313,44 @@ class PaymentController extends Controller
         });
 
         return new JsonResponse($response, 200);
+    }
+
+    public function billing()
+    {
+        $user = Auth::user();
+
+
+        $response = [
+            'renewal_date' => null,
+            'plan' => $user->account_type,
+            'billing_total' => null,
+            'plans' => []
+        ];
+
+        $subscription_id = $user->payment?->paystack_subscription_id;
+
+        if ($subscription_id) {
+            $subscription = $this->paystackRepository->fetchSubscription($subscription_id);
+
+            $plans = Arr::map($subscription['invoices'], function ($plan) {
+                return [
+                    'plan' => 'premium',
+                    'price' => $plan['amount'] / 100,
+                    'status' => $plan['status'],
+                    'reference' => $plan['reference'],
+                    'date' => $plan['createdAt'],
+                ];
+            });
+
+            $response = [
+                'renewal_date' => $subscription['next_payment_date'],
+                'plan' => $user->account_type,
+                'billing_total' => $subscription['amount'] / 100,
+                'plans' => $plans
+            ];
+        }
+
+
+        return new JsonResponse($response);
     }
 }

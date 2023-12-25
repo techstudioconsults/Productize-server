@@ -28,6 +28,8 @@ class SalesResource extends JsonResource
             'total_order' => $this->product->sales->count(),
             'total_sales' => $this->product->sales->sum('total_amount'),
             'total_views' => 1,
+            'bank_name' => $this->subaccount->bank_name,
+            'bank_account_number' => $this->subaccount->account_number,
             'date' => $this->created_at
         ];
     }

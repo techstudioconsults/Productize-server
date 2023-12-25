@@ -95,6 +95,11 @@ class User extends Authenticatable implements CanResetPassword
         return $this->subaccounts()->exists();
     }
 
+    public function activeSubaccount()
+    {
+        return $this->subaccounts()->where('active', 1)->first();
+    }
+
     public function orders(): HasManyThrough
     {
         return $this->hasManyThrough(Sale::class, Product::class);

@@ -242,9 +242,10 @@ class PaymentController extends Controller
 
             if (!$product) throw new NotFoundException("Product with slug $slug not found");
 
-            $sub_account = $product->user?->payment?->paystack_sub_account_code;
+            if (!$merchant->hasSubaccount())
+                throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
 
-            if (!$sub_account) throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
+            $sub_account = $merchant->activeSubaccount()->sub_account_code;
 
             // Total Product Amount
             $amount = $product->price * $obj['quantity'];

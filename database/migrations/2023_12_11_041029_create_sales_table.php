@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\Order::class, 'order_id');
             $table->foreignIdFor(\App\Models\Product::class, 'product_id');
             $table->foreignIdFor(\App\Models\User::class, 'customer_id');
+            $table->foreignIdFor(\App\Models\Subaccounts::class, 'subaccount_id');
             $table->timestamps();
         });
     }

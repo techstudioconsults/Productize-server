@@ -30,6 +30,8 @@ Route::group([
 
     Route::get('/download', [ProductController::class, 'downloadList']);
 
+    Route::get('/downloads', [ProductController::class, 'downloads'])->withoutMiddleware(['can:premium,App\Models\Product']);
+
     Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');

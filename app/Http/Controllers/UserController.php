@@ -6,16 +6,17 @@ use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Requests\RequestHelpRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Http\Resources\ProductResource;
 use App\Http\Resources\UserResource;
-use App\Models\Product;
-use App\Repositories\PaymentRepository;
+use App\Mail\RequestHelp;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;
 use Auth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 use Illuminate\Validation\Rules\Password;
@@ -69,7 +70,7 @@ class UserController extends Controller
 
             // Check for profile completion
             $this->userRepository->profileCompletedAt($user);
-            
+
             return new UserResource($user);
         } catch (Throwable $e) {
             throw new ApiException($e->getMessage(), $e->getCode());
@@ -102,5 +103,29 @@ class UserController extends Controller
         $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['new_password']);
 
         return new UserResource($user);
+    }
+
+    public function requestHelp(RequestHelpRequest $request)
+    {
+        $validated = $request->validated();
+
+        $email = Auth::user()->email;
+        var_dump($email);
+
+        if ($request->exists('email')) {
+            $validated['email'] = $email;
+        }
+
+        Mail::to(['tobiolanitori@gmail.com'])->send(
+            new RequestHelp(
+                $email,
+                $validated['subjected'],
+                $validated['message']
+            )
+        );
+
+        return new JsonResponse(
+            ['message' => 'email sent']
+        );
     }
 }

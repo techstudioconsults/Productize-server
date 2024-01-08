@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();  // Primary Ids are UUIDs. Check User model for more info.
             $table->string('full_name');
             $table->string('email')->unique();
+            $table->string('alt_email')->unique()->nullable();
             $table->string('username', 20)->unique()->nullable();
             $table->string('phone_number', 14)->unique()->nullable();
             $table->string('bio', 1000)->nullable();
@@ -29,6 +30,10 @@ return new class extends Migration
             $table->string('facebook_account')->nullable();
             $table->string('youtube_account')->nullable();
             $table->enum('account_type', ['free', 'premium'])->default('free');
+            $table->boolean('product_creation_notification')->default(0);
+            $table->boolean('purchase_notification')->default(0);
+            $table->boolean('news_and_update_notification')->default(0);
+            $table->boolean('payout_notification')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

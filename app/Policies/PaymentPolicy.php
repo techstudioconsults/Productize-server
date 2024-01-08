@@ -27,6 +27,7 @@ class PaymentPolicy
         if (!$payment->paystack_subscription_id) {
             throw new BadRequestException('User is not subscribed');
         }
+        
         return Response::allow();
     }
 

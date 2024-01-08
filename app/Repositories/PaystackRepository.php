@@ -249,12 +249,15 @@ class PaystackRepository
 
                                 $product = $this->productRepository->getProductBySlug($product_slug);
 
+                                $merchant_subaccount = $product->user->activeSubaccount();
+
                                 $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
 
                                 $buildSale = [
                                     'product_id' => $product->id,
                                     'order_id' => $order->id,
                                     'customer_id' => $buyer_id,
+                                    'subaccount_id' => $merchant_subaccount->id,
                                     'total_amount' => $product->price * $quantity,
                                     'quantity' => $quantity
                                 ];

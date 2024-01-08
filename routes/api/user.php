@@ -14,4 +14,6 @@ Route::group([
     Route::post('/me', [UserController::class, 'update']);
 
     Route::post('/change-password', [UserController::class, 'changePassword']);
+
+    Route::post('/request-help', [UserController::class, 'requestHelp']);
 });

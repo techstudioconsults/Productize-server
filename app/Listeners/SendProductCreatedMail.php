@@ -22,14 +22,18 @@ class SendProductCreatedMail
     /**
      * Handle the event.
      */
-    public function handle(Products $event): void
+    public function handle(Products $event)
     {
         $user = Auth::user();
+
+        if (!$user->product_creation_notification) {
+            return $user->product_creation_notification;
+        }
 
         $count = $user->products()->count();
 
         // User first Time creating a product?.
-        if($count > 1) {
+        if ($count > 1) {
             // Send product created mail
             Mail::to($user)->send(new ProductCreated($event->product));
         } else {

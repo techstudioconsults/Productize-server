@@ -13,6 +13,7 @@ use App\Http\Resources\SalesResource;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -323,5 +324,28 @@ class ProductController extends Controller
         $sales = $product->sales;
 
         return SalesResource::collection($sales);
+    }
+
+    public function downloads()
+    {
+        $user = Auth::user();
+
+        $downloads = $user->downloads;
+        
+        $products = $downloads->map(function ($download) {
+            $product =  $download->product;
+
+            return [
+                'id' => $product->id,
+                'title' => $product->title,
+                'data' => $product->data,
+                'thumbnail' => $product->thumbnail,
+                'slug' => $product->slug,
+                'publisher' => $product->user->full_name,
+                'price' => $product->price,
+            ];
+        });
+
+        return new JsonResponse($products);
     }
 }

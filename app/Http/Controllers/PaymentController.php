@@ -7,10 +7,12 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\PurchaseRequest;
-use App\Http\Requests\UploadPayoutAccountRequest;
+use App\Http\Requests\StoreSubAccountRequest;
+use App\Http\Requests\UpdateSubAccountRequest;
 use App\Http\Resources\PaymentResource;
+use App\Http\Resources\SubaccountResource;
 use App\Models\Payment;
-use App\Models\Product;
+use App\Models\Subaccounts;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
@@ -107,7 +109,7 @@ class PaymentController extends Controller
         return new PaymentResource($payment, $subscription);
     }
 
-    public function enablePaystackSubscription(Payment $payment)
+    public function enablePaystackSubscription()
     {
         ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
         $subscriptionId = $userPaymentInfo->paystack_subscription_id;
@@ -120,14 +122,16 @@ class PaymentController extends Controller
         }
     }
 
-    public function managePaystackSubscription(Payment $payment)
+    public function managePaystackSubscription()
     {
-        $subscriptionId = $payment->paystack_subscription_id;
+        $user = Auth::user();
+
+        $subscriptionId = $user->payment->paystack_subscription_id;
 
         try {
             $response = $this->paystackRepository->manageSubscription($subscriptionId);
 
-            return new PaymentResource($payment, $response);
+            return new PaymentResource($user->payment, $response);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }
@@ -164,7 +168,7 @@ class PaymentController extends Controller
     /**
      * set up user payout account
      */
-    public function payOutAccount(UploadPayoutAccountRequest $request)
+    public function createSubAccount(StoreSubAccountRequest $request)
     {
         $user = Auth::user();
 
@@ -175,11 +179,10 @@ class PaymentController extends Controller
             "primary_contact_email" => $user->email
         ]);
 
-        /** Get user payment Info from DB */
-        $payments = $this->getUserPaymentInfo()['userPaymentInfo'];
+        $account_exists = Subaccounts::where('account_number', $credentials['account_number'])->exists();
 
         /** Check for sub account */
-        if ($payments->paystack_sub_account_code) {
+        if ($account_exists) {
             throw new BadRequestException('Sub Account Exist');
         }
 
@@ -188,22 +191,40 @@ class PaymentController extends Controller
 
             $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
 
-            $updatables = array_merge($credentials, [
-                'paystack_sub_account_code' => $paystack_sub_account_code
+            $sub_account_payload = array_merge($credentials, [
+                'sub_account_code' => $paystack_sub_account_code,
+                'user_id' => $user->id,
+                'active' => 1
             ]);
 
-            $this->paymentRepository->update('user_id', $user->id, $updatables);
+            $sub_account = $this->paymentRepository->createSubAccount($sub_account_payload);
 
             $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
 
-        $response = [
-            'message' => 'Account set up complete'
-        ];
+        return new SubaccountResource($sub_account);
+    }
 
-        return new PaymentResource($payments, $response);
+    public function getAllSubAccounts()
+    {
+        $user = Auth::user();
+
+        $sub_accounts = $user->subaccounts()->get();
+
+        return SubaccountResource::collection($sub_accounts);
+    }
+
+    public function updateSubaccount(Subaccounts $account, UpdateSubAccountRequest $request)
+    {
+        $validated = $request->validated();
+
+        $account->active = $validated['active'];
+
+        $account->save();
+
+        return new SubaccountResource($account);
     }
 
     public function purchase(PurchaseRequest $request)
@@ -223,9 +244,10 @@ class PaymentController extends Controller
 
             if (!$product) throw new NotFoundException("Product with slug $slug not found");
 
-            $sub_account = $product->user?->payment?->paystack_sub_account_code;
+            if (!$merchant->hasSubaccount())
+                throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
 
-            if (!$sub_account) throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
+            $sub_account = $merchant->activeSubaccount()->sub_account_code;
 
             // Total Product Amount
             $amount = $product->price * $obj['quantity'];
@@ -291,5 +313,44 @@ class PaymentController extends Controller
         });
 
         return new JsonResponse($response, 200);
+    }
+
+    public function billing()
+    {
+        $user = Auth::user();
+
+
+        $response = [
+            'renewal_date' => null,
+            'plan' => $user->account_type,
+            'billing_total' => null,
+            'plans' => []
+        ];
+
+        $subscription_id = $user->payment?->paystack_subscription_id;
+
+        if ($subscription_id) {
+            $subscription = $this->paystackRepository->fetchSubscription($subscription_id);
+
+            $plans = Arr::map($subscription['invoices'], function ($plan) {
+                return [
+                    'plan' => 'premium',
+                    'price' => $plan['amount'] / 100,
+                    'status' => $plan['status'],
+                    'reference' => $plan['reference'],
+                    'date' => $plan['createdAt'],
+                ];
+            });
+
+            $response = [
+                'renewal_date' => $subscription['next_payment_date'],
+                'plan' => $user->account_type,
+                'billing_total' => $subscription['amount'] / 100,
+                'plans' => $plans
+            ];
+        }
+
+
+        return new JsonResponse($response);
     }
 }

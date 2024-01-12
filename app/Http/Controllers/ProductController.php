@@ -165,6 +165,7 @@ class ProductController extends Controller
             'total_revenues' => $total_revenues,
             'new_orders' => $new_orders['count'],
             'new_orders_revenue' => $new_orders['revenue'],
+            'views' => 1
         ];
 
         return new JsonResponse(['data' => $result]);
@@ -331,7 +332,7 @@ class ProductController extends Controller
         $user = Auth::user();
 
         $downloads = $user->downloads;
-        
+
         $products = $downloads->map(function ($download) {
             $product =  $download->product;
 

@@ -30,12 +30,16 @@ class UpdateUserRequest extends FormRequest
             'full_name' => 'string',
             'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
             'username' => 'string|max:20',
-            'phone_number' => 'string|max:14',
+            'phone_number' => 'string|max:14|unique:users,phone_number',
             'bio' => 'string|max:1000',
             'twitter_account' => 'string|url',
             'facebook_account' => 'string|url',
             'youtube_account' => 'string|url',
-            'logo' => 'image'
+            'logo' => 'image',
+            'product_creation_notification' => 'boolean',
+            'purchase_notification' => 'boolean',
+            'news_and_update_notification' => 'boolean',
+            'payout_notification' => 'boolean'
         ];
     }
 

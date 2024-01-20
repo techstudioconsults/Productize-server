@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Models\Cart;
 use App\Models\Sale;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -223,6 +224,9 @@ class PaystackRepository
                     break;
 
                 case 'charge.success':
+                    /**
+                     * This is a product purchase payment webhook
+                     */
                     if ($data['split'] && count($data['split'])) {
                         $metadata = $data['metadata'];
                         $buyer_id = $metadata['buyer_id'];
@@ -263,6 +267,19 @@ class PaystackRepository
                                 ];
 
                                 Sale::create($buildSale);
+
+                                $isFirstSaleByOwner = Sale::where('product_id', $product->id)
+                                    ->whereHas('product', function ($query) use ($product) {
+                                        $query->where('user_id', $product->user_id);
+                                    })
+                                    ->count() === 1;
+
+                                if ($isFirstSaleByOwner) {
+                                    // This is the first sale made by the product owner
+                                    $owner = User::find($product->user_id);
+                                    $owner->first_sale_at = Carbon::now();
+                                    $owner->save();
+                                }
                             }
                         } catch (\Throwable $th) {
                             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);

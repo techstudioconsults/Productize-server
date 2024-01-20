@@ -26,6 +26,9 @@ class SendProductCreatedMail
     {
         $user = Auth::user();
 
+        /**
+         * If Product creation settings is set to false, don't send an email.
+         */
         if (!$user->product_creation_notification) {
             return $user->product_creation_notification;
         }
@@ -37,9 +40,6 @@ class SendProductCreatedMail
             // Send product created mail
             Mail::to($user)->send(new ProductCreated($event->product));
         } else {
-            // Update first product created at property
-            $user->first_product_created_at = Carbon::now();
-            $user->save();
 
             // Send first product created mail
             Mail::to($user)->send(new FirstProductCreated($event->product));

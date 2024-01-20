@@ -15,7 +15,6 @@ use App\Repositories\ProductRepository;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -110,6 +109,14 @@ class ProductController extends Controller
             $data, // The digital products
             $cover_photos
         );
+
+        $count = $user->products()->count();
+
+        if (!$count > 1) {
+            // Update first product created at property
+            $user->first_product_created_at = Carbon::now();
+            $user->save();
+        }
 
         return new ProductResource($product);
     }

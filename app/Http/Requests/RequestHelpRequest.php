@@ -25,7 +25,7 @@ class RequestHelpRequest extends FormRequest
     {
         return [
             'email' => 'string|email',
-            'subjected' => 'string|required',
+            'subject' => 'string|required',
             'message' => 'string|required'
         ];
     }

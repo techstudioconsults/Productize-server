@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\ProductEnum;
+use App\Enums\ProductTagsEnum;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -38,7 +39,7 @@ class StoreProductRequest extends FormRequest
             'highlights' => 'required|array',
             'highlights.*' => 'string',
             'tags' => 'array',
-            'tags*' => 'string',
+            'tags*' => ['string', new Enum(ProductTagsEnum::class)],
             'stock_count' => 'boolean',
             'choose_quantity' => 'boolean',
             'show_sales_count' => 'boolean'

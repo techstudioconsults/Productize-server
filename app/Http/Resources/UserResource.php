@@ -31,6 +31,10 @@ class UserResource extends JsonResource
             'first_product_created' => (bool) $this->first_product_created_at,
             'payout_setup' => (bool) $this->payout_setup_at,
             'first_sale' => (bool) $this->first_sale_at,
+            'product_creation_notification' => (bool) $this->product_creation_notification,
+            'purchase_notification' => (bool) $this->purchase_notification,
+            'news_and_update_notification' => (bool) $this->news_and_update_notification,
+            'payout_notification' => (bool) $this->payout_notification,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProductStatusEnum;
+use App\Enums\ProductTagsEnum;
 use App\Exceptions\BadRequestException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
@@ -11,9 +12,9 @@ use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\SalesResource;
 use App\Repositories\ProductRepository;
+use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -108,6 +109,14 @@ class ProductController extends Controller
             $data, // The digital products
             $cover_photos
         );
+
+        $count = $user->products()->count();
+
+        if (!$count > 1) {
+            // Update first product created at property
+            $user->first_product_created_at = Carbon::now();
+            $user->save();
+        }
 
         return new ProductResource($product);
     }
@@ -348,5 +357,26 @@ class ProductController extends Controller
         });
 
         return new JsonResponse($products);
+    }
+
+    public function getTopProducts()
+    {
+        $user = Auth::user();
+
+        $topProducts = $user->products()
+            ->join('sales', 'products.id', '=', 'sales.product_id')
+            ->select('products.*', DB::raw('SUM(sales.quantity) as total_sales'))
+            ->groupBy('products.id')
+            ->orderByDesc('total_sales')
+            ->limit(5);
+
+        return ProductResource::collection($topProducts->paginate(5));
+    }
+
+    public function tags()
+    {
+        $tags = ProductTagsEnum::cases();
+
+        return new JsonResponse(['data' => $tags]);
     }
 }

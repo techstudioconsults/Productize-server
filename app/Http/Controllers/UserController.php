@@ -110,16 +110,15 @@ class UserController extends Controller
         $validated = $request->validated();
 
         $email = Auth::user()->email;
-        var_dump($email);
 
         if ($request->exists('email')) {
             $validated['email'] = $email;
         }
 
-        Mail::to(['tobiolanitori@gmail.com'])->send(
+        Mail::to(['tsa.projecttesting@gmail.com'])->send(
             new RequestHelp(
                 $email,
-                $validated['subjected'],
+                $validated['subject'],
                 $validated['message']
             )
         );

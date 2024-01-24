@@ -34,7 +34,7 @@ class OrderController extends Controller
                 throw new UnprocessableException($validator->errors()->first());
             }
 
-            $orders->whereBetween('created_at', [$start_date, $end_date]);
+            $orders->whereBetween('sales.created_at', [$start_date, $end_date]);
         }
 
         if ($product_name) {

@@ -28,7 +28,7 @@ echo asset('videos/video.mp3');
 
 /**
  * Php ide helper for vs code
- * composer require --dev barryvdh/laravel-ide-helper
+ * composer require --dev barryvdh/laravel-ide-helper --with-all-dependencies
  *
  * Add this to the providers array in config/app.php
  * Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class

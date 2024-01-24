@@ -8,6 +8,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -78,6 +79,7 @@ class ProductRepository
 
     public function getProductExternal(Product $product)
     {
+        $total_order = $this->getTotalOrder($product);
         return [
             'title' => $product->title,
             'thumbnail' => $product->thumbnail,
@@ -89,6 +91,7 @@ class ProductRepository
             'cover_photos' => $product->cover_photos,
             'tags' => $product->tags,
             'description' => $product->description,
+            'total_orders' => $total_order
         ];
     }
 
@@ -137,7 +140,7 @@ class ProductRepository
 
     public function getTotalOrder(Product $product)
     {
-        return Order::where('product_id', $product->id)->count();
+        return Sale::where('product_id', $product->id)->sum('quantity');
     }
 
     public function getTotalSales(User $user): int

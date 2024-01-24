@@ -85,6 +85,7 @@ class ProductRepository
             'thumbnail' => $product->thumbnail,
             'price' => $product->price,
             'publisher' => $product->user->full_name,
+            'publisher_logo' => $product->user->logo,
             'slug' => $product->slug,
             'highlights' => $product->highlights,
             'product_type' => $product->product_type,

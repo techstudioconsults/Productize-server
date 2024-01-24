@@ -5,8 +5,6 @@ namespace App\Listeners;
 use App\Mail\EmailVerification;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Mail;
 
 class SendEmailVerificationNotification

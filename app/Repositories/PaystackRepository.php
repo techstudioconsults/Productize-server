@@ -98,7 +98,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            "callback_url" => $this->client_url . '/dashboard'
+            "callback_url" => $this->client_url . '/dashboard/home'
         ];
 
         if ($isSubscription) {
@@ -118,7 +118,7 @@ class PaystackRepository
     {
 
         $payload = array_merge($payload, [
-            "callback_url" => $this->client_url . '/dashboard'
+            "callback_url" => $this->client_url . '/dashboard/download'
         ]);
 
         $response = Http::withHeaders([

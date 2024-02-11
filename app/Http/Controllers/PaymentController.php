@@ -186,6 +186,26 @@ class PaymentController extends Controller
             throw new BadRequestException('Sub Account Exist');
         }
 
+        /**
+         * Validate account number
+         *
+         * https://paystack.com/docs/identity-verification/verify-account-number/#resolve-account-number
+         */
+
+        /**
+         * create transfer recipient
+         * https://paystack.com/docs/transfers/creating-transfer-recipients/#create-recipient
+         */
+
+        /**
+         * Now to initialize a transfer to customer payout account
+         *
+         * Create Transfer reference with uuid
+         * https://paystack.com/docs/transfers/single-transfers/#generate-a-transfer-reference
+         *
+         * https://paystack.com/docs/transfers/managing-transfers/#server-approval
+         */
+
         try {
             $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
 
@@ -285,7 +305,7 @@ class PaymentController extends Controller
                 'bearer_type' => 'account',
                 'subaccounts' => $sub_accounts
             ],
-            'metadata' => $metadata,
+            'metadata' => $metadata
         ];
 
         try {

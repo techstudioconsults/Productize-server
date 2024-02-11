@@ -133,6 +133,7 @@ class AuthController extends Controller
 
         /**
          * Dont throw an error, render error page instead.
+         * 
          */
         if (!$request->hasValidSignature()) {
             throw new UnAuthorizedException('Invalid/Expired url provided');

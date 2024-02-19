@@ -82,7 +82,7 @@ class User extends Authenticatable implements CanResetPassword
 
     public function isPremium()
     {
-        return $this->account_type === 'premium' ? true : false;
+        return ($this->account_type === 'premium' || $this->account_type === 'free_trial') ? true : false;
     }
 
     public function subaccounts(): HasMany

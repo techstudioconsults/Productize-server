@@ -30,7 +30,7 @@ class UserRepository
             $user->$column = $value;
         }
 
-        $user->account_type = 'free';
+        $user->account_type = 'free_trial';
 
         $user->save();
 

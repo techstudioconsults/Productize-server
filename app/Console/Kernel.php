@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Helpers\Schedules\EndFreeTrial;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -13,6 +14,16 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->call(new EndFreeTrial)
+            ->everyMinute();
+        // ->environments(['staging', 'production']);
+        // ->withoutOverlapping(); // Prevent schduler from overlapping. I.e, if the previous instance is still running, it will wait.
+        // ->onSuccess(function () {
+        //     // The task succeeded...
+        // })
+        // ->onFailure(function () {
+        //     // The task failed...
+        // });
     }
 
     /**
@@ -20,7 +31,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Exceptions\ApiException;
 use App\Models\Cart;
+use App\Models\Paystack;
 use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
@@ -41,6 +42,11 @@ class PaystackRepository
      * Paystack will only send webhook requests from their Ips
      */
     public $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
+
+    public function updateOrCreate(string $user_id, array $updatables)
+    {
+        return Paystack::updateOrCreate(["user_id" => $user_id], $updatables);
+    }
 
     /**
      * Create a plan on the dashboard - https://dashboard.paystack.com/#/plans

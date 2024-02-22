@@ -57,74 +57,84 @@ class PaymentController extends Controller
         // check if customer exist on paystack
         $paystack_customer = $this->paystackRepository->fetchCustomer($user->email);
 
-        return new JsonResponse($paystack_customer);
-
-        //============== THIS CODE SHOULD NEVER RUN, IF IT DOES, THERE IS PROBLEM THAT NEEDS INVESTIGATION =======================//
-
-        /**
-         *Check paystack for active subscription with the email.
-         *
-         * Note, it might run on your local server due to formatting the db etc but not in production!
-         */
-        if ($paystack_customer && count($paystack_customer['subscriptions']) && $paystack_customer['subscriptions'][0]['status'] === 'active') {
-            // Why is the database not updated to premium? Something must have gone wrong
-            Log::channel('slack')->alert(
-                'USER HAS AN ACTIVE SUBSCRIPTION BUT IS NOT A PREMIUM USER IN DB',
-                ['context' => [
-                    'email' => $user->email,
-                    'paystack_customer_code' => $paystack_customer['customer_code']
-                ]]
-            );
-
-            // What went wrong? Check if the paystack table has the necessary columns.
-            $paystack = $user->paystack;
-            // $paystack = Paystack::firstWhere('user_id', $user->id);
-            var_dump($paystack);
-
-            if (!$paystack) {
-                // what happened with the database? Maybe db was formatted?
+        if ($paystack_customer && count($paystack_customer['subscriptions'])) {
+            $status = $paystack_customer['subscriptions'][0]['status'];
+            /**
+             * The Customer has a subcription customer account with registered with us but not in our database.
+             *
+             * Check if the paystack subscription is active.
+             *
+             * Note, this part of the code might run on your local server due to formatting the db etc but not in production!
+             *
+             * If the status is not cancelled hence, active for whatever reason.
+             */
+            if ($status !== 'cancelled') {
+                // Why is the database not updated to premium? Something must have gone wrong
                 Log::channel('slack')->alert(
-                    'USER HAS AN ACTIVE SUBSCRIPTION BUT NO RECORD OF SUBSCRIPTION IN THE DB',
+                    'USER HAS AN ACTIVE SUBSCRIPTION BUT IS NOT A PREMIUM USER IN DB',
                     ['context' => [
                         'email' => $user->email,
                         'paystack_customer_code' => $paystack_customer['customer_code']
                     ]]
                 );
 
-                // Create a fresh paystack table for the user and make things right!.
+                /************** What went wrong? Check if the paystack table have the necessary columns. *****************/
+                $paystack = $user->paystack;
+
+                if (!$paystack) {
+                    /************** what happened with the database? Maybe db was formatted? *****************/
+                    Log::channel('slack')->alert(
+                        'USER HAS AN ACTIVE SUBSCRIPTION BUT NO RECORD OF SUBSCRIPTION IN THE DB',
+                        ['context' => [
+                            'email' => $user->email,
+                            'paystack_customer_code' => $paystack_customer['customer_code']
+                        ]]
+                    );
+                }
+
+                /********** Create a fresh paystack or update the table for the user and make things right!. *************/
                 $this->paystackRepository->updateOrCreate($user->id, [
                     'customer_code' => $paystack_customer['customer_code'],
                     'subscription_code' => $paystack_customer['subscriptions'][0]['subscription_code']
                 ]);
 
-                // Ensure the user remains a premium user
+                /************** Ensure the user remains a premium user *****************/
                 $this->userRepository->guardedUpdate($user->email, 'account_type', 'premium');
 
                 throw new BadRequestException("Sorry, you can't perform this action. It appears you already have an active subscription plan.");
             }
+
+            /** Subscription was cancelled so we Enable it */
+            try {
+                $response = $this->paystackRepository->enableSubscription($paystack_customer['subscriptions'][0]['subscription_code']);
+                return new JsonResponse(['data' => $response['message']]);
+            } catch (\Throwable $th) {
+                throw new ServerErrorException($th->getMessage());
+            }
         }
 
-        //========================================== END =======================================================//
-
         /**
-         * At this point, user is not subscribed
+         * At this point, It is established that the user is a first time subscriber.
          *
-         * Two options:
-         * 1. They were previously registered and canceled subscription
-         * 2. This is their first time.
+         * Create customer.
+         * Initilize subscription.
+         * Update the subscription code.
          */
 
-         // I stopped here
-         // I am trying to check if subscription status is non-renewing, attention, completed or cancelled. https://paystack.com/docs/payments/subscriptions/#managing-subscriptions
-         // At this stage, you want to enable the subscription - https://paystack.com/docs/api/subscription/#enable
+        try {
+            $customer = $this->paystackRepository->createCustomer($user);
 
-         // Option 1.
-         if($paystack_customer && count($paystack_customer['subscriptions']) && $paystack_customer['subscriptions'][0]['status'] === 'complete'){
-            // var_dump($pay);
-            return new JsonResponse($paystack_customer);
-         }
+            $customer_code = $customer['customer_code'];
 
-        return new JsonResponse();
+            $this->paystackRepository->updateOrCreate($user->id, [
+                'customer_code' => $customer_code,
+            ]);
+
+            $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+            return new JsonResponse(['data' => $subscription]);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
     }
 
     public function createSubscription()

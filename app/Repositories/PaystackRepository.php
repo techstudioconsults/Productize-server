@@ -41,7 +41,7 @@ class PaystackRepository
      * Api Doc: https://paystack.com/docs/payments/webhooks/#ip-whitelisting
      * Paystack will only send webhook requests from their Ips
      */
-    public $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
+    private $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
 
     public function updateOrCreate(string $user_id, array $updatables)
     {

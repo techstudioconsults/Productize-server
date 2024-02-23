@@ -11,8 +11,6 @@ use App\Http\Requests\StoreSubAccountRequest;
 use App\Http\Requests\UpdateSubAccountRequest;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\SubaccountResource;
-use App\Models\Payment;
-use App\Models\Paystack;
 use App\Models\Subaccounts;
 use App\Models\User;
 use App\Repositories\PaymentRepository;

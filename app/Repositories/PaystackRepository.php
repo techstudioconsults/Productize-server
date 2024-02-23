@@ -219,14 +219,22 @@ class PaystackRepository
                     // update sub code
                     $customer = $data['customer'];
 
-                    $this->addUserPaymentSubscriptionCode(
-                        $data['subscription_code'],
-                        $customer['customer_code']
+                    // $this->updateOrCreate($user->id, [
+                    //     'subscription_code' =>  $data['subscription_code'],
+                    // ]);
+
+
+                    // $this->addUserPaymentSubscriptionCode(
+                    //     $data['subscription_code'],
+                    //     $customer['customer_code']
+                    // );
+
+                    Paystack::where('customer_code', $customer['customer_code'])->update(
+                        ['subscription_code' => $data['subscription_code']]
                     );
 
                     // update user to premium
                     $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
-
                     break;
 
                 case 'charge.success':

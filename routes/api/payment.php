@@ -32,6 +32,9 @@ Route::group([
     Route::get('/subscription/manage', [PaymentController::class, 'managePaystackSubscription'])
         ->middleware('can:subscribed,App\Models\Payment');
 
+    Route::post('/subscription/cancel', [PaymentController::class, 'cancelSubscription'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
     Route::get('/subscription/billing', [PaymentController::class, 'billing'])
         ->middleware('can:subscribed,App\Models\Payment');
 

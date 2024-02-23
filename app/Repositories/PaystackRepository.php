@@ -174,7 +174,7 @@ class PaystackRepository
     }
 
 
-    public function fetchSubscription($subscriptionId)
+    public function fetchSubscription(string $subscriptionId)
     {
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . $this->secret_key,
@@ -189,7 +189,7 @@ class PaystackRepository
         }
     }
 
-    public function enableSubscription($subscriptionId)
+    public function enableSubscription(string $subscriptionId)
     {
         $subscription = $this->fetchSubscription($subscriptionId);
 
@@ -203,6 +203,24 @@ class PaystackRepository
             "Cache-Control"  => "no-cache",
             'Content-Type' => 'application/json'
         ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
+    public function disableSubscription(string $subscription_code)
+    {
+        $subscription = $this->fetchSubscription($subscription_code);
+
+        $payload = [
+            "code" => $subscription_code,
+            "token" => $subscription['email_token']
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/subscription/disable", $payload)->throw()->json();
 
         return $response['data'];
     }
@@ -303,7 +321,7 @@ class PaystackRepository
                     break;
 
                 case 'subscription.not_renew':
-                    # code...
+                   // email customer
                     break;
 
                 case 'invoice.create':

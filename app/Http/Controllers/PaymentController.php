@@ -189,7 +189,7 @@ class PaymentController extends Controller
             // initialize customer transaction as a first timer
             $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
 
 
@@ -202,14 +202,15 @@ class PaymentController extends Controller
 
     public function enablePaystackSubscription()
     {
-        ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
-        $subscriptionId = $userPaymentInfo->paystack_subscription_id;
+        $user = Auth::user();
+
+        $paystack = $user->paystack;
 
         try {
-            $subscription = $this->paystackRepository->enableSubscription($subscriptionId);
+            $subscription = $this->paystackRepository->enableSubscription($paystack->subscription_code);
             return new JsonResponse(['data' => $subscription]);
         } catch (\Exception $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
     }
 
@@ -217,12 +218,27 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-        $subscriptionId = $user->payment->paystack_subscription_id;
+        $paystack = $user->paystack;
 
         try {
-            $response = $this->paystackRepository->manageSubscription($subscriptionId);
+            $response = $this->paystackRepository->manageSubscription($paystack->subscription_code);
 
-            return new PaymentResource($user->payment, $response);
+            return new JsonResponse(['data' => $response]);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
+    }
+
+    public function cancelSubscription()
+    {
+        $user = Auth::user();
+
+        $paystack = $user->paystack;
+
+        try {
+            $response = $this->paystackRepository->disableSubscription($paystack->subscription_code);
+
+            return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }

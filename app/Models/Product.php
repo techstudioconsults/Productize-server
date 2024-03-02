@@ -58,23 +58,22 @@ class Product extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function customers(): HasManyThrough
-    {
-        return $this->hasManyThrough(User::class, Sale::class, 'product_id', 'id', 'id', 'customer_id');
-    }
-
-    public function sales(): HasMany
-    {
-        return $this->hasMany(Sale::class);
-    }
-
     public function totalOrder()
     {
-        return 1;
+        return $this->hasMany(Order::class)->count();
     }
 
     public function totalSales()
     {
-        return 1;
+        return $this->hasMany(Order::class)->sum('quantity');
     }
+    // public function customers(): HasManyThrough
+    // {
+    //     return $this->hasManyThrough(User::class, Sale::class, 'product_id', 'id', 'id', 'customer_id');
+    // }
+
+    // public function sales(): HasMany
+    // {
+    //     return $this->hasMany(Sale::class);
+    // }
 }

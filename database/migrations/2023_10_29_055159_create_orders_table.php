@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->text('reference_no');
-            $table->foreignIdFor(\App\Models\User::class, 'user_id');
-            $table->foreignIdFor(\App\Models\Product::class, 'product_id');
-            $table->integer('total_amount');
             $table->text('quantity');
+            $table->foreignIdFor(\App\Models\User::class, 'user_id'); // This is the buyer who made the order
+            $table->foreignIdFor(\App\Models\Product::class, 'product_id');
             $table->timestamps();
         });
     }

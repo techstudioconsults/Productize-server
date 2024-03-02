@@ -11,6 +11,7 @@ use App\Http\Requests\StoreSubAccountRequest;
 use App\Http\Requests\UpdateSubAccountRequest;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\SubaccountResource;
+use App\Models\Product;
 use App\Models\Subaccounts;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
@@ -369,7 +370,7 @@ class PaymentController extends Controller
 
             // Product Not Found, Cannot continue with payment.
             if (!$product) {
-                throw new BadRequestException('Product with ' . $slug . ' not found');
+                throw new BadRequestException('Product with slug ' . $slug . ' not found');
             }
 
             // Total Product Amount
@@ -384,6 +385,7 @@ class PaymentController extends Controller
             return [
                 "product_id" => $product->id,
                 "amount" => $amount,
+                "quantity" => $item['quantity'],
                 "share" => $share
             ];
         });
@@ -402,6 +404,7 @@ class PaymentController extends Controller
             'email' => $user->email,
             'amount' => $total_amount * 100,
             'metadata' => [
+                'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
                 'buyer_id' => $user->id,
                 'products' => $products
             ]
@@ -537,8 +540,6 @@ class PaymentController extends Controller
                 'plans' => $plans
             ];
         }
-
-
         return new JsonResponse($response);
     }
 }

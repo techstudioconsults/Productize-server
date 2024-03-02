@@ -10,7 +10,8 @@ class PaymentRepository
 {
     private $commission = 0.05;
 
-    public function getCommission() {
+    public function getCommission()
+    {
         return $this->commission;
     }
 
@@ -46,5 +47,16 @@ class PaymentRepository
     public function updateSubaccount(string $key, string $value, array $updatables)
     {
         return Subaccounts::where($key, $value)->update($updatables);
+    }
+
+    public function updateEarnings(string $user_id, int $amount)
+    {
+        $payment = Payment::firstOrCreate([
+            'user_id' => $user_id
+        ]);
+
+        $payment->total_earnings = $payment->total_earnings + $amount;
+
+        $payment->save();
     }
 }

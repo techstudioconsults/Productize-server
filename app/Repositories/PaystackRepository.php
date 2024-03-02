@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Exceptions\ApiException;
 use App\Models\Cart;
 use App\Models\Paystack;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
@@ -237,16 +238,6 @@ class PaystackRepository
                     // update sub code
                     $customer = $data['customer'];
 
-                    // $this->updateOrCreate($user->id, [
-                    //     'subscription_code' =>  $data['subscription_code'],
-                    // ]);
-
-
-                    // $this->addUserPaymentSubscriptionCode(
-                    //     $data['subscription_code'],
-                    //     $customer['customer_code']
-                    // );
-
                     Paystack::where('customer_code', $customer['customer_code'])->update(
                         ['subscription_code' => $data['subscription_code']]
                     );
@@ -256,72 +247,110 @@ class PaystackRepository
                     break;
 
                 case 'charge.success':
+
                     /**
-                     * This is a product purchase payment webhook
+                     * This is a product purchase charge success webhook
                      */
-                    if ($data['split'] && count($data['split'])) {
+                    if ($data['metadata'] && $data['metadata']['isPurchase']) {
                         $metadata = $data['metadata'];
                         $buyer_id = $metadata['buyer_id'];
+                        $products = $metadata['products'];
 
                         // Delete Cart
                         Cart::where('user_id', $buyer_id)->delete();
 
                         try {
-                            // Create Order
-                            $buildOrder = [
-                                'reference_no' => $data['reference'],
-                                'buyer_id' => $buyer_id,
-                                'total_amount' => $metadata['amount']
-                            ];
+                            foreach ($products as $product) {
+                                $product_saved = Product::find($product['product_id']);
+                                $user = $product_saved->user;
 
-                            $order = $this->orderRepository->create($buildOrder);
-
-                            // Update user customer list for each product
-                            foreach ($metadata['products'] as $product) {
-
-                                $product_slug = $product['product_slug'];
-
-                                $quantity = $product['quantity'];
-
-                                $product = $this->productRepository->getProductBySlug($product_slug);
-
-                                $merchant_subaccount = $product->user->activeSubaccount();
-
-                                $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
-
-                                $buildSale = [
-                                    'product_id' => $product->id,
-                                    'order_id' => $order->id,
-                                    'customer_id' => $buyer_id,
-                                    'subaccount_id' => $merchant_subaccount->id,
-                                    'total_amount' => $product->price * $quantity,
-                                    'quantity' => $quantity
+                                $buildOrder = [
+                                    'reference_no' => $data['reference'],
+                                    'user_id' => $buyer_id,
+                                    'quantity' => $product['quantity'],
+                                    'product_id' => $product_saved->id
                                 ];
 
-                                Sale::create($buildSale);
+                                $this->orderRepository->create($buildOrder);
 
-                                $isFirstSaleByOwner = Sale::where('product_id', $product->id)
-                                    ->whereHas('product', function ($query) use ($product) {
-                                        $query->where('user_id', $product->user_id);
-                                    })
-                                    ->count() === 1;
-
-                                if ($isFirstSaleByOwner) {
-                                    // This is the first sale made by the product owner
-                                    $owner = User::find($product->user_id);
-                                    $owner->first_sale_at = Carbon::now();
-                                    $owner->save();
-                                }
+                                // Update earnings
+                                $this->paymentRepository->updateEarnings($user->id, $product['amount']);
                             }
+
+
                         } catch (\Throwable $th) {
                             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
                         }
+
                     }
+
+
+                    /**
+                     * This is a product purchase payment webhook
+                     */
+                    // if ($data['split'] && count($data['split'])) {
+                    //     $metadata = $data['metadata'];
+                    //     $buyer_id = $metadata['buyer_id'];
+
+                    //     // Delete Cart
+                    //     Cart::where('user_id', $buyer_id)->delete();
+
+                    //     try {
+                    //         // Create Order
+                    //         $buildOrder = [
+                    //             'reference_no' => $data['reference'],
+                    //             'buyer_id' => $buyer_id,
+                    //             'total_amount' => $metadata['amount']
+                    //         ];
+
+                    //         $order = $this->orderRepository->create($buildOrder);
+
+                    //         // Update user customer list for each product
+                    //         foreach ($metadata['products'] as $product) {
+
+                    //             $product_slug = $product['product_slug'];
+
+                    //             $quantity = $product['quantity'];
+
+                    //             $product = $this->productRepository->getProductBySlug($product_slug);
+
+                    //             $merchant_subaccount = $product->user->activeSubaccount();
+
+                    //             $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
+
+                    //             $buildSale = [
+                    //                 'product_id' => $product->id,
+                    //                 'order_id' => $order->id,
+                    //                 'customer_id' => $buyer_id,
+                    //                 'subaccount_id' => $merchant_subaccount->id,
+                    //                 'total_amount' => $product->price * $quantity,
+                    //                 'quantity' => $quantity
+                    //             ];
+
+                    //             Sale::create($buildSale);
+
+                    //             $isFirstSaleByOwner = Sale::where('product_id', $product->id)
+                    //                 ->whereHas('product', function ($query) use ($product) {
+                    //                     $query->where('user_id', $product->user_id);
+                    //                 })
+                    //                 ->count() === 1;
+
+                    //             if ($isFirstSaleByOwner) {
+                    //                 // This is the first sale made by the product owner
+                    //                 $owner = User::find($product->user_id);
+                    //                 $owner->first_sale_at = Carbon::now();
+                    //                 $owner->save();
+                    //             }
+                    //         }
+                    //     } catch (\Throwable $th) {
+                    //         Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
+                    //     }
+                    // }
 
                     break;
 
                 case 'subscription.not_renew':
-                   // email customer
+                    // email customer
                     break;
 
                 case 'invoice.create':

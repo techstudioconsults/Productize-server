@@ -85,10 +85,10 @@ class User extends Authenticatable implements CanResetPassword
     //     return $this->hasOne(Paystack::class);
     // }
 
-    // public function products()
-    // {
-    //     return $this->hasMany(Product::class);
-    // }
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 
 
 

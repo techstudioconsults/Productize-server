@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            $table->foreignIdFor(\App\Models\User::class, 'user_id')->unique();
             $table->integer('total_earnings')->default(0);
             $table->integer('withdrawn_earnings')->default(0);
             $table->integer('pending')->default(0);
-            $table->integer('available_earnings')->default(0);
             $table->timestamps();
         });
     }

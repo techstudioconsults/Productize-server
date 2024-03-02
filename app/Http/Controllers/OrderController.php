@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\UnprocessableException;
-use App\Http\Resources\SalesResource;
-use App\Models\Sale;
+use App\Http\Resources\OrderResource;
+use App\Models\Order;
 use Auth;
 use Illuminate\Http\Request;
 use Validator;
@@ -15,11 +15,11 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
-        $product_name = $request->product_name;
-
         $orders = $user->orders();
+
+        $start_date = $request->start_date;
+
+        $end_date = $request->end_date;
 
         if ($start_date && $end_date) {
             $validator = Validator::make([
@@ -34,22 +34,16 @@ class OrderController extends Controller
                 throw new UnprocessableException($validator->errors()->first());
             }
 
-            $orders->whereBetween('sales.created_at', [$start_date, $end_date]);
-        }
-
-        if ($product_name) {
-            $orders->whereHas('products', function ($query) use ($product_name) {
-                $query->where('name', 'like', '%' . $product_name . '%');
-            });
+            $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
 
         $orders = $orders->paginate(10);
 
-        return SalesResource::collection($orders);
+        return OrderResource::collection($orders);
     }
 
-    public function show(Sale $order)
+    public function show(Order $order)
     {
-        return new SalesResource($order);
+        return new OrderResource($order);
     }
 }

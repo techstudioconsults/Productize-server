@@ -70,27 +70,33 @@ class User extends Authenticatable implements CanResetPassword
         'password' => 'hashed',
     ];
 
-    // public function payment()
-    // {
-    //     return $this->hasOne(Payment::class);
-    // }
-
     public function isPremium()
     {
         return ($this->account_type === 'premium' || $this->account_type === 'free_trial') ? true : false;
     }
 
-    // public function paystack()
-    // {
-    //     return $this->hasOne(Paystack::class);
-    // }
+    public function paystack()
+    {
+        return $this->hasOne(Paystack::class);
+    }
 
     public function products()
     {
         return $this->hasMany(Product::class);
     }
 
+    public function orders()
+    {
+        return $this->hasManyThrough(Order::class, Product::class);
+    }
 
+
+
+
+    // public function payment()
+    // {
+    //     return $this->hasOne(Payment::class);
+    // }
 
     // public function isSubscribed()
     // {

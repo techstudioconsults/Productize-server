@@ -27,10 +27,16 @@ class Order extends Model
 
     ];
 
-    // public function user(): HasOneThrough
-    // {
-    //     return $this->hasOneThrough(User::class, Product::class);
-    // }
+    // user who made the order
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     // public function customer(): BelongsTo
     // {

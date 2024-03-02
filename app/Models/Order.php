@@ -25,23 +25,23 @@ class Order extends Model
         'total_amount',
     ];
 
-    public function user(): HasOneThrough
-    {
-        return $this->hasOneThrough(User::class, Product::class);
-    }
+    // public function user(): HasOneThrough
+    // {
+    //     return $this->hasOneThrough(User::class, Product::class);
+    // }
 
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
+    // public function customer(): BelongsTo
+    // {
+    //     return $this->belongsTo(Customer::class);
+    // }
 
-    public function buyer()
-    {
-        return $this->belongsTo(User::class);
-    }
+    // public function buyer()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
+    // public function product()
+    // {
+    //     return $this->belongsTo(Product::class);
+    // }
 }

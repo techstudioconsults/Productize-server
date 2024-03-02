@@ -8,6 +8,12 @@ use App\Models\User;
 
 class PaymentRepository
 {
+    private $commission = 0.05;
+
+    public function getCommission() {
+        return $this->commission;
+    }
+
     public function create(array $credentials, User $user)
     {
         $data = array_merge($credentials, ['user_id' => $user->id]);

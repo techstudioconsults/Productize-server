@@ -67,4 +67,14 @@ class Product extends Model
     {
         return $this->hasMany(Sale::class);
     }
+
+    public function totalOrder()
+    {
+        return 1;
+    }
+
+    public function totalSales()
+    {
+        return 1;
+    }
 }

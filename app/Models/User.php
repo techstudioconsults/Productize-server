@@ -70,68 +70,70 @@ class User extends Authenticatable implements CanResetPassword
         'password' => 'hashed',
     ];
 
-    public function payment()
-    {
-        return $this->hasOne(Payment::class);
-    }
-
-    public function paystack()
-    {
-        return $this->hasOne(Paystack::class);
-    }
-
-    public function products()
-    {
-        return $this->hasMany(Product::class);
-    }
+    // public function payment()
+    // {
+    //     return $this->hasOne(Payment::class);
+    // }
 
     public function isPremium()
     {
         return ($this->account_type === 'premium' || $this->account_type === 'free_trial') ? true : false;
     }
 
-    public function isSubscribed()
-    {
-        return $this->account_type === 'premium'  ? true : false;
-    }
+    // public function paystack()
+    // {
+    //     return $this->hasOne(Paystack::class);
+    // }
 
-    public function subaccounts(): HasMany
-    {
-        return $this->hasMany(Subaccounts::class);
-    }
+    // public function products()
+    // {
+    //     return $this->hasMany(Product::class);
+    // }
 
-    public function hasSubaccount(): bool
-    {
-        return $this->subaccounts()->exists();
-    }
 
-    public function activeSubaccount()
-    {
-        return $this->subaccounts()->where('active', 1)->first();
-    }
 
-    public function orders(): HasManyThrough
-    {
-        return $this->hasManyThrough(Sale::class, Product::class);
-    }
+    // public function isSubscribed()
+    // {
+    //     return $this->account_type === 'premium'  ? true : false;
+    // }
 
-    public function purchases()
-    {
-        return $this->hasManyThrough(Sale::class, Order::class, 'buyer_id', 'order_id');
-    }
+    // public function subaccounts(): HasMany
+    // {
+    //     return $this->hasMany(Subaccounts::class);
+    // }
 
-    public function carts()
-    {
-        return $this->hasMany(Cart::class, 'user_id');
-    }
+    // public function hasSubaccount(): bool
+    // {
+    //     return $this->subaccounts()->exists();
+    // }
 
-    public function customers(): HasMany
-    {
-        return $this->hasMany(Customer::class, 'product_owner_id');
-    }
+    // public function activeSubaccount()
+    // {
+    //     return $this->subaccounts()->where('active', 1)->first();
+    // }
 
-    public function downloads(): HasMany
-    {
-        return $this->hasMany(Sale::class, 'customer_id');
-    }
+    // public function orders(): HasManyThrough
+    // {
+    //     return $this->hasManyThrough(Sale::class, Product::class);
+    // }
+
+    // public function purchases()
+    // {
+    //     return $this->hasManyThrough(Sale::class, Order::class, 'buyer_id', 'order_id');
+    // }
+
+    // public function carts()
+    // {
+    //     return $this->hasMany(Cart::class, 'user_id');
+    // }
+
+    // public function customers(): HasMany
+    // {
+    //     return $this->hasMany(Customer::class, 'product_owner_id');
+    // }
+
+    // public function downloads(): HasMany
+    // {
+    //     return $this->hasMany(Sale::class, 'customer_id');
+    // }
 }

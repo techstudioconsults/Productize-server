@@ -255,9 +255,6 @@ class PaymentController extends Controller
             try {
                 $data = json_decode($payload, true);
 
-                // Log::alert('data', ['value' => $data['data']]);
-                // Log::alert('event', ['value' => $data['event']]);
-
                 Log::channel('webhook')->info('data', ['value' => $data['data']]);
                 Log::channel('webhook')->info('event', ['value' => $data['event']]);
 
@@ -360,69 +357,133 @@ class PaymentController extends Controller
 
         $validated = $request->validated();
 
-        $products = $validated['products'];
+        // Extract the cart from the request
+        $cart = $validated['products'];
 
-        $sub_accounts = Arr::map($products, function ($obj) {
-            $slug = $obj['product_slug'];
+        $products = Arr::map($cart, function ($item) {
+            // Get Slug
+            $slug = $item['product_slug'];
 
+            // Find the product by slug
             $product = $this->productRepository->getProductBySlug($slug);
 
-            $merchant = $product->user;
-
-            if (!$product) throw new NotFoundException("Product with slug $slug not found");
-
-            if (!$merchant->hasSubaccount())
-                throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
-
-            $sub_account = $merchant->activeSubaccount()->sub_account_code;
+            // Product Not Found, Cannot continue with payment.
+            if (!$product) {
+                throw new BadRequestException('Product with ' . $slug . ' not found');
+            }
 
             // Total Product Amount
-            $amount = $product->price * $obj['quantity'];
+            $amount = $product->price * $item['quantity'];
 
             // Productize's %
-            $deduction = $amount * 0.05;
+            $deduction = $amount * $this->paymentRepository->getCommission();
 
-            // Take it off total amount to sub account
+            // This is what the product owner will earn from this sale.
             $share = $amount - $deduction;
 
             return [
-                "subaccount" => $sub_account,
+                "product_id" => $product->id,
                 "amount" => $amount,
-                "share" => $share * 100 // Convert to naira. Paystack values at kobo
+                "share" => $share
             ];
         });
 
-        $total_amount = array_reduce($sub_accounts, function ($carry, $item) {
+        // Calculate Total Amount
+        $total_amount = array_reduce($products, function ($carry, $item) {
             return $carry + ($item['amount']);
         }, 0);
 
+        // Validate Total amount match that stated in request.
         if ($total_amount !== $validated['amount']) {
             throw new BadRequestException('Total amount does not match quantity');
         }
 
-        $metadata = json_encode(array_merge($validated, [
-            'buyer_id' => $user->id,
-        ]));
-
         $payload = [
             'email' => $user->email,
             'amount' => $total_amount * 100,
-            'split' => [
-                'type' => 'flat',
-                'bearer_type' => 'account',
-                'subaccounts' => $sub_accounts
-            ],
-            'metadata' => $metadata
+            'metadata' => [
+                'buyer_id' => $user->id,
+                'products' => $products
+            ]
         ];
 
         try {
             $response = $this->paystackRepository->initializePurchaseTransaction($payload);
-
-            return $response;
+            return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
     }
+
+    // public function purchase(PurchaseRequest $request)
+    // {
+    //     $user = Auth::user();
+
+    //     $validated = $request->validated();
+
+    //     $products = $validated['products'];
+
+    //     $sub_accounts = Arr::map($products, function ($obj) {
+    //         $slug = $obj['product_slug'];
+
+    //         $product = $this->productRepository->getProductBySlug($slug);
+
+    //         $merchant = $product->user;
+
+    //         if (!$product) throw new NotFoundException("Product with slug $slug not found");
+
+    //         if (!$merchant->hasSubaccount())
+    //             throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
+
+    //         $sub_account = $merchant->activeSubaccount()->sub_account_code;
+
+    //         // Total Product Amount
+    //         $amount = $product->price * $obj['quantity'];
+
+    //         // Productize's %
+    //         $deduction = $amount * 0.05;
+
+    //         // Take it off total amount to sub account
+    //         $share = $amount - $deduction;
+
+    //         return [
+    //             "subaccount" => $sub_account,
+    //             "amount" => $amount,
+    //             "share" => $share * 100 // Convert to naira. Paystack values at kobo
+    //         ];
+    //     });
+
+    //     $total_amount = array_reduce($sub_accounts, function ($carry, $item) {
+    //         return $carry + ($item['amount']);
+    //     }, 0);
+
+    //     if ($total_amount !== $validated['amount']) {
+    //         throw new BadRequestException('Total amount does not match quantity');
+    //     }
+
+    //     $metadata = json_encode(array_merge($validated, [
+    //         'buyer_id' => $user->id,
+    //     ]));
+
+    //     $payload = [
+    //         'email' => $user->email,
+    //         'amount' => $total_amount * 100,
+    //         'split' => [
+    //             'type' => 'flat',
+    //             'bearer_type' => 'account',
+    //             'subaccounts' => $sub_accounts
+    //         ],
+    //         'metadata' => $metadata
+    //     ];
+
+    //     try {
+    //         $response = $this->paystackRepository->initializePurchaseTransaction($payload);
+
+    //         return $response;
+    //     } catch (\Throwable $th) {
+    //         throw new ServerErrorException($th->getMessage());
+    //     }
+    // }
 
     /**
      * Get a List of all banks supported by paystack

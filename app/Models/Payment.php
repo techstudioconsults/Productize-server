@@ -28,8 +28,8 @@ class Payment extends Model
         'paystack_subscription_id',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 }

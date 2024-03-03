@@ -58,6 +58,11 @@ class Product extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function totalOrder()
     {
         return $this->hasMany(Order::class)->count();

@@ -24,7 +24,7 @@ class Order extends Model
         'user_id',
         'product_id',
         'quantity',
-
+        'total_amount'
     ];
 
     // user who made the order

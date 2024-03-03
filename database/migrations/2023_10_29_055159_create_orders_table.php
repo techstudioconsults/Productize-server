@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->text('reference_no');
             $table->text('quantity');
+            $table->text('total_amount');
             $table->foreignIdFor(\App\Models\User::class, 'user_id'); // This is the buyer who made the order
             $table->foreignIdFor(\App\Models\Product::class, 'product_id');
             $table->timestamps();

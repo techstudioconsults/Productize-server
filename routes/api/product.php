@@ -43,9 +43,7 @@ Route::group([
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
-    Route::get('/{product}/sales', [ProductController::class, 'sales'])->middleware('can:view,product');
-
-
+    // Route::get('/{product}/sales', [ProductController::class, 'sales'])->middleware('can:view,product');
 
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'findBySlug'])
         ->withoutMiddleware([

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,15 @@ class Customer extends Model
         'buyer_id',
         'latest_puchase_id'
     ];
+
+    public function scopeLatestOfMany(Builder $query, $column)
+    {
+        return $query->whereIn('id', function ($subquery) use ($column) {
+            $subquery->selectRaw('MAX(id)')
+                ->from('customers')
+                ->groupBy($column);
+        });
+    }
 
     // user who made the order
     public function user()

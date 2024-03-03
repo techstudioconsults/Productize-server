@@ -329,12 +329,12 @@ class ProductController extends Controller
         return response('product is permanently deleted');
     }
 
-    public function sales(Product $product)
-    {
-        $sales = $product->sales;
+    // public function sales(Product $product)
+    // {
+    //     $sales = $product->sales;
 
-        return SalesResource::collection($sales);
-    }
+    //     return SalesResource::collection($sales);
+    // }
 
     public function downloads()
     {

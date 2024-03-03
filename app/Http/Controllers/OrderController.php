@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\Product;
 use Auth;
 use Illuminate\Http\Request;
 use Validator;
@@ -45,5 +46,15 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         return new OrderResource($order);
+    }
+
+    public function showByProductId(Product $product)
+    {
+        $user = Auth::user();
+
+        $orders = $user->orders()->where('product_id', $product->id)->take(3)
+            ->get();
+
+        return OrderResource::collection($orders);
     }
 }

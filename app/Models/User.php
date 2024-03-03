@@ -93,15 +93,16 @@ class User extends Authenticatable implements CanResetPassword
     public function customers()
     {
         // Retrieve latest entry of a merchant customer
-        return $this->hasOne(Customer::class, 'merchant_id')->latestOfMany('created_at');
+        // return $this->hasMany(Customer::class, 'merchant_id')->latestOfMany('created_at');
+        return $this->hasMany(Customer::class, 'merchant_id')
+            ->latestOfMany('user_id');
     }
 
     public function purchases()
     {
         return $this->hasMany(Order::class);
     }
-
-
+}
     // public function payment()
     // {
     //     return $this->hasOne(Payment::class);
@@ -151,4 +152,4 @@ class User extends Authenticatable implements CanResetPassword
     // {
     //     return $this->hasMany(Sale::class, 'customer_id');
     // }
-}
+// }

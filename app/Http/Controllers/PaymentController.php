@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
+use App\Http\Requests\InitiateWithdrawalRequest;
 use App\Http\Requests\PurchaseRequest;
 use App\Http\Requests\StorePayOutRequest;
 use App\Http\Requests\UpdatePayOutRequest;
@@ -22,6 +23,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
@@ -406,75 +408,45 @@ class PaymentController extends Controller
         }
     }
 
-    // public function purchase(PurchaseRequest $request)
-    // {
-    //     $user = Auth::user();
+    /**
+     * Ensure Paystack Account is a business account
+     * https://support.paystack.com/hc/en-us/articles/360009881960-How-do-I-upgrade-from-a-Starter-Business-to-a-Registered-Business-on-Paystack
+     */
+    public function initiateWithdrawal(InitiateWithdrawalRequest $request)
+    {
+        $user = Auth::user();
 
-    //     $validated = $request->validated();
+        $amount = $request->amount;
 
-    //     $products = $validated['products'];
+        $payment = $user->payment;
 
-    //     $sub_accounts = Arr::map($products, function ($obj) {
-    //         $slug = $obj['product_slug'];
+        if ($amount > $payment->getAvailableEarnings()) throw new BadRequestException('Overdraft');
 
-    //         $product = $this->productRepository->getProductBySlug($slug);
+        $payout_account = $user->payOutAccounts()->where('active', true)->first();
 
-    //         $merchant = $product->user;
+        $reference = Str::uuid()->toString();
 
-    //         if (!$product) throw new NotFoundException("Product with slug $slug not found");
+        try {
+            $response = $this->paystackRepository->initiateTransfer(
+                $amount,
+                $payout_account->paystack_recipient_code,
+                $reference
+            );
 
-    //         if (!$merchant->hasSubaccount())
-    //             throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
+            $payout_cred = [
+                'status' => 'pending',
+                'reference' => $reference,
+                'paystack_transfer_code' => $response['transfer_code'],
+                'pay_out_account_id' => $payout_account->id
+            ];
 
-    //         $sub_account = $merchant->activeSubaccount()->sub_account_code;
+           $this->paymentRepository->createPayout($payout_cred);
 
-    //         // Total Product Amount
-    //         $amount = $product->price * $obj['quantity'];
-
-    //         // Productize's %
-    //         $deduction = $amount * 0.05;
-
-    //         // Take it off total amount to sub account
-    //         $share = $amount - $deduction;
-
-    //         return [
-    //             "subaccount" => $sub_account,
-    //             "amount" => $amount,
-    //             "share" => $share * 100 // Convert to naira. Paystack values at kobo
-    //         ];
-    //     });
-
-    //     $total_amount = array_reduce($sub_accounts, function ($carry, $item) {
-    //         return $carry + ($item['amount']);
-    //     }, 0);
-
-    //     if ($total_amount !== $validated['amount']) {
-    //         throw new BadRequestException('Total amount does not match quantity');
-    //     }
-
-    //     $metadata = json_encode(array_merge($validated, [
-    //         'buyer_id' => $user->id,
-    //     ]));
-
-    //     $payload = [
-    //         'email' => $user->email,
-    //         'amount' => $total_amount * 100,
-    //         'split' => [
-    //             'type' => 'flat',
-    //             'bearer_type' => 'account',
-    //             'subaccounts' => $sub_accounts
-    //         ],
-    //         'metadata' => $metadata
-    //     ];
-
-    //     try {
-    //         $response = $this->paystackRepository->initializePurchaseTransaction($payload);
-
-    //         return $response;
-    //     } catch (\Throwable $th) {
-    //         throw new ServerErrorException($th->getMessage());
-    //     }
-    // }
+            return new JsonResponse(['data' => 'Withdrawal Initiated']);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), 500);
+        }
+    }
 
     /**
      * Get a List of all banks supported by paystack

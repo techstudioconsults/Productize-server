@@ -111,15 +111,12 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasMany(PayOutAccount::class);
     }
 
-    // public function downloads(): HasMany
-    // {
-    //     return $this->hasMany(Sale::class, 'customer_id');
-    // }
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
 }
-    // public function payment()
-    // {
-    //     return $this->hasOne(Payment::class);
-    // }
+
 
     // public function isSubscribed()
     // {

@@ -28,6 +28,11 @@ class Payment extends Model
         'paystack_subscription_id',
     ];
 
+    public function getAvailableEarnings()
+    {
+        return $this->total_earnings - $this->withdrawn_earnings;
+    }
+
     // public function user()
     // {
     //     return $this->belongsTo(User::class);

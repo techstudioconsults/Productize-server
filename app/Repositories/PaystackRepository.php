@@ -11,6 +11,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PaystackRepository
 {
@@ -318,6 +319,62 @@ class PaystackRepository
                      * https://paystack.com/docs/payments/subscriptions/#handling-subscription-payment-issues
                      */
                     break;
+
+                case 'transfer.success':
+
+                    $reference = $data['reference'];
+
+                    try {
+                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+
+                        $payout->status = 'success';
+
+                        $payout->save();
+
+                        $user_id = $payout->payoutAccount->user->id;
+                        
+                        $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
+
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
+
+                    break;
+
+                case 'transfer.failed':
+
+                    $reference = $data['reference'];
+
+                    try {
+                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+
+                        $payout->status = 'failed';
+
+                        $payout->save();
+
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
+                    break;
+
+                case 'transfer.reversed':
+
+                    $reference = $data['reference'];
+
+                    try {
+                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+
+                        $payout->status = 'reversed';
+
+                        $payout->save();
+
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
+                    break;
             }
         } catch (\Throwable $th) {
             Log::critical('paystack webhook error', ['error_message' => $th->getMessage()]);
@@ -378,6 +435,25 @@ class PaystackRepository
             "Cache-Control"  => "no-cache",
             'Content-Type' => 'application/json'
         ])->post("{$this->baseUrl}/transferrecipient", $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
+    public function initiateTransfer(string $amount, string $recipient_code, string $reference)
+    {
+        $payload = [
+            "source" => "balance",
+            "reason" => "Payout",
+            "amount" => $amount,
+            "recipient" => $recipient_code,
+            "reference" => $reference
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/transfer", $payload)->throw()->json();
 
         return $response['data'];
     }

@@ -37,7 +37,7 @@ class CustomerController extends Controller
                 throw new UnprocessableException($validator->errors()->first());
             }
 
-            $customers->whereBetween('customers.created_at', [$start_date, $end_date]);
+            $customers->whereBetween('created_at', [$start_date, $end_date]);
         }
 
         $customers = $customers->paginate(10);

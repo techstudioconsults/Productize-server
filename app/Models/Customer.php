@@ -23,10 +23,21 @@ class Customer extends Model
         'latest_puchase_id'
     ];
 
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class, 'buyer_id');
-    // }
+    // user who made the order
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function totalOrder()
+    {
+        return $this->belongsTo(Order::class)->count();
+    }
 
     // public function product()
     // {

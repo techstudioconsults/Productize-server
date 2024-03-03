@@ -271,7 +271,9 @@ class PaystackRepository
                                     'product_id' => $product_saved->id
                                 ];
 
-                                $this->orderRepository->create($buildOrder);
+                                $order = $this->orderRepository->create($buildOrder);
+
+                                $this->customerRepository->create($order);
 
                                 // Update earnings
                                 $this->paymentRepository->updateEarnings($user->id, $product['amount']);

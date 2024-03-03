@@ -50,15 +50,16 @@ class PaymentController extends Controller
         $user = Auth::user();
 
         // Is the user subscribed ?
-        if ($user->isSubscribed()) {
-            throw new BadRequestException("Sorry, you can't perform this action. It appears you already have an active subscription plan.");
-        }
+        // if ($user->isSubscribed()) {
+        //     throw new BadRequestException("Sorry, you can't perform this action. It appears you already have an active subscription plan.");
+        // }
 
         // check if customer exist on paystack
         $paystack_customer = $this->paystackRepository->fetchCustomer($user->email);
 
         if ($paystack_customer && count($paystack_customer['subscriptions'])) {
             $status = $paystack_customer['subscriptions'][0]['status'];
+
             /**
              * The Customer has a subcription customer account with registered with us but not in our database.
              *
@@ -442,7 +443,7 @@ class PaymentController extends Controller
                 'amount' => $amount
             ];
 
-           $this->paymentRepository->createPayout($payout_cred);
+            $this->paymentRepository->createPayout($payout_cred);
 
             return new JsonResponse(['data' => 'Withdrawal Initiated']);
         } catch (\Throwable $th) {
@@ -481,7 +482,6 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-
         $response = [
             'renewal_date' => null,
             'plan' => $user->account_type,
@@ -489,7 +489,7 @@ class PaymentController extends Controller
             'plans' => []
         ];
 
-        $subscription_id = $user->payment?->paystack_subscription_id;
+        $subscription_id = $user->paystack->subscription_code;
 
         if ($subscription_id) {
             $subscription = $this->paystackRepository->fetchSubscription($subscription_id);

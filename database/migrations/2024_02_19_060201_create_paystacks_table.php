@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\User::class, 'user_id');
             $table->text('customer_code');
-            $table->text('subscription_code');
+            $table->text('subscription_code')->nullable();
             $table->timestamps();
         });
     }

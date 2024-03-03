@@ -333,7 +333,7 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $downloads = $user->downloads;
+        $downloads = $user->purchases()->get();
 
         $products = $downloads->map(function ($download) {
             $product =  $download->product;

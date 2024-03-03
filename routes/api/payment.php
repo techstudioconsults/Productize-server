@@ -9,15 +9,21 @@ Route::group([
     'prefix' => 'payments',
     'middleware' => ['auth:sanctum', 'can:allowed,App\Models\Payment']  // Payment Policy
 ], function () {
-    Route::post('/subscription', [PaymentController::class, 'createSubscription']);
+    Route::post('/subscription', [PaymentController::class, 'createPaystackSubscription']);
 
-    Route::post('/accounts', [PaymentController::class, 'createSubAccount'])
+    Route::post('/accounts', [PaymentController::class, 'createPayOutAccount'])
         ->middleware('can:subscribed,App\Models\Payment');
 
-    Route::get('/accounts', [PaymentController::class, 'getAllSubAccounts'])
+    Route::get('/accounts', [PaymentController::class, 'getAllPayOutAccounts'])
         ->middleware('can:subscribed,App\Models\Payment');
 
-    Route::patch('/accounts/{account}', [PaymentController::class, 'updateSubaccount'])
+    Route::post('/payouts', [PaymentController::class, 'initiateWithdrawal'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::get('/payouts', [PaymentController::class, 'getPayouts'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::patch('/accounts/{account}', [PaymentController::class, 'updatePayOutAccount'])
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::get('/bank-list', [PaymentController::class, 'getBankList'])
@@ -29,6 +35,9 @@ Route::group([
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::get('/subscription/manage', [PaymentController::class, 'managePaystackSubscription'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::post('/subscription/cancel', [PaymentController::class, 'cancelSubscription'])
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::get('/subscription/billing', [PaymentController::class, 'billing'])

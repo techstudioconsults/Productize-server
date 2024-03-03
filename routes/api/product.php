@@ -43,10 +43,6 @@ Route::group([
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
-    Route::get('/{product}/sales', [ProductController::class, 'sales'])->middleware('can:view,product');
-
-
-
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'findBySlug'])
         ->withoutMiddleware([
             'auth:sanctum',
@@ -56,7 +52,7 @@ Route::group([
 
     Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
 
-    Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware('can:update,product', 'can:publish,App\Models\Product');
+    Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware('can:update,product');
 
     Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
 

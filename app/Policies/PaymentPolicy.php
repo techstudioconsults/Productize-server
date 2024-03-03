@@ -18,17 +18,9 @@ class PaymentPolicy
 
     public function subscribed(User $user)
     {
-        $payment = User::find($user->id)->payment;
-
-        if (!$payment) {
-            throw new BadRequestException('User is not subscribed');
-        }
-
-        if (!$payment->paystack_subscription_id) {
-            throw new BadRequestException('User is not subscribed');
-        }
-        
-        return Response::allow();
+        return $user->isPremium()
+            ? Response::allow()
+            : throw new BadRequestException('User is not subscribed');
     }
 
     public function owner(User $user)

@@ -73,6 +73,9 @@ return [
             'replace_placeholders' => true,
         ],
 
+        /**
+         * General multipurpose and Error Logger to slack error logs channel
+         */
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_ERROR_URL'),
@@ -82,10 +85,25 @@ return [
             'replace_placeholders' => true,
         ],
 
+        /**
+         * Application webhooks to slack channel
+         */
         'webhook' => [
             'driver' => 'slack',
             'url' => env('WEBHOOK_SLACK_URL'),
             'username' => 'Laravel Log',
+            'emoji' => ':boom:',
+            'level' => env('LOG_LEVEL', 'info'),
+            'replace_placeholders' => true,
+        ],
+
+        /**
+         * Logger for Scheduled Tasks. cron jobs, command schedulers etc
+         */
+        'schedule' => [
+            'driver' => 'slack',
+            'url' => env('SLACK_BACKGROUND_TASK_URL'),
+            'username' => 'Background Tasks',
             'emoji' => ':boom:',
             'level' => env('LOG_LEVEL', 'info'),
             'replace_placeholders' => true,
@@ -98,7 +116,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],

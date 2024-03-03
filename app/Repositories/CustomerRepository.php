@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Customer;
+use App\Models\Order;
 
 class CustomerRepository
 {
@@ -14,21 +15,31 @@ class CustomerRepository
 
     /**
      * Create a new customer for a user
-     * @param buyer_id Customer's Id
-     * @param product_slug Product slugified
+     * @param order Order made by the customer
      */
-    public function createOrUpdate(string $buyer_id, string $product_slug)
+    public function create(Order $order)
     {
-        $product = $this->productRepository->getProductBySlug($product_slug);
+        $customer = new Customer();
 
-        $customer = Customer::updateOrCreate(
-            [
-                'buyer_id' => $buyer_id,
-                'product_owner_id' => $product->user_id,
-            ],
-            ['latest_puchase_id' => $product->id]
-        );
+        $customer->user_id = $order->user->id;
+
+        $customer->merchant_id = $order->product->user->id;
+
+        $customer->order_id = $order->id;
+
+        $customer->save();
 
         return $customer;
+        // $product = $this->productRepository->getProductBySlug($product_slug);
+
+        // $customer = Customer::updateOrCreate(
+        //     [
+        //         'buyer_id' => $buyer_id,
+        //         'product_owner_id' => $product->user_id,
+        //     ],
+        //     ['latest_puchase_id' => $product->id]
+        // );
+
+        // return $customer;
     }
 }

@@ -16,9 +16,15 @@ class OrderResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'email' => $this->order->buyer->email,
-            // 'product_title' => $this->product->title,
-            // 'product_price' => $this->product->price,
+            'reference_no' => $this->reference_no,
+            'product_title' => $this->product->title,
+            'product_price' => $this->product->price,
+            'customer_email' => $this->user->email,
+            'total_orders' => $this->product->totalOrder(),
+            'total_sales' => $this->product->totalSales(),
+            'total_amount' => $this->product->price * $this->quantity,
+            'quantity' => $this->quantity,
+            'product_publish_date' => $this->product->created_at,
             'created_at' => $this->created_at
         ];
     }

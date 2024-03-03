@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,13 +24,33 @@ class Customer extends Model
         'latest_puchase_id'
     ];
 
-    public function user()
+    public function scopeLatestOfMany(Builder $query, $column)
     {
-        return $this->belongsTo(User::class, 'buyer_id');
+        return $query->whereIn('id', function ($subquery) use ($column) {
+            $subquery->selectRaw('MAX(id)')
+                ->from('customers')
+                ->groupBy($column);
+        });
     }
 
-    public function product()
+    // user who made the order
+    public function user()
     {
-        return $this->belongsTo(Product::class, 'latest_puchase_id');
+        return $this->belongsTo(User::class);
     }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function totalOrder()
+    {
+        return $this->belongsTo(Order::class)->count();
+    }
+
+    // public function product()
+    // {
+    //     return $this->belongsTo(Product::class, 'latest_puchase_id');
+    // }
 }

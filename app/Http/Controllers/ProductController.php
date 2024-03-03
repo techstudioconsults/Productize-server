@@ -329,18 +329,11 @@ class ProductController extends Controller
         return response('product is permanently deleted');
     }
 
-    public function sales(Product $product)
-    {
-        $sales = $product->sales;
-
-        return SalesResource::collection($sales);
-    }
-
     public function downloads()
     {
         $user = Auth::user();
 
-        $downloads = $user->downloads;
+        $downloads = $user->purchases()->get();
 
         $products = $downloads->map(function ($download) {
             $product =  $download->product;
@@ -364,8 +357,8 @@ class ProductController extends Controller
         $user = Auth::user();
 
         $topProducts = $user->products()
-            ->join('sales', 'products.id', '=', 'sales.product_id')
-            ->select('products.*', DB::raw('SUM(sales.quantity) as total_sales'))
+            ->join('orders', 'products.id', '=', 'orders.product_id')
+            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
             ->groupBy('products.id')
             ->orderByDesc('total_sales')
             ->limit(5);

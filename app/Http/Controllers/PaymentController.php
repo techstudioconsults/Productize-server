@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
+use App\Http\Requests\InitiateWithdrawalRequest;
 use App\Http\Requests\PurchaseRequest;
-use App\Http\Requests\StoreSubAccountRequest;
-use App\Http\Requests\UpdateSubAccountRequest;
+use App\Http\Requests\StorePayOutRequest;
+use App\Http\Requests\UpdatePayOutRequest;
 use App\Http\Resources\PaymentResource;
-use App\Http\Resources\SubaccountResource;
-use App\Models\Payment;
-use App\Models\Subaccounts;
+use App\Http\Resources\PayOutAccountResource;
+use App\Http\Resources\PayoutResource;
+use App\Models\PayOutAccount;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
@@ -24,6 +24,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
@@ -42,6 +43,99 @@ class PaymentController extends Controller
         $user = Auth::user();
 
         return ['user' => $user, 'userPaymentInfo' => User::find($user->id)->payment];
+    }
+
+    public function createPaystackSubscription()
+    {
+        $user = Auth::user();
+
+        // Is the user subscribed ?
+        // if ($user->isSubscribed()) {
+        //     throw new BadRequestException("Sorry, you can't perform this action. It appears you already have an active subscription plan.");
+        // }
+
+        // check if customer exist on paystack
+        $paystack_customer = $this->paystackRepository->fetchCustomer($user->email);
+
+        if ($paystack_customer && count($paystack_customer['subscriptions'])) {
+            $status = $paystack_customer['subscriptions'][0]['status'];
+
+            /**
+             * The Customer has a subcription customer account with registered with us but not in our database.
+             *
+             * Check if the paystack subscription is active.
+             *
+             * Note, this part of the code might run on your local server due to formatting the db etc but not in production!
+             *
+             * If the status is not cancelled hence, active for whatever reason.
+             */
+            if ($status !== 'cancelled') {
+                // Why is the database not updated to premium? Something must have gone wrong
+                Log::channel('slack')->alert(
+                    'USER HAS AN ACTIVE SUBSCRIPTION BUT IS NOT A PREMIUM USER IN DB',
+                    ['context' => [
+                        'email' => $user->email,
+                        'paystack_customer_code' => $paystack_customer['customer_code']
+                    ]]
+                );
+
+                /************** What went wrong? Check if the paystack table have the necessary columns. *****************/
+                $paystack = $user->paystack;
+
+                if (!$paystack) {
+                    /************** what happened with the database? Maybe db was formatted? *****************/
+                    Log::channel('slack')->alert(
+                        'USER HAS AN ACTIVE SUBSCRIPTION BUT NO RECORD OF SUBSCRIPTION IN THE DB',
+                        ['context' => [
+                            'email' => $user->email,
+                            'paystack_customer_code' => $paystack_customer['customer_code']
+                        ]]
+                    );
+                }
+
+                /********** Create a fresh paystack or update the table for the user and make things right!. *************/
+                $this->paystackRepository->updateOrCreate($user->id, [
+                    'customer_code' => $paystack_customer['customer_code'],
+                    'subscription_code' => $paystack_customer['subscriptions'][0]['subscription_code']
+                ]);
+
+                /************** Ensure the user remains a premium user *****************/
+                $this->userRepository->guardedUpdate($user->email, 'account_type', 'premium');
+
+                throw new BadRequestException("Sorry, you can't perform this action. It appears you already have an active subscription plan.");
+            }
+
+            /** Subscription was cancelled so we Enable it */
+            try {
+                $response = $this->paystackRepository->enableSubscription($paystack_customer['subscriptions'][0]['subscription_code']);
+                return new JsonResponse(['data' => $response['message']]);
+            } catch (\Throwable $th) {
+                throw new ServerErrorException($th->getMessage());
+            }
+        }
+
+        /**
+         * At this point, It is established that the user is a first time subscriber.
+         *
+         * Create customer.
+         * Initilize subscription.
+         * Update the subscription code.
+         */
+
+        try {
+            $customer = $this->paystackRepository->createCustomer($user);
+
+            $customer_code = $customer['customer_code'];
+
+            $this->paystackRepository->updateOrCreate($user->id, [
+                'customer_code' => $customer_code,
+            ]);
+
+            $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+            return new JsonResponse(['data' => $subscription]);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
     }
 
     public function createSubscription()
@@ -98,7 +192,7 @@ class PaymentController extends Controller
             // initialize customer transaction as a first timer
             $subscription = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
 
 
@@ -111,14 +205,15 @@ class PaymentController extends Controller
 
     public function enablePaystackSubscription()
     {
-        ['userPaymentInfo' => $userPaymentInfo] = $this->getUserPaymentInfo();
-        $subscriptionId = $userPaymentInfo->paystack_subscription_id;
+        $user = Auth::user();
+
+        $paystack = $user->paystack;
 
         try {
-            $subscription = $this->paystackRepository->enableSubscription($subscriptionId);
+            $subscription = $this->paystackRepository->enableSubscription($paystack->subscription_code);
             return new JsonResponse(['data' => $subscription]);
         } catch (\Exception $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
     }
 
@@ -126,12 +221,27 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-        $subscriptionId = $user->payment->paystack_subscription_id;
+        $paystack = $user->paystack;
 
         try {
-            $response = $this->paystackRepository->manageSubscription($subscriptionId);
+            $response = $this->paystackRepository->manageSubscription($paystack->subscription_code);
 
-            return new PaymentResource($user->payment, $response);
+            return new JsonResponse(['data' => $response]);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
+    }
+
+    public function cancelSubscription()
+    {
+        $user = Auth::user();
+
+        $paystack = $user->paystack;
+
+        try {
+            $response = $this->paystackRepository->disableSubscription($paystack->subscription_code);
+
+            return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }
@@ -148,9 +258,6 @@ class PaymentController extends Controller
             try {
                 $data = json_decode($payload, true);
 
-                // Log::alert('data', ['value' => $data['data']]);
-                // Log::alert('event', ['value' => $data['event']]);
-
                 Log::channel('webhook')->info('data', ['value' => $data['data']]);
                 Log::channel('webhook')->info('event', ['value' => $data['event']]);
 
@@ -165,78 +272,64 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * set up user payout account
-     */
-    public function createSubAccount(StoreSubAccountRequest $request)
+    public function createPayOutAccount(StorePayOutRequest $request)
     {
         $user = Auth::user();
 
         $credentials = $request->validated();
 
-        $payload = array_merge($credentials, [
-            "percentage_charge" => 5,
-            "primary_contact_email" => $user->email
-        ]);
+        $account_number = $credentials['account_number'];
 
-        $account_exists = Subaccounts::where('account_number', $credentials['account_number'])->exists();
+        $bank_code = $credentials['bank_code'];
+
+        $name = $credentials['name'];
+
+        $bank_name = $credentials['bank_name'];
+
+        $account_exists = PayOutAccount::where('account_number', $account_number)->exists();
 
         /** Check for sub account */
         if ($account_exists) {
             throw new BadRequestException('Sub Account Exist');
         }
 
-        /**
-         * Validate account number
-         *
-         * https://paystack.com/docs/identity-verification/verify-account-number/#resolve-account-number
-         */
+        $account_number_validated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
 
-        /**
-         * create transfer recipient
-         * https://paystack.com/docs/transfers/creating-transfer-recipients/#create-recipient
-         */
-
-        /**
-         * Now to initialize a transfer to customer payout account
-         *
-         * Create Transfer reference with uuid
-         * https://paystack.com/docs/transfers/single-transfers/#generate-a-transfer-reference
-         *
-         * https://paystack.com/docs/transfers/managing-transfers/#server-approval
-         */
+        if (!$account_number_validated) throw new BadRequestException('Invalid Account Number');
 
         try {
-            $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
+            // Create a transfer recipient with paystack
+            $response = $this->paystackRepository->createTransferRecipient($name, $account_number, $bank_code);
 
-            $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
-
-            $sub_account_payload = array_merge($credentials, [
-                'sub_account_code' => $paystack_sub_account_code,
+            $payout_credentials = [
                 'user_id' => $user->id,
-                'active' => 1
-            ]);
+                'account_number' => $account_number,
+                'paystack_recipient_code' => $response['recipient_code'],
+                'name' => $name,
+                'bank_code' => $bank_code,
+                'bank_name' => $bank_name
+            ];
 
-            $sub_account = $this->paymentRepository->createSubAccount($sub_account_payload);
+            $payout_account = $this->paymentRepository->createPayOutAccount($payout_credentials);
 
             $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
-        } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
-        }
 
-        return new SubaccountResource($sub_account);
+            return new PayOutAccountResource($payout_account);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
     }
 
-    public function getAllSubAccounts()
+    public function getAllPayOutAccounts()
     {
         $user = Auth::user();
 
-        $sub_accounts = $user->subaccounts()->get();
+        $payout_accounts = $user->payOutAccounts()->get();
 
-        return SubaccountResource::collection($sub_accounts);
+        return PayOutAccountResource::collection($payout_accounts);
     }
 
-    public function updateSubaccount(Subaccounts $account, UpdateSubAccountRequest $request)
+    public function updatePayOutAccount(PayOutAccount $account, UpdatePayOutRequest $request)
     {
         $validated = $request->validated();
 
@@ -244,7 +337,7 @@ class PaymentController extends Controller
 
         $account->save();
 
-        return new SubaccountResource($account);
+        return new PayOutAccountResource($account);
     }
 
     public function purchase(PurchaseRequest $request)
@@ -253,68 +346,118 @@ class PaymentController extends Controller
 
         $validated = $request->validated();
 
-        $products = $validated['products'];
+        // Extract the cart from the request
+        $cart = $validated['products'];
 
-        $sub_accounts = Arr::map($products, function ($obj) {
-            $slug = $obj['product_slug'];
+        $products = Arr::map($cart, function ($item) {
+            // Get Slug
+            $slug = $item['product_slug'];
 
+            // Find the product by slug
             $product = $this->productRepository->getProductBySlug($slug);
 
-            $merchant = $product->user;
+            // Product Not Found, Cannot continue with payment.
+            if (!$product) {
+                throw new BadRequestException('Product with slug ' . $slug . ' not found');
+            }
 
-            if (!$product) throw new NotFoundException("Product with slug $slug not found");
-
-            if (!$merchant->hasSubaccount())
-                throw new BadRequestException("Merchant with user Id: $merchant->id Payout Account Not Found");
-
-            $sub_account = $merchant->activeSubaccount()->sub_account_code;
+            if ($product->status !== 'published') {
+                throw new BadRequestException('Product with slug ' . $slug . ' not published');
+            }
 
             // Total Product Amount
-            $amount = $product->price * $obj['quantity'];
+            $amount = $product->price * $item['quantity'];
 
             // Productize's %
-            $deduction = $amount * 0.05;
+            $deduction = $amount * $this->paymentRepository->getCommission();
 
-            // Take it off total amount to sub account
+            // This is what the product owner will earn from this sale.
             $share = $amount - $deduction;
 
             return [
-                "subaccount" => $sub_account,
+                "product_id" => $product->id,
                 "amount" => $amount,
-                "share" => $share * 100 // Convert to naira. Paystack values at kobo
+                "quantity" => $item['quantity'],
+                "share" => $share
             ];
         });
 
-        $total_amount = array_reduce($sub_accounts, function ($carry, $item) {
+        // Calculate Total Amount
+        $total_amount = array_reduce($products, function ($carry, $item) {
             return $carry + ($item['amount']);
         }, 0);
 
+        // Validate Total amount match that stated in request.
         if ($total_amount !== $validated['amount']) {
             throw new BadRequestException('Total amount does not match quantity');
         }
 
-        $metadata = json_encode(array_merge($validated, [
-            'buyer_id' => $user->id,
-        ]));
-
         $payload = [
             'email' => $user->email,
             'amount' => $total_amount * 100,
-            'split' => [
-                'type' => 'flat',
-                'bearer_type' => 'account',
-                'subaccounts' => $sub_accounts
-            ],
-            'metadata' => $metadata
+            'metadata' => [
+                'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
+                'buyer_id' => $user->id,
+                'products' => $products
+            ]
         ];
 
         try {
             $response = $this->paystackRepository->initializePurchaseTransaction($payload);
-
-            return $response;
+            return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
+    }
+
+    /**
+     * Ensure Paystack Account is a business account
+     * https://support.paystack.com/hc/en-us/articles/360009881960-How-do-I-upgrade-from-a-Starter-Business-to-a-Registered-Business-on-Paystack
+     */
+    public function initiateWithdrawal(InitiateWithdrawalRequest $request)
+    {
+        $user = Auth::user();
+
+        $amount = $request->amount;
+
+        $payment = $user->payment;
+
+        if ($amount > $payment->getAvailableEarnings()) throw new BadRequestException('Overdraft');
+
+        $payout_account = $user->payOutAccounts()->where('active', true)->first();
+
+        $reference = Str::uuid()->toString();
+
+        try {
+            $response = $this->paystackRepository->initiateTransfer(
+                $amount,
+                $payout_account->paystack_recipient_code,
+                $reference
+            );
+
+            $payout_cred = [
+                'status' => 'pending',
+                'reference' => $reference,
+                'paystack_transfer_code' => $response['transfer_code'],
+                'pay_out_account_id' => $payout_account->id,
+                'amount' => $amount
+            ];
+
+            $this->paymentRepository->createPayout($payout_cred);
+
+            return new JsonResponse(['data' => 'Withdrawal Initiated']);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), 500);
+        }
+    }
+
+    public function getPayouts()
+    {
+        $user = Auth::user();
+
+        $payouts = $user->payouts()->paginate(5);
+
+        return PayoutResource::collection($payouts);
     }
 
     /**
@@ -339,7 +482,6 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-
         $response = [
             'renewal_date' => null,
             'plan' => $user->account_type,
@@ -347,7 +489,7 @@ class PaymentController extends Controller
             'plans' => []
         ];
 
-        $subscription_id = $user->payment?->paystack_subscription_id;
+        $subscription_id = $user->paystack->subscription_code;
 
         if ($subscription_id) {
             $subscription = $this->paystackRepository->fetchSubscription($subscription_id);
@@ -369,8 +511,6 @@ class PaymentController extends Controller
                 'plans' => $plans
             ];
         }
-
-
         return new JsonResponse($response);
     }
 }

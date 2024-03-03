@@ -70,9 +70,14 @@ class User extends Authenticatable implements CanResetPassword
         'password' => 'hashed',
     ];
 
-    public function payment()
+    public function isPremium()
     {
-        return $this->hasOne(Payment::class);
+        return ($this->account_type === 'premium' || $this->account_type === 'free_trial') ? true : false;
+    }
+
+    public function paystack()
+    {
+        return $this->hasOne(Paystack::class);
     }
 
     public function products()
@@ -80,34 +85,20 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasMany(Product::class);
     }
 
-    public function isPremium()
+    public function orders()
     {
-        return $this->account_type === 'premium' ? true : false;
+        return $this->hasManyThrough(Order::class, Product::class);
     }
 
-    public function subaccounts(): HasMany
+    public function customers()
     {
-        return $this->hasMany(Subaccounts::class);
-    }
-
-    public function hasSubaccount(): bool
-    {
-        return $this->subaccounts()->exists();
-    }
-
-    public function activeSubaccount()
-    {
-        return $this->subaccounts()->where('active', 1)->first();
-    }
-
-    public function orders(): HasManyThrough
-    {
-        return $this->hasManyThrough(Sale::class, Product::class);
+        return $this->hasMany(Customer::class, 'merchant_id')
+            ->latestOfMany('user_id');
     }
 
     public function purchases()
     {
-        return $this->hasManyThrough(Sale::class, Order::class, 'buyer_id', 'order_id');
+        return $this->hasMany(Order::class);
     }
 
     public function carts()
@@ -115,13 +106,58 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasMany(Cart::class, 'user_id');
     }
 
-    public function customers(): HasMany
+    public function payOutAccounts(): HasMany
     {
-        return $this->hasMany(Customer::class, 'product_owner_id');
+        return $this->hasMany(PayOutAccount::class);
     }
 
-    public function downloads(): HasMany
+    public function payment()
     {
-        return $this->hasMany(Sale::class, 'customer_id');
+        return $this->hasOne(Payment::class);
+    }
+
+    public function payouts()
+    {
+        return $this->hasManyThrough(Payout::class, PayOutAccount::class, 'user_id', 'pay_out_account_id');
+    }
+
+    public function isSubscribed()
+    {
+        return $this->account_type === 'premium'  ? true : false;
     }
 }
+
+
+
+
+
+
+    // public function hasSubaccount(): bool
+    // {
+    //     return $this->subaccounts()->exists();
+    // }
+
+    // public function activeSubaccount()
+    // {
+    //     return $this->subaccounts()->where('active', 1)->first();
+    // }
+
+    // public function orders(): HasManyThrough
+    // {
+    //     return $this->hasManyThrough(Sale::class, Product::class);
+    // }
+
+    // public function purchases()
+    // {
+    //     return $this->hasManyThrough(Sale::class, Order::class, 'buyer_id', 'order_id');
+    // }
+
+
+
+    // public function customers(): HasMany
+    // {
+    //     return $this->hasMany(Customer::class, 'product_owner_id');
+    // }
+
+
+// }

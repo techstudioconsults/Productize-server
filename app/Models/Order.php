@@ -21,21 +21,14 @@ class Order extends Model
 
     protected $fillable = [
         'reference_no',
-        'buyer_id',
-        'total_amount',
+        'user_id',
+        'product_id',
+        'quantity',
+        'total_amount'
     ];
 
-    public function user(): HasOneThrough
-    {
-        return $this->hasOneThrough(User::class, Product::class);
-    }
-
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function buyer()
+    // user who made the order
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
@@ -44,4 +37,19 @@ class Order extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    // public function customer(): BelongsTo
+    // {
+    //     return $this->belongsTo(Customer::class);
+    // }
+
+    // public function buyer()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
+
+    // public function product()
+    // {
+    //     return $this->belongsTo(Product::class);
+    // }
 }

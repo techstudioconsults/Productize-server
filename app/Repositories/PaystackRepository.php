@@ -4,11 +4,14 @@ namespace App\Repositories;
 
 use App\Exceptions\ApiException;
 use App\Models\Cart;
+use App\Models\Paystack;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PaystackRepository
 {
@@ -40,7 +43,12 @@ class PaystackRepository
      * Api Doc: https://paystack.com/docs/payments/webhooks/#ip-whitelisting
      * Paystack will only send webhook requests from their Ips
      */
-    public $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
+    private $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
+
+    public function updateOrCreate(string $user_id, array $updatables)
+    {
+        return Paystack::updateOrCreate(["user_id" => $user_id], $updatables);
+    }
 
     /**
      * Create a plan on the dashboard - https://dashboard.paystack.com/#/plans
@@ -168,7 +176,7 @@ class PaystackRepository
     }
 
 
-    public function fetchSubscription($subscriptionId)
+    public function fetchSubscription(string $subscriptionId)
     {
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . $this->secret_key,
@@ -183,7 +191,7 @@ class PaystackRepository
         }
     }
 
-    public function enableSubscription($subscriptionId)
+    public function enableSubscription(string $subscriptionId)
     {
         $subscription = $this->fetchSubscription($subscriptionId);
 
@@ -201,6 +209,24 @@ class PaystackRepository
         return $response['data'];
     }
 
+    public function disableSubscription(string $subscription_code)
+    {
+        $subscription = $this->fetchSubscription($subscription_code);
+
+        $payload = [
+            "code" => $subscription_code,
+            "token" => $subscription['email_token']
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/subscription/disable", $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
     /**
      * Api Doc: https://paystack.com/docs/payments/subscriptions/#listen-for-subscription-events
      */
@@ -213,73 +239,46 @@ class PaystackRepository
                     // update sub code
                     $customer = $data['customer'];
 
-                    $this->addUserPaymentSubscriptionCode(
-                        $data['subscription_code'],
-                        $customer['customer_code']
+                    Paystack::where('customer_code', $customer['customer_code'])->update(
+                        ['subscription_code' => $data['subscription_code']]
                     );
 
                     // update user to premium
                     $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
-
                     break;
 
                 case 'charge.success':
+
                     /**
-                     * This is a product purchase payment webhook
+                     * This is a product purchase charge success webhook
                      */
-                    if ($data['split'] && count($data['split'])) {
+                    if ($data['metadata'] && $data['metadata']['isPurchase']) {
                         $metadata = $data['metadata'];
                         $buyer_id = $metadata['buyer_id'];
+                        $products = $metadata['products'];
 
                         // Delete Cart
                         Cart::where('user_id', $buyer_id)->delete();
 
                         try {
-                            // Create Order
-                            $buildOrder = [
-                                'reference_no' => $data['reference'],
-                                'buyer_id' => $buyer_id,
-                                'total_amount' => $metadata['amount']
-                            ];
+                            foreach ($products as $product) {
+                                $product_saved = Product::find($product['product_id']);
+                                $user = $product_saved->user;
 
-                            $order = $this->orderRepository->create($buildOrder);
-
-                            // Update user customer list for each product
-                            foreach ($metadata['products'] as $product) {
-
-                                $product_slug = $product['product_slug'];
-
-                                $quantity = $product['quantity'];
-
-                                $product = $this->productRepository->getProductBySlug($product_slug);
-
-                                $merchant_subaccount = $product->user->activeSubaccount();
-
-                                $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
-
-                                $buildSale = [
-                                    'product_id' => $product->id,
-                                    'order_id' => $order->id,
-                                    'customer_id' => $buyer_id,
-                                    'subaccount_id' => $merchant_subaccount->id,
-                                    'total_amount' => $product->price * $quantity,
-                                    'quantity' => $quantity
+                                $buildOrder = [
+                                    'reference_no' => $data['reference'],
+                                    'user_id' => $buyer_id,
+                                    'total_amount' => $product_saved->price * $product['quantity'],
+                                    'quantity' => $product['quantity'],
+                                    'product_id' => $product_saved->id
                                 ];
 
-                                Sale::create($buildSale);
+                                $order = $this->orderRepository->create($buildOrder);
 
-                                $isFirstSaleByOwner = Sale::where('product_id', $product->id)
-                                    ->whereHas('product', function ($query) use ($product) {
-                                        $query->where('user_id', $product->user_id);
-                                    })
-                                    ->count() === 1;
+                                $this->customerRepository->create($order);
 
-                                if ($isFirstSaleByOwner) {
-                                    // This is the first sale made by the product owner
-                                    $owner = User::find($product->user_id);
-                                    $owner->first_sale_at = Carbon::now();
-                                    $owner->save();
-                                }
+                                // Update earnings
+                                $this->paymentRepository->updateEarnings($user->id, $product['amount']);
                             }
                         } catch (\Throwable $th) {
                             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
@@ -289,7 +288,7 @@ class PaystackRepository
                     break;
 
                 case 'subscription.not_renew':
-                    # code...
+                    // email customer
                     break;
 
                 case 'invoice.create':
@@ -319,6 +318,62 @@ class PaystackRepository
                      * Might want to reach out to customers
                      * https://paystack.com/docs/payments/subscriptions/#handling-subscription-payment-issues
                      */
+                    break;
+
+                case 'transfer.success':
+
+                    $reference = $data['reference'];
+
+                    try {
+                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+
+                        $payout->status = 'completed';
+
+                        $payout->save();
+
+                        $user_id = $payout->payoutAccount->user->id;
+
+                        $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
+
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
+
+                    break;
+
+                case 'transfer.failed':
+
+                    $reference = $data['reference'];
+
+                    try {
+                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+
+                        $payout->status = 'failed';
+
+                        $payout->save();
+
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
+                    break;
+
+                case 'transfer.reversed':
+
+                    $reference = $data['reference'];
+
+                    try {
+                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+
+                        $payout->status = 'reversed';
+
+                        $payout->save();
+
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
                     break;
             }
         } catch (\Throwable $th) {
@@ -355,12 +410,51 @@ class PaystackRepository
         return $response['data'];
     }
 
-    private function addUserPaymentSubscriptionCode(string $sub_code, string $customer_code)
+    public function validateAccountNumber(string $account_number, string $bank_code)
     {
-        $update = [
-            'paystack_subscription_id' => $sub_code
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . "&bank_code=" . $bank_code);
+
+        return $response['status'];
+    }
+
+    public function createTransferRecipient($name, $account_number, $bank_code)
+    {
+        $payload = [
+            'type' => 'nuban',
+            'name' => $name,
+            'account_number' => $account_number,
+            'bank_code' => $bank_code,
+            "currency" => "NGN"
         ];
 
-        $this->paymentRepository->update('paystack_customer_code', $customer_code, $update);
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/transferrecipient", $payload)->throw()->json();
+
+        return $response['data'];
+    }
+
+    public function initiateTransfer(string $amount, string $recipient_code, string $reference)
+    {
+        $payload = [
+            "source" => "balance",
+            "reason" => "Payout",
+            "amount" => $amount,
+            "recipient" => $recipient_code,
+            "reference" => $reference
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/transfer", $payload)->throw()->json();
+
+        return $response['data'];
     }
 }

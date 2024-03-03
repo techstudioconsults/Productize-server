@@ -106,7 +106,12 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasMany(Cart::class, 'user_id');
     }
 
-        // public function downloads(): HasMany
+    public function payOutAccounts(): HasMany
+    {
+        return $this->hasMany(PayOutAccount::class);
+    }
+
+    // public function downloads(): HasMany
     // {
     //     return $this->hasMany(Sale::class, 'customer_id');
     // }
@@ -121,10 +126,7 @@ class User extends Authenticatable implements CanResetPassword
     //     return $this->account_type === 'premium'  ? true : false;
     // }
 
-    // public function subaccounts(): HasMany
-    // {
-    //     return $this->hasMany(Subaccounts::class);
-    // }
+
 
     // public function hasSubaccount(): bool
     // {

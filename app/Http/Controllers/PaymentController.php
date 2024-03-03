@@ -7,6 +7,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\PurchaseRequest;
 use App\Http\Requests\StorePayOutRequest;
+use App\Http\Requests\UpdatePayOutRequest;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\PayOutAccountResource;
 use App\Models\PayOutAccount;
@@ -315,96 +316,25 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * set up user payout account
-     */
-    // public function createSubAccount(StoreSubAccountRequest $request)
-    // {
-    //     $user = Auth::user();
+    public function getAllPayOutAccounts()
+    {
+        $user = Auth::user();
 
-    //     $credentials = $request->validated();
+        $payout_accounts = $user->payOutAccounts()->get();
 
-    //     $account_exists = PayOutAccount::where('account_number', $credentials['account_number'])->exists();
+        return PayOutAccountResource::collection($payout_accounts);
+    }
 
-    //     /** Check for sub account */
-    //     if ($account_exists) {
-    //         throw new BadRequestException('Sub Account Exist');
-    //     }
+    public function updatePayOutAccount(PayOutAccount $account, UpdatePayOutRequest $request)
+    {
+        $validated = $request->validated();
 
-    //     /**
-    //      * Validate account number
-    //      *
-    //      * https://paystack.com/docs/identity-verification/verify-account-number/#resolve-account-number
-    //      */
+        $account->active = $validated['active'];
 
-    //     $account_number_validated = $this->paystackRepository->validateAccountNumber($credentials['account_number'], $credentials['bank_code']);
+        $account->save();
 
-    //     if (!$account_number_validated) throw new BadRequestException('Invalid Account Number');
-
-    //     /**
-    //      * create transfer recipient
-    //      * https://paystack.com/docs/transfers/creating-transfer-recipients/#create-recipient
-    //      */
-
-    //      try {
-    //         $payout_account = $this->paystackRepository->createTransferRecipient($credentials['name'], $credentials['account_number'], $credentials['bank_code']);
-
-
-
-    //      } catch (\Throwable $th) {
-    //         throw new ApiException($th->getMessage(), $th->getCode());
-    //      }
-
-
-    //     /**
-    //      * Now to initialize a transfer to customer payout account
-    //      *
-    //      * Create Transfer reference with uuid
-    //      * https://paystack.com/docs/transfers/single-transfers/#generate-a-transfer-reference
-    //      *
-    //      * https://paystack.com/docs/transfers/managing-transfers/#server-approval
-    //      */
-
-    //     // try {
-    //     //     $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
-
-    //     //     $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
-
-    //     //     $sub_account_payload = array_merge($credentials, [
-    //     //         'sub_account_code' => $paystack_sub_account_code,
-    //     //         'user_id' => $user->id,
-    //     //         'active' => 1
-    //     //     ]);
-
-    //     //     $sub_account = $this->paymentRepository->createSubAccount($sub_account_payload);
-
-    //     //     $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
-    //     // } catch (\Throwable $th) {
-    //     //     throw new ServerErrorException($th->getMessage());
-    //     // }
-
-    //     // return new SubaccountResource($sub_account);
-    // }
-
-    // public function getAllSubAccounts()
-    // {
-    // //     $user = Auth::user();
-
-    // //     $sub_accounts = $user->subaccounts()->get();
-
-    // //     return SubaccountResource::collection($sub_accounts);
-    // }
-
-    // public function updateSubaccount(Subaccounts $account, UpdateSubAccountRequest $request)
-    // {
-    //     $validated = $request->validated();
-
-    //     $account->active = $validated['active'];
-
-    //     $account->save();
-
-    //     return new SubaccountResource($account);
-    // }
+        return new PayOutAccountResource($account);
+    }
 
     public function purchase(PurchaseRequest $request)
     {

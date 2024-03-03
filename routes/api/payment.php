@@ -14,10 +14,10 @@ Route::group([
     Route::post('/accounts', [PaymentController::class, 'createPayOutAccount'])
         ->middleware('can:subscribed,App\Models\Payment');
 
-    Route::get('/accounts', [PaymentController::class, 'getAllSubAccounts'])
+    Route::get('/accounts', [PaymentController::class, 'getAllPayOutAccounts'])
         ->middleware('can:subscribed,App\Models\Payment');
 
-    Route::patch('/accounts/{account}', [PaymentController::class, 'updateSubaccount'])
+    Route::patch('/accounts/{account}', [PaymentController::class, 'updatePayOutAccount'])
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::get('/bank-list', [PaymentController::class, 'getBankList'])

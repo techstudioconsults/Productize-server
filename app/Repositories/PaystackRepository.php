@@ -279,76 +279,10 @@ class PaystackRepository
                                 // Update earnings
                                 $this->paymentRepository->updateEarnings($user->id, $product['amount']);
                             }
-
-
                         } catch (\Throwable $th) {
                             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
                         }
-
                     }
-
-
-                    /**
-                     * This is a product purchase payment webhook
-                     */
-                    // if ($data['split'] && count($data['split'])) {
-                    //     $metadata = $data['metadata'];
-                    //     $buyer_id = $metadata['buyer_id'];
-
-                    //     // Delete Cart
-                    //     Cart::where('user_id', $buyer_id)->delete();
-
-                    //     try {
-                    //         // Create Order
-                    //         $buildOrder = [
-                    //             'reference_no' => $data['reference'],
-                    //             'buyer_id' => $buyer_id,
-                    //             'total_amount' => $metadata['amount']
-                    //         ];
-
-                    //         $order = $this->orderRepository->create($buildOrder);
-
-                    //         // Update user customer list for each product
-                    //         foreach ($metadata['products'] as $product) {
-
-                    //             $product_slug = $product['product_slug'];
-
-                    //             $quantity = $product['quantity'];
-
-                    //             $product = $this->productRepository->getProductBySlug($product_slug);
-
-                    //             $merchant_subaccount = $product->user->activeSubaccount();
-
-                    //             $customer = $this->customerRepository->createOrUpdate($buyer_id, $product_slug);
-
-                    //             $buildSale = [
-                    //                 'product_id' => $product->id,
-                    //                 'order_id' => $order->id,
-                    //                 'customer_id' => $buyer_id,
-                    //                 'subaccount_id' => $merchant_subaccount->id,
-                    //                 'total_amount' => $product->price * $quantity,
-                    //                 'quantity' => $quantity
-                    //             ];
-
-                    //             Sale::create($buildSale);
-
-                    //             $isFirstSaleByOwner = Sale::where('product_id', $product->id)
-                    //                 ->whereHas('product', function ($query) use ($product) {
-                    //                     $query->where('user_id', $product->user_id);
-                    //                 })
-                    //                 ->count() === 1;
-
-                    //             if ($isFirstSaleByOwner) {
-                    //                 // This is the first sale made by the product owner
-                    //                 $owner = User::find($product->user_id);
-                    //                 $owner->first_sale_at = Carbon::now();
-                    //                 $owner->save();
-                    //             }
-                    //         }
-                    //     } catch (\Throwable $th) {
-                    //         Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
-                    //     }
-                    // }
 
                     break;
 
@@ -419,12 +353,32 @@ class PaystackRepository
         return $response['data'];
     }
 
-    private function addUserPaymentSubscriptionCode(string $sub_code, string $customer_code)
+    public function validateAccountNumber(string $account_number, string $bank_code)
     {
-        $update = [
-            'paystack_subscription_id' => $sub_code
+
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . "&bank_code=" . $bank_code);
+
+        return $response['status'];
+    }
+
+    public function createTransferRecipient($name, $account_number, $bank_code)
+    {
+        $payload = [
+            'type' => 'nuban',
+            'name' => $name,
+            'account_number' => $account_number,
+            'bank_code' => $bank_code,
+            "currency" => "NGN"
         ];
 
-        $this->paymentRepository->update('paystack_customer_code', $customer_code, $update);
+        $response = Http::withHeaders([
+            "Authorization" => 'Bearer ' . $this->secret_key,
+            "Cache-Control"  => "no-cache",
+            'Content-Type' => 'application/json'
+        ])->post("{$this->baseUrl}/transferrecipient", $payload)->throw()->json();
+
+        return $response['data'];
     }
 }

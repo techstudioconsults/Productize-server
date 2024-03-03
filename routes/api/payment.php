@@ -11,7 +11,7 @@ Route::group([
 ], function () {
     Route::post('/subscription', [PaymentController::class, 'createPaystackSubscription']);
 
-    Route::post('/accounts', [PaymentController::class, 'createSubAccount'])
+    Route::post('/accounts', [PaymentController::class, 'createPayOutAccount'])
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::get('/accounts', [PaymentController::class, 'getAllSubAccounts'])

@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Payment;
+use App\Models\PayOutAccount;
 use App\Models\Subaccounts;
 use App\Models\User;
 
@@ -39,14 +40,14 @@ class PaymentRepository
         return Payment::updateOrCreate(["user_id" => $user_id], $updatables);
     }
 
-    public function createSubAccount(array $credentials)
+    public function createPayOutAccount(array $credentials)
     {
-        return Subaccounts::create($credentials);
+        return PayOutAccount::create($credentials);
     }
 
-    public function updateSubaccount(string $key, string $value, array $updatables)
+    public function updatePayOutAccount(string $key, string $value, array $updatables)
     {
-        return Subaccounts::where($key, $value)->update($updatables);
+        return PayOutAccount::where($key, $value)->update($updatables);
     }
 
     public function updateEarnings(string $user_id, int $amount)

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Subaccounts extends Model
+class PayOutAccount extends Model
 {
     use HasFactory;
     use HasUuids;
@@ -21,8 +21,8 @@ class Subaccounts extends Model
     protected $fillable = [
         'user_id',
         'account_number',
-        'sub_account_code',
-        'business_name',
+        'paystack_recipient_code',
+        'name',
         'bank_code',
         'bank_name',
         'active'
@@ -36,11 +36,11 @@ class Subaccounts extends Model
     {
         parent::boot();
 
-        static::saving(function ($subaccount) {
-            if ($subaccount->active) {
-                $user = $subaccount->user;
+        static::saving(function ($payoutaccount) {
+            if ($payoutaccount->active) {
+                $user = $payoutaccount->user;
                 if ($user) {
-                    $user->subaccounts()->where('id', '!=', $subaccount->id)->update(['active' => 0]);
+                    $user->payoutaccounts()->where('id', '!=', $payoutaccount->id)->update(['active' => 0]);
                 }
             }
         });

@@ -4,15 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\PurchaseRequest;
-use App\Http\Requests\StoreSubAccountRequest;
-use App\Http\Requests\UpdateSubAccountRequest;
+use App\Http\Requests\StorePayOutRequest;
 use App\Http\Resources\PaymentResource;
-use App\Http\Resources\SubaccountResource;
-use App\Models\Product;
-use App\Models\Subaccounts;
+use App\Http\Resources\PayOutAccountResource;
+use App\Models\PayOutAccount;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
@@ -270,87 +267,144 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * set up user payout account
-     */
-    public function createSubAccount(StoreSubAccountRequest $request)
+    public function createPayOutAccount(StorePayOutRequest $request)
     {
         $user = Auth::user();
 
         $credentials = $request->validated();
 
-        $payload = array_merge($credentials, [
-            "percentage_charge" => 5,
-            "primary_contact_email" => $user->email
-        ]);
+        $account_number = $credentials['account_number'];
 
-        $account_exists = Subaccounts::where('account_number', $credentials['account_number'])->exists();
+        $bank_code = $credentials['bank_code'];
+
+        $name = $credentials['name'];
+
+        $bank_name = $credentials['bank_name'];
+
+        $account_exists = PayOutAccount::where('account_number', $account_number)->exists();
 
         /** Check for sub account */
         if ($account_exists) {
             throw new BadRequestException('Sub Account Exist');
         }
 
-        /**
-         * Validate account number
-         *
-         * https://paystack.com/docs/identity-verification/verify-account-number/#resolve-account-number
-         */
+        $account_number_validated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
 
-        /**
-         * create transfer recipient
-         * https://paystack.com/docs/transfers/creating-transfer-recipients/#create-recipient
-         */
-
-        /**
-         * Now to initialize a transfer to customer payout account
-         *
-         * Create Transfer reference with uuid
-         * https://paystack.com/docs/transfers/single-transfers/#generate-a-transfer-reference
-         *
-         * https://paystack.com/docs/transfers/managing-transfers/#server-approval
-         */
+        if (!$account_number_validated) throw new BadRequestException('Invalid Account Number');
 
         try {
-            $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
+            // Create a transfer recipient with paystack
+            $response = $this->paystackRepository->createTransferRecipient($name, $account_number, $bank_code);
 
-            $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
-
-            $sub_account_payload = array_merge($credentials, [
-                'sub_account_code' => $paystack_sub_account_code,
+            $payout_credentials = [
                 'user_id' => $user->id,
-                'active' => 1
-            ]);
+                'account_number' => $account_number,
+                'paystack_recipient_code' => $response['recipient_code'],
+                'name' => $name,
+                'bank_code' => $bank_code,
+                'bank_name' => $bank_name
+            ];
 
-            $sub_account = $this->paymentRepository->createSubAccount($sub_account_payload);
+            $payout_account = $this->paymentRepository->createPayOutAccount($payout_credentials);
 
             $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
+
+            return new PayOutAccountResource($payout_account);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ApiException($th->getMessage(), $th->getCode());
         }
-
-        return new SubaccountResource($sub_account);
     }
 
-    public function getAllSubAccounts()
-    {
-        $user = Auth::user();
+    /**
+     * set up user payout account
+     */
+    // public function createSubAccount(StoreSubAccountRequest $request)
+    // {
+    //     $user = Auth::user();
 
-        $sub_accounts = $user->subaccounts()->get();
+    //     $credentials = $request->validated();
 
-        return SubaccountResource::collection($sub_accounts);
-    }
+    //     $account_exists = PayOutAccount::where('account_number', $credentials['account_number'])->exists();
 
-    public function updateSubaccount(Subaccounts $account, UpdateSubAccountRequest $request)
-    {
-        $validated = $request->validated();
+    //     /** Check for sub account */
+    //     if ($account_exists) {
+    //         throw new BadRequestException('Sub Account Exist');
+    //     }
 
-        $account->active = $validated['active'];
+    //     /**
+    //      * Validate account number
+    //      *
+    //      * https://paystack.com/docs/identity-verification/verify-account-number/#resolve-account-number
+    //      */
 
-        $account->save();
+    //     $account_number_validated = $this->paystackRepository->validateAccountNumber($credentials['account_number'], $credentials['bank_code']);
 
-        return new SubaccountResource($account);
-    }
+    //     if (!$account_number_validated) throw new BadRequestException('Invalid Account Number');
+
+    //     /**
+    //      * create transfer recipient
+    //      * https://paystack.com/docs/transfers/creating-transfer-recipients/#create-recipient
+    //      */
+
+    //      try {
+    //         $payout_account = $this->paystackRepository->createTransferRecipient($credentials['name'], $credentials['account_number'], $credentials['bank_code']);
+
+
+
+    //      } catch (\Throwable $th) {
+    //         throw new ApiException($th->getMessage(), $th->getCode());
+    //      }
+
+
+    //     /**
+    //      * Now to initialize a transfer to customer payout account
+    //      *
+    //      * Create Transfer reference with uuid
+    //      * https://paystack.com/docs/transfers/single-transfers/#generate-a-transfer-reference
+    //      *
+    //      * https://paystack.com/docs/transfers/managing-transfers/#server-approval
+    //      */
+
+    //     // try {
+    //     //     $paystack_sub_account = $this->paystackRepository->createSubAcount($payload);
+
+    //     //     $paystack_sub_account_code = $paystack_sub_account['subaccount_code'];
+
+    //     //     $sub_account_payload = array_merge($credentials, [
+    //     //         'sub_account_code' => $paystack_sub_account_code,
+    //     //         'user_id' => $user->id,
+    //     //         'active' => 1
+    //     //     ]);
+
+    //     //     $sub_account = $this->paymentRepository->createSubAccount($sub_account_payload);
+
+    //     //     $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
+    //     // } catch (\Throwable $th) {
+    //     //     throw new ServerErrorException($th->getMessage());
+    //     // }
+
+    //     // return new SubaccountResource($sub_account);
+    // }
+
+    // public function getAllSubAccounts()
+    // {
+    // //     $user = Auth::user();
+
+    // //     $sub_accounts = $user->subaccounts()->get();
+
+    // //     return SubaccountResource::collection($sub_accounts);
+    // }
+
+    // public function updateSubaccount(Subaccounts $account, UpdateSubAccountRequest $request)
+    // {
+    //     $validated = $request->validated();
+
+    //     $account->active = $validated['active'];
+
+    //     $account->save();
+
+    //     return new SubaccountResource($account);
+    // }
 
     public function purchase(PurchaseRequest $request)
     {
@@ -373,7 +427,7 @@ class PaymentController extends Controller
                 throw new BadRequestException('Product with slug ' . $slug . ' not found');
             }
 
-            if($product->status !== 'published') {
+            if ($product->status !== 'published') {
                 throw new BadRequestException('Product with slug ' . $slug . ' not published');
             }
 

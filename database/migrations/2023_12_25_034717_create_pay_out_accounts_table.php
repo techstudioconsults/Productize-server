@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subaccounts', function (Blueprint $table) {
+        Schema::create('pay_out_accounts', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\User::class, 'user_id');
             $table->text('account_number');
-            $table->text('sub_account_code');
-            $table->text('business_name');
+            $table->text('paystack_recipient_code');
+            $table->text('name');
             $table->text('bank_code');
             $table->text('bank_name');
             $table->boolean('active')->default(0);
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subaccounts');
+        Schema::dropIfExists('pay_out_accounts');
     }
 };

@@ -18,7 +18,7 @@ class PaymentPolicy
 
     public function subscribed(User $user)
     {
-        return $user->isSubscribed()
+        return $user->isPremium()
             ? Response::allow()
             : throw new BadRequestException('User is not subscribed');
     }

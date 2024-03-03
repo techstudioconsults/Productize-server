@@ -373,6 +373,10 @@ class PaymentController extends Controller
                 throw new BadRequestException('Product with slug ' . $slug . ' not found');
             }
 
+            if($product->status !== 'published') {
+                throw new BadRequestException('Product with slug ' . $slug . ' not published');
+            }
+
             // Total Product Amount
             $amount = $product->price * $item['quantity'];
 

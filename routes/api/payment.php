@@ -9,7 +9,6 @@ Route::group([
     'prefix' => 'payments',
     'middleware' => ['auth:sanctum', 'can:allowed,App\Models\Payment']  // Payment Policy
 ], function () {
-    // Route::post('/subscription', [PaymentController::class, 'createSubscription']);
     Route::post('/subscription', [PaymentController::class, 'createPaystackSubscription']);
 
     Route::post('/accounts', [PaymentController::class, 'createSubAccount'])

@@ -80,6 +80,7 @@ class PaymentRepository
         $payout->reference = $credentials['reference'];
         $payout->status = $credentials['status'];
         $payout->paystack_transfer_code = $credentials['paystack_transfer_code'];
+        $payout->amount = $credentials['amount'];
 
         $payout->save();
 

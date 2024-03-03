@@ -11,6 +11,7 @@ use App\Http\Requests\StorePayOutRequest;
 use App\Http\Requests\UpdatePayOutRequest;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\PayOutAccountResource;
+use App\Http\Resources\PayoutResource;
 use App\Models\PayOutAccount;
 use App\Models\User;
 use App\Repositories\PaymentRepository;
@@ -437,7 +438,8 @@ class PaymentController extends Controller
                 'status' => 'pending',
                 'reference' => $reference,
                 'paystack_transfer_code' => $response['transfer_code'],
-                'pay_out_account_id' => $payout_account->id
+                'pay_out_account_id' => $payout_account->id,
+                'amount' => $amount
             ];
 
            $this->paymentRepository->createPayout($payout_cred);
@@ -446,6 +448,15 @@ class PaymentController extends Controller
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), 500);
         }
+    }
+
+    public function getPayouts()
+    {
+        $user = Auth::user();
+
+        $payouts = $user->payouts()->paginate(5);
+
+        return PayoutResource::collection($payouts);
     }
 
     /**

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('reference');
             $table->text('status');
             $table->text('paystack_transfer_code');
+            $table->integer('amount');
             $table->timestamps();
         });
     }

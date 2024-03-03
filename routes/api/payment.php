@@ -17,7 +17,10 @@ Route::group([
     Route::get('/accounts', [PaymentController::class, 'getAllPayOutAccounts'])
         ->middleware('can:subscribed,App\Models\Payment');
 
-    Route::post('/payout', [PaymentController::class, 'initiateWithdrawal'])
+    Route::post('/payouts', [PaymentController::class, 'initiateWithdrawal'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::get('/payouts', [PaymentController::class, 'getPayouts'])
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::patch('/accounts/{account}', [PaymentController::class, 'updatePayOutAccount'])

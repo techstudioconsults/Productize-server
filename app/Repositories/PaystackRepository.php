@@ -327,12 +327,12 @@ class PaystackRepository
                     try {
                         $payout = $this->paymentRepository->getPayoutByReference($reference);
 
-                        $payout->status = 'success';
+                        $payout->status = 'completed';
 
                         $payout->save();
 
                         $user_id = $payout->payoutAccount->user->id;
-                        
+
                         $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
 
                         // Email User

@@ -249,6 +249,7 @@ class PaystackRepository
 
                 case 'charge.success':
 
+                    // Handle if isPurchase is present in metadata
                     /**
                      * This is a product purchase charge success webhook
                      */

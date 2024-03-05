@@ -253,7 +253,7 @@ class PaystackRepository
                     /**
                      * This is a product purchase charge success webhook
                      */
-                    if ($data['metadata'] && $data['metadata']['isPurchase']) {
+                    if ($data['metadata'] && isset($data['metadata']['isPurchase']) && $data['metadata']['isPurchase']) {
                         $metadata = $data['metadata'];
                         $buyer_id = $metadata['buyer_id'];
                         $products = $metadata['products'];

@@ -139,7 +139,7 @@ class ProductRepository
 
     public function getTotalOrder(Product $product)
     {
-        return Sale::where('product_id', $product->id)->sum('quantity');
+        return $product->totalOrder();
     }
 
     public function getTotalSales(User $user): int

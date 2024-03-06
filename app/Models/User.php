@@ -126,38 +126,3 @@ class User extends Authenticatable implements CanResetPassword
         return $this->account_type === 'premium'  ? true : false;
     }
 }
-
-
-
-
-
-
-    // public function hasSubaccount(): bool
-    // {
-    //     return $this->subaccounts()->exists();
-    // }
-
-    // public function activeSubaccount()
-    // {
-    //     return $this->subaccounts()->where('active', 1)->first();
-    // }
-
-    // public function orders(): HasManyThrough
-    // {
-    //     return $this->hasManyThrough(Sale::class, Product::class);
-    // }
-
-    // public function purchases()
-    // {
-    //     return $this->hasManyThrough(Sale::class, Order::class, 'buyer_id', 'order_id');
-    // }
-
-
-
-    // public function customers(): HasMany
-    // {
-    //     return $this->hasMany(Customer::class, 'product_owner_id');
-    // }
-
-
-// }

@@ -6,10 +6,9 @@ namespace App\Providers;
 
 use App\Models\Cart;
 use App\Models\Customer;
-// use App\Models\Order;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
-use App\Models\Sale;
 use App\Models\User;
 use App\Policies\CartPolicy;
 use App\Policies\CustomerPolicy;
@@ -31,8 +30,8 @@ class AuthServiceProvider extends ServiceProvider
         Payment::class => PaymentPolicy::class,
         User::class => UserPolicy::class,
         Product::class => ProductPolicy::class,
-        Sale::class => OrderPolicy::class,
         Customer::class => CustomerPolicy::class,
+        Order::class => OrderPolicy::class,
         Cart::class => CartPolicy::class,
     ];
 

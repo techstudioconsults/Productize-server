@@ -13,9 +13,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
         $schedule->call(new EndFreeTrial)
-            ->everyMinute();
+            ->daily();
         // ->environments(['staging', 'production']);
         // ->withoutOverlapping(); // Prevent schduler from overlapping. I.e, if the previous instance is still running, it will wait.
         // ->onSuccess(function () {

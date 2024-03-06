@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Exceptions\ForbiddenException;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -27,6 +28,13 @@ class OrderPolicy
     {
         return $user->id === $order->product->user->id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name. ' is not permitted to request this resource');
+            : throw new ForbiddenException($user->full_name . ' is not permitted to request this resource');
+    }
+
+    public function viewByProduct(User $user, Product $product)
+    {
+        return $user->id === $product->user->id
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name . ' is not permitted to request this resource');
     }
 }

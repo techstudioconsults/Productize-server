@@ -127,7 +127,7 @@ class PaystackRepository
     {
 
         $payload = array_merge($payload, [
-            "callback_url" => $this->client_url . '/dashboard/download'
+            "callback_url" => $this->client_url . 'dashboard/downloads#all-downloads'
         ]);
 
         $response = Http::withHeaders([

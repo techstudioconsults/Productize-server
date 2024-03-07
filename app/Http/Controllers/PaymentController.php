@@ -425,7 +425,7 @@ class PaymentController extends Controller
             'billing_total' => null,
             'plans' => []
         ];
-
+// free trial ?
         $subscription_id = $user->paystack->subscription_code;
 
         if ($subscription_id) {

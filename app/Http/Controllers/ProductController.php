@@ -112,7 +112,7 @@ class ProductController extends Controller
 
         $count = $user->products()->count();
 
-        if (!$count > 1) {
+        if ($count <= 1) {
             // Update first product created at property
             $user->first_product_created_at = Carbon::now();
             $user->save();

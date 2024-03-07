@@ -425,29 +425,38 @@ class PaymentController extends Controller
             'billing_total' => null,
             'plans' => []
         ];
-// free trial ?
-        $subscription_id = $user->paystack->subscription_code;
 
-        if ($subscription_id) {
-            $subscription = $this->paystackRepository->fetchSubscription($subscription_id);
-
-            $plans = Arr::map($subscription['invoices'], function ($plan) {
-                return [
-                    'plan' => 'premium',
-                    'price' => $plan['amount'] / 100,
-                    'status' => $plan['status'],
-                    'reference' => $plan['reference'],
-                    'date' => $plan['createdAt'],
-                ];
-            });
-
-            $response = [
-                'renewal_date' => $subscription['next_payment_date'],
-                'plan' => $user->account_type,
-                'billing_total' => $subscription['amount'] / 100,
-                'plans' => $plans
-            ];
+        if ($user->account_type === 'free_trial') {
+            $response['renewal_date'] = Carbon::parse($user->created_at)->addDays(30);
+            return new JsonResponse($response);
         }
+
+        if ($user->isSubscribed()) {
+
+            $subscription_id = $user->paystack?->subscription_code;
+
+            if ($subscription_id) {
+                $subscription = $this->paystackRepository->fetchSubscription($subscription_id);
+
+                $plans = Arr::map($subscription['invoices'], function ($plan) {
+                    return [
+                        'plan' => 'premium',
+                        'price' => $plan['amount'] / 100,
+                        'status' => $plan['status'],
+                        'reference' => $plan['reference'],
+                        'date' => $plan['createdAt'],
+                    ];
+                });
+
+                $response = [
+                    'renewal_date' => $subscription['next_payment_date'],
+                    'plan' => $user->account_type,
+                    'billing_total' => $subscription['amount'] / 100,
+                    'plans' => $plans
+                ];
+            }
+        }
+
         return new JsonResponse($response);
     }
 }

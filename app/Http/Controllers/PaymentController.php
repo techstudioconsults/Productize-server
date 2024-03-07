@@ -122,6 +122,8 @@ class PaymentController extends Controller
          * Update the subscription code.
          */
 
+        // ADD A START DATE TO SUBSCRIPTION SO IT STARTS AFTER FREE TRIAL ENDS
+
         try {
             $customer = $this->paystackRepository->createCustomer($user);
 

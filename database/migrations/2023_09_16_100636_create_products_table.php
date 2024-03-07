@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\User::class, 'user_id');
             $table->string('title');
-            $table->decimal('price', 8, 2);
+            $table->integer('price');
             $table->enum('product_type', ['digital_product', 'print_on_demand', 'video_streaming', 'subscription']);
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->longText('description');

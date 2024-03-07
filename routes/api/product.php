@@ -13,7 +13,6 @@ Route::group([
     'prefix' => 'products',
     'middleware' => [
         'auth:sanctum',
-        'can:premium,App\Models\Product',
     ]
 ], function () {
     Route::post('/', [ProductController::class, 'store']);
@@ -21,7 +20,6 @@ Route::group([
     Route::get('/', [ProductController::class, 'index'])->withoutMiddleware([
         'auth:sanctum',
         'can:allowed,App\Models\Product',
-        'can:premium,App\Models\Product',
     ]);
 
     Route::get('/users', [ProductController::class, 'findByUser']);
@@ -30,13 +28,12 @@ Route::group([
 
     Route::get('/download', [ProductController::class, 'downloadList']);
 
-    Route::get('/downloads', [ProductController::class, 'downloads'])->withoutMiddleware(['can:premium,App\Models\Product']);
+    Route::get('/downloads', [ProductController::class, 'downloads']);
 
     Route::get('/top', [ProductController::class, 'getTopProducts']);
 
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',
-        'can:premium,App\Models\Product',
     ]);
 
     Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
@@ -52,7 +49,10 @@ Route::group([
 
     Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
 
-    Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware('can:update,product');
+    Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware([
+        'can:update,product',
+        'can:premium,App\Models\Product',
+    ]);
 
     Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
 

@@ -26,7 +26,7 @@ class EndFreeTrial
 
             Log::channel('schedule')->info('Total Update Count', ['count' => $count]);
         } catch (\Throwable $th) {
-            Log::channel('schedule')->error('Error Ending Free Trials!');
+            Log::channel('schedule')->error('Error Ending Free Trials!', ['message' => $th->getMessage()]);
         }
     }
 }

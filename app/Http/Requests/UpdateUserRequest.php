@@ -35,11 +35,12 @@ class UpdateUserRequest extends FormRequest
             'twitter_account' => 'string|url',
             'facebook_account' => 'string|url',
             'youtube_account' => 'string|url',
+            'alt_email' => 'string|email',
             'logo' => 'image',
             'product_creation_notification' => 'boolean',
             'purchase_notification' => 'boolean',
             'news_and_update_notification' => 'boolean',
-            'payout_notification' => 'boolean'
+            'payout_notification' => 'boolean',
         ];
     }
 

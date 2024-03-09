@@ -7,13 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PaymentResource extends JsonResource
 {
-    protected $extraData;
-
-    public function __construct($resource, $extraData = [])
-    {
-        parent::__construct($resource);
-        $this->extraData = $extraData;
-    }
     /**
      * Transform the resource into an array.
      *
@@ -21,8 +14,14 @@ class PaymentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return array_merge([
+        return [
             'id' => $this->id,
-        ], $this->extraData);
+            'user_id' => $this->user->id,
+            'total_earnings' => $this->total_earnings,
+            'withdrawn_earnings' => $this->withdrawn_earnings,
+            'available_earnings' => $this->total_earnings - $this->withdrawn_earnings,
+            'pending' => $this->pending,
+
+        ];
     }
 }

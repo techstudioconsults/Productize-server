@@ -13,7 +13,6 @@ use App\Http\Resources\PaymentResource;
 use App\Http\Resources\PayOutAccountResource;
 use App\Http\Resources\PayoutResource;
 use App\Models\PayOutAccount;
-use App\Models\User;
 use App\Repositories\PaymentRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
@@ -37,12 +36,11 @@ class PaymentController extends Controller
     ) {
     }
 
-    private function getUserPaymentInfo()
+    public function show()
     {
-        // Authenticated user
         $user = Auth::user();
 
-        return ['user' => $user, 'userPaymentInfo' => User::find($user->id)->payment];
+        return new PaymentResource($user->payment);
     }
 
     public function createPaystackSubscription()
@@ -360,6 +358,10 @@ class PaymentController extends Controller
         $payment = $user->payment;
 
         if ($amount > $payment->getAvailableEarnings()) throw new BadRequestException('Overdraft');
+
+        // check if user have a payout acccount
+
+        // if only one payout account, mk it active
 
         $payout_account = $user->payOutAccounts()->where('active', true)->first();
 

@@ -37,12 +37,11 @@ class PaymentController extends Controller
     ) {
     }
 
-    private function getUserPaymentInfo()
+    public function show()
     {
-        // Authenticated user
         $user = Auth::user();
 
-        return ['user' => $user, 'userPaymentInfo' => User::find($user->id)->payment];
+        return new PaymentResource($user->payment);
     }
 
     public function createPaystackSubscription()

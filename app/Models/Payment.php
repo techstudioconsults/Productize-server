@@ -33,8 +33,8 @@ class Payment extends Model
         return $this->total_earnings - $this->withdrawn_earnings;
     }
 
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

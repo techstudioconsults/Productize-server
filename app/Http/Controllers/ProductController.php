@@ -10,7 +10,6 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
-use App\Http\Resources\SalesResource;
 use App\Repositories\ProductRepository;
 use DB;
 use Illuminate\Http\JsonResponse;

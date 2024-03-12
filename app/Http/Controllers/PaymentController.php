@@ -15,6 +15,7 @@ use App\Http\Resources\PayOutAccountResource;
 use App\Http\Resources\PayoutResource;
 use App\Models\PayOutAccount;
 use App\Repositories\PaymentRepository;
+use App\Repositories\PayoutRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
@@ -25,6 +26,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Storage;
 
 class PaymentController extends Controller
 {
@@ -34,6 +36,7 @@ class PaymentController extends Controller
         protected PaymentRepository $paymentRepository,
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository,
+        protected PayoutRepository $payoutRepository,
     ) {
     }
 
@@ -399,6 +402,61 @@ class PaymentController extends Controller
         $payouts = $user->payouts()->paginate(5);
 
         return PayoutResource::collection($payouts);
+    }
+
+    public function downloadPayoutList(Request $request)
+    {
+        $user = Auth::user();
+
+        $start_date = $request->start_date;
+
+        $end_date = $request->end_date;
+
+
+        $payouts = $this->payoutRepository->find($user, $start_date, $end_date)->get();
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+
+        $columns = array('Price', 'BankName', 'BankAccountNumber', 'Period', 'Status');
+
+        $data = [];
+
+        $data[] = $columns;
+
+        $fileName = "payouts_$now.csv";
+
+        foreach ($payouts as $payout) {
+            $row['Price']  = $payout->amount;
+            $row['BankName']  = $payout->payoutAccount->bank_name;
+            $row['BankAccountNumber']  = $payout->payoutAccount->account_number;
+            $row['Period']  = $payout->created_at;
+            $row['Status']  = $payout->status;
+
+            $data[] = array($row['Price'], $row['BankName'], $row['BankAccountNumber'], $row['Period']);
+        }
+
+        $csvContent = '';
+        foreach ($data as $csvRow) {
+            $csvContent .= implode(',', $csvRow) . "\n";
+        }
+
+        $filePath = 'csv/' . $fileName;
+
+        // Store the CSV content in the storage/app/csv directory
+        Storage::disk('local')->put($filePath, $csvContent);
+
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        // Return the response with the file from storage
+        return response()->stream(function () use ($filePath) {
+            readfile(storage_path('app/' . $filePath));
+        }, 200, $headers);
     }
 
     /**

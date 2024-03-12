@@ -10,7 +10,7 @@ Route::group([
     'middleware' => ['auth:sanctum', 'can:allowed,App\Models\Payment']  // Payment Policy
 ], function () {
     Route::get('/', [PaymentController::class, 'show']);
-    
+
     Route::post('/subscription', [PaymentController::class, 'createPaystackSubscription']);
 
     Route::post('/accounts', [PaymentController::class, 'createPayOutAccount'])
@@ -23,6 +23,9 @@ Route::group([
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::get('/payouts', [PaymentController::class, 'getPayouts'])
+        ->middleware('can:subscribed,App\Models\Payment');
+
+    Route::get('/payouts/download', [PaymentController::class, 'downloadPayoutList'])
         ->middleware('can:subscribed,App\Models\Payment');
 
     Route::patch('/accounts/{account}', [PaymentController::class, 'updatePayOutAccount'])

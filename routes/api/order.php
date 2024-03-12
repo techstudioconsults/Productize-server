@@ -15,7 +15,11 @@ Route::controller(OrderController::class)
     ->group(function () {
         Route::get('/', 'index');
 
+        Route::get('/download', 'downloadList');
+
         Route::get('/{order}', 'show')->middleware('can:view,order');
 
-        Route::get('/products/{product}', 'showByProductId')->middleware('can:viewByProduct,product');
+        Route::get('/products/{product}', 'showByProduct');
+
+        Route::get('/customers/{customer}', 'showByCustomer');
     });

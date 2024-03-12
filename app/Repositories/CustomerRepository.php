@@ -2,8 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\UnprocessableException;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 
 class CustomerRepository
 {
@@ -30,16 +33,31 @@ class CustomerRepository
         $customer->save();
 
         return $customer;
-        // $product = $this->productRepository->getProductBySlug($product_slug);
+    }
 
-        // $customer = Customer::updateOrCreate(
-        //     [
-        //         'buyer_id' => $buyer_id,
-        //         'product_owner_id' => $product->user_id,
-        //     ],
-        //     ['latest_puchase_id' => $product->id]
-        // );
+    public function find(
+        User $user,
+        ?string $start_date = null,
+        ?string $end_date = null
+    ) {
+        $customers = $user->customers();
 
-        // return $customer;
+        if ($start_date && $end_date) {
+            $validator = Validator::make([
+                'start_date' => $start_date,
+                'end_date' => $end_date
+            ], [
+                'start_date' => 'date',
+                'end_date' => 'date'
+            ]);
+
+            if ($validator->fails()) {
+                throw new UnprocessableException($validator->errors()->first());
+            }
+
+            $customers->whereBetween('created_at', [$start_date, $end_date]);
+        }
+
+        return $customers;
     }
 }

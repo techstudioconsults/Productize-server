@@ -40,7 +40,8 @@ class PayOutAccount extends Model
             if ($payoutaccount->active) {
                 $user = $payoutaccount->user;
                 if ($user) {
-                    $user->payoutaccounts()->where('id', '!=', $payoutaccount->id)->update(['active' => 0]);
+                    // Set All other payout accounts to false
+                    $user->payOutAccounts()->where('id', '!=', $payoutaccount->id)->update(['active' => 0]);
                 }
             }
         });

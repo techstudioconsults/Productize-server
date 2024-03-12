@@ -10,7 +10,6 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
-use App\Http\Resources\SalesResource;
 use App\Repositories\ProductRepository;
 use DB;
 use Illuminate\Http\JsonResponse;
@@ -52,7 +51,13 @@ class ProductController extends Controller
             $request->end_date
         );
 
-        return ProductResource::collection($products->paginate(10));
+        // Paginate the results
+        $paginatedProducts = $products->paginate(10);
+
+        // Append the query parameters to the pagination links
+        $paginatedProducts->appends($request->query());
+
+        return ProductResource::collection($paginatedProducts);
     }
 
     public function findBySlug(Product $product)

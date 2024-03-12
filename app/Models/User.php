@@ -10,7 +10,6 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class User extends Authenticatable implements CanResetPassword
 {
@@ -124,5 +123,17 @@ class User extends Authenticatable implements CanResetPassword
     public function isSubscribed()
     {
         return $this->account_type === 'premium'  ? true : false;
+    }
+
+    public function firstSale()
+    {
+        return Order::whereHas('product', function ($query) {
+            $query->where('user_id', $this->id);
+        })->exists();
+    }
+
+    public function hasPayoutSetup()
+    {
+        return $this->payOutAccounts()->exists();
     }
 }

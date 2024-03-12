@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Exceptions\ApiException;
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\Paystack;
 use App\Models\Product;
 use App\Models\Sale;

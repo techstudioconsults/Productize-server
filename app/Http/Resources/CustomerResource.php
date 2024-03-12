@@ -43,9 +43,6 @@ class CustomerResource extends JsonResource
             'latest_purchase_price' => $this->order->product->price,
             'latest_purchase_date' => $this->order->updated_at,
             'joined' => $total_purchase->first()->created_at,
-            'latest_purchases' => OrderResource::collection($total_purchase->orderBy('created_at', 'desc')
-                ->take(3)
-                ->get())
         ];
     }
 }

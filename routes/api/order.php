@@ -19,5 +19,7 @@ Route::controller(OrderController::class)
 
         Route::get('/{order}', 'show')->middleware('can:view,order');
 
-        Route::get('/products/{product}', 'showByProductId')->middleware('can:viewByProduct,product');
+        Route::get('/products/{product}', 'showByProduct');
+
+        Route::get('/customers/{customer}', 'showByCustomer');
     });

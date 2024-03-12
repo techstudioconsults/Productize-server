@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Exceptions\ForbiddenException;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -36,5 +37,13 @@ class OrderPolicy
         return $user->id === $product->user->id
             ? Response::allow()
             : throw new ForbiddenException($user->full_name . ' is not permitted to request this resource');
+    }
+
+    public function viewByCustomer(User $user, Customer $customer)
+    {
+        return Response::allow();
+        // return $user->id === $customer->merchant_id
+        //     ? Response::allow()
+        //     : throw new ForbiddenException($user->full_name . ' is not permitted to request this resource');
     }
 }

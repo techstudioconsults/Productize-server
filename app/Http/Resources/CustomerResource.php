@@ -22,7 +22,7 @@ class CustomerResource extends JsonResource
 
         $total_purchase_amount = $total_purchase
             ->with(['product' => function ($query) {
-                $query->select('id', 'price');
+                $query->select('id', 'price', 'title', 'thumbnail', 'created_at', 'slug');
             }])
             ->get()
             ->sum(function ($purchase) {

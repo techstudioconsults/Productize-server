@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ConflictException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\InitiateWithdrawalRequest;
 use App\Http\Requests\PurchaseRequest;
@@ -225,7 +226,7 @@ class PaymentController extends Controller
 
         /** Check for sub account */
         if ($account_exists) {
-            throw new BadRequestException('Sub Account Exist');
+            throw new ConflictException('Duplicate Pay out Account');
         }
 
         $account_number_validated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
@@ -242,7 +243,8 @@ class PaymentController extends Controller
                 'paystack_recipient_code' => $response['recipient_code'],
                 'name' => $name,
                 'bank_code' => $bank_code,
-                'bank_name' => $bank_name
+                'bank_name' => $bank_name,
+                'active' => 1 // Let it be the active account by default
             ];
 
             $payout_account = $this->paymentRepository->createPayOutAccount($payout_credentials);

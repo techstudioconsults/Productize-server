@@ -127,4 +127,17 @@ class UserController extends Controller
             ['message' => 'email sent']
         );
     }
+
+    public function disable()
+    {
+        $user = Auth::user();
+        $user->delete();
+
+        return new JsonResponse(['data' => 'User Account Disabled']);
+    }
+
+    // public function restore()
+    // {
+
+    // }
 }

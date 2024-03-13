@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('carts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Product::class, 'product_slug');
             $table->integer('quantity');
             $table->timestamps();

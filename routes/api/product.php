@@ -26,6 +26,8 @@ Route::group([
 
     Route::get('/analytics', [ProductController::class, 'analytics']);
 
+    Route::get('/revenues', [ProductController::class, 'productsRevenue']);
+
     Route::get('/download', [ProductController::class, 'downloadList']);
 
     Route::get('/downloads', [ProductController::class, 'downloads']);

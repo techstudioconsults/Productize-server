@@ -370,6 +370,33 @@ class ProductController extends Controller
         return ProductResource::collection($topProducts->paginate(5));
     }
 
+    public function productsRevenue()
+    {
+        $user = Auth::user();
+
+        $today = Carbon::today();
+        $lastWeekStart = $today->copy()->subWeek()->startOfWeek();
+        $lastWeekEnd = $today->copy()->subWeek()->endOfWeek();
+        $twoWeeksAgoStart = $today->copy()->subWeeks(2)->startOfWeek();
+        $twoWeeksAgoEnd = $today->copy()->subWeeks(2)->endOfWeek();
+        $threeWeeksAgoStart = $today->copy()->subWeeks(3)->startOfWeek();
+        $threeWeeksAgoEnd = $today->copy()->subWeeks(3)->endOfWeek();
+
+        $revForThisWeek = $this->productRepository->getUserTotalRevenues($user, $today->startOfWeek(), $today->endOfWeek());
+        $revForLastWeek = $this->productRepository->getUserTotalRevenues($user, $lastWeekStart, $lastWeekEnd);
+        $revForTwoWeeksAgo = $this->productRepository->getUserTotalRevenues($user, $twoWeeksAgoStart, $twoWeeksAgoEnd);
+        $revForThreeWeeksAgo = $this->productRepository->getUserTotalRevenues($user, $threeWeeksAgoStart, $threeWeeksAgoEnd);
+
+        return new JsonResponse([
+            'data' => [
+                'revForThisWeek' => $revForThisWeek,
+                'revForLastWeek' => $revForLastWeek,
+                'revForTwoWeeksAgo' => $revForTwoWeeksAgo,
+                'revForThreeWeeksAgo' => $revForThreeWeeksAgo
+            ]
+        ]);
+    }
+
     public function tags()
     {
         $tags = ProductTagsEnum::cases();

@@ -143,7 +143,7 @@ class UserRepository
             $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
 
-        return $user->sum('total_amount');
+        return $orders->sum('total_amount');
     }
 
     public function getTotalCustomers(

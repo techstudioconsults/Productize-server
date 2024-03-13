@@ -26,6 +26,7 @@ class UserResource extends JsonResource
             'twitter_account' => $this->twitter_account,
             'facebook_account' => $this->facebook_account,
             'youtube_account' => $this->youtube_account,
+            'alt_email' => $this->alt_email,
             'email_verified' => (bool) $this->hasVerifiedEmail(),
             'profile_completed' => (bool) $this->profile_completed_at,
             'first_product_created' => (bool) $this->first_product_created_at,

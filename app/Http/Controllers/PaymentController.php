@@ -395,11 +395,15 @@ class PaymentController extends Controller
         }
     }
 
-    public function getPayouts()
+    public function getPayouts(Request $request)
     {
         $user = Auth::user();
 
-        $payouts = $user->payouts()->paginate(5);
+        $start_date = $request->start_date;
+
+        $end_date = $request->end_date;
+
+        $payouts = $this->payoutRepository->find($user, $start_date, $end_date)->paginate(5);
 
         return PayoutResource::collection($payouts);
     }

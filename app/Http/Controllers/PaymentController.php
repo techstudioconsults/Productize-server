@@ -358,15 +358,18 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
+        // Check the user for payout account
+        $payout_account_exist = $user->hasPayoutSetup();
+
+        if (!$payout_account_exist)
+            throw new BadRequestException('You need to set up your payout account before requesting a payout.');
+
         $amount = $request->amount;
 
         $payment = $user->payment;
 
-        if ($amount > $payment->getAvailableEarnings()) throw new BadRequestException('Overdraft');
-
-        // check if user have a payout acccount
-
-        // if only one payout account, mk it active
+        if ($amount > $payment->getAvailableEarnings())
+            throw new BadRequestException('Insufficient balance. You cannot withdraw more than your current balance.');
 
         $payout_account = $user->payOutAccounts()->where('active', true)->first();
 
@@ -387,7 +390,7 @@ class PaymentController extends Controller
                 'amount' => $amount
             ];
 
-            $this->paymentRepository->createPayout($payout_cred);
+            $this->payoutRepository->create($payout_cred);
 
             return new JsonResponse(['data' => 'Withdrawal Initiated']);
         } catch (\Throwable $th) {

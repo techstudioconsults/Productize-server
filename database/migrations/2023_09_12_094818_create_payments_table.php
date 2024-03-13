@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id')->unique();
+            $table->foreignIdFor(\App\Models\User::class, 'user_id')->unique()->cascadeOnDelete();
             $table->integer('total_earnings')->default(0);
             $table->integer('withdrawn_earnings')->default(0);
             $table->integer('pending')->default(0);

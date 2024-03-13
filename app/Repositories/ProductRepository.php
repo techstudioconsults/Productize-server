@@ -132,9 +132,30 @@ class ProductRepository
         return $product;
     }
 
-    public function getTotalProductCountPerUser(User $user): int
-    {
-        return Product::where('user_id', $user->id)->count();
+    public function getTotalProductCountPerUser(
+        User $user,
+        ?string $start_date = null,
+        ?string $end_date = null
+    ): int {
+        $products = Product::where('user_id', $user->id);
+
+        if ($start_date && $end_date) {
+            $validator = Validator::make([
+                'start_date' => $start_date,
+                'end_date' => $end_date
+            ], [
+                'start_date' => 'date',
+                'end_date' => 'date'
+            ]);
+
+            if ($validator->fails()) {
+                throw new UnprocessableException($validator->errors()->first());
+            }
+
+            $products->whereBetween('created_at', [$start_date, $end_date]);
+        }
+
+        return $products->count();
     }
 
     public function getTotalOrder(Product $product)
@@ -142,19 +163,28 @@ class ProductRepository
         return $product->totalOrder();
     }
 
-    public function getTotalSales(User $user): int
-    {
-        return $this->userRepository->getTotalSales($user);
+    public function getTotalSales(
+        User $user,
+        ?string $start_date = null,
+        ?string $end_date = null
+    ): int {
+        return $this->userRepository->getTotalSales($user, $start_date, $end_date);
     }
 
-    public function getUserTotalRevenues(User $user): int
-    {
-        return $this->userRepository->getTotalRevenues($user);
+    public function getUserTotalRevenues(
+        User $user,
+        ?string $start_date = null,
+        ?string $end_date = null
+    ): int {
+        return $this->userRepository->getTotalRevenues($user, $start_date, $end_date);
     }
 
-    public function getTotalCustomers(User $user): int
-    {
-        return $this->userRepository->getTotalCustomers($user);
+    public function getTotalCustomers(
+        User $user,
+        ?string $start_date = null,
+        ?string $end_date = null
+    ): int {
+        return $this->userRepository->getTotalCustomers($user, $start_date, $end_date);
     }
 
     public function getNewOrders(User $user)

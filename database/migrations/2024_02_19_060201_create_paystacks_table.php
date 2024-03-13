@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('paystacks', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete();
             $table->text('customer_code');
             $table->text('subscription_code')->nullable();
             $table->timestamps();

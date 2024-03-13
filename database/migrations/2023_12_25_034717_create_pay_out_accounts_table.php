@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pay_out_accounts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\User::class, 'user_id');
+            $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete();
             $table->text('account_number');
             $table->text('paystack_recipient_code');
             $table->text('name');

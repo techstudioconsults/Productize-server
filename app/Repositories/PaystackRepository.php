@@ -4,15 +4,11 @@ namespace App\Repositories;
 
 use App\Exceptions\ApiException;
 use App\Models\Cart;
-use App\Models\Order;
 use App\Models\Paystack;
 use App\Models\Product;
-use App\Models\Sale;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class PaystackRepository
 {
@@ -22,6 +18,7 @@ class PaystackRepository
         protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
         protected ProductRepository $productRepository,
+        protected PayoutRepository $payoutRepository,
     ) {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
@@ -328,7 +325,7 @@ class PaystackRepository
                     $reference = $data['reference'];
 
                     try {
-                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+                        $payout = $this->payoutRepository->findByReference($reference);
 
                         $payout->status = 'completed';
 
@@ -350,7 +347,7 @@ class PaystackRepository
                     $reference = $data['reference'];
 
                     try {
-                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+                        $payout = $this->payoutRepository->findByReference($reference);
 
                         $payout->status = 'failed';
 
@@ -367,7 +364,7 @@ class PaystackRepository
                     $reference = $data['reference'];
 
                     try {
-                        $payout = $this->paymentRepository->getPayoutByReference($reference);
+                        $payout = $this->payoutRepository->findByReference($reference);
 
                         $payout->status = 'reversed';
 

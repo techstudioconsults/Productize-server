@@ -20,6 +20,7 @@ class OrderResource extends JsonResource
             'product_thumbnail' => $this->product->thumbnail,
             'product_title' => $this->product->title,
             'product_price' => $this->product->price,
+            'customer_name' => $this->user->full_name,
             'customer_email' => $this->user->email,
             'total_orders' => $this->product->totalOrder(),
             'total_sales' => $this->product->totalSales(),

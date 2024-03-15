@@ -44,6 +44,19 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
+        $payment = $user->payment;
+
+        if (!$payment) {
+            return new JsonResponse([
+                'id' => null,
+                'user_id' => null,
+                'total_earnings' => null,
+                'withdrawn_earnings' => null,
+                'available_earnings' => null,
+                'pending' => null,
+            ]);
+        }
+
         return new PaymentResource($user->payment);
     }
 

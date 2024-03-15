@@ -29,8 +29,8 @@ class UpdateUserRequest extends FormRequest
         return [
             'full_name' => 'string|nullable',
             'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
-            'username' => 'string|max:20|nullable',
-            'phone_number' => 'string|max:14|nullable',
+            'username' => 'string|max:20|nullable|unique:users,username,except,id',
+            'phone_number' => 'string|max:14|nullable|unique:users,phone_number,except,id',
             'bio' => 'string|max:1000|nullable',
             'twitter_account' => 'nullable|string|url',
             'facebook_account' => 'nullable|string|url',
@@ -53,4 +53,12 @@ class UpdateUserRequest extends FormRequest
     {
         throw new ForbiddenException('Email Address not verified');
     }
+
+    public function messages(): array
+{
+    return [
+        'username.unique' => 'username has been taken',
+        'phone_number.unique' => 'phone number must be unique'
+    ];
+}
 }

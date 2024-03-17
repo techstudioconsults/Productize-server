@@ -26,11 +26,12 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->user()->id;
         return [
             'full_name' => 'string|nullable',
             'password' => [Password::min(8)->mixedCase()->numbers()->symbols()],
-            'username' => 'string|max:20|nullable|unique:users,username,except,id',
-            'phone_number' => 'string|max:14|nullable|unique:users,phone_number,except,id',
+            'username' => 'string|max:20|nullable|unique:users,username,' . $userId,
+            'phone_number' => 'string|max:14|nullable|unique:users,phone_number,' . $userId,
             'bio' => 'string|max:1000|nullable',
             'twitter_account' => 'nullable|string|url',
             'facebook_account' => 'nullable|string|url',
@@ -55,10 +56,10 @@ class UpdateUserRequest extends FormRequest
     }
 
     public function messages(): array
-{
-    return [
-        'username.unique' => 'username has been taken',
-        'phone_number.unique' => 'phone number must be unique'
-    ];
-}
+    {
+        return [
+            'username.unique' => 'username has been taken',
+            'phone_number.unique' => 'phone number must be unique'
+        ];
+    }
 }

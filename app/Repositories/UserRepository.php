@@ -5,20 +5,17 @@ namespace App\Repositories;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
-use App\Models\Customer;
+
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
+
 class UserRepository
 {
-    public function __construct()
-    {
-    }
-
     public function createUser(array $credentials): User
     {
         $user = new User();
@@ -27,6 +24,23 @@ class UserRepository
             throw new BadRequestException('No Email Provided');
         }
 
+        $isValid = [
+            'email',
+            'full_name',
+            'alt_email',
+            'username',
+            'phone_number',
+            'bio',
+            'password',
+            'logo',
+            'twitter_account',
+            'facebook_account',
+            'youtube_account'
+        ];
+
+        // Remove invalid keys from credentials
+        $credentials = Arr::only($credentials, $isValid);
+
         foreach ($credentials as $column => $value) {
             $user->$column = $value;
         }
@@ -34,8 +48,6 @@ class UserRepository
         $user->account_type = 'free_trial';
 
         $user->save();
-
-        event(new Registered($user));
 
         return $user;
     }

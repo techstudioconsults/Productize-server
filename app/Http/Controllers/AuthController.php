@@ -18,6 +18,7 @@ use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,6 +49,9 @@ class AuthController extends Controller
 
             return ['user' => new UserResource($user), 'token' => $token];
         });
+
+        // Trigger register event
+        event(new Registered($result['user']));
 
         return new JsonResponse($result, 201);
     }
@@ -114,6 +118,9 @@ class AuthController extends Controller
             ];
             // Sign up user
             $user = $this->userRepository->createUser($credentials);
+
+            // Send register email
+            event(new Registered($user));
         } else {
             // Login user
             Auth::login($user);
@@ -133,7 +140,7 @@ class AuthController extends Controller
 
         /**
          * Dont throw an error, render error page instead.
-         * 
+         *
          */
         if (!$request->hasValidSignature()) {
             throw new UnAuthorizedException('Invalid/Expired url provided');

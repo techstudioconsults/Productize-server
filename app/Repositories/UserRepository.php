@@ -59,6 +59,9 @@ class UserRepository
      */
     public function update(string $filter, string $value, array $updatables): User
     {
+        // Ensure the user is not attempting to update the user's email
+        if (array_key_exists('email', $updatables)) throw new BadRequestException("Column 'email' cannot be updated");
+
         if (!Schema::hasColumn((new User)->getTable(), $filter)) {
             throw new UnprocessableException("Column '$filter' does not exist in the User table.");
         }
@@ -70,10 +73,12 @@ class UserRepository
          */
         $filteredUpdatables = array_diff_key($updatables, [$filter => null]);
 
-        User::where($filter, $value)->update($filteredUpdatables);
+        $user = User::where($filter, $value)->firstOrFail();
+
+        $user->update($filteredUpdatables);
 
         // Retrieve and return the updated User instance
-        return User::where($filter, $value)->firstOrFail();
+        return $user;
     }
 
     /**
@@ -84,6 +89,8 @@ class UserRepository
      */
     public function guardedUpdate(string $email, string $column, string $value): User
     {
+        if ($column === "email") throw new BadRequestException("Column 'email' cannot be updated");
+
         if (!Schema::hasColumn((new User)->getTable(), $column)) {
             throw new UnprocessableException("Column '$column' does not exist in the User table.");
         }

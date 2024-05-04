@@ -7,7 +7,6 @@ use App\Events\Products;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Product;
-use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;

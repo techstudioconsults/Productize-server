@@ -109,7 +109,6 @@ class PaystackRepository
 
         if ($isSubscription) {
             $payload['plan'] = $this->premium_plan_code;
-            // $payload['start_date'] = '';
         }
 
         $response = Http::withHeaders([

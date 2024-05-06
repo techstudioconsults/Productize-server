@@ -71,7 +71,7 @@
 
 ## API Documentation
 
--   [Link to API Documentation](#) (Include a link to your API documentation if available)
+-   [Link to API Documentation](https://documenter.getpostman.com/view/21281964/2s9YC32Eip) 
 
 ## Contributing
 

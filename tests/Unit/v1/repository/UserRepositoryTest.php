@@ -3,6 +3,7 @@
 namespace Tests\Unit\v1\repository;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
+
+use function PHPUnit\Framework\assertEquals;
 
 class UserRepositoryTest extends TestCase
 {
@@ -79,16 +82,9 @@ class UserRepositoryTest extends TestCase
 
     public function test_update_user()
     {
-        $credentials = [
-            'full_name' => $this->full_name,
-            'email' => $this->email,
-            'password' => $this->password
-        ];
+        $expected_user = User::factory()->create();
 
-        // Create the user
-        $user = $this->userRepository->createUser($credentials);
-
-        $user = $this->userRepository->update('email', $this->email, [
+        $user = $this->userRepository->update('email', $expected_user->email, [
             'full_name' => 'updated',
             'username' => 'updated',
             'phone_number' => '123456',
@@ -104,7 +100,7 @@ class UserRepositoryTest extends TestCase
         ]);
 
         // Assert email is correctly saved
-        $this->assertEquals($this->email, $user->email);
+        $this->assertEquals($expected_user->email, $user->email);
 
         // Assert full name is correctly saved
         $this->assertEquals($user->full_name, 'updated');
@@ -137,17 +133,9 @@ class UserRepositoryTest extends TestCase
     {
         $this->expectException(BadRequestException::class);
 
-        $credentials = [
-            'full_name' => $this->full_name,
-            'email' => $this->email,
-            'password' => $this->password
-        ];
+        $user = User::factory()->create();
 
-        // Create the user
-        $this->userRepository->createUser($credentials);
-
-
-        $this->userRepository->update('email', $this->email, [
+        $this->userRepository->update('email', $user->email, [
             'email' => 'updated@email.com'
         ]);
     }
@@ -156,30 +144,71 @@ class UserRepositoryTest extends TestCase
     {
         $this->expectException(UnprocessableException::class);
 
-        $credentials = [
-            'full_name' => $this->full_name,
-            'email' => $this->email,
-            'password' => $this->password
-        ];
-
-        // Create the user
-        $this->userRepository->createUser($credentials);
-
-
-        $this->userRepository->update('invalid_column', "inavalid_column", [
+        $this->userRepository->update("invalid_column", "inavalid_column", [
             'full_name' => "this will not save",
         ]);
     }
 
-    public function test_update_user_throws_model_not_found_exception() {
+    public function test_update_user_throws_model_not_found_exception()
+    {
         $this->expectException(ModelNotFoundException::class);
 
-        $this->userRepository->update('email', "unsavedemail@email.com", [
+        $this->userRepository->update("email", "unsavedemail@email.com", [
             'full_name' => "this will not save",
         ]);
     }
 
-    // public function test_guarded_update() {
+    public function test_guarded_update()
+    {
+        $expected_user = User::factory()->create();
 
+        $expected_result = "updated";
+
+        $user =  $this->userRepository->guardedUpdate($expected_user->email, "full_name", $expected_result);
+
+        // Assert name has changed
+        assertEquals($user->full_name, $expected_result);
+
+        // Assert a user instance is returned
+        $this->assertInstanceOf(User::class, $user);
+    }
+
+    public function test_guarded_update_email_should_throw_bad_request()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $user = User::factory()->create();
+
+        $this->userRepository->guardedUpdate($user->email, "email", "updated@email");
+    }
+
+    public function test_guarded_update_column_not_found_should_throw_UnprocessableException()
+    {
+        $this->expectException(UnprocessableException::class);
+
+        $user = User::factory()->create();
+
+        $this->userRepository->guardedUpdate($user->email, "doesnt_exit", "unprocessable");
+    }
+
+    public function test_guarded_update_email_not_found_should_throw_NotFoundException()
+    {
+        $this->expectException(NotFoundException::class);
+
+        $this->userRepository->guardedUpdate($this->email, "full_name", "not found");
+    }
+
+    // public function test_get_total_sales()
+    // {
+    //     $expected_result = 3;
+
+    //     $user = User::factory()
+    //         ->has(Product::factory()->count($expected_result))
+    //         ->has(Order::factory()->count($expected_result))
+    //         ->create();
+
+    //     $result = $this->userRepository->getTotalSales($user);
+
+    //     assertEquals($expected_result, $result);
     // }
 }

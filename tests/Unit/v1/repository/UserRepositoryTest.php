@@ -6,6 +6,9 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
 use App\Models\User;
+use App\Models\Order;
+use App\Models\Product;
+use App\Repositories\OrderRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,10 +22,14 @@ class UserRepositoryTest extends TestCase
     use RefreshDatabase;
 
     private UserRepository $userRepository;
+    private OrderRepository $orderRepository;
 
     protected $full_name;
     protected $email;
     protected $password;
+
+    protected $reference_no;
+    protected $quantity;
 
     public function setUp(): void
     {
@@ -32,6 +39,10 @@ class UserRepositoryTest extends TestCase
         $this->full_name = "Tobi Olanitori";
         $this->email = "tobiolanitori@gmail.com";
         $this->password = "password123";
+
+        $this->orderRepository = new OrderRepository();
+        $this->reference_no = "123LOLTYP"; // Fixed the typo here
+        $this->quantity = 3;
     }
 
     /**
@@ -198,17 +209,113 @@ class UserRepositoryTest extends TestCase
         $this->userRepository->guardedUpdate($this->email, "full_name", "not found");
     }
 
-    // public function test_get_total_sales()
-    // {
-    //     $expected_result = 3;
+    public function it_throws_exception_for_invalid_date_range()
+    {
+        // Arrange
+        $user = User::factory()->create();
 
-    //     $user = User::factory()
-    //         ->has(Product::factory()->count($expected_result))
-    //         ->has(Order::factory()->count($expected_result))
-    //         ->create();
+        // Define an invalid date range
+        $startDate = 'invalid-date';
+        $endDate = 'invalid-date';
 
-    //     $result = $this->userRepository->getTotalSales($user);
+        // Assert that the expected exception is thrown
+        $this->expectException(UnprocessableException::class);
 
-    //     assertEquals($expected_result, $result);
-    // }
+        // Act
+        $this->userRepository->getTotalSales($user, $startDate, $endDate);
+    }
+
+    public function test_get_total_sales_without_date_range()
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Define an array of order data with custom attributes for each order
+        $orderData = [
+            [
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+                'reference_no' => fake()->asciify('********************'),
+                'quantity' => fake()->numberBetween(1, 10),
+                'total_amount' => fake()->randomFloat(2, 10, 100)
+            ],
+            [
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+                'reference_no' => fake()->asciify('********************'),
+                'quantity' => fake()->numberBetween(1, 10),
+                'total_amount' => fake()->randomFloat(2, 10, 100)
+            ],
+            [
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+                'reference_no' => fake()->asciify('********************'),
+                'quantity' => fake()->numberBetween(1, 10),
+                'total_amount' => fake()->randomFloat(2, 10, 100)
+            ]
+        ];
+
+        // Create the orders
+        foreach ($orderData as $data) {
+            Order::create($data);
+        }
+
+        // Act
+        $totalSales = $this->userRepository->getTotalSales($user);
+
+        // Assert
+        $this->assertSame(3, $totalSales);
+    }
+
+    public function it_returns_total_sales_with_date_range()
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Define the date range
+        $startDate = '2024-01-01';
+        $endDate = '2024-03-31';
+
+        // Create orders within the specified date range
+        $orderData = [
+            [
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+                'reference_no' => fake()->asciify('********************'),
+                'quantity' => fake()->numberBetween(1, 10),
+                'total_amount' => fake()->randomFloat(2, 10, 100),
+                'created_at' => '2024-03-15',
+            ],
+            [
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+                'reference_no' => fake()->asciify('********************'),
+                'quantity' => fake()->numberBetween(1, 10),
+                'total_amount' => fake()->randomFloat(2, 10, 100),
+                'created_at' => '2024-03-01',
+
+            ],
+            [
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+                'reference_no' => fake()->asciify('********************'),
+                'quantity' => fake()->numberBetween(1, 10),
+                'total_amount' => fake()->randomFloat(2, 10, 100),
+                'created_at' => '2024-02-15',
+            ]
+        ];
+
+        foreach ($orderData as $data) {
+            Order::create($data);
+        }
+
+        // Set up the expected total sales
+        $expectedTotalSales = 3;
+
+        // Act
+        $totalSales = $this->userRepository->getTotalSales($user, $startDate, $endDate);
+
+        // Assert
+        $this->assertSame($expectedTotalSales, $totalSales);
+    }
 }

@@ -209,7 +209,7 @@ class UserRepositoryTest extends TestCase
         $this->userRepository->guardedUpdate($this->email, "full_name", "not found");
     }
 
-    public function it_throws_exception_for_invalid_date_range()
+    public function test_exception_for_invalid_date_range()
     {
         // Arrange
         $user = User::factory()->create();
@@ -267,7 +267,7 @@ class UserRepositoryTest extends TestCase
         $this->assertSame(3, $totalSales);
     }
 
-    public function it_returns_total_sales_with_date_range()
+    public function test_total_sales_with_date_range()
     {
         // Arrange
         $user = User::factory()->create();

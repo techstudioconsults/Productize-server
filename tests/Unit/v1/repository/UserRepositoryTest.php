@@ -12,6 +12,7 @@ use App\Models\Customer;
 use Illuminate\Support\Carbon;
 use App\Repositories\OrderRepository;
 use App\Repositories\UserRepository;
+use Carbon\Carbon as CarbonCarbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -211,7 +212,7 @@ class UserRepositoryTest extends TestCase
         $this->userRepository->guardedUpdate($this->email, "full_name", "not found");
     }
 
-    public function test_exception_for_invalid_date_range_throw_UnprocessableException()
+    public function test_get_total_sales_with_invalid_date_range_should_throw_UnprocessableException()
     {
         // Arrange
         $user = User::factory()->create();
@@ -266,7 +267,39 @@ class UserRepositoryTest extends TestCase
         $totalSales = $this->userRepository->getTotalSales($user);
 
         // Assert
-        $this->assertSame(3, $totalSales);
+        $this->assertEquals(3, $totalSales);
+    }
+
+    public function test_get_total_sales_with_date_range()
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Define the date range
+        $startDate = Carbon::create(2024, 1, 1, 0);
+        $endDate = Carbon::create(2024, 3, 20, 0);
+
+        // Create orders within the date range
+        Order::factory()->count(3)->state([
+            'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+        ])->create([
+            'created_at' => Carbon::create(2024, 3, 15, 0),
+        ]);
+
+        // Create an order outside the date range
+        Order::factory()->create([
+            'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+            'created_at' => Carbon::create(2024, 3, 21, 0),
+        ]);
+
+        // Set up the expected total sales
+        $expectedTotalSales = 3;
+
+        // Act
+        $totalSales = $this->userRepository->getTotalSales($user, $startDate, $endDate);
+
+        // Assert
+        $this->assertEquals($expectedTotalSales, $totalSales);
     }
 
     public function test_get_total_amount()
@@ -310,58 +343,6 @@ class UserRepositoryTest extends TestCase
 
 
         $this->assertSame($expectedTotalAmount, $totalAmount);
-    }
-
-    public function test_total_sales_with_date_range()
-    {
-        // Arrange
-        $user = User::factory()->create();
-
-        // Define the date range
-        $startDate = Carbon::create(2024, 1, 1, 0);
-        $endDate = Carbon::create(2024, 3, 20, 0);
-
-        // Create orders within the specified date range
-        $orderData = [
-            [
-                'user_id' => $user->id,
-                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
-                'reference_no' => fake()->asciify('********************'),
-                'quantity' => fake()->numberBetween(1, 10),
-                'total_amount' => fake()->randomFloat(2, 10, 100),
-                'created_at' => Carbon::create(2024, 3, 15, 0),
-            ],
-            [
-                'user_id' => $user->id,
-                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
-                'reference_no' => fake()->asciify('********************'),
-                'quantity' => fake()->numberBetween(1, 10),
-                'total_amount' => fake()->randomFloat(2, 10, 100),
-                'created_at' => Carbon::create(2024, 3, 1, 0)
-            ],
-            [
-                'user_id' => $user->id,
-                'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
-                'reference_no' => fake()->asciify('********************'),
-                'quantity' => fake()->numberBetween(1, 10),
-                'total_amount' => fake()->randomFloat(2, 10, 100),
-                'created_at' => Carbon::create(2024, 2, 15, 0),
-            ]
-        ];
-
-        foreach ($orderData as $data) {
-            Order::create($data);
-        }
-
-
-        // Set up the expected total sales
-        $expectedTotalSales = 3;
-
-        // Act
-        $totalSales = $this->userRepository->getTotalSales($user, $startDate, $endDate);
-
-        // Assert
-        $this->assertSame($expectedTotalSales, $totalSales);
     }
 
     public function test_exception_for_invalid_date_range_for_revenue_throw_UnprocessableException()

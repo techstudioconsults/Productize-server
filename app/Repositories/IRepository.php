@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author Tobi Olanitori
+ * @version 1.0
+ * @since 05-08-2024
+ */
+
 namespace App\Repositories;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +22,14 @@ interface IRepository
      * @return void
      */
     public function seed(): void;
+
+    /**
+     * Creates a new entity in the database.
+     *
+     * @param array array of data for The entity to create.
+     * @return Model The created entity.
+     */
+    public function create(array $entity);
 
     /**
      * Retrieves all entities from the database.
@@ -40,15 +54,6 @@ interface IRepository
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
     public function readById(string $id);
-
-    /**
-     * Creates a new entity in the database.
-     *
-     * @param array array of data for The entity to create.
-     * @return Model The created entity.
-     */
-    public function create(array $entity);
-
 
     /**
      * Update an entity in the database.

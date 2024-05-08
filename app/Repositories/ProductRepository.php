@@ -39,6 +39,13 @@ class ProductRepository
     ) {
     }
 
+    public function seed(): void
+    {
+
+    }
+
+
+
 
     /**
      * getUserProducts

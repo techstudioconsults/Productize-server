@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author Tobi Olanitori
+ * @version 1.0
+ * @since 05-08-2024
+ */
+
 namespace App\Repositories;
 
 use App\Enums\ProductStatusEnum;
@@ -13,15 +19,31 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 
+
+/**
+ * @author Tobi Olanitori
+ *
+ * Repository for Products
+ */
 class ProductRepository
 {
+    /**
+     * Constructor for ProductRepository.
+     *
+     * @param \App\Repositories\UserRepository - User repository class
+     * @see \App\Repositories\UserRepository   Constructor with UserRepository dependency injection.
+     * @return void {@see UserRepository}
+     */
     public function __construct(
         public UserRepository $userRepository
     ) {
     }
 
+
     /**
-     * @return PRODUCT This will return a pre called instance of PRODUCT
+     * getUserProducts
+     *
+     * @return void
      */
     public function getUserProducts(
         User $user,

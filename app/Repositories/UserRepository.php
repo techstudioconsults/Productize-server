@@ -191,6 +191,13 @@ class UserRepository
         return $customers->count();
     }
 
+
+    /**
+     * profileCompletedAt
+     *
+     * @param  User $user
+     * @return void
+     */
     public function profileCompletedAt(User $user)
     {
         /**

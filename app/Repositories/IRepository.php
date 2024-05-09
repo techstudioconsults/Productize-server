@@ -36,7 +36,7 @@ interface IRepository
      *
      * @return array<Model> A list of all entities stored in the database.
      */
-    public function read(): array;
+    public function find(): array;
 
 
     /**
@@ -45,7 +45,7 @@ interface IRepository
      * @param  string $filter
      * @return array<Model>
      */
-    public function readByFilter(string $filter): array;
+    public function findMany(string $filter): array;
 
     /**
      * Retrieves a model by its id from the repository.
@@ -53,7 +53,7 @@ interface IRepository
      * @param string $id The unique identifier of the entity.
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
-    public function readById(string $id);
+    public function findById(string $id);
 
     /**
      * Update an entity in the database.
@@ -86,5 +86,5 @@ interface IRepository
      *
      * @return void
      */
-    public function deleteAll(): void;
+    public function deleteMany(string $filter): void;
 }

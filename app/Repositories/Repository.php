@@ -9,6 +9,7 @@
 namespace App\Repositories;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Validator as Validation;
 use Illuminate\Validation\Validator;
 
@@ -67,6 +68,15 @@ abstract class Repository
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
     abstract public function findById(string $id);
+
+    /**
+     * Retrieves all entities from the database by a Model and an array of filter
+     *
+     * @param Model $parent Use a model relation to retrieve entities.
+     * @param  array $filter Associative array of filter colums and their value
+     * @return Relation
+     */
+    abstract public function findByRelation(Model $parent, ?array $filter): Relation;
 
     /**
      * Update an entity in the database.

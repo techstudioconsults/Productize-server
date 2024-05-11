@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\UnprocessableException;
 use App\Http\Resources\OrderResource;
 use App\Models\Customer;
 use App\Models\Order;
@@ -11,8 +10,6 @@ use App\Repositories\OrderRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Validator;
-use Illuminate\Database\Eloquent\Builder;
 use Storage;
 
 class OrderController extends Controller
@@ -21,6 +18,7 @@ class OrderController extends Controller
         protected OrderRepository $orderRepository
     ) {
     }
+    
     public function index(Request $request)
     {
         $user = Auth::user();

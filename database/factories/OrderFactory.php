@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,10 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
-            'reference_no' => fake()->asciify('********************')
+            'user_id' => User::factory()->create()->id,
+            'reference_no' => fake()->asciify('********************'),
+            'quantity' => fake()->numberBetween(1, 10),
+            'total_amount' => fake()->randomFloat(2, 10, 100),
         ];
     }
 }

@@ -4,12 +4,32 @@ namespace App\Repositories;
 
 use App\Exceptions\UnprocessableException;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Validator;
 
 class OrderRepository
 {
+    public function seed(): void
+    {
+        $user = User::factory()->create();
+
+        // Create orders within the date range
+        Order::factory()->count(3)->state([
+            'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+        ])->create([
+            'created_at' => Carbon::create(2024, 3, 15, 0),
+        ]);
+
+        // Create an order outside the date range
+        Order::factory()->create([
+            'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+            'created_at' => Carbon::create(2024, 3, 21, 0),
+        ]);
+    }
+
     /**
      * array with params:
      * @param reference_no Paystack reference number

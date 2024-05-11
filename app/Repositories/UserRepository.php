@@ -11,11 +11,14 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Validator as Validation;
+use Illuminate\Validation\Validator;
 
 
 class UserRepository
 {
+    private ?Validator $validator = null;
+
     public function createUser(array $credentials): User
     {
         $user = new User();
@@ -116,18 +119,11 @@ class UserRepository
     ): int {
         $orders = $user->orders();
 
+        // Filter by start date and end date.
         if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
 
             $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
@@ -147,17 +143,9 @@ class UserRepository
         $orders =  $user->orders();
 
         if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
 
             $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
@@ -173,24 +161,15 @@ class UserRepository
         $customers = $user->customers();
 
         if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
 
             $customers->whereBetween('created_at', [$start_date, $end_date]);
         }
 
         return $customers->count();
     }
-
 
     /**
      * profileCompletedAt
@@ -222,5 +201,46 @@ class UserRepository
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
+    }
+
+    public function getValidator(): ?Validator
+    {
+        return $this->validator;
+    }
+
+    public function setValidator(Validator $validator): void
+    {
+        $this->validator = $validator;
+    }
+
+    /**
+     * It validates a date range is invalid.
+     * Returns true if date range is invalid, returns false otherwise.
+     *
+     * @param  string $start_date
+     * @param  string $end_date
+     * @return bool
+     */
+    private function isInValidDateRange(string $start_date, string $end_date)
+    {
+        /**
+         * Validator is imported as Validator. Check top of the file.
+         */
+        $validator = Validation::make([
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ], [
+            'start_date' => 'date',
+            'end_date' => 'date'
+        ]);
+
+        if ($validator->fails()) {
+            // Set current validator object.
+            $this->setValidator($validator);
+
+            return true;
+        }
+
+        return false;
     }
 }

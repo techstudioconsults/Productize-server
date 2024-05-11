@@ -23,6 +23,7 @@ class OrderFactory extends Factory
             'reference_no' => fake()->asciify('********************'),
             'quantity' => fake()->numberBetween(1, 10),
             'total_amount' => fake()->randomFloat(2, 10, 100),
+            'product_id' => Product::factory()->create(['user_id' => User::factory()->create()]),
         ];
     }
 }

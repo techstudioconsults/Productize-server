@@ -8,6 +8,7 @@
 
 namespace App\Repositories;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Validator as Validation;
@@ -44,22 +45,14 @@ abstract class Repository
      * @param array array of data for The entity to create.
      * @return Model The created entity.
      */
-    abstract public function create(array $entity);
+    abstract public function create(array $entity): Model;
 
     /**
      * Retrieves all entities from the database.
      *
-     * @return array<Model> A list of all entities stored in the database.
+     * @return Builder A list of all entities stored in the database.
      */
-    abstract public function find(): array;
-
-    /**
-     * Retrieves all entities from the database by a filter
-     *
-     * @param  array $filter Associative array of filter colums and their value
-     * @return array<Model>
-     */
-    abstract public function findMany(array $filter): array;
+    abstract public function find(?array $filter): Builder;
 
     /**
      * Retrieves a model by its id from the repository.
@@ -67,7 +60,7 @@ abstract class Repository
      * @param string $id The unique identifier of the entity.
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
-    abstract public function findById(string $id);
+    abstract public function findById(string $id): Model;
 
     /**
      * Retrieves all entities from the database by a Model and an array of filter
@@ -94,7 +87,7 @@ abstract class Repository
      * @param array $updates An associative array of data containing the fields to be updated.
      * @return int The total count of updated entities.
      */
-    abstract public function updateMany(string $filter, array $updates): int;
+    abstract public function updateMany(array $filter, array $updates): int;
 
     /**
      * Delete an entity from the database
@@ -107,9 +100,9 @@ abstract class Repository
     /**
      * Removes all entities from the database.
      *
-     * @return void
+     * @return int
      */
-    abstract public function deleteMany(string $filter): void;
+    abstract public function deleteMany(array $filter): int;
 
     /**
      * It validates a date range is invalid.

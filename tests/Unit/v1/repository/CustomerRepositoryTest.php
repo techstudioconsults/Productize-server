@@ -49,8 +49,13 @@ class CustomerRepositoryTest extends TestCase
         $product = Product::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
 
+
         // Act
-        $customer = $this->customerRepository->create($order);
+        $customer = $this->customerRepository->create([
+            'user_id' => $order->user->id,
+            'merchant_id' => $order->product->user->id,
+            'order_id' => $order->id,
+        ]);
 
         // Assert
         $this->assertInstanceOf(Customer::class, $customer);
@@ -74,7 +79,7 @@ class CustomerRepositoryTest extends TestCase
         ]);
 
         // Assert
-        $result = $this->customerRepository->find($user);
+        $result = $this->customerRepository->findByRelation($user);
 
         $this->assertNotEmpty($result); // Ensure the result is not empty
         $this->assertCount(1, $result->get());
@@ -88,8 +93,8 @@ class CustomerRepositoryTest extends TestCase
         $order = Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
 
         // Define the date range
-        $startDate = Carbon::create(2024, 1, 1, 0);
-        $endDate = Carbon::create(2024, 3, 20, 0);
+        $start_date = Carbon::create(2024, 1, 1, 0);
+        $end_date = Carbon::create(2024, 3, 20, 0);
 
         // Create customers associated with the orders within the date range
         Customer::factory()->create([
@@ -101,7 +106,7 @@ class CustomerRepositoryTest extends TestCase
 
 
         // Act
-        $result = $this->customerRepository->find($user, $startDate, $endDate);
+        $result = $this->customerRepository->findByRelation($user, ['start_date' => $start_date, 'end_date' => $end_date]);
 
         // Assert
         $this->assertNotEmpty($result);
@@ -122,6 +127,6 @@ class CustomerRepositoryTest extends TestCase
         $this->expectException(UnprocessableException::class);
 
         // Act & Assert
-        $this->customerRepository->find($user, $start_date, $end_date);
+        $this->customerRepository->findByRelation($user, ['start_date' => $start_date, 'end_date' => $end_date]);
     }
 }

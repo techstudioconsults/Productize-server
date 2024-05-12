@@ -27,9 +27,18 @@ class CustomerController extends Controller
         $start_date = $request->start_date;
         $end_date = $request->end_date;
 
-        $customers = $this->customerRepository->find($user, $start_date, $end_date);
+        // Prepare the filter array
+        $filter = [];
+        if ($start_date && $end_date) {
+            $filter['start_date'] = $start_date;
+            $filter['end_date'] = $end_date;
+        }
 
-        $customers = $customers->paginate(10);
+        // Get customers with filtering
+        $customersQuery = $this->customerRepository->findByRelation($user, $filter);
+
+        // Paginate the results
+        $customers = $customersQuery->paginate(10);
 
         return CustomerResource::collection($customers);
     }
@@ -91,6 +100,5 @@ class CustomerController extends Controller
         return response()->stream(function () use ($filePath) {
             readfile(storage_path('app/' . $filePath));
         }, 200, $headers);
-
     }
 }

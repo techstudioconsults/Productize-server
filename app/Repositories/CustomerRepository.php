@@ -2,13 +2,18 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
-class CustomerRepository
+class CustomerRepository extends Repository
 {
     public function __construct(
         protected ProductRepository $productRepository,
@@ -16,48 +21,188 @@ class CustomerRepository
     ) {
     }
 
-    /**
-     * Create a new customer for a user
-     * @param order Order made by the customer
-     */
-    public function create(Order $order)
+    public function seed(): void
     {
-        $customer = new Customer();
+        // Create 5 users
+        $users = User::factory(5)->create();
 
-        $customer->user_id = $order->user->id;
+        foreach ($users as $user) {
+            // Create 5 products for each user
+            $products = Product::factory(5)->create(['user_id' => $user->id]);
 
-        $customer->merchant_id = $order->product->user->id;
+            foreach ($products as $product) {
+                // Create 5 orders for each product
+                $orders = Order::factory(5)->create([
+                    'user_id' => $user->id,
+                    'product_id' => $product->id
+                ]);
 
-        $customer->order_id = $order->id;
-
-        $customer->save();
-
-        return $customer;
+                foreach ($orders as $order) {
+                    // Create a customer for each order
+                    Customer::factory()->create([
+                        'user_id' => $user->id,
+                        'merchant_id' => $product->user_id,
+                        'order_id' => $order->id
+                    ]);
+                }
+            }
+        }
     }
 
-    public function find(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ) {
-        $customers = $user->customers();
+    public function create(array $entity): Model
+    {
+        return Customer::create($entity);
+    }
 
-        if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+    public function find(?array $filter = null): Builder
+    {
+        // Start with the base query
+        $query = Customer::query();
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
+        // Apply filters if provided
+        if ($filter !== null) {
+            // Check if start_date and end_date are provided in the filter array
+            if (isset($filter['start_date']) && isset($filter['end_date'])) {
+                $query->whereBetween('created_at', [$filter['start_date'], $filter['end_date']]);
             }
 
-            $customers->whereBetween('created_at', [$start_date, $end_date]);
+            foreach ($filter as $key => $value) {
+                // Check if the key exists as a column in the orders table
+                if (Schema::hasColumn('customers', $key)) {
+                    // Apply where condition based on the filter
+                    $query->where($key, $value);
+                }
+            }
         }
 
-        return $customers;
+        return $query;
     }
+
+    public function findById(string $id): Model
+    {
+        return Customer::find($id);
+    }
+
+    public function findByRelation(Model $parent, ?array $filter = null): Relation
+    {
+        // Start with the base relation
+        $relation = $parent?->customers();
+
+        if (!$relation) throw new ApiException("Error", 500);
+
+        if (empty($filter)) return $relation;
+
+        // If there are filters provided, apply them
+        if (isset($filter['start_date']) && isset($filter['end_date'])) {
+            $start_date = $filter['start_date'];
+            unset($filter['start_date']);
+
+            $end_date = $filter['end_date'];
+            unset($filter['end_date']);
+
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
+
+            if ($isInvalid) throw new UnprocessableException($this->getValidator()->errors()->first());
+
+            $relation->whereBetween('created_at', [$start_date, $end_date]);
+        }
+
+        foreach ($filter as $key => $value) {
+            // Check if the key exists as a column in the orders table
+            if (Schema::hasColumn('customers', $key)) {
+                // Apply where condition based on the filter
+                $relation = $relation->where($key, $value);
+            }
+        }
+
+        return $relation;
+    }
+
+    /**
+     * Update an entity in the database.
+     *
+     * @param  Model $entity The model to be updated
+     * @param array $updates The array of data containing the fields to be updated.
+     * @return Model The updated model
+     */
+    public function update(Model $entity, array $updates): Model
+    {
+        // Ensure that the provided entity is an instance of Customer
+        if (!$entity instanceof Customer) {
+            throw new ApiException("Invalid Model", 500);
+        }
+
+        // Assign the updates to the corresponding fields of the Customer instance
+        $entity->fill($updates);
+
+        // Save the updated Customer instance
+        $entity->save();
+
+        // Return the updated Customer model
+        return $entity;
+    }
+
+    public function updateMany(array $filter, array $updates): int
+    {
+        return 1;
+    }
+
+    public function deleteOne(Model $entity): bool
+    {
+        try {
+            $entity->delete();
+            return true;
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
+
+    public function deleteMany(array $filter): int
+    {
+        return 1;
+    }
+    // /**
+    //  * Create a new customer for a user
+    //  * @param order Order made by the customer
+    //  */
+    // public function create(Order $order)
+    // {
+    //     $customer = new Customer();
+
+    //     $customer->user_id = $order->user->id;
+
+    //     $customer->merchant_id = $order->product->user->id;
+
+    //     $customer->order_id = $order->id;
+
+    //     $customer->save();
+
+    //     return $customer;
+    // }
+
+    // public function find(
+    //     User $user,
+    //     ?string $start_date = null,
+    //     ?string $end_date = null
+    // ) {
+    //     $customers = $user->customers();
+
+    //     if ($start_date && $end_date) {
+    //         $validator = Validator::make([
+    //             'start_date' => $start_date,
+    //             'end_date' => $end_date
+    //         ], [
+    //             'start_date' => 'date',
+    //             'end_date' => 'date'
+    //         ]);
+
+    //         if ($validator->fails()) {
+    //             throw new UnprocessableException($validator->errors()->first());
+    //         }
+
+    //         $customers->whereBetween('created_at', [$start_date, $end_date]);
+    //     }
+
+    //     return $customers;
+    // }
 }

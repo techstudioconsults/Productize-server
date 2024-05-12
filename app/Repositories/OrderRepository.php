@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Validator;
 
 class OrderRepository
@@ -36,7 +37,7 @@ class OrderRepository
      * @param product_id Product ID
      * @param customer_id Customer ID
      */
-    public function create(array $array)
+    public function create(array $array): Model
     {
         $order = Order::create($array);
 

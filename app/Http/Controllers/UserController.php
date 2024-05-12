@@ -39,7 +39,7 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request)
     {
-        $userId = Auth::user()->id;
+        $user = Auth::user();
 
         $validated = $request->validated();
 
@@ -66,7 +66,7 @@ class UserController extends Controller
 
 
         try {
-            $user = $this->userRepository->update('id', $userId, $validated);
+            $user = $this->userRepository->update($user, $validated);
 
             // Check for profile completion
             $this->userRepository->profileCompletedAt($user);

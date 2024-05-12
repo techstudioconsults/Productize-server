@@ -54,7 +54,7 @@ class UserRepositoryTest extends TestCase
         ];
 
         // Create the user
-        $user = $this->userRepository->createUser($credentials);
+        $user = $this->userRepository->create($credentials);
 
         // Assert user is saved in the db
         $this->assertDatabaseHas('users', [
@@ -82,7 +82,7 @@ class UserRepositoryTest extends TestCase
         $this->expectException(BadRequestException::class);
 
         // Attempt to create a user without an email
-        $this->userRepository->createUser([
+        $this->userRepository->create([
             'full_name' => $this->full_name,
             'password' => $this->password
         ]);
@@ -92,7 +92,7 @@ class UserRepositoryTest extends TestCase
     {
         $expected_user = User::factory()->create();
 
-        $user = $this->userRepository->update('email', $expected_user->email, [
+        $user = $this->userRepository->update($expected_user, [
             'full_name' => 'updated',
             'username' => 'updated',
             'phone_number' => '123456',
@@ -143,26 +143,8 @@ class UserRepositoryTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->userRepository->update('email', $user->email, [
+        $this->userRepository->update($user, [
             'email' => 'updated@email.com'
-        ]);
-    }
-
-    public function test_update_user_with_invalid_filter_throws_UnprocessableException()
-    {
-        $this->expectException(UnprocessableException::class);
-
-        $this->userRepository->update("invalid_column", "inavalid_column", [
-            'full_name' => "this will not save",
-        ]);
-    }
-
-    public function test_update_user_throws_model_not_found_exception()
-    {
-        $this->expectException(ModelNotFoundException::class);
-
-        $this->userRepository->update("email", "unsavedemail@email.com", [
-            'full_name' => "this will not save",
         ]);
     }
 
@@ -435,7 +417,6 @@ class UserRepositoryTest extends TestCase
         $result = $this->userRepository->getTotalCustomers($merchant, $start_date, $end_date);
 
         $this->assertEquals($expected_result, $result);
-
     }
 
     public function test_get_total_customers_with_invalid_date_range()

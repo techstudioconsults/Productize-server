@@ -33,7 +33,7 @@ abstract class Repository
 
     /**
      * Seeds the repository with initial data.
-     * It is suitable for unit testing
+     * It is suitable for unit and feature testing.
      *
      * @return void
      */
@@ -48,11 +48,21 @@ abstract class Repository
     abstract public function create(array $entity): Model;
 
     /**
-     * Retrieves all entities from the database.
+     * Retrieves entities from the database based on the provided filter.
      *
-     * @return Builder A list of all entities stored in the database.
+     * @param array|null $filter An optional filter to apply when retrieving entities.
+     * @return \Illuminate\Database\Eloquent\Builder The query builder for retrieving entities.
      */
     abstract public function find(?array $filter): Builder;
+
+      /**
+     * Retrieves all entities from the database by a Model and an array of filter
+     *
+     * @param Model $parent Use a model relation to retrieve entities.
+     * @param  array $filter Associative array of filter colums and their value
+     * @return Relation
+     */
+    abstract public function findByRelation(Model $parent, ?array $filter): Relation;
 
     /**
      * Retrieves a model by its id from the repository.
@@ -61,15 +71,6 @@ abstract class Repository
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
     abstract public function findById(string $id): Model;
-
-    /**
-     * Retrieves all entities from the database by a Model and an array of filter
-     *
-     * @param Model $parent Use a model relation to retrieve entities.
-     * @param  array $filter Associative array of filter colums and their value
-     * @return Relation
-     */
-    abstract public function findByRelation(Model $parent, ?array $filter): Relation;
 
     /**
      * Update an entity in the database.
@@ -83,7 +84,7 @@ abstract class Repository
     /**
      * Update multiple entities in the database based on a given filter.
      *
-     * @param string $filter The filter to select entities to be updated.
+     * @param array $filter The filter to select entities to be updated.
      * @param array $updates An associative array of data containing the fields to be updated.
      * @return int The total count of updated entities.
      */
@@ -95,7 +96,16 @@ abstract class Repository
      * @param  Model $entity The entity to be deleted.
      * @return bool True if the deletion was successful, false otherwise
      */
-    abstract public function deleteOne(Model $entity): bool;
+    public function deleteOne(Model $entity): bool
+    {
+        try {
+            $entity->delete();
+            return true;
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
+
 
     /**
      * Removes all entities from the database.

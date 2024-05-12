@@ -2,24 +2,29 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator as Validation;
-use Illuminate\Validation\Validator;
 
 
-class UserRepository
+class UserRepository extends Repository
 {
-    private ?Validator $validator = null;
+    public function seed(): void
+    {
+        User::factory(20)->create();
+    }
 
-    public function createUser(array $credentials): User
+    public function create(array $credentials): User
     {
         $user = new User();
 
@@ -55,33 +60,80 @@ class UserRepository
         return $user;
     }
 
-    /**
-     * @param filter - is the table column to be used to query
-     * @param value - is the value of the column for the user
-     * @param updatables - is an associative array of items to be updated
-     */
-    public function update(string $filter, string $value, array $updatables): User
+    public function find(?array $filter): Builder
+    {
+        $query = User::query();
+
+        if ($filter === null) return $query;
+
+        // Filter by date if included in the filter array
+        if (isset($filter['start_date']) && isset($filter['end_date'])) {
+            $query->whereBetween('created_at', [$filter['start_date'], $filter['end_date']]);
+        }
+
+        // For each filter array, entry, validate presence in model and query
+        foreach ($filter as $key => $value) {
+            if (Schema::hasColumn('users', $key)) {
+                $query->where($key, $value);
+            }
+        }
+
+        return $query;
+    }
+
+    public function findByRelation(Model $parent, ?array $filter): Relation
+    {
+        // Start with the base relation
+        $relation = $parent?->users();
+
+        if (!$relation) throw new ApiException("Error", 500);
+
+        if (empty($filter)) return $relation;
+
+        // If there are filters provided, apply them
+        if (isset($filter['start_date']) && isset($filter['end_date'])) {
+            $start_date = $filter['start_date'];
+            unset($filter['start_date']);
+
+            $end_date = $filter['end_date'];
+            unset($filter['end_date']);
+
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
+
+            if ($isInvalid) throw new UnprocessableException($this->getValidator()->errors()->first());
+
+            $relation->whereBetween('created_at', [$start_date, $end_date]);
+        }
+
+        foreach ($filter as $key => $value) {
+            // Check if the key exists as a column in the orders table
+            if (Schema::hasColumn('customers', $key)) {
+                // Apply where condition based on the filter
+                $relation = $relation->where($key, $value);
+            }
+        }
+
+        return $relation;
+    }
+
+    public function findById(string $id): Model
+    {
+        return User::find($id);
+    }
+
+    public function update(Model $entity, array $updatables): User
     {
         // Ensure the user is not attempting to update the user's email
         if (array_key_exists('email', $updatables)) throw new BadRequestException("Column 'email' cannot be updated");
 
-        if (!Schema::hasColumn((new User)->getTable(), $filter)) {
-            throw new UnprocessableException("Column '$filter' does not exist in the User table.");
-        }
+        // Assign the updates to the corresponding fields of the Customer instance
+        $entity->fill($updatables);
 
-        /**
-         * Exclude the filter column from the updatables
-         * Preventing coder from updating the filter used to make the update
-         * Now, the filter can be safely used to retrieve user after update
-         */
-        $filteredUpdatables = array_diff_key($updatables, [$filter => null]);
+        // Save the updated Customer instance
+        $entity->save();
 
-        $user = User::where($filter, $value)->firstOrFail();
-
-        $user->update($filteredUpdatables);
-
-        // Retrieve and return the updated User instance
-        return $user;
+        // Return the updated Customer model
+        return $entity;
     }
 
     /**
@@ -109,6 +161,27 @@ class UserRepository
         return $user;
     }
 
+    public function updateMany(array $filter, array $updates): int
+    {
+        // Retrieve the User model
+        $userModel = User::query();
+
+        // Apply the filter criteria
+        foreach ($filter as $key => $value) {
+            $userModel->where($key, $value);
+        }
+
+        // Perform the update
+        $affectedRows = $userModel->update($updates);
+
+        return $affectedRows;
+    }
+
+    public function deleteMany(array $filter): int
+    {
+        return 1;
+    }
+
     /**
      * @return int - Total number of products sold
      */
@@ -123,7 +196,7 @@ class UserRepository
         if ($start_date && $end_date) {
             $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
+            if ($isInvalid) throw new UnprocessableException($this->getValidator()->errors()->first());
 
             $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
@@ -145,7 +218,7 @@ class UserRepository
         if ($start_date && $end_date) {
             $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
+            if ($isInvalid) throw new UnprocessableException($this->getValidator()->errors()->first());
 
             $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
@@ -163,7 +236,7 @@ class UserRepository
         if ($start_date && $end_date) {
             $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
+            if ($isInvalid) throw new UnprocessableException($this->getValidator()->errors()->first());
 
             $customers->whereBetween('created_at', [$start_date, $end_date]);
         }
@@ -201,46 +274,5 @@ class UserRepository
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
-    }
-
-    public function getValidator(): ?Validator
-    {
-        return $this->validator;
-    }
-
-    public function setValidator(Validator $validator): void
-    {
-        $this->validator = $validator;
-    }
-
-    /**
-     * It validates a date range is invalid.
-     * Returns true if date range is invalid, returns false otherwise.
-     *
-     * @param  string $start_date
-     * @param  string $end_date
-     * @return bool
-     */
-    private function isInValidDateRange(string $start_date, string $end_date)
-    {
-        /**
-         * Validator is imported as Validator. Check top of the file.
-         */
-        $validator = Validation::make([
-            'start_date' => $start_date,
-            'end_date' => $end_date
-        ], [
-            'start_date' => 'date',
-            'end_date' => 'date'
-        ]);
-
-        if ($validator->fails()) {
-            // Set current validator object.
-            $this->setValidator($validator);
-
-            return true;
-        }
-
-        return false;
     }
 }

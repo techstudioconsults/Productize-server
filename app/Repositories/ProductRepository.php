@@ -50,7 +50,7 @@ class ProductRepository
     /**
      * getUserProducts
      *
-     * @return void
+    //  * @return void
      */
     public function getUserProducts(
         User $user,

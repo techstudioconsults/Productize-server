@@ -43,7 +43,7 @@ class AuthController extends Controller
 
         $result = DB::transaction(function () use ($validatedData) {
 
-            $user = $this->userRepository->createUser($validatedData);
+            $user = $this->userRepository->create($validatedData);
 
             $token = $user->createToken('access-token')->plainTextToken;
 
@@ -117,7 +117,7 @@ class AuthController extends Controller
                 'email' => $oauthUser->email,
             ];
             // Sign up user
-            $user = $this->userRepository->createUser($credentials);
+            $user = $this->userRepository->create($credentials);
 
             // Send register email
             event(new Registered($user));

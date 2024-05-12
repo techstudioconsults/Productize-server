@@ -109,12 +109,6 @@ class AuthControllerTest extends TestCase
             'token',
             'user' => array_keys($userArray), // Ensure the user structure matches
         ]);
-
-        // $response->assertExactJson([
-        //     'token' => 'string',
-        //     'user' => $userArray,
-        // ]);
-
     }
 
     public function test_login_with_bad_credentials()

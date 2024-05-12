@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * @author Tobi Olanitori
+ * @version 1.0
+ * @since 12-05-2024
+ */
+
 namespace App\Repositories;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ModelCastException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
 
@@ -66,10 +73,7 @@ class UserRepository extends Repository
 
         if ($filter === null) return $query;
 
-        // Filter by date if included in the filter array
-        if (isset($filter['start_date']) && isset($filter['end_date'])) {
-            $query->whereBetween('created_at', [$filter['start_date'], $filter['end_date']]);
-        }
+        $this->applyDateFilters($query, $filter);
 
         // For each filter array, entry, validate presence in model and query
         foreach ($filter as $key => $value) {
@@ -90,20 +94,7 @@ class UserRepository extends Repository
 
         if (empty($filter)) return $relation;
 
-        // If there are filters provided, apply them
-        if (isset($filter['start_date']) && isset($filter['end_date'])) {
-            $start_date = $filter['start_date'];
-            unset($filter['start_date']);
-
-            $end_date = $filter['end_date'];
-            unset($filter['end_date']);
-
-            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
-
-            if ($isInvalid) throw new UnprocessableException($this->getValidator()->errors()->first());
-
-            $relation->whereBetween('created_at', [$start_date, $end_date]);
-        }
+        $this->applyDateFilters($relation, $filter);
 
         foreach ($filter as $key => $value) {
             // Check if the key exists as a column in the orders table
@@ -123,10 +114,14 @@ class UserRepository extends Repository
 
     public function update(Model $entity, array $updatables): User
     {
+        if (!$entity instanceof User) {
+            throw new ModelCastException("User", get_class($entity));
+        }
+
         // Ensure the user is not attempting to update the user's email
         if (array_key_exists('email', $updatables)) throw new BadRequestException("Column 'email' cannot be updated");
 
-        // Assign the updates to the corresponding fields of the Customer instance
+        // Assign the updates to the corresponding fields of the User instance
         $entity->fill($updatables);
 
         // Save the updated Customer instance

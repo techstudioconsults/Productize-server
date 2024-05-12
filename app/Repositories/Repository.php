@@ -3,11 +3,12 @@
 /**
  * @author Tobi Olanitori
  * @version 1.0
- * @since 05-08-2024
+ * @since 08-05-2024
  */
 
 namespace App\Repositories;
 
+use App\Exceptions\UnprocessableException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -55,7 +56,7 @@ abstract class Repository
      */
     abstract public function find(?array $filter): Builder;
 
-      /**
+    /**
      * Retrieves all entities from the database by a Model and an array of filter
      *
      * @param Model $parent Use a model relation to retrieve entities.
@@ -143,5 +144,23 @@ abstract class Repository
         }
 
         return false;
+    }
+
+    protected function applyDateFilters(Builder | Relation $query, array &$filter): void
+    {
+        if (isset($filter['start_date']) && isset($filter['end_date'])) {
+            $start_date = $filter['start_date'];
+            $end_date = $filter['end_date'];
+
+            unset($filter['start_date'], $filter['end_date']);
+
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
+
+            if ($isInvalid) {
+                throw new UnprocessableException($this->getValidator()->errors()->first());
+            }
+
+            $query->whereBetween('created_at', [$start_date, $end_date]);
+        }
     }
 }

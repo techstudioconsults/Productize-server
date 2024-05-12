@@ -1,9 +1,13 @@
 <?php
-
+/**
+ * @author Tobi Olanitori
+ * @version 1.0
+ * @since 12-05-2024
+ */
 namespace App\Repositories;
 
 use App\Exceptions\ApiException;
-use App\Exceptions\UnprocessableException;
+use App\Exceptions\ModelCastException;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
@@ -15,12 +19,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CustomerRepository extends Repository
 {
-    public function __construct(
-        protected ProductRepository $productRepository,
-        protected UserRepository $userRepository,
-    ) {
-    }
-
     public function seed(): void
     {
         // Create 5 users
@@ -92,26 +90,11 @@ class CustomerRepository extends Repository
 
         if (empty($filter)) return $relation;
 
-        // If there are filters provided, apply them
-        if (isset($filter['start_date']) && isset($filter['end_date'])) {
-            $start_date = $filter['start_date'];
-            unset($filter['start_date']);
-
-            $end_date = $filter['end_date'];
-            unset($filter['end_date']);
-
-            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
-
-            if ($isInvalid) throw new UnprocessableException($this->getValidator()->errors()->first());
-
-            $relation->whereBetween('created_at', [$start_date, $end_date]);
-        }
+        $this->applyDateFilters($relation, $filter);
 
         foreach ($filter as $key => $value) {
-            // Check if the key exists as a column in the orders table
             if (Schema::hasColumn('customers', $key)) {
-                // Apply where condition based on the filter
-                $relation = $relation->where($key, $value);
+                $relation->where($key, $value);
             }
         }
 
@@ -129,7 +112,7 @@ class CustomerRepository extends Repository
     {
         // Ensure that the provided entity is an instance of Customer
         if (!$entity instanceof Customer) {
-            throw new ApiException("Invalid Model", 500);
+            throw new ModelCastException("Customer", get_class($entity));
         }
 
         // Assign the updates to the corresponding fields of the Customer instance

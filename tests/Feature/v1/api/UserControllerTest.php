@@ -2,259 +2,257 @@
 
 namespace Tests\Feature;
 
-// use App\Exceptions\BadRequestException;
-// use App\Exceptions\ForbiddenException;
-// use App\Exceptions\NotFoundException;
-// use App\Exceptions\UnAuthorizedException;
-// use App\Exceptions\UnprocessableException;
-// use App\Http\Resources\UserResource;
-// use App\Models\User;
-// use App\Repositories\UserRepository;
-// use Illuminate\Auth\Events\Registered;
-// use Illuminate\Foundation\Testing\RefreshDatabase;
-// use Illuminate\Foundation\Testing\WithFaker;
-// use Illuminate\Http\UploadedFile;
-// use Illuminate\Support\Facades\Event;
-// use Illuminate\Support\Facades\Hash;
-// use Illuminate\Support\Facades\Log;
-// use Illuminate\Support\Facades\Storage;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\UnAuthorizedException;
+use App\Exceptions\UnprocessableException;
+use App\Http\Resources\UserResource;
+use App\Mail\RequestHelp;
+use App\Models\User;
+use App\Repositories\UserRepository;
+use Carbon\Carbon;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class UserControllerTest extends TestCase
 {
-    // use RefreshDatabase;
-    // use WithFaker;
+    use RefreshDatabase;
+    use WithFaker;
 
-    // /**
-    //  * It should create a new user
-    //  */
-    // public function test_create_repository(): void
-    // {
-    //     Event::fake();
+    public function test_show()
+    {
+        $user = User::factory()->create();
 
-    //     $userRepository = new UserRepository();
+        $response = $this->actingAs($user, 'web')->get('/api/users/me');
 
-    //     $credentials = [
-    //         'email' => 'tobiolanitori@gmail.com',
-    //         'full_name' => 'Tobi Olanitori',
-    //         'password' => 'password123'
-    //     ];
+        $response
+            ->assertStatus(200)
+            ->assertJson(
+                UserResource::make($user)
+                    ->response()
+                    ->getData(true)
+            );
+    }
 
-    //     $user = $userRepository->createUser($credentials);
+    public function test_show_unauthenticated()
+    {
+        $this->expectException(UnAuthorizedException::class);
 
-    //     $this->assertModelExists($user);
-    //     $this->assertInstanceOf(User::class, $user);
-    //     $this->assertEquals('Tobi Olanitori', $user->full_name);
-    //     $this->assertEquals('tobiolanitori@gmail.com', $user->email);
-    //     $this->assertTrue(Hash::check('password123', $user->password));
-    //     Event::assertDispatched(Registered::class);
-    // }
+        $this->withoutExceptionHandling()
+            ->get('/api/users/me');
+    }
 
-    // public function test_create_with_no_email_repository()
-    // {
-    //     $this->expectException(BadRequestException::class);
+    public function test_update()
+    {
+        $user = User::factory()->create();
 
-    //     $userRepository = new UserRepository();
+        $user->markEmailAsVerified();
 
-    //     $userRepository->createUser([
-    //         'full_name' => 'Tobi Olanitori',
-    //         'password' => 'password123'
-    //     ]);
-    // }
+        $this->assertTrue($user->hasVerifiedEmail(), true);
 
-    // public function test_update_repository()
-    // {
-    //     $userRepository = new UserRepository();
+        Storage::fake('s3');
 
-    //     $user = User::factory()->create();
+        $logo = UploadedFile::fake()->image('avatar.jpg');
 
-    //     $updatedUser = $userRepository->update('email', $user->email, ['full_name' => 'Tobi Olanitori']);
+        $response = $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->post('/api/users/me', [
+                'logo' => $logo,
+                'bio' => 'this is a bio',
+                'username' => 'updated',
+                "phone_number" => "12345678",
+                "bio" => "bio",
+                "twitter_account" => "https://twitter.com",
+                "facebook_account" => "https://facebook.com",
+                "youtube_account" => "https://youtube.com",
+            ]);
 
-    //     $this->assertModelExists($updatedUser);
-    //     $this->assertEquals('Tobi Olanitori', $updatedUser->full_name);
-    //     $this->assertInstanceOf(User::class, $updatedUser);
-    // }
+        Storage::disk('s3')->assertExists('avatars/avatar.jpg');
 
-    // public function test_update_repository_no_filter_in_schema()
-    // {
-    //     $userRepository = new UserRepository();
+        $updatedUser = User::find($user->id);
 
-    //     // It should throw error if filter column is not in the schema.
-    //     $this->expectException(UnprocessableException::class);
+        $response->assertStatus(200)
+            ->assertJson(UserResource::make($updatedUser)->response()->getData(true))
+            ->assertJsonPath('data.profile_completed', true);
+    }
 
-    //     $user = User::factory()->create();
+    public function test_update_unauthenticated()
+    {
+        $this->expectException(UnAuthorizedException::class);
 
-    //     $userRepository->update('emails', $user->email, ['full_name' => 'Tobi Olanitori']);
-    // }
+        $this->withoutExceptionHandling()
+            ->post('/api/users/me');
+    }
 
-    // public function test_guarded_update_repository()
-    // {
-    //     $userRepository = new UserRepository();
+    public function test_update_invalid_payload()
+    {
+        $this->expectException(UnprocessableException::class);
 
-    //     $user = User::factory()->create();
+        $user = User::factory()->create();
 
-    //     $updatedUser = $userRepository->guardedUpdate($user->email, 'password', 'password123');
+        $user->markEmailAsVerified();
 
-    //     $this->assertTrue(Hash::check('password123', $updatedUser->password));
-    //     $this->assertEquals($updatedUser->email, $user->email);
-    // }
+        $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/me', ['full_name' => 10]);
+    }
 
-    // public function test_guarded_update_user_not_found()
-    // {
-    //     $userRepository = new UserRepository();
+    public function test_change_password()
+    {
+        $user = User::factory()->create([
+            'password' => 'password',
+            'email_verified_at' => now(),
+        ]);
 
-    //     // Mock the critical log method so it doesn't actually log during the test.
-    //     Log::shouldReceive('critical')->andReturnNull();
+        $user->markEmailAsVerified();
 
-    //     // It should throw error if filter column is not in the schema.
-    //     $this->expectException(NotFoundException::class);
+        $this->assertTrue($user->hasVerifiedEmail(), true);
 
-    //     $userRepository->guardedUpdate('tobiolanitori@gmail.com', 'password', 'password123');
-    // }
+        // Generate a valid new password
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
 
-    // public function test_user_controller_show()
-    // {
-    //     $user = User::factory()->create();
+        $response = $this->actingAs($user, 'web')
+            ->postJson('/api/users/change-password', [
+                'password' => 'password',
+                'new_password' => $newPassword,
+                'new_password_confirmation' => $newPassword,
+            ]);
 
-    //     $response = $this->actingAs($user, 'web')->get('/api/users/me');
+        $updatedUser = User::find($user->id);
 
-    //     $response
-    //         ->assertStatus(200)
-    //         ->assertJson(
-    //             UserResource::make($user)
-    //                 ->response()
-    //                 ->getData(true)
-    //         );
-    // }
+        $this->assertTrue(Hash::check($newPassword, $updatedUser->password));
 
-    // public function test_user_controller_show_unauthenticated()
-    // {
-    //     $this->expectException(UnAuthorizedException::class);
+        $response->assertStatus(200)
+            ->assertJson(UserResource::make($updatedUser)->response()->getData(true));
+    }
 
-    //     $this->withoutExceptionHandling()
-    //         ->withoutDeprecationHandling()
-    //         ->get('/api/users/me');
-    // }
+    public function test_change_password_user_email_unverified()
+    {
+        $this->expectException(ForbiddenException::class);
 
-    // public function test_change_password()
-    // {
-    //     $user = User::factory()->create([
-    //         'password' => 'password',
-    //         'email_verified_at' => now(),
-    //     ]);
+        $user = User::factory()->create([
+            'password' => 'password',
+            'email_verified_at' => null
+        ]);
 
-    //     $user->markEmailAsVerified();
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
 
-    //     $this->assertTrue($user->hasVerifiedEmail(), true);
+        $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/change-password', [
+                'password' => 'password',
+                'new_password' => $newPassword,
+                'new_password_confirmation' => $newPassword,
+            ]);
+    }
 
-    //     // Generate a valid new password
-    //     $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+    public function test_change_password_incomplete_payload()
+    {
+        $this->expectException(UnprocessableException::class);
 
-    //     $response = $this->actingAs($user, 'web')
-    //         ->postJson('/api/users/change-password', [
-    //             'password' => 'password',
-    //             'new_password' => $newPassword,
-    //             'new_password_confirmation' => $newPassword,
-    //         ]);
+        $user = User::factory()->create([
+            'password' => 'password',
+        ]);
 
-    //     $updatedUser = User::find($user->id);
+        $user->markEmailAsVerified();
 
-    //     $this->assertTrue(Hash::check($newPassword, $updatedUser->password));
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
 
-    //     $response->assertStatus(200)
-    //         ->assertJson(UserResource::make($updatedUser)->response()->getData(true));
-    // }
+        $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/change-password', [
+                'password' => 'password',
+                'new_password' => $newPassword,
+            ]);
+    }
 
-    // public function test_change_password_user_email_unverified()
-    // {
-    //     $this->expectException(ForbiddenException::class);
+    public function test_change_password_incorrect_password()
+    {
+        $this->expectException(BadRequestException::class);
 
-    //     $user = User::factory()->create([
-    //         'password' => 'password',
-    //         'email_verified_at' => null
-    //     ]);
+        $user = User::factory()->create([
+            'password' => 'password',
+        ]);
 
-    //     $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+        $user->markEmailAsVerified();
 
-    //     $this->actingAs($user, 'web')
-    //         ->withoutExceptionHandling()
-    //         ->postJson('/api/users/change-password', [
-    //             'password' => 'password',
-    //             'new_password' => $newPassword,
-    //             'new_password_confirmation' => $newPassword,
-    //         ]);
-    // }
+        // Generate a valid new password
+        $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
 
-    // public function test_change_password_incomplete_payload()
-    // {
-    //     $this->expectException(UnprocessableException::class);
+        $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/change-password', [
+                'password' => 'wrong password',
+                'new_password' => $newPassword,
+                'new_password_confirmation' => $newPassword,
+            ]);
+    }
 
-    //     $user = User::factory()->create([
-    //         'password' => 'password',
-    //     ]);
+    public function test_requestHelp()
+    {
+        Mail::fake();
 
-    //     $user->markEmailAsVerified();
+        $user = User::factory()->create();
 
-    //     $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+        $subject = "My Subject";
+        $message = "message";
 
-    //     $this->actingAs($user, 'web')
-    //         ->withoutExceptionHandling()
-    //         ->postJson('/api/users/change-password', [
-    //             'password' => 'password',
-    //             'new_password' => $newPassword,
-    //         ]);
-    // }
+        $user->markEmailAsVerified();
 
-    // public function test_change_password_incorrect_password()
-    // {
-    //     $this->expectException(BadRequestException::class);
+        $response = $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/request-help', [
+                'email' => $user->email,
+                'subject' => $subject,
+                'message' => $message,
+            ]);
 
-    //     $user = User::factory()->create([
-    //         'password' => 'password',
-    //     ]);
+        $mailable = new RequestHelp($user->email, $subject, $message);
 
-    //     $user->markEmailAsVerified();
+        $response->assertStatus(200);
 
-    //     // Generate a valid new password
-    //     $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
+        $mailable->assertSeeInHtml($message);
 
-    //     $this->actingAs($user, 'web')
-    //         ->withoutExceptionHandling()
-    //         ->postJson('/api/users/change-password', [
-    //             'password' => 'wrong password',
-    //             'new_password' => $newPassword,
-    //             'new_password_confirmation' => $newPassword,
-    //         ]);
-    // }
+        $mailable->assertSeeInHtml($subject);
 
-    // public function test_controller_update()
-    // {
-    //     $user = User::factory()->create();
+        Mail::assertSent(RequestHelp::class);
+    }
 
-    //     $user->markEmailAsVerified();
+    public function test_requestHelp_without_email()
+    {
+        Mail::fake();
 
-    //     $this->assertTrue($user->hasVerifiedEmail(), true);
+        $user = User::factory()->create();
 
-    //     // Mock the critical log method so it doesn't actually log during the test.
-    //     Log::shouldReceive('error')->andReturnNull();
+        $subject = "My Subject";
+        $message = "message";
 
-    //     Storage::fake('s3');
+        $user->markEmailAsVerified();
 
-    //     $logo = UploadedFile::fake()->image('avatar.jpg');
+        $response = $this->actingAs($user, 'web')
+            ->withoutExceptionHandling()
+            ->postJson('/api/users/request-help', [
+                'subject' => $subject,
+                'message' => $message,
+            ]);
 
-    //     $response = $this->actingAs($user, 'web')
-    //         ->withoutExceptionHandling()
-    //         ->post('/api/users/me', [
-    //             'logo' => $logo,
-    //             'bio' => 'this is a bio',
-    //             'username' => 'updated'
-    //         ]);
+        $mailable = new RequestHelp($user->email, $subject, $message);
 
-    //     Storage::disk('s3')->assertExists('avatars/avatar.jpg');
+        $response->assertStatus(200);
 
-    //     $updatedUser = User::find($user->id);
+        $mailable->assertSeeInHtml($message);
 
-    //     $response->assertStatus(200)
-    //         ->assertJson(UserResource::make($updatedUser)->response()->getData(true));
-    // }
+        $mailable->assertSeeInHtml($subject);
+
+        Mail::assertSent(RequestHelp::class);
+    }
 }

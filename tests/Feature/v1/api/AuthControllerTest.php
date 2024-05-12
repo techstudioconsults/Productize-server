@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\TooManyRequestException;
@@ -12,20 +11,16 @@ use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
 use App\Models\User;
-use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Socialite\Facades\Socialite;
-use Mockery\MockInterface;
 use Tests\TestCase;
-// use URL;
 
 class AuthControllerTest extends TestCase
 {

@@ -135,9 +135,4 @@ class UserController extends Controller
 
         return new JsonResponse(['data' => 'User Account Disabled']);
     }
-
-    // public function restore()
-    // {
-
-    // }
 }

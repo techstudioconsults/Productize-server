@@ -10,7 +10,6 @@ use App\Http\Resources\FaqResource;
 
 class FaqController extends Controller
 {
-
     public function __construct(
         protected FaqRepository $faqRepository
     ) {
@@ -21,7 +20,6 @@ class FaqController extends Controller
      */
     public function index()
     {
-
         $faq = $this->faqRepository->getAll();
         return FaqResource::collection($faq);
     }
@@ -32,7 +30,7 @@ class FaqController extends Controller
     public function store(StoreFaqRequest $request)
     {
         $faq = $this->faqRepository->create($request->all());
-        return new FaqResource($faq);
+        return response()->json(new FaqResource($faq), 201);
     }
 
     /**

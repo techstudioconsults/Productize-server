@@ -10,7 +10,7 @@ Route::controller(FaqController::class)
     ->namespace("\App\Http\Controllers")
     ->group(function () {
 
-        Route::get('/yo', 'index');
+        Route::get('/', 'index');
         Route::post('/create', 'store');
         Route::put('/{faq}', 'update');
         Route::delete('/{faq}', 'destroy');

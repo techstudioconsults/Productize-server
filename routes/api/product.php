@@ -32,7 +32,12 @@ Route::group([
 
     Route::get('/downloads', [ProductController::class, 'downloads']);
 
-    Route::get('/top', [ProductController::class, 'getTopProducts']);
+    Route::get('/top-products', [ProductController::class, 'getUserTopProducts'])->name('user-top-products');
+
+    Route::get('/top-products/all', [ProductController::class, 'topProducts'])->withoutMiddleware([
+        'auth:sanctum',
+
+    ])->name('top-products');
 
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',

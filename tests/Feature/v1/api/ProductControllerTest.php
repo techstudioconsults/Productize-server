@@ -3,6 +3,9 @@
 namespace Tests\Feature\v1\api;
 
 use App\Http\Resources\ProductCollection;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\User;
 use App\Repositories\ProductRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -47,5 +50,34 @@ class ProductControllerTest extends TestCase
                         ->etc()
                 )
         );
+    }
+
+    public function test_top_products(): void
+    {
+        $products = Product::factory()
+            ->count(5)
+            ->has(
+                Order::factory()
+                    ->count(3)
+                    ->state(function () {
+                        return ['quantity' => 2];
+                    })
+            )
+            ->create(['user_id' => User::factory()->create(), 'price' => 200000]);
+
+        $response = $this->get(route('product.top-products'));
+
+        $expected_json = ProductCollection::make($products)->response()->getData(true);
+
+        $response->assertStatus(200)->assertJson($expected_json, true);
+    }
+
+    public function test_top_products_no_order(): void
+    {
+        $response = $this->get(route('product.top-products'));
+
+        $expected_json = ProductCollection::make([])->response()->getData(true);
+
+        $response->assertStatus(200)->assertJson($expected_json, true);
     }
 }

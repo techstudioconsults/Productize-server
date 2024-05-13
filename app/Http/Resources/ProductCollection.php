@@ -21,7 +21,7 @@ class ProductCollection extends ResourceCollection
                 return [
                     'title' => $product->title,
                     'thumbnail' => $product->thumbnail,
-                    'price' => $product->price,
+                    'price' => (int)$product->price,
                     'publisher' => $product->user->full_name,
                     'slug' => $product->slug,
                     'highlights' => $product->highlights,

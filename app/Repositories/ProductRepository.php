@@ -14,8 +14,10 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
@@ -52,8 +54,26 @@ class ProductRepository
                     ['status' => 'published'],
                     ['status' => 'draft'],
                 ))
-                ->create(['user_id' => $user->id]);
+                ->create(['user_id' => $user->id, 'price' => '100000']);
         }
+    }
+
+    public function find(?array $filter = null): Builder
+    {
+        $query = Product::query();
+
+        if ($filter === null) return $query;
+
+        // $this->applyDateFilters($query, $filter);
+
+        // For each filter array, entry, validate presence in model and query
+        foreach ($filter as $key => $value) {
+            if (Schema::hasColumn('products', $key)) {
+                $query->where($key, $value);
+            }
+        }
+
+        return $query;
     }
 
     /**

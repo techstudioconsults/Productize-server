@@ -356,18 +356,33 @@ class ProductController extends Controller
         return new JsonResponse($products);
     }
 
-    public function getTopProducts()
+    public function topProducts()
+    {
+        $products = $this->productRepository->find();
+
+        $top_products = $products
+            ->join('orders', 'products.id', '=', 'orders.product_id')
+            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
+            ->groupBy('products.id')
+            ->orderByDesc('total_sales')
+            ->limit(5)
+            ->paginate(5);
+
+        return new ProductCollection($top_products);
+    }
+
+    public function getUserTopProducts()
     {
         $user = Auth::user();
 
-        $topProducts = $user->products()
+        $top_products = $user->products()
             ->join('orders', 'products.id', '=', 'orders.product_id')
             ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
             ->groupBy('products.id')
             ->orderByDesc('total_sales')
             ->limit(5);
 
-        return ProductResource::collection($topProducts->paginate(5));
+        return ProductResource::collection($top_products->paginate(5));
     }
 
     public function productsRevenue()

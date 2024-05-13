@@ -20,7 +20,7 @@ Route::group([
     Route::get('/', [ProductController::class, 'index'])->withoutMiddleware([
         'auth:sanctum',
         'can:allowed,App\Models\Product',
-    ]);
+    ])->name('index');
 
     Route::get('/users', [ProductController::class, 'findByUser']);
 

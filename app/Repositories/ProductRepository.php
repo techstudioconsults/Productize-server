@@ -14,6 +14,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -41,11 +42,19 @@ class ProductRepository
 
     public function seed(): void
     {
+        $users = User::factory(5)->create();
 
+        foreach ($users as $user) {
+            // Create 5 products for each user
+            Product::factory()
+                ->count(5)
+                ->state(new Sequence(
+                    ['status' => 'published'],
+                    ['status' => 'draft'],
+                ))
+                ->create(['user_id' => $user->id]);
+        }
     }
-
-
-
 
     /**
      * getUserProducts

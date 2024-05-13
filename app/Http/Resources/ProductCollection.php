@@ -29,6 +29,7 @@ class ProductCollection extends ResourceCollection
                     'cover_photos' => $product->cover_photos,
                     'tags' => $product->tags,
                     'description' => $product->description,
+                    'status' => $product->status
                 ];
             }),
         ];

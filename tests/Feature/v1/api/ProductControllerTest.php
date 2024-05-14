@@ -3,9 +3,9 @@
 namespace Tests\Feature\v1\api;
 
 use App\Exceptions\UnAuthorizedException;
+use App\Exceptions\UnprocessableException;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
-use App\Http\Resources\UserResource;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -158,14 +158,12 @@ class ProductControllerTest extends TestCase
     {
         Storage::fake('s3');
 
-        $thumbnail = UploadedFile::fake()->image('avatar.jpg');
-
         // Mocking payload
         $payload = [
             'title' => 'title',
             'price' => 2,
             'product_type' => 'digital_product',
-            'thumbnail' => $thumbnail,
+            'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
             'description' => 'description',
             'data' => [UploadedFile::fake()->create('data1.pdf')],
             'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
@@ -185,7 +183,7 @@ class ProductControllerTest extends TestCase
             ->post(route('product.store'), $payload);
 
         // Asserting that the request was successful
-        $response->assertStatus(201);
+        $response->assertCreated();
 
         Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
         Storage::disk('s3')->assertExists('digital-products/data1.pdf');
@@ -197,57 +195,102 @@ class ProductControllerTest extends TestCase
 
     public function test_store_not_first_product(): void
     {
-        // // Create products
-        // Product::factory(5)->create([
-        //     'user_id' => $this->user->id,
-        //     'created_at' => Carbon::create(2024, 3, 21, 0),
-        // ]);
+        // Create products
+        Product::factory(5)->create([
+            'user_id' => $this->user->id,
+            'created_at' => Carbon::create(2024, 3, 21, 0),
+        ]);
 
-        // Storage::fake('s3');
+        // set first product created time
+        $this->user->first_product_created_at = Carbon::now();
 
-        // $thumbnail = UploadedFile::fake()->image('avatar.jpg');
+        $expected_created_time = $this->user->first_product_created_at;
 
-        // // Mocking payload
-        // $payload = [
-        //     'title' => 'title',
-        //     'price' => 2,
-        //     'product_type' => 'digital_product',
-        //     'thumbnail' => $thumbnail,
-        //     'description' => 'description',
-        //     'data' => [UploadedFile::fake()->create('data1.pdf')],
-        //     'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
-        //     'highlights' => ['highlight1', 'highlight2'],
-        //     'tags' => ['tag1', 'tag2'],
-        //     'stock_count' => true,
-        //     'choose_quantity' => false,
-        //     'show_sales_count' => true,
-        // ];
+        Storage::fake('s3');
 
-        // // Asserting that the user's first product created at property is null before creating the product
-        // $this->assertNull($this->user->first_product_created_at);
+        // Mocking payload
+        $payload = [
+            'title' => 'title',
+            'price' => 2,
+            'product_type' => 'digital_product',
+            'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data1.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
+            'highlights' => ['highlight1', 'highlight2'],
+            'tags' => ['tag1', 'tag2'],
+            'stock_count' => true,
+            'choose_quantity' => false,
+            'show_sales_count' => true,
+        ];
 
-        // $response = $this
-        //     ->actingAs($this->user, 'web')
-        //     ->withoutExceptionHandling()
-        //     ->post(route('product.store'), $payload);
+        // Asserting that this is not the user's first product.
+        $this->assertNotNull($this->user->first_product_created_at);
 
-        // // Asserting that the request was successful
-        // $response->assertStatus(201);
+        $response = $this
+            ->actingAs($this->user, 'web')
+            ->withoutExceptionHandling()
+            ->post(route('product.store'), $payload);
 
-        // Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
-        // Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+        // Asserting that the request was successful
+        $response->assertStatus(201);
 
-        // // Asserting that the user's first product created at property is now set
-        // $this->user->refresh();
-        // $this->assertNotNull($this->user->first_product_created_at);
+        Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
+        Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+
+        // Asserting that the user's first product created property is unchanged. model listener method was not called
+        $this->user->refresh();
+        $this->assertEquals($expected_created_time, $this->user->first_product_created_at);
     }
 
     public function test_store_unauthenticated(): void
     {
+        $this->expectException(UnAuthorizedException::class);
+
+        // Mocking payload
+        $payload = [
+            'title' => 'title',
+            'price' => 2,
+            'product_type' => 'digital_product',
+            'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data1.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
+            'highlights' => ['highlight1', 'highlight2'],
+            'tags' => ['tag1', 'tag2'],
+            'stock_count' => true,
+            'choose_quantity' => false,
+            'show_sales_count' => true,
+        ];
+
+        $this
+            ->withoutExceptionHandling()
+            ->post(route('product.store'), $payload);
     }
 
     public function test_store_invalid_payload_throw_422()
     {
+        $this->expectException(UnprocessableException::class);
+
+        // Mocking payload
+        $payload = [ // fail to send a title
+            'price' => 2,
+            'product_type' => 'digital_product',
+            'thumbnail' => UploadedFile::fake()->create('avatar.pdf'), // send a pdf instead of an image
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data1.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
+            'highlights' => ['highlight1', 'highlight2'],
+            'tags' => ['tag1', 'tag2'],
+            'stock_count' => true,
+            'choose_quantity' => false,
+            'show_sales_count' => true,
+        ];
+
+        $this
+            ->actingAs($this->user, 'web')
+            ->withoutExceptionHandling()
+            ->post(route('product.store'), $payload);
     }
 
     public function test_analytics(): void

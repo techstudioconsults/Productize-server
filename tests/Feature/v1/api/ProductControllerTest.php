@@ -3,6 +3,7 @@
 namespace Tests\Feature\v1\api;
 
 use App\Events\ProductCreated;
+use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\ProductCollection;
@@ -13,6 +14,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Repositories\ProductRepository;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
@@ -67,9 +69,6 @@ class ProductControllerTest extends TestCase
 
     public function test_user(): void
     {
-        // Create user with a free trial account, else test fails - check UserFactory.php
-        // $user = User::factory()->create(['account_type' => 'free_trial']);
-
         $products = Product::factory(2)->create(['user_id' => $this->user->id]);
 
         $response = $this->actingAs($this->user, 'web')->get(route('product.user'));
@@ -166,10 +165,49 @@ class ProductControllerTest extends TestCase
 
     public function test_show_unauthenticated(): void
     {
+        $this->expectException(UnAuthorizedException::class);
+
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id
+        ]);
+
+        // Make a request without token
+        $this->withoutExceptionHandling()->get(route('product.show', [
+            'product' => $product->id
+        ]));
     }
 
     public function test_show_product_not_found_return_404(): void
     {
+        $this->expectException(ModelNotFoundException::class);
+
+        // Make a request without token
+        $this
+            ->withoutExceptionHandling()
+            ->actingAs($this->user, 'web')
+            ->get(route('product.show', [
+                'product' => "12345"
+            ]));
+    }
+
+    public function test_show_product_forbidden_for_wrong_user_return_403()
+    {
+        $this->expectException(ForbiddenException::class);
+
+        $forbidden_user = User::factory()->create();
+
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id
+        ]);
+
+        $this
+            ->withoutExceptionHandling()
+            ->actingAs($forbidden_user, 'web')
+            ->get(route('product.show', [
+                'product' => $product->id
+            ]));
     }
 
     public function test_findbyslug(): void

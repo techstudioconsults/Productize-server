@@ -188,23 +188,8 @@ class ProductController extends Controller
         $validated = $request->validated();
 
         $validated['user_id'] = $user->id;
-
-        // Aissign the product data to a variable
-        $data = $validated['data'];
-        $cover_photos = $validated['cover_photos'];
-        $thumbnail = $validated['thumbnail'];
-
-        // Take out the uploadables from the validated array to allow for mass assignment
-        unset($validated['data']);
-        unset($validated['cover_photos']);
-        unset($validated['thumbnail']);
-
-        $product = $this->productRepository->create(
-            $validated,
-            $thumbnail,
-            $data, // The digital products
-            $cover_photos
-        );
+        
+        $product = $this->productRepository->create($validated);
 
         // Trigger product created event
         event(new ProductCreated($product));

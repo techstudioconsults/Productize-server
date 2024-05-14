@@ -12,6 +12,7 @@ use App\Enums\ProductStatusEnum;
 use App\Events\Products;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +20,8 @@ use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator as Validation;
 use Illuminate\Validation\Rules\Enum;
 
 
@@ -30,16 +32,29 @@ use Illuminate\Validation\Rules\Enum;
  */
 class ProductRepository
 {
+    private ?Validator $validator = null;
+
     /**
      * Constructor for ProductRepository.
      *
      * @param \App\Repositories\UserRepository - User repository class
+     *
      * @see \App\Repositories\UserRepository   Constructor with UserRepository dependency injection.
-     * @return void {@see UserRepository}
+     * @return void
      */
     public function __construct(
         public UserRepository $userRepository
     ) {
+    }
+
+    public function getValidator(): ?Validator
+    {
+        return $this->validator;
+    }
+
+    public function setValidator(Validator $validator): void
+    {
+        $this->validator = $validator;
     }
 
     public function seed(): void
@@ -96,13 +111,12 @@ class ProductRepository
             $products->onlyTrashed();
         } else if ($status && $status !== 'deleted') {
             // Validate status
-            $validator = Validator::make(['status' => $status], [
+            $rules = [
                 'status' => ['required', new Enum(ProductStatusEnum::class)]
-            ]);
+            ];
 
-            if ($validator->fails()) {
-                throw new BadRequestException($validator->errors()->first());
-            }
+            if ($this->isValidated(['status' => $status], $rules))
+                throw new BadRequestException($this->getValidator()->errors()->first());
 
             $products->where('status', $status);
         }
@@ -114,7 +128,7 @@ class ProductRepository
          */
         if ($start_date && $end_date) {
 
-            $validator = Validator::make([
+            $validator = Validation::make([
                 'start_date' => $start_date,
                 'end_date' => $end_date
             ], [
@@ -159,25 +173,39 @@ class ProductRepository
     /**
      * @Intuneteq
      *
-     * @param credentials {array} - All products properties except uploadables e.g thumbanails, cover photos etc.
-     * @param thumbnail {mixed} - Uploaded thumbnail file object. Must be an Image
-     * @param data {mixed} - uploaded Product file object
-     * @param cover_photos {array} - Array of image file objects. Must be an array of Image.
-     *
+     * @param array credentials All products properties required in the StoreProductRequest along with the user_id.
      * @uses App\Events\Products
      *
      * @return Product
      *
-     * For more details, see {@link \App\Http\Requests\StoreProductRequest}.
+     * @see \App\Http\Requests\StoreProductRequest
      */
-    public function create(array $credentials, mixed $thumbnail, mixed $data, array $cover_photos)
+    public function create(array $credentials)
     {
-        $thumbnail = $this->uploadThumbnail($thumbnail);
+        // Get the validation rules from the StoreProductRequest
+        $rules = (new StoreProductRequest())->rules();
 
-        $cover_photos = $this->uploadCoverPhoto($cover_photos);
+        // Add the 'user_id' rule to the validation rules
+        $rules['user_id'] = 'required';
 
+        if (!$this->isValidated($credentials, $rules)) {
+            throw new BadRequestException($this->getValidator()->errors()->first());
+        }
+
+        $data = $credentials['data'];
+        $cover_photos = $credentials['cover_photos'];
+        $thumbnail = $credentials['thumbnail'];
+
+        // Upload the product's data to digital ocean's space
         $data = $this->uploadData($data);
 
+        // Upload the product's thumbnail to digital ocean's space
+        $thumbnail = $this->uploadThumbnail($thumbnail);
+
+        // Upload the product's cover photos to digital ocean's space
+        $cover_photos = $this->uploadCoverPhoto($cover_photos);
+
+        // Update the credentials array
         $credentials['data'] = $data;
         $credentials['cover_photos'] = $cover_photos;
         $credentials['thumbnail'] = $thumbnail;
@@ -195,7 +223,7 @@ class ProductRepository
         $products = Product::where('user_id', $user->id);
 
         if ($start_date && $end_date) {
-            $validator = Validator::make([
+            $validator = Validation::make([
                 'start_date' => $start_date,
                 'end_date' => $end_date
             ], [
@@ -325,5 +353,20 @@ class ProductRepository
         } else {
             return null;
         }
+    }
+
+    private function isValidated(array $data, array $rules): bool
+    {
+        // Validate the credentials
+        $validator = validator($data, $rules);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            $this->setValidator($validator);
+
+            return false;
+        };
+
+        return true;
     }
 }

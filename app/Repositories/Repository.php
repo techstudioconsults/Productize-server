@@ -146,6 +146,21 @@ abstract class Repository
         return false;
     }
 
+    protected function isValidated(array $data, array $rules): bool
+    {
+        // Validate the credentials
+        $validator = validator($data, $rules);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            $this->setValidator($validator);
+
+            return false;
+        };
+
+        return true;
+    }
+
     protected function applyDateFilters(Builder | Relation $query, array &$filter): void
     {
         if (isset($filter['start_date']) && isset($filter['end_date'])) {

@@ -24,6 +24,9 @@ class Product extends Model
 
     public $incrementing = false;
 
+    /**
+     * Generate a slug for each product entity
+     */
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()

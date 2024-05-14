@@ -184,8 +184,6 @@ class ProductRepository
 
         $product = Product::create($credentials);
 
-        event(new Products($product));
-
         return $product;
     }
 

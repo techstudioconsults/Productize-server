@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
+use App\Events\Products;
 use App\Exceptions\BadRequestException;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
@@ -204,6 +205,9 @@ class ProductController extends Controller
             $data, // The digital products
             $cover_photos
         );
+
+        // Trigger product created event
+        event(new Products($product));
 
         return new ProductResource($product);
     }

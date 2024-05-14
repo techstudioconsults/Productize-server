@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\v1\api;
 
+use App\Events\Products;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\ProductCollection;
@@ -14,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Storage;
 use Tests\TestCase;
@@ -157,6 +159,9 @@ class ProductControllerTest extends TestCase
     public function test_store_first_product_should_update_user_first_product_created(): void
     {
         Storage::fake('s3');
+        Event::fake([
+            Products::class,
+        ]);
 
         // Mocking payload
         $payload = [
@@ -187,6 +192,7 @@ class ProductControllerTest extends TestCase
 
         Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
         Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+        Event::assertDispatched(Products::class);
 
         // Asserting that the user's first product created at property is now set
         $this->user->refresh();
@@ -207,6 +213,7 @@ class ProductControllerTest extends TestCase
         $expected_created_time = $this->user->first_product_created_at;
 
         Storage::fake('s3');
+        // Event::fake();
 
         // Mocking payload
         $payload = [
@@ -237,6 +244,7 @@ class ProductControllerTest extends TestCase
 
         Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
         Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+        // Event::assertDispatched(Products::class);
 
         // Asserting that the user's first product created property is unchanged. model listener method was not called
         $this->user->refresh();

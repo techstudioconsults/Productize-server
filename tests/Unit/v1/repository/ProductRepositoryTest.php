@@ -82,4 +82,114 @@ class ProductRepositoryTest extends TestCase
         // Attempt to create a product without a user_id
         $this->productRepository->create($data);
     }
+
+    public function test_upload_product_data(): void
+    {
+        // Fake s3 storage
+        Storage::fake('s3');
+
+        $uploads = [
+            UploadedFile::fake()->create('data1.pdf'),
+            UploadedFile::fake()->create('data2.pdf'),
+            UploadedFile::fake()->image('data3.png'),
+            UploadedFile::fake()->image('data4.csv')
+        ];
+
+        $expected_result = [
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data1.pdf',
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data2.pdf',
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data3.png',
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data4.csv'
+        ];
+
+        $result = $this->productRepository->uploadData($uploads);
+
+        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data1.pdf');
+        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data2.pdf');
+        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data3.png');
+        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data4.csv');
+
+        $this->assertEquals($expected_result[0], $result[0]);
+        $this->assertEquals($expected_result[1], $result[1]);
+        $this->assertEquals($expected_result[2], $result[2]);
+        $this->assertEquals($expected_result[3], $result[3]);
+    }
+
+    public function test_upload_product_data_invalid_data_throws_400()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->productRepository->uploadData(["not a file", "not a file 2"]);
+    }
+
+    public function test_upload_product_thumbnail(): void
+    {
+        // Fake s3 storage
+        Storage::fake('s3');
+
+        $file_name = 'thumbnail.png';
+
+        $thumbnail = UploadedFile::fake()->image($file_name);
+
+        $expected_result = config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::THUMBNAIL_PATH . "/$file_name";
+
+        $result = $this->productRepository->uploadThumbnail($thumbnail);
+
+        Storage::disk('s3')->assertExists(ProductRepository::THUMBNAIL_PATH . "/$file_name");
+
+        $this->assertEquals($expected_result, $result);
+    }
+
+    public function test_upload_product_thumbnail_invalid_image(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->productRepository->uploadThumbnail(UploadedFile::fake()->create('not_an_image.pdf'));
+    }
+
+    public function test_upload_cover_photos(): void
+    {
+        // Fake s3 storage
+        Storage::fake('s3');
+
+        $uploads = [
+            UploadedFile::fake()->create('data1.png'),
+            UploadedFile::fake()->create('data2.jpg'),
+            UploadedFile::fake()->image('data3.png'),
+            UploadedFile::fake()->image('data4.png')
+        ];
+
+        $expected_result = [
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data1.png',
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data2.jpg',
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data3.png',
+            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data4.png'
+        ];
+
+        $result = $this->productRepository->uploadCoverPhoto($uploads);
+
+        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data1.png');
+        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data2.jpg');
+        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data3.png');
+        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data4.png');
+
+        $this->assertEquals($expected_result[0], $result[0]);
+        $this->assertEquals($expected_result[1], $result[1]);
+        $this->assertEquals($expected_result[2], $result[2]);
+        $this->assertEquals($expected_result[3], $result[3]);
+    }
+
+    public function test_upload_cover_photos_invalid_images(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $uploads = [
+            UploadedFile::fake()->create('data1.pdf'),
+            UploadedFile::fake()->create('data2.pdf'),
+            UploadedFile::fake()->image('data3.png'),
+            UploadedFile::fake()->image('data4.csv')
+        ];
+
+        $this->productRepository->uploadCoverPhoto($uploads);
+    }
 }

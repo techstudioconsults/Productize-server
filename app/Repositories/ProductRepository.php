@@ -32,6 +32,10 @@ use Illuminate\Validation\Rules\Enum;
  */
 class ProductRepository
 {
+    const PRODUCT_DATA_PATH = "digital-products";
+    const COVER_PHOTOS_PATH = "products-cover-photos";
+    const THUMBNAIL_PATH = "products-thumbnail";
+
     private ?Validator $validator = null;
 
     /**
@@ -296,43 +300,47 @@ class ProductRepository
         return $product;
     }
 
-    public function uploadData(mixed $data)
+    public function uploadData(array $data): array
     {
-        $uploadedData = [];
-
-        foreach ($data as $item => $file) {
-            $originalName = str_replace(' ', '', $file->getClientOriginalName());
-
-            $path = Storage::putFileAs('digital-products', $file, $originalName);
-
-            $url = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
-
-            array_push($uploadedData, $url);
+        // Each item in the 'data' array must be a file
+        if (!$this->isValidated($data, ['required|file'])) {
+            throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
-        return $uploadedData;
-    }
-
-    public function uploadCoverPhoto(mixed $cover_photos)
-    {
-        $uploadedCoverPhotos = [];
-        foreach ($cover_photos as $item => $file) {
+        return collect($data)->map(function ($file) {
             $originalName = str_replace(' ', '', $file->getClientOriginalName());
 
-            $path = Storage::putFileAs('products-cover-photos', $file, $originalName);
+            $path = Storage::putFileAs(self::PRODUCT_DATA_PATH, $file, $originalName);
 
-            $url = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
-
-            array_push($uploadedCoverPhotos, $url);
-        }
-
-        return $uploadedCoverPhotos;
+            return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+        })->all();
     }
 
-    public function uploadThumbnail($thumbnail)
+    public function uploadCoverPhoto(array $cover_photos)
     {
+        // Each item in the 'data' array must be an image
+        if (!$this->isValidated($cover_photos, ['required|image'])) {
+            throw new BadRequestException($this->getValidator()->errors()->first());
+        }
+
+        return collect($cover_photos)->map(function ($file) {
+            $original_name = str_replace(' ', '', $file->getClientOriginalName());
+
+            $path = Storage::putFileAs(self::COVER_PHOTOS_PATH, $file, $original_name);
+
+            return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+        })->all();
+    }
+
+    public function uploadThumbnail(object $thumbnail): string
+    {
+        // Each item in the 'data' array must be a file
+        if (!$this->isValidated([$thumbnail], ['required|image'])) {
+            throw new BadRequestException($this->getValidator()->errors()->first());
+        }
+
         $thumbnailPath = Storage::putFileAs(
-            'products-thumbnail',
+            self::THUMBNAIL_PATH,
             $thumbnail,
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );

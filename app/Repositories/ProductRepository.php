@@ -13,6 +13,7 @@ use App\Events\Products;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -219,6 +220,39 @@ class ProductRepository
         return $product;
     }
 
+    public function update(Product $product, array $updatables)
+    {
+        // Get the validation rules from the StoreProductRequest
+        $rules = (new UpdateProductRequest())->rules();
+
+        if (!$this->isValidated($updatables, $rules)) {
+            throw new BadRequestException($this->getValidator()->errors()->first());
+        }
+
+        if (isset($updatables['data'])) {
+            $data = $this->uploadData($updatables['data']);
+            $updatables['data'] = $data;
+        }
+
+        if (isset($updatables['cover_photos'])) {
+            $cover_photos = $this->uploadCoverPhoto($updatables['cover_photos']);
+            $updatables['cover_photos'] = $cover_photos;
+        }
+
+        if (isset($updatables['thumbnail'])) {
+            $thumbnail = $this->uploadThumbnail($updatables['thumbnail']);
+            $updatables['thumbnail'] = $thumbnail;
+        }
+
+        foreach ($updatables as $column => $value) {
+            $product->$column = $value;
+        }
+
+        $product->save();
+
+        return $product;
+    }
+
     public function getTotalProductCountPerUser(
         User $user,
         ?string $start_date = null,
@@ -288,18 +322,6 @@ class ProductRepository
         return $result;
     }
 
-    public function update(Product $product, array $updatables)
-    {
-
-        foreach ($updatables as $column => $value) {
-            $product->$column = $value;
-        }
-
-        $product->save();
-
-        return $product;
-    }
-
     public function uploadData(array $data): array
     {
         // Each item in the 'data' array must be a file
@@ -351,7 +373,7 @@ class ProductRepository
     public function getFileMetaData(string $filePath)
     {
         if (Storage::disk('spaces')->exists($filePath)) {
-            $size = Storage::size($filePath);    
+            $size = Storage::size($filePath);
             $mime_Type = Storage::mimeType($filePath);
 
             return [

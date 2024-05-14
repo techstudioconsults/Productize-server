@@ -83,6 +83,33 @@ class ProductRepositoryTest extends TestCase
         $this->productRepository->create($data);
     }
 
+    public function test_update(): void
+    {
+        // Fake spaces storage
+        Storage::fake('spaces');
+
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $data = [
+            'title' => 'title updated',
+            'price' => 3,
+            'thumbnail' => UploadedFile::fake()->image('avatar_update.jpg'),
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data_update.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1_update.jpg')],
+        ];
+
+        $product = $this->productRepository->update($product, $data);
+
+        $this->assertInstanceOf(Product::class, $product);
+        
+        $this->assertEquals($this->user->id, $product->user->id);
+        $this->assertEquals('title updated', $product->title);
+        $this->assertEquals('price', $product->price);
+    }
+
     public function test_upload_product_data(): void
     {
         // Fake spaces storage

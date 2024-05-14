@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\v1\api;
 
+use App\Enums\ProductStatusEnum;
 use App\Events\ProductCreated;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
@@ -135,7 +137,7 @@ class ProductControllerTest extends TestCase
         $mock = $this->partialMock(ProductRepository::class);
 
         // Mock the getFileMetaData method
-        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) use ($data) {
+        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
 
             // Mock metadata based on the file path
             if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
@@ -210,20 +212,142 @@ class ProductControllerTest extends TestCase
             ]));
     }
 
-    public function test_findbyslug(): void
+    public function test_slug(): void
     {
+        $data = [
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+        ];
+
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
+            'data' => $data
+        ]);
+
+        // Mock product repository
+        $mock = $this->partialMock(ProductRepository::class);
+
+        // Mock the getFileMetaData method
+        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
+
+            // Mock metadata based on the file path
+            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
+            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
+            } else {
+                return null; // Return null for unknown file paths
+            }
+        });
+
+        // Invoke the slug method
+        $response = $this
+            ->withoutExceptionHandling()
+            ->actingAs($this->user, 'web')
+            ->get(route('product.slug', [
+                'product' => $product->slug,
+                'slug' => "1234"
+            ]));
+
+        // Assert response status
+        $response
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->where('no_of_resources', 2)
+                    ->where('slug', $product->slug)
+                    ->etc()
+            );
     }
 
-    public function test_findbyslug_unauthenticated(): void
+    public function test_slug_unauthenticated_have_access(): void
     {
+        $data = [
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+        ];
+
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
+            'data' => $data
+        ]);
+
+        // Mock product repository
+        $mock = $this->partialMock(ProductRepository::class);
+
+        // Mock the getFileMetaData method
+        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
+
+            // Mock metadata based on the file path
+            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
+            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
+            } else {
+                return null; // Return null for unknown file paths
+            }
+        });
+
+        // Invoke the slug method
+        $response = $this
+            ->withoutExceptionHandling()
+            ->get(route('product.slug', [
+                'product' => $product->slug,
+                'slug' => "1234"
+            ]));
+
+        // Assert response status
+        $response
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->where('no_of_resources', 2)
+                    ->where('slug', $product->slug)
+                    ->etc()
+            );
     }
 
-    public function test_findbyslug_slug_not_found_should_return_404(): void
+    public function test_slug_slug_not_found_should_return_404(): void
     {
+        $this->expectException(ModelNotFoundException::class);
+
+        // Make a request without token
+        $this
+            ->withoutExceptionHandling()
+            ->get(route('product.slug', [
+                'product' => "12345",
+                'slug' => "1234"
+            ]));
     }
 
-    public function test_findbyslug_published_product_should_return_400_bad_request(): void
+    public function test_slug_published_product_should_return_400_bad_request(): void
     {
+        $this->expectException(BadRequestException::class);
+
+        $data = [
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+        ];
+
+
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'data' => $data
+        ]);
+
+        // Invoke the slug method
+        $this
+            ->withoutExceptionHandling()
+            ->actingAs($this->user, 'web')
+            ->get(route('product.slug', [
+                'product' => $product->slug,
+                'slug' => "1234"
+            ]));
     }
 
     public function test_store_first_product_should_update_user_first_product_created(): void
@@ -382,6 +506,139 @@ class ProductControllerTest extends TestCase
             ->post(route('product.store'), $payload);
     }
 
+    public function test_update(): void
+    {
+        // Fake spaces storage
+        Storage::fake('spaces');
+
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        // Mocking payload
+        $payload = [
+            'title' => 'title updated',
+            'price' => 3,
+            'thumbnail' => UploadedFile::fake()->image('avatar_update.jpg'),
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data_update.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1_update.jpg')],
+        ];
+
+        $response = $this
+            ->withoutExceptionHandling()
+            ->actingAs($this->user, 'web')
+            ->put(route('product.update', [
+                'product' => $product->id
+            ]), $payload);
+
+        // Asserting that the request was successful
+        $response->assertOk()->assertJson(
+            fn (AssertableJson $json) =>
+            $json->where('id', $product->id)
+                ->where('title', 'title updated')
+                ->where('price', 3)
+                ->where('thumbnail', config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg')
+                ->etc()
+        );
+
+        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data_update.pdf');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/cover1_update.jpg');
+    }
+
+    public function test_update_unauthenticated(): void
+    {
+        $this->expectException(UnAuthorizedException::class);
+
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        // Mocking payload
+        $payload = [
+            'title' => 'title updated',
+            'price' => 3,
+            'thumbnail' => UploadedFile::fake()->image('avatar_update.jpg'),
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data_update.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1_update.jpg')],
+        ];
+
+        $this
+            ->withoutExceptionHandling()
+            ->put(route('product.update', [
+                'product' => $product->id
+            ]), $payload);
+    }
+
+    public function test_update_product_not_found(): void
+    {
+        $this->expectException(ModelNotFoundException::class);
+
+        // Mocking payload
+        $payload = [
+            'title' => 'title updated',
+            'price' => 3,
+            'description' => 'description',
+        ];
+
+        $this
+            ->withoutExceptionHandling()
+            ->actingAs($this->user, 'web')
+            ->put(route('product.update', [
+                'product' => '12345'
+            ]), $payload);
+    }
+
+    public function test_update_not_user_product(): void
+    {
+        $this->expectException(ForbiddenException::class);
+
+        $forbidden_user = User::factory()->create();
+
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        // Mocking payload
+        $payload = [
+            'title' => 'title updated',
+            'price' => 3,
+            'description' => 'description',
+        ];
+
+        $this
+            ->withoutExceptionHandling()
+            ->actingAs($forbidden_user, 'web')
+            ->put(route('product.update', [
+                'product' => $product->id
+            ]), $payload);
+    }
+
+    public function test_update_invalid_payload(): void
+    {
+        $this->expectException(UnprocessableException::class);
+
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        // Mocking payload
+        $payload = [
+            'title' => 1, // Invalid payload
+            'price' => 3,
+            'description' => 'description',
+        ];
+
+        $this
+            ->withoutExceptionHandling()
+            ->actingAs($this->user, 'web')
+            ->put(route('product.update', [
+                'product' => $product->id
+            ]), $payload);
+    }
+
     public function test_analytics(): void
     {
     }
@@ -407,26 +664,6 @@ class ProductControllerTest extends TestCase
     }
 
     public function test_togglepublish_deleted_product_throws_400(): void
-    {
-    }
-
-    public function test_update(): void
-    {
-    }
-
-    public function test_update_unauthenticated(): void
-    {
-    }
-
-    public function test_update_product_not_found(): void
-    {
-    }
-
-    public function test_update_not_user_product(): void
-    {
-    }
-
-    public function test_update_invalid_payload(): void
     {
     }
 

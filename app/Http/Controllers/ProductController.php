@@ -197,6 +197,23 @@ class ProductController extends Controller
         return new ProductResource($product);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Update a given product.
+     *
+     * @param  \App\Http\Requests\UpdateProductRequest  $request The incoming request containing validated product update data.
+     * @return \App\Http\Resources\ProductResource Returns a resource representing the newly created product.
+     */
+    public function update(UpdateProductRequest $request, Product $product)
+    {
+        $validated = $request->validated();
+
+        $updated = $this->productRepository->update($product, $validated);
+
+        return new ProductResource($updated);
+    }
+
 
     /**
      * Endpoint returns User Dashboard product Analytic numbers
@@ -315,39 +332,6 @@ class ProductController extends Controller
         );
 
         return new ProductResource($product);
-    }
-
-    public function update(UpdateProductRequest $request, Product $product)
-    {
-        $validated = $request->validated();
-
-        // Aissign the product data to a variable
-        $data = $validated['data'] ?? null;
-        $cover_photos = $validated['cover_photos'] ?? null;
-        $thumbnail = $validated['thumbnail'] ?? null;
-
-        // Take out the uploadables from the validated array to allow for mass assignment
-        if ($data) {
-            unset($validated['data']);
-            $data = $this->productRepository->uploadData($data);
-            $validated['data'] = $data;
-        }
-
-        if ($cover_photos) {
-            unset($validated['cover_photos']);
-            $cover_photos = $this->productRepository->uploadCoverPhoto($cover_photos);
-            $validated['cover_photos'] = $cover_photos;
-        }
-
-        if ($thumbnail) {
-            unset($validated['thumbnail']);
-            $thumbnail = $this->productRepository->uploadThumbnail($thumbnail);
-            $validated['thumbnail'] = $thumbnail;
-        }
-
-        $updated = $this->productRepository->update($product, $validated);
-
-        return new ProductResource($updated);
     }
 
     public function delete(Product $product)

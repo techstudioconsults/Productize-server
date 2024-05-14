@@ -15,14 +15,16 @@ Route::group([
         'auth:sanctum',
     ]
 ], function () {
-    Route::post('/', [ProductController::class, 'store']);
+    Route::post('/', [ProductController::class, 'store'])->name('store');
 
     Route::get('/', [ProductController::class, 'index'])->withoutMiddleware([
         'auth:sanctum',
         'can:allowed,App\Models\Product',
     ])->name('index');
 
-    Route::get('/users', [ProductController::class, 'findByUser']);
+    Route::get('/users', [ProductController::class, 'user'])->name('user');
+
+    Route::get('/users/top-products', [ProductController::class, 'getUserTopProducts'])->name('user.top-products');
 
     Route::get('/analytics', [ProductController::class, 'analytics']);
 
@@ -32,9 +34,7 @@ Route::group([
 
     Route::get('/downloads', [ProductController::class, 'downloads']);
 
-    Route::get('/top-products', [ProductController::class, 'getUserTopProducts'])->name('user-top-products');
-
-    Route::get('/top-products/all', [ProductController::class, 'topProducts'])->withoutMiddleware([
+    Route::get('/top-products', [ProductController::class, 'topProducts'])->withoutMiddleware([
         'auth:sanctum',
 
     ])->name('top-products');
@@ -43,11 +43,11 @@ Route::group([
         'auth:sanctum',
     ]);
 
-    Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
+    Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
 
-    Route::get('/{product:slug}/{slug}', [ProductController::class, 'findBySlug'])
+    Route::get('/{product:slug}/{slug}', [ProductController::class, 'slug'])
         ->withoutMiddleware([
             'auth:sanctum',
             'can:allowed,App\Models\Product',

@@ -2,14 +2,20 @@
 
 namespace Tests\Feature\v1\api;
 
+use App\Exceptions\UnAuthorizedException;
 use App\Http\Resources\ProductCollection;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\UserResource;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Repositories\ProductRepository;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Storage;
 use Tests\TestCase;
 
 class ProductControllerTest extends TestCase
@@ -18,11 +24,15 @@ class ProductControllerTest extends TestCase
     use WithFaker;
 
     private ProductRepository $productRepository;
+    private User $user;
 
     public function setUp(): void
     {
         parent::setUp();
         $this->productRepository = app(ProductRepository::class);
+
+        // Create user with a free trial account, else test fails - check UserFactory.php
+        $this->user = User::factory()->create(['account_type' => 'free_trial']);
 
         $this->productRepository->seed();
     }
@@ -50,6 +60,242 @@ class ProductControllerTest extends TestCase
                         ->etc()
                 )
         );
+    }
+
+    public function test_user(): void
+    {
+        // Create user with a free trial account, else test fails - check UserFactory.php
+        // $user = User::factory()->create(['account_type' => 'free_trial']);
+
+        $products = Product::factory(2)->create(['user_id' => $this->user->id]);
+
+        $response = $this->actingAs($this->user, 'web')->get(route('product.user'));
+
+        // Convert the products to ProductResource
+        $expected_json = ProductResource::collection($products)->response()->getData(true);
+
+        $response->assertStatus(200)->assertJson($expected_json, true);
+    }
+
+    public function test_user_with_date_range(): void
+    {
+        // Define the date range
+        $start_date = Carbon::create(2024, 1, 1, 0);
+        $end_date = Carbon::create(2024, 3, 20, 0);
+
+        // Create user with a free trial account, else test fails - check UserFactory.php
+        $user = User::factory()->create(['account_type' => 'free_trial']);
+
+        // Create products within range
+        $products = Product::factory(1)->create([
+            'user_id' => $user->id,
+            'created_at' => Carbon::create(2024, 3, 15, 0)->toDateTimeString(),
+        ]);
+
+        // Create products outside range
+        Product::factory(5)->create([
+            'user_id' => $user->id,
+            'created_at' => Carbon::create(2024, 3, 21, 0),
+        ]);
+
+        $response = $this->actingAs($user, 'web')->get(route('product.user', [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ]));
+
+        // Convert the products to ProductResource
+        $expected_json = ProductResource::collection($products)->response()->getData(true);
+
+        $response->assertStatus(200)->assertJson($expected_json, true);
+    }
+
+    public function test_user_unauthenticated(): void
+    {
+        $this->expectException(UnAuthorizedException::class);
+
+        $this->withoutExceptionHandling()->get(route('product.user'));
+    }
+
+    public function test_show(): void
+    {
+        // Storage::fake('s3');
+
+        // // Create a product
+        // $product = Product::factory()->create(['user_id' => $this->user->id]);
+
+        // $response = $this->actingAs($this->user, 'web')->get(route('product.show', [
+        //     'product' => $product->id
+        // ]));
+
+        // $response->assertOk();
+    }
+
+    public function test_show_unauthenticated(): void
+    {
+    }
+
+    public function test_show_product_not_found_return_404(): void
+    {
+    }
+
+    public function test_findbyslug(): void
+    {
+    }
+
+    public function test_findbyslug_unauthenticated(): void
+    {
+    }
+
+    public function test_findbyslug_slug_not_found_should_return_404(): void
+    {
+    }
+
+    public function test_findbyslug_published_product_should_return_400_bad_request(): void
+    {
+    }
+
+    public function test_store_first_product_should_update_user_first_product_created(): void
+    {
+        Storage::fake('s3');
+
+        $thumbnail = UploadedFile::fake()->image('avatar.jpg');
+
+        // Mocking payload
+        $payload = [
+            'title' => 'title',
+            'price' => 2,
+            'product_type' => 'digital_product',
+            'thumbnail' => $thumbnail,
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data1.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
+            'highlights' => ['highlight1', 'highlight2'],
+            'tags' => ['tag1', 'tag2'],
+            'stock_count' => true,
+            'choose_quantity' => false,
+            'show_sales_count' => true,
+        ];
+
+        // Asserting that the user's first product created at property is null before creating the product
+        $this->assertNull($this->user->first_product_created_at);
+
+        $response = $this
+            ->actingAs($this->user, 'web')
+            ->withoutExceptionHandling()
+            ->post(route('product.store'), $payload);
+
+        // Asserting that the request was successful
+        $response->assertStatus(201);
+
+        Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
+        Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+
+        // Asserting that the user's first product created at property is now set
+        $this->user->refresh();
+        $this->assertNotNull($this->user->first_product_created_at);
+    }
+
+    public function test_store_not_first_product(): void
+    {
+        // // Create products
+        // Product::factory(5)->create([
+        //     'user_id' => $this->user->id,
+        //     'created_at' => Carbon::create(2024, 3, 21, 0),
+        // ]);
+
+        // Storage::fake('s3');
+
+        // $thumbnail = UploadedFile::fake()->image('avatar.jpg');
+
+        // // Mocking payload
+        // $payload = [
+        //     'title' => 'title',
+        //     'price' => 2,
+        //     'product_type' => 'digital_product',
+        //     'thumbnail' => $thumbnail,
+        //     'description' => 'description',
+        //     'data' => [UploadedFile::fake()->create('data1.pdf')],
+        //     'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
+        //     'highlights' => ['highlight1', 'highlight2'],
+        //     'tags' => ['tag1', 'tag2'],
+        //     'stock_count' => true,
+        //     'choose_quantity' => false,
+        //     'show_sales_count' => true,
+        // ];
+
+        // // Asserting that the user's first product created at property is null before creating the product
+        // $this->assertNull($this->user->first_product_created_at);
+
+        // $response = $this
+        //     ->actingAs($this->user, 'web')
+        //     ->withoutExceptionHandling()
+        //     ->post(route('product.store'), $payload);
+
+        // // Asserting that the request was successful
+        // $response->assertStatus(201);
+
+        // Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
+        // Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+
+        // // Asserting that the user's first product created at property is now set
+        // $this->user->refresh();
+        // $this->assertNotNull($this->user->first_product_created_at);
+    }
+
+    public function test_store_unauthenticated(): void
+    {
+    }
+
+    public function test_store_invalid_payload_throw_422()
+    {
+    }
+
+    public function test_analytics(): void
+    {
+    }
+
+    public function test_analytics_unauthenticated(): void
+    {
+    }
+
+    public function test_downloadList(): void
+    {
+    }
+
+    public function test_downloadlist_unauthenticated(): void
+    {
+    }
+
+    public function test_togglepublish(): void
+    {
+    }
+
+    public function test_togglepublish_unauthenticated(): void
+    {
+    }
+
+    public function test_togglepublish_deleted_product_throws_400(): void
+    {
+    }
+
+    public function test_update(): void
+    {
+    }
+
+    public function test_update_unauthenticated(): void
+    {
+    }
+
+    public function test_update_product_not_found(): void
+    {
+    }
+
+    public function test_update_not_user_product(): void
+    {
+    }
+
+    public function test_update_invalid_payload(): void
+    {
     }
 
     public function test_top_products(): void

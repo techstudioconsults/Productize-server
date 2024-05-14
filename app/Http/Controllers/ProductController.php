@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author Tobi Olanitori
+ * @version 1.0
+ * @since 08-05-2024
+ */
+
 namespace App\Http\Controllers;
 
 use App\Enums\ProductStatusEnum;
@@ -26,6 +32,13 @@ class ProductController extends Controller
     ) {
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieves a paginated list of published products.
+     *
+     * @return \App\Http\Resources\ProductCollection Returns a paginated collection of published products.
+     */
     public function index()
     {
         $status = ProductStatusEnum::Published->value;
@@ -36,11 +49,20 @@ class ProductController extends Controller
     }
 
     /**
-     * @param status - Request query of enum ProductStatusEnum. Used to filter products by status
-     * @param start_date - Request query of type Date. Used aslong with end_date to filter range by date.
-     * @param end_date - Request query of type Date. Used aslong with start_date to filter range by date.
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve products belonging to the authenticated user based on the provided filters.
+     *
+     * @param  Request  $request  The HTTP request containing query parameters:
+     *                            - status: (optional) Filter products by status (enum ProductStatusEnum).
+     *                            - start_date: (optional) Filter products created on or after this date.
+     *                            - end_date: (optional) Filter products created on or before this date.
+     *
+     * @see \App\Enums\ProductStatusEnum
+     *
+     * @return Collection<ProductResource> Returns a collection of ProductResource instances.
      */
-    public function findByUser(Request $request)
+    public function user(Request $request)
     {
         $user = Auth::user();
 
@@ -60,7 +82,67 @@ class ProductController extends Controller
         return ProductResource::collection($paginatedProducts);
     }
 
-    public function findBySlug(Product $product)
+    /**
+     * Retrive the specified product.
+     *
+     * @param  \App\Models\Product  $product The product to display.
+     * @return array Returns an array containing detailed information about the product and its associated resources.
+     */
+    public function show(Product $product)
+    {
+        // Retrieve product data array
+        $data = $product->data;
+
+        // Declare an array to hold product meta data
+        $meta_data_array = [];
+
+        // For each digital product, retrieve its file metadata from DigitalOcean.
+        foreach ($data as $value) {
+
+            /**
+             * Remove the domain from the file path.
+             *
+             * This step is necessary to extract the relative file path from the absolute URL.
+             * The CDN endpoint is configured in the filesystems.php configuration file.
+             *
+             * Example:
+             * If the data URL is "https://productize.nyc3.cdn.digitaloceanspaces.com/avatars/avatar.png",
+             * after removing the CDN endpoint, the file path becomes "avatars/avatar.png".
+             *
+             * @see \config\filesystems.php
+             * @param string $value The absolute URL of the digital product.
+             * @return string The relative file path of the digital product.
+             */
+            $file_path = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
+
+            // Retrieve metadata for the file from the product repository.
+            $meta_data = $this->productRepository->getFileMetaData($file_path);
+
+            // If metadata is available, add it to the array.
+            if ($meta_data) {
+                $meta_data_array[] = $meta_data; // Simplified array pushing
+            }
+        }
+
+        $productData = (new ProductResource($product))->toArray(request());
+
+        $response = array_merge($productData, [
+            'no_of_resources' => count($meta_data_array),
+            'resources_info' => $meta_data_array,
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Retrieve product information by its slug.
+     *
+     * @param  \App\Models\Product  $product The product identified by its slug.
+     * @return \Illuminate\Http\JsonResponse Returns a JSON response containing detailed information about the product and its associated resources.
+     *
+     * @throws \App\Exceptions\BadRequestException Throws a BadRequestException if the product status is not published.
+     */
+    public function slug(Product $product)
     {
         $status = ProductStatusEnum::Published->value;
 
@@ -90,6 +172,14 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Create a new product.
+     *
+     * @param  \App\Http\Requests\StoreProductRequest  $request The incoming request containing validated product data.
+     * @return \App\Http\Resources\ProductResource Returns a resource representing the newly created product.
+     */
     public function store(StoreProductRequest $request)
     {
         $user = Auth::user();
@@ -115,40 +205,7 @@ class ProductController extends Controller
             $cover_photos
         );
 
-        $count = $user->products()->count();
-
-        if ($count <= 1) {
-            // Update first product created at property
-            $user->first_product_created_at = Carbon::now();
-            $user->save();
-        }
-
         return new ProductResource($product);
-    }
-
-
-    public function show(Product $product)
-    {
-        $data = $product->data;
-        $meta_data_array = [];
-
-        foreach ($data as $value) {
-            $filePath = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
-            $meta_data = $this->productRepository->getFileMetaData($filePath);
-
-            if ($meta_data) {
-                $meta_data_array[] = $meta_data; // Simplified array pushing
-            }
-        }
-
-        $productData = (new ProductResource($product))->toArray(request());
-
-        $response = array_merge($productData, [
-            'no_of_resources' => count($meta_data_array),
-            'resources_info' => $meta_data_array,
-        ]);
-
-        return $response;
     }
 
 

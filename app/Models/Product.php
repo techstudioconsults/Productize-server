@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -50,6 +51,24 @@ class Product extends Model
     protected $guarded = [
         'status'
     ];
+
+    /**
+     * Boot method to register model event listeners.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($product) {
+            $user = $product->user;
+
+            if ($user->products()->count() <= 1) {
+                // Update the first product created at property for the user
+                $user->first_product_created_at = Carbon::now();
+                $user->save();
+            }
+        });
+    }
 
     public function user()
     {

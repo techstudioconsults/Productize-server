@@ -251,16 +251,11 @@ class ProductControllerTest extends TestCase
             ->post(route('product.store'), $payload);
 
         // Asserting that the request was successful
-        $response->assertCreated();
+        $response->assertStatus(201);
 
-        // Assert files are saved in the disk storage
         Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
         Storage::disk('s3')->assertExists('digital-products/data1.pdf');
-
-        // Assert the event was dispatched
         Event::assertDispatched(ProductCreated::class);
-
-        // Assert SendProductCreatedMail listener is listening
         Event::assertListening(ProductCreated::class, SendProductCreatedMail::class);
 
         // Asserting that the user's first product created property is unchanged. model listener method was not called

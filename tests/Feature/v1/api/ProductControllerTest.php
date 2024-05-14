@@ -647,11 +647,11 @@ class ProductControllerTest extends TestCase
     {
     }
 
-    public function test_downloadList(): void
+    public function test_records(): void
     {
     }
 
-    public function test_downloadlist_unauthenticated(): void
+    public function test_records_unauthenticated(): void
     {
     }
 
@@ -694,5 +694,71 @@ class ProductControllerTest extends TestCase
         $expected_json = ProductCollection::make([])->response()->getData(true);
 
         $response->assertStatus(200)->assertJson($expected_json, true);
+    }
+
+    public function test_delete(): void
+    {
+    }
+
+    public function test_delete_unauthenticated(): void
+    {
+    }
+
+    public function test_delete_user_not_found(): void
+    {
+    }
+
+    public function test_delete_not_for_user_return_403(): void
+    {
+    }
+
+    public function test_restore(): void
+    {
+    }
+
+    public function test_restore_unauthenticated(): void
+    {
+    }
+
+    public function test_restore_not_found(): void
+    {
+    }
+
+    public function test_restore_not_for_user(): void
+    {
+    }
+
+    public function test_forcedelete(): void
+    {
+    }
+
+    public function test_forcedelete_unauthenticated(): void
+    {
+    }
+
+    public function test_forcedelete_not_found(): void
+    {
+    }
+
+    public function test_forcedelete_not_for_user(): void
+    {
+    }
+
+    public function test_downloads(): void
+    {
+    }
+
+    public function test_downloads_unauthenticated(): void
+    {
+    }
+    public function test_revenue(): void
+    {
+    }
+
+    public function test_revenue_unauthenticated(): void
+    {
+    }
+    public function test_tags(): void
+    {
     }
 }

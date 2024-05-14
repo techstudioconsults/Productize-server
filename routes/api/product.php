@@ -26,13 +26,13 @@ Route::group([
 
     Route::get('/users/top-products', [ProductController::class, 'getUserTopProducts'])->name('user.top-products');
 
-    Route::get('/analytics', [ProductController::class, 'analytics']);
+    Route::get('/analytics', [ProductController::class, 'analytics'])->name('analytics');
 
-    Route::get('/revenues', [ProductController::class, 'productsRevenue']);
+    Route::get('/revenues', [ProductController::class, 'productsRevenue'])->name('revenue');
 
-    Route::get('/download', [ProductController::class, 'downloadList']);
+    Route::get('/records', [ProductController::class, 'records'])->name('record');
 
-    Route::get('/downloads', [ProductController::class, 'downloads']);
+    Route::get('/downloads', [ProductController::class, 'downloads'])->name('download');
 
     Route::get('/top-products', [ProductController::class, 'topProducts'])->withoutMiddleware([
         'auth:sanctum',
@@ -41,11 +41,11 @@ Route::group([
 
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',
-    ]);
+    ])->name('tags');
 
     Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 
-    Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
+    Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product')->name('restore');
 
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'slug'])
         ->name('slug')
@@ -60,9 +60,9 @@ Route::group([
     Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware([
         'can:update,product',
         'can:premium,App\Models\Product',
-    ]);
+    ])->name('publish');
 
-    Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
+    Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product')->name('delete');
 
-    Route::delete('/{product}/force', [ProductController::class, 'forceDelete'])->middleware('can:forceDelete,product');
+    Route::delete('/{product}/force', [ProductController::class, 'forceDelete'])->middleware('can:forceDelete,product')->name('delete.force');
 });

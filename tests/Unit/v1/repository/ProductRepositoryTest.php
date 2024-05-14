@@ -104,10 +104,30 @@ class ProductRepositoryTest extends TestCase
         $product = $this->productRepository->update($product, $data);
 
         $this->assertInstanceOf(Product::class, $product);
-        
+
         $this->assertEquals($this->user->id, $product->user->id);
         $this->assertEquals('title updated', $product->title);
-        $this->assertEquals('price', $product->price);
+        $this->assertEquals(3, $product->price);
+    }
+
+    public function test_update_invalid_data_throws_400()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $data = [
+            'title' => 1, // bad data type
+            'price' => 3,
+            'thumbnail' => UploadedFile::fake()->image('avatar_update.jpg'),
+            'description' => 'description',
+            'data' => [UploadedFile::fake()->create('data_update.pdf')],
+            'cover_photos' => [UploadedFile::fake()->image('cover1_update.jpg')],
+        ];
+
+        $this->productRepository->update($product, $data);
     }
 
     public function test_upload_product_data(): void

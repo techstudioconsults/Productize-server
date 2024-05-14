@@ -259,7 +259,7 @@ class ProductController extends Controller
      * @param end_date - Request query of type Date. Used aslong with start_date to filter range by date.
      * @param format - Request of type csv | pdf. Used to filter download to either csv or pdf.
      */
-    public function downloadList(Request $request)
+    public function records(Request $request)
     {
         $user = Auth::user();
 
@@ -334,6 +334,7 @@ class ProductController extends Controller
         return new ProductResource($product);
     }
 
+    // Soft delete product
     public function delete(Product $product)
     {
         $product->status = 'draft';

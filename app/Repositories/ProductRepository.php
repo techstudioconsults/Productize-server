@@ -351,7 +351,7 @@ class ProductRepository
     public function getFileMetaData(string $filePath)
     {
         if (Storage::disk('spaces')->exists($filePath)) {
-            $size = Storage::size($filePath);
+            $size = Storage::size($filePath);    
             $mime_Type = Storage::mimeType($filePath);
 
             return [

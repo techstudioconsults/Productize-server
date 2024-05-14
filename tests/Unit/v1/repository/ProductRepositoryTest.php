@@ -30,8 +30,8 @@ class ProductRepositoryTest extends TestCase
 
     public function test_create(): void
     {
-        // Fake s3 storage
-        Storage::fake('s3');
+        // Fake spaces storage
+        Storage::fake('spaces');
 
         $data = [
             'title' => 'title',
@@ -85,8 +85,8 @@ class ProductRepositoryTest extends TestCase
 
     public function test_upload_product_data(): void
     {
-        // Fake s3 storage
-        Storage::fake('s3');
+        // Fake spaces storage
+        Storage::fake('spaces');
 
         $uploads = [
             UploadedFile::fake()->create('data1.pdf'),
@@ -104,10 +104,10 @@ class ProductRepositoryTest extends TestCase
 
         $result = $this->productRepository->uploadData($uploads);
 
-        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data1.pdf');
-        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data2.pdf');
-        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data3.png');
-        Storage::disk('s3')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data4.csv');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data1.pdf');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data2.pdf');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data3.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data4.csv');
 
         $this->assertEquals($expected_result[0], $result[0]);
         $this->assertEquals($expected_result[1], $result[1]);
@@ -124,8 +124,8 @@ class ProductRepositoryTest extends TestCase
 
     public function test_upload_product_thumbnail(): void
     {
-        // Fake s3 storage
-        Storage::fake('s3');
+        // Fake spaces storage
+        Storage::fake('spaces');
 
         $file_name = 'thumbnail.png';
 
@@ -135,7 +135,7 @@ class ProductRepositoryTest extends TestCase
 
         $result = $this->productRepository->uploadThumbnail($thumbnail);
 
-        Storage::disk('s3')->assertExists(ProductRepository::THUMBNAIL_PATH . "/$file_name");
+        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH . "/$file_name");
 
         $this->assertEquals($expected_result, $result);
     }
@@ -149,8 +149,8 @@ class ProductRepositoryTest extends TestCase
 
     public function test_upload_cover_photos(): void
     {
-        // Fake s3 storage
-        Storage::fake('s3');
+        // Fake spaces storage
+        Storage::fake('spaces');
 
         $uploads = [
             UploadedFile::fake()->create('data1.png'),
@@ -168,10 +168,10 @@ class ProductRepositoryTest extends TestCase
 
         $result = $this->productRepository->uploadCoverPhoto($uploads);
 
-        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data1.png');
-        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data2.jpg');
-        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data3.png');
-        Storage::disk('s3')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data4.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data1.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data2.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data3.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data4.png');
 
         $this->assertEquals($expected_result[0], $result[0]);
         $this->assertEquals($expected_result[1], $result[1]);

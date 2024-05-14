@@ -121,16 +121,47 @@ class ProductControllerTest extends TestCase
 
     public function test_show(): void
     {
-        // Storage::fake('s3');
+        $data = [
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+        ];
 
-        // // Create a product
-        // $product = Product::factory()->create(['user_id' => $this->user->id]);
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'data' => $data
+        ]);
 
-        // $response = $this->actingAs($this->user, 'web')->get(route('product.show', [
-        //     'product' => $product->id
-        // ]));
+        // Mock product repository
+        $mock = $this->partialMock(ProductRepository::class);
 
-        // $response->assertOk();
+        // Mock the getFileMetaData method
+        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) use ($data) {
+
+            // Mock metadata based on the file path
+            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
+            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
+            } else {
+                return null; // Return null for unknown file paths
+            }
+        });
+
+        // Invoke the show method
+        $response = $this->actingAs($this->user, 'web')->get(route('product.show', [
+            'product' => $product->id
+        ]));
+
+        // Assert response status
+        $response
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->where('no_of_resources', 2)
+                    ->where('id', $product->id)
+                    ->etc()
+            );
     }
 
     public function test_show_unauthenticated(): void
@@ -159,8 +190,8 @@ class ProductControllerTest extends TestCase
 
     public function test_store_first_product_should_update_user_first_product_created(): void
     {
-        // Fake s3 storage
-        Storage::fake('s3');
+        // Fake spaces storage
+        Storage::fake('spaces');
 
         // Fake event for product created event
         Event::fake([ProductCreated::class]);
@@ -193,8 +224,8 @@ class ProductControllerTest extends TestCase
         $response->assertCreated();
 
         // Assert files are saved in the disk storage
-        Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
-        Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+        Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
+        Storage::disk('spaces')->assertExists('digital-products/data1.pdf');
 
         // Assert the event was dispatched
         Event::assertDispatched(ProductCreated::class);
@@ -220,8 +251,8 @@ class ProductControllerTest extends TestCase
 
         $expected_created_time = $this->user->first_product_created_at;
 
-        // Fake s3 storage
-        Storage::fake('s3');
+        // Fake spaces storage
+        Storage::fake('spaces');
 
         // Fake event for product created event
         Event::fake([ProductCreated::class]);
@@ -253,8 +284,8 @@ class ProductControllerTest extends TestCase
         // Asserting that the request was successful
         $response->assertStatus(201);
 
-        Storage::disk('s3')->assertExists('products-thumbnail/avatar.jpg');
-        Storage::disk('s3')->assertExists('digital-products/data1.pdf');
+        Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
+        Storage::disk('spaces')->assertExists('digital-products/data1.pdf');
         Event::assertDispatched(ProductCreated::class);
         Event::assertListening(ProductCreated::class, SendProductCreatedMail::class);
 

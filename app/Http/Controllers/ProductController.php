@@ -188,7 +188,7 @@ class ProductController extends Controller
         $validated = $request->validated();
 
         $validated['user_id'] = $user->id;
-        
+
         $product = $this->productRepository->create($validated);
 
         // Trigger product created event

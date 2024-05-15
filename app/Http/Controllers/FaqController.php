@@ -20,7 +20,7 @@ class FaqController extends Controller
      */
     public function index()
     {
-        $faq = $this->faqRepository->getAll();
+        $faq = $this->faqRepository->find();
         return FaqResource::collection($faq);
     }
 

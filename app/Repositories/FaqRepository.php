@@ -16,7 +16,7 @@ class FaqRepository
     }
 
 
-    public function getAll()
+    public function find()
     {
         return Faq::all();
     }

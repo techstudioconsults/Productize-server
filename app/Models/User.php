@@ -46,7 +46,12 @@ class User extends Authenticatable implements CanResetPassword
         'logo',
         'twitter_account',
         'facebook_account',
-        'youtube_account'
+        'youtube_account',
+        'alt_email',
+        'product_creation_notification',
+        'purchase_notification',
+        'news_and_update_notification',
+        'payout_notification'
     ];
 
     /**

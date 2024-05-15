@@ -5,19 +5,19 @@ namespace App\Repositories;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
-use App\Models\Customer;
+
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Validator as Validation;
+use Illuminate\Validation\Validator;
+
 
 class UserRepository
 {
-    public function __construct()
-    {
-    }
+    private ?Validator $validator = null;
 
     public function createUser(array $credentials): User
     {
@@ -27,6 +27,23 @@ class UserRepository
             throw new BadRequestException('No Email Provided');
         }
 
+        $isValid = [
+            'email',
+            'full_name',
+            'alt_email',
+            'username',
+            'phone_number',
+            'bio',
+            'password',
+            'logo',
+            'twitter_account',
+            'facebook_account',
+            'youtube_account'
+        ];
+
+        // Remove invalid keys from credentials
+        $credentials = Arr::only($credentials, $isValid);
+
         foreach ($credentials as $column => $value) {
             $user->$column = $value;
         }
@@ -34,8 +51,6 @@ class UserRepository
         $user->account_type = 'free_trial';
 
         $user->save();
-
-        event(new Registered($user));
 
         return $user;
     }
@@ -47,6 +62,9 @@ class UserRepository
      */
     public function update(string $filter, string $value, array $updatables): User
     {
+        // Ensure the user is not attempting to update the user's email
+        if (array_key_exists('email', $updatables)) throw new BadRequestException("Column 'email' cannot be updated");
+
         if (!Schema::hasColumn((new User)->getTable(), $filter)) {
             throw new UnprocessableException("Column '$filter' does not exist in the User table.");
         }
@@ -58,10 +76,12 @@ class UserRepository
          */
         $filteredUpdatables = array_diff_key($updatables, [$filter => null]);
 
-        User::where($filter, $value)->update($filteredUpdatables);
+        $user = User::where($filter, $value)->firstOrFail();
+
+        $user->update($filteredUpdatables);
 
         // Retrieve and return the updated User instance
-        return User::where($filter, $value)->firstOrFail();
+        return $user;
     }
 
     /**
@@ -72,6 +92,8 @@ class UserRepository
      */
     public function guardedUpdate(string $email, string $column, string $value): User
     {
+        if ($column === "email") throw new BadRequestException("Column 'email' cannot be updated");
+
         if (!Schema::hasColumn((new User)->getTable(), $column)) {
             throw new UnprocessableException("Column '$column' does not exist in the User table.");
         }
@@ -97,18 +119,11 @@ class UserRepository
     ): int {
         $orders = $user->orders();
 
+        // Filter by start date and end date.
         if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
 
             $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
@@ -128,17 +143,9 @@ class UserRepository
         $orders =  $user->orders();
 
         if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
 
             $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
         }
@@ -154,17 +161,9 @@ class UserRepository
         $customers = $user->customers();
 
         if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
 
             $customers->whereBetween('created_at', [$start_date, $end_date]);
         }
@@ -172,6 +171,12 @@ class UserRepository
         return $customers->count();
     }
 
+    /**
+     * profileCompletedAt
+     *
+     * @param  User $user
+     * @return void
+     */
     public function profileCompletedAt(User $user)
     {
         /**
@@ -196,5 +201,46 @@ class UserRepository
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
+    }
+
+    public function getValidator(): ?Validator
+    {
+        return $this->validator;
+    }
+
+    public function setValidator(Validator $validator): void
+    {
+        $this->validator = $validator;
+    }
+
+    /**
+     * It validates a date range is invalid.
+     * Returns true if date range is invalid, returns false otherwise.
+     *
+     * @param  string $start_date
+     * @param  string $end_date
+     * @return bool
+     */
+    private function isInValidDateRange(string $start_date, string $end_date)
+    {
+        /**
+         * Validator is imported as Validator. Check top of the file.
+         */
+        $validator = Validation::make([
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ], [
+            'start_date' => 'date',
+            'end_date' => 'date'
+        ]);
+
+        if ($validator->fails()) {
+            // Set current validator object.
+            $this->setValidator($validator);
+
+            return true;
+        }
+
+        return false;
     }
 }

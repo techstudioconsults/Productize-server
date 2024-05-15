@@ -48,9 +48,4 @@ class Customer extends Model
     {
         return $this->belongsTo(Order::class)->count();
     }
-
-    // public function product()
-    // {
-    //     return $this->belongsTo(Product::class, 'latest_puchase_id');
-    // }
 }

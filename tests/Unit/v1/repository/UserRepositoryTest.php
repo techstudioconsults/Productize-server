@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Sequence;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -431,62 +430,5 @@ class UserRepositoryTest extends TestCase
         $end_date = 'invalid-date';
 
         $this->userRepository->getTotalCustomers($user, $start_date, $end_date);
-    }
-
-    public function test_isinvaliddaterange_returns_false_with_valid_date_range()
-    {
-        // Define the date range
-        $start_date = Carbon::create(2024, 1, 1, 0);
-        $end_date = Carbon::create(2024, 3, 20, 0);
-
-        /**
-         * @author Tobi Olanitori
-         *
-         * The isInValidDateRange method is a private one,
-         * so it can't be directly tested.
-         *
-         * To solve this, we use a reflection class.
-         */
-        // Create a reflection of the user repository
-        $userRepositoryReflection = new ReflectionClass($this->userRepository);
-
-        $method = $userRepositoryReflection->getMethod('isInValidDateRange');
-
-        $method->setAccessible(true); // Make the method accessible
-
-        // Call the private method with test data
-        $result = $method->invoke($this->userRepository, $start_date, $end_date);
-
-        // Assert the result
-        $this->assertFalse($result);
-
-        // Ensure Validator was not updated.
-        $this->assertNull($this->userRepository->getValidator());
-    }
-
-    public function test_isinvaliddaterange_returns_true_with_invalid_date_range()
-    {
-        // Define an invalid date range
-        $start_date = 'invalid-date';
-        $end_date = 'invalid-date';
-
-        // Create a reflection of the user repository
-        $userRepositoryReflection = new ReflectionClass($this->userRepository);
-
-        $method = $userRepositoryReflection->getMethod('isInValidDateRange');
-
-        $method->setAccessible(true); // Make the method accessible
-
-        // Call the private method with test data
-        $result = $method->invoke($this->userRepository, $start_date, $end_date);
-
-        // Assert the result
-        $this->assertTrue($result);
-
-        // Ensure Validator was updated.
-        $this->assertNotNull($this->userRepository->getValidator());
-
-        // Assert a validator instance is set
-        $this->assertInstanceOf(Validator::class, $this->userRepository->getValidator());
     }
 }

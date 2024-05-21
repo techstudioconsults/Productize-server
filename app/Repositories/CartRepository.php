@@ -5,7 +5,6 @@
  * @version 1.0
  * @since 21-05-2024
  */
-
 namespace App\Repositories;
 
 use App\Exceptions\ApiException;

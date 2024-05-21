@@ -1,9 +1,11 @@
 <?php
+
 /**
  * @author Tobi Olanitori
  * @version 1.0
  * @since 12-05-2024
  */
+
 namespace App\Repositories;
 
 use App\Exceptions\ApiException;
@@ -79,6 +81,11 @@ class CustomerRepository extends Repository
     public function findById(string $id): Model
     {
         return Customer::find($id);
+    }
+
+    public function findOne(array $filter): Customer
+    {
+        return Customer::where($filter)->first();
     }
 
     public function findByRelation(Model $parent, ?array $filter = null): Relation

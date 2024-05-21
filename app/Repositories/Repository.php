@@ -20,13 +20,31 @@ use Illuminate\Validation\Validator;
  */
 abstract class Repository
 {
+    /**
+     * @var Validator|null $validator The validator instance used for validation.
+     */
     private ?Validator $validator = null;
 
+    /**
+     * Get the current validator instance.
+     *
+     * This method returns the validator instance that is used for validating data.
+     *
+     * @return Validator|null The current validator instance or null if not set.
+     */
     public function getValidator(): ?Validator
     {
         return $this->validator;
     }
 
+    /**
+     * Set the validator instance.
+     *
+     * This method sets the validator instance that will be used for validating data.
+     *
+     * @param Validator $validator The validator instance to set.
+     * @return void
+     */
     public function setValidator(Validator $validator): void
     {
         $this->validator = $validator;
@@ -57,7 +75,9 @@ abstract class Repository
     abstract public function find(?array $filter): Builder;
 
     /**
-     * Retrieves all entities from the database by a Model and an array of filter
+     * Retrieves all entities from the database by a Model and an array of filter.
+     *
+     * The client model must have a callable method that defines its relationship with the server base model.
      *
      * @param Model $parent Use a model relation to retrieve entities.
      * @param  array $filter Associative array of filter colums and their value
@@ -66,12 +86,20 @@ abstract class Repository
     abstract public function findByRelation(Model $parent, ?array $filter): Relation;
 
     /**
-     * Retrieves a model by its id from the repository.
+     * Retrieves a model by its id from the database.
      *
      * @param string $id The unique identifier of the entity.
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
     abstract public function findById(string $id): Model;
+
+    /**
+     * Retrieves a model by an array of filter from the database.
+     *
+     * @param string $id The unique identifier of the entity.
+     * @return Model|null The entity corresponding to the given identifier, or null if not found.
+     */
+    abstract public function findOne(array $filter): Model;
 
     /**
      * Update an entity in the database.
@@ -89,7 +117,10 @@ abstract class Repository
      * @param array $updates An associative array of data containing the fields to be updated.
      * @return int The total count of updated entities.
      */
-    abstract public function updateMany(array $filter, array $updates): int;
+    public function updateMany(array $filter, array $updates): int
+    {
+        return $this->find($filter)->update($updates);
+    }
 
     /**
      * Delete an entity from the database
@@ -113,7 +144,10 @@ abstract class Repository
      *
      * @return int
      */
-    abstract public function deleteMany(array $filter): int;
+    public function deleteMany(array $filter): int
+    {
+        return $this->find($filter)->delete();
+    }
 
     /**
      * It validates a date range is invalid.
@@ -146,6 +180,18 @@ abstract class Repository
         return false;
     }
 
+    /**
+     * Validates the given data against the provided rules.
+     *
+     * This method uses Laravel's validation mechanism to check the given data
+     * against the specified validation rules. If validation fails, it sets the
+     * validator instance for later retrieval and returns false. If validation
+     * passes, it returns true.
+     *
+     * @param array $data The data to be validated.
+     * @param array $rules The validation rules to apply.
+     * @return bool Returns true if validation passes, false otherwise.
+     */
     protected function isValidated(array $data, array $rules): bool
     {
         // Validate the credentials
@@ -161,12 +207,27 @@ abstract class Repository
         return true;
     }
 
+    /**
+     * Applies date filters to the given query.
+     *
+     * This method checks for 'start_date' and 'end_date' in the filter array.
+     * If both are present, it validates the date range and applies a `whereBetween`
+     * clause on the 'created_at' column of the query. The method also removes
+     * 'start_date' and 'end_date' from the filter array after applying the filter.
+     * If the date range is invalid, it throws an UnprocessableException.
+     *
+     * @param Builder|Relation $query The query to which the date filters will be applied.
+     * @param array $filter The filter array containing 'start_date' and 'end_date'.
+     * @throws UnprocessableException If the date range is invalid.
+     */
     protected function applyDateFilters(Builder | Relation $query, array &$filter): void
     {
+        // Check for start_date and end_date in the array
         if (isset($filter['start_date']) && isset($filter['end_date'])) {
             $start_date = $filter['start_date'];
             $end_date = $filter['end_date'];
 
+            // Remove them from the array
             unset($filter['start_date'], $filter['end_date']);
 
             $isInvalid = $this->isInValidDateRange($start_date, $end_date);

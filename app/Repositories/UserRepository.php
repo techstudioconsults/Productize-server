@@ -73,14 +73,18 @@ class UserRepository extends Repository
 
         if ($filter === null) return $query;
 
+        // Apply date filter
         $this->applyDateFilters($query, $filter);
 
+        // Apply other filters
+        $query->where($filter);
+
         // For each filter array, entry, validate presence in model and query
-        foreach ($filter as $key => $value) {
-            if (Schema::hasColumn('users', $key)) {
-                $query->where($key, $value);
-            }
-        }
+        // foreach ($filter as $key => $value) {
+        //     if (Schema::hasColumn('users', $key)) {
+        //         $query->where($key, $value);
+        //     }
+        // }
 
         return $query;
     }
@@ -90,7 +94,12 @@ class UserRepository extends Repository
         // Start with the base relation
         $relation = $parent?->users();
 
-        if (!$relation) throw new ApiException("Error", 500);
+        if (!$relation) {
+            throw new ApiException(
+                "Unable to retrieve related users. The parent model does not have a defined 'users' relationship.",
+                500
+            );
+        }
 
         if (empty($filter)) return $relation;
 
@@ -110,6 +119,11 @@ class UserRepository extends Repository
     public function findById(string $id): Model
     {
         return User::find($id);
+    }
+
+    public function findOne(array $filter): User
+    {
+        return User::where($filter)->first();
     }
 
     public function update(Model $entity, array $updatables): User
@@ -154,27 +168,6 @@ class UserRepository extends Repository
         $user->save();
 
         return $user;
-    }
-
-    public function updateMany(array $filter, array $updates): int
-    {
-        // Retrieve the User model
-        $userModel = User::query();
-
-        // Apply the filter criteria
-        foreach ($filter as $key => $value) {
-            $userModel->where($key, $value);
-        }
-
-        // Perform the update
-        $affectedRows = $userModel->update($updates);
-
-        return $affectedRows;
-    }
-
-    public function deleteMany(array $filter): int
-    {
-        return 1;
     }
 
     /**

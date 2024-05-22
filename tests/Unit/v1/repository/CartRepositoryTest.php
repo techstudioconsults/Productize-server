@@ -2,15 +2,40 @@
 
 namespace Tests\Unit\v1\repository;
 
-use PHPUnit\Framework\TestCase;
+use App\Models\Cart;
+use App\Models\Product;
+use App\Models\User;
+use App\Repositories\CartRepository;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class CartRepositoryTest extends TestCase
 {
-    /**
-     * A basic unit test example.
-     */
-    public function test_example(): void
+    use RefreshDatabase;
+
+    private CartRepository $cartRepository;
+
+    public function test_create(): void
     {
-        $this->assertTrue(true);
+        // user_id, product_slug, quantity
+
+        $user = User::factory()->create();
+
+        $product = Product::factory()->create(['user_id' => $user->id]);
+
+        $expected_result = [
+            'user_id' => $user->id,
+            'product_slug' => $product->slug,
+            'quantity' => 3
+        ];
+
+        $result = $this->cartRepository->create($expected_result);
+
+        // Assert
+        $this->assertInstanceOf(Cart::class, $result);
+
+        $this->assertEquals($expected_result['user_id'], $result->user_id);
+        $this->assertEquals($expected_result['product_slug'], $result->product_slug);
+        $this->assertEquals($expected_result['quantity'], $result->quantity);
     }
 }

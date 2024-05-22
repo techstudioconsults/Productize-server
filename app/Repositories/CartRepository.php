@@ -5,6 +5,7 @@
  * @version 1.0
  * @since 21-05-2024
  */
+
 namespace App\Repositories;
 
 use App\Exceptions\ApiException;
@@ -79,6 +80,7 @@ class CartRepository extends Repository
         }
 
         // Assign the updates to the corresponding fields of the User instance
+        // It ignores keys passed but not present in model columns
         $entity->fill($updates);
 
         // Save the updated Customer instance

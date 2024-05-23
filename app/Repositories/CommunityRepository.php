@@ -1,8 +1,13 @@
 <?php
 
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ *  @since 09-05-2024
+ */
+
+
 namespace App\Repositories;
-
-
 
 use App\Models\Community;
 
@@ -16,7 +21,7 @@ class CommunityRepository
     }
 
 
-    public function getAll()
+    public function findAll()
     {
         return Community::all();
     }

@@ -1,16 +1,11 @@
 <?php
 
-/**
- *  @author @obajide028 Odesanya Babajide
- *  @version 1.0
- *  @since 09-05-2024
- */
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StorecommunityRequest extends FormRequest
+class StoreReviewRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,7 +23,15 @@ class StorecommunityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'=>'required|email|unique:communities'
+            // 'product_id' => [
+            //     'required',
+            //     'exists:products,id',
+            //     Rule::unique('reviews')->where(function ($query) {
+            //         return $query->where('user_id', auth()->id());
+            //     }),
+            // ],
+            'rating' => 'required|integer|between:1,5',
+            'comment' => 'required|string',
         ];
     }
 }

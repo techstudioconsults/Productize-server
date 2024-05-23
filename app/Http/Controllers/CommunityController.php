@@ -1,5 +1,11 @@
 <?php
 
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ *  @since 09-05-2024
+ */
+
 namespace App\Http\Controllers;
 
 use App\Models\community;
@@ -22,17 +28,23 @@ class CommunityController extends Controller
      */
     public function index()
     {
-        $community = $this->communityRepository->getAll();
+        $community = $this->communityRepository->findAll();
         return CommunityResource::collection($community);
     }
 
 
     /**
      * Store a newly created resource in storage.
+     * @param StorecommunityRequest $request 
+     * 
+     * creates a new StorecommunityRequest $request The HTTP request containing query parameters:
+     *                         - title (required)
+     *                         - question (required)
+     *                         - answer (required)
      */
     public function store(StorecommunityRequest $request)
     {
-        $community = $this->communityRepository->create($request->all());
+        $community = $this->communityRepository->create($request->validated());
 
         // Send the welcome email
         Mail::to($community->email)->send(new CommunityWelcomeMail());

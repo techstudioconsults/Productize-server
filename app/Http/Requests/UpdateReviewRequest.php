@@ -1,23 +1,17 @@
 <?php
 
-/**
- *  @author @obajide028 Odesanya Babajide
- *  @version 1.0
- *  @since 09-05-2024
- */
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorecommunityRequest extends FormRequest
+class UpdateReviewRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -28,7 +22,7 @@ class StorecommunityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'=>'required|email|unique:communities'
+            //
         ];
     }
 }

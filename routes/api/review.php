@@ -24,9 +24,10 @@ use Illuminate\Support\Facades\Route;
 
     Route::middleware('auth:sanctum')->group(function () {
         // route to create a new review
-        Route::post('/products/{productId}/reviews', [ReviewController::class, 'store']);
+        Route::post('/reviews/{productId}', [ReviewController::class, 'store']);
     });
 
 
     
-     Route::get('/reviews/', [ReviewController::class, 'getReviewsByProduct']);
+     Route::get('/reviews/{productId}', [ReviewController::class, 'getReviewsByProduct']);
+     Route::get('/reviews', [ReviewController::class, 'index']);

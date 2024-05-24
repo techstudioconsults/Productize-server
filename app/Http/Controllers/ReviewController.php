@@ -21,9 +21,10 @@ class ReviewController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index($productId)
+    public function index()
     {
-       
+       $reviews = $this->reviewRepository->findAll();
+       return ReviewResource::collection($reviews);
     }
     
     /**
@@ -78,7 +79,7 @@ class ReviewController extends Controller
         //
     }
 
-    public function getReviewsByProduct(Product $productId)
+    public function getReviewsByProduct($productId)
     {
         $reviews = $this->reviewRepository->findByProduct($productId);
 

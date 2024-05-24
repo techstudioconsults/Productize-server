@@ -3,7 +3,7 @@
 /**
  *  @author @obajide028 Odesanya Babajide
  *  @version 1.0
- *  @since 
+ *  @since 22-05-2024
  */
 
 namespace App\Repositories;
@@ -16,7 +16,15 @@ use App\Models\Review;
 
 class ReviewRepository
 {
-    
+
+    /**
+     *  array with params:
+     * @param comment
+     * @param rating
+     * @param productId
+     * @param userId
+     * 
+     */
 
     public function create(array $array)
     {
@@ -25,10 +33,15 @@ class ReviewRepository
         return $review;
     }
 
+    /**
+     *  array with params:
+     * @param productId
+     * 
+     */
 
     public function findByProduct($productId)
     {
-      return Review::where('product_id', $productId)->with('user')->get();
+        return Review::where('product_id', $productId)->with('user')->get();
     }
 
     public function findAll()
@@ -37,13 +50,30 @@ class ReviewRepository
 
         return $review;
     }
-    
+
+    /**
+     *  array with params:
+     * @param Review $request
+     * 
+     */
+
     public function findById(Review $review)
     {
         return Review::findOrFail($review->id);
     }
 
-    
+
+    /**
+     *  array with params:
+     * @param comment
+     * @param rating
+     * @param productId
+     * @param userId
+     * 
+     * 
+     * @param ReviewResource $reviewResource
+     * 
+     */
 
 
     public function update(ReviewResource $reviewResource, array $array): Review
@@ -55,10 +85,10 @@ class ReviewRepository
     }
 
 
-     public function delete(ReviewResource $reviewResource): void
-     {
-         $reviewArray = $reviewResource->toArray(request());
-         $review = Review::where($reviewArray)->firstOrFail();
-         $review->delete();
-     }
+    public function delete(ReviewResource $reviewResource): void
+    {
+        $reviewArray = $reviewResource->toArray(request());
+        $review = Review::where($reviewArray)->firstOrFail();
+        $review->delete();
+    }
 }

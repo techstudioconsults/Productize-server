@@ -1,5 +1,11 @@
 <?php
 
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ *  @since 22-05-2024
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;

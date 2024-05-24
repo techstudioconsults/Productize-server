@@ -1,4 +1,9 @@
 <?php
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ *  @since 22-05-2024
+ */
 
 namespace App\Http\Controllers;
 
@@ -27,9 +32,16 @@ class ReviewController extends Controller
        return ReviewResource::collection($reviews);
     }
     
-    /**
-     * Store a newly created resource in storage.
-     */
+     /**
+    * Store a newly created resource in storage.
+    * @param StoreReviewRequest $request 
+    * 
+    * creates a new faq $request The HTTP request containing query parameters:
+    *                         - comment(required)
+    *                         - rating(required)
+    *                         - productId(required)
+    *                         - userId (make sure user is authenticated)
+    */
     public function store(StoreReviewRequest $request, $productId)
     {
         // Retrieve the authenticated user
@@ -79,6 +91,11 @@ class ReviewController extends Controller
         //
     }
 
+    /**
+     *  Get each product review
+     * 
+     * @param - $productId
+     */
     public function getReviewsByProduct($productId)
     {
         $reviews = $this->reviewRepository->findByProduct($productId);

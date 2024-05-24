@@ -26,12 +26,18 @@ class ReviewRepository
     }
 
 
-    public function findByProduct(Product $productId)
+    public function findByProduct($productId)
     {
       return Review::where('product_id', $productId)->with('user')->get();
     }
 
+    public function findAll()
+    {
+        $review = Review::all();
 
+        return $review;
+    }
+    
     public function findById(Review $review)
     {
         return Review::findOrFail($review->id);

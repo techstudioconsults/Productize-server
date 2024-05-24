@@ -18,3 +18,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/tests/feature/v1/api/ReviewRepositoryTest.php

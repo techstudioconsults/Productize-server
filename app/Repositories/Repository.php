@@ -10,6 +10,7 @@ namespace App\Repositories;
 
 use App\Helpers\Services\ValidationService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -35,23 +36,44 @@ abstract class Repository extends ValidationService
     abstract public function create(array $entity): Model;
 
     /**
-     * Retrieves entities from the database based on the provided filter.
+     * Queries entities from the database based on the provided filter.
      *
      * @param array|null $filter An optional filter to apply when retrieving entities.
      * @return \Illuminate\Database\Eloquent\Builder The query builder for retrieving entities.
      */
-    abstract public function find(?array $filter): Builder;
+    abstract public function query(array $filter): Builder;
 
     /**
-     * Retrieves all entities from the database by a Model and an array of filter.
+     * Applies filters to an Eloquent relation.
      *
-     * The client model must have a callable method that defines its relationship with the server base model.
+     * This method accepts an Eloquent relation and an array of filters. It applies the filters
+     * to the relation, including date filters if they are present in the filter array.
+     * If the filter array is empty, the original relation is returned.
      *
-     * @param Model $parent Use a model relation to retrieve entities.
-     * @param  array $filter Associative array of filter colums and their value
-     * @return Relation
+     * @param Relation $relation The Eloquent relation to which the filters will be applied.
+     * @param array $filter An associative array of filters to apply to the relation.
+     *                      Supported filters include:
+     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column.
+     *                      - Other key-value pairs will be used as where conditions on the relation.
+     * @return Relation The filtered Eloquent relation.
+     * @throws UnprocessableException If the date range filter is invalid.
      */
-    abstract public function findByRelation(Model $parent, ?array $filter): Relation;
+    public function queryRelation(Relation $relation, array $filter): Relation
+    {
+        if (empty($filter)) return $relation;
+
+        $this->applyDateFilters($relation, $filter);
+
+        return $relation->where($filter);
+    }
+
+    /**
+     * Retrieves entities from the database based on the provided filter.
+     *
+     * @param array|null $filter An optional filter to apply when retrieving entities.
+     * @return \Illuminate\Database\Eloquent\Collection The collection for retrieved entities.
+     */
+    abstract public function find(?array $filter): Collection;
 
     /**
      * Retrieves a model by its id from the database.
@@ -59,7 +81,7 @@ abstract class Repository extends ValidationService
      * @param string $id The unique identifier of the entity.
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
-    abstract public function findById(string $id): Model;
+    abstract public function findById(string $id): Model | null;
 
     /**
      * Retrieves a model by an array of filter from the database.
@@ -67,7 +89,7 @@ abstract class Repository extends ValidationService
      * @param string $id The unique identifier of the entity.
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
-    abstract public function findOne(array $filter): Model;
+    abstract public function findOne(array $filter): Model | null;
 
     /**
      * Update an entity in the database.

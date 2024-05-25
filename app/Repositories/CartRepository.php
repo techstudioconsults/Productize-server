@@ -12,6 +12,7 @@ use App\Exceptions\ApiException;
 use App\Exceptions\ModelCastException;
 use App\Models\Cart;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -24,14 +25,19 @@ class CartRepository extends Repository
 {
     public function seed(): void
     {
+        Cart::factory()->create()->count(10);
     }
 
+    /**
+     * Create a new cart.
+     * @param array $entity
+     */
     public function create(array $entity): Cart
     {
         return Cart::create($entity);
     }
 
-    public function find(?array $filter = null): Builder
+    public function query(array $filter): Builder
     {
         $query = Cart::query();
 
@@ -44,33 +50,19 @@ class CartRepository extends Repository
         return $query;
     }
 
-    public function findByRelation(Model $parent, ?array $filter): Relation
+    public function find(?array $filter = null): Collection
     {
-        // Start with the base relation
-        $carts = $parent?->carts();
-
-        if (!$carts) {
-            throw new ApiException(
-                "Unable to retrieve related carts. The parent model does not have a defined 'carts' relationship.",
-                500
-            );
-        }
-
-        if (empty($filter)) return $carts;
-
-        $this->applyDateFilters($carts, $filter);
-
-        return $carts->where($filter);
+        return $this->query($filter ?? [])->get();
     }
 
-    public function findById(string $id): Cart
+    public function findById(string $id): Cart | null
     {
         return Cart::find($id);
     }
 
-    public function findOne(array $filter): Cart
+    public function findOne(array $filter): Cart | null
     {
-        return Cart::where($filter)->first();
+        return $this->query($filter)->first();
     }
 
     public function update(Model $entity, array $updates): Cart

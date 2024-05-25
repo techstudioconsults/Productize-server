@@ -5,6 +5,7 @@
  * @version 1.0
  * @since 21-05-2024
  */
+
 namespace App\Helpers\Services;
 
 use App\Exceptions\UnprocessableException;
@@ -12,7 +13,6 @@ use Illuminate\Validation\Validator;
 use Illuminate\Support\Facades\Validator as Validation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-
 
 class ValidationService
 {
@@ -120,12 +120,17 @@ class ValidationService
     protected function applyDateFilters(Builder | Relation $query, array &$filter): void
     {
         // Check for start_date and end_date in the array
-        if (isset($filter['start_date']) && isset($filter['end_date'])) {
-            $start_date = $filter['start_date'];
-            $end_date = $filter['end_date'];
+        if (array_key_exists('start_date', $filter) && array_key_exists('end_date', $filter)) {
+            $start_date = $filter['start_date'] ?? ""; // Possibly null
+            $end_date = $filter['end_date'] ?? ""; // Possibly null
 
             // Remove them from the array
             unset($filter['start_date'], $filter['end_date']);
+
+            // Exit
+            if (!$start_date || !$end_date) {
+                return;
+            }
 
             $isInvalid = $this->isInValidDateRange($start_date, $end_date);
 

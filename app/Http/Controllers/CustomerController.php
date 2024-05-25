@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\UnprocessableException;
 use App\Models\Customer;
 use App\Http\Resources\CustomerResource;
 use App\Repositories\CustomerRepository;
@@ -50,7 +51,7 @@ class CustomerController extends Controller
         return new CustomerResource($customer);
     }
 
-    public function downloadList(Request $request)
+    public function download(Request $request)
     {
         $user = Auth::user();
 
@@ -58,7 +59,11 @@ class CustomerController extends Controller
 
         $end_date = $request->end_date;
 
-        $customers = $this->customerRepository->find($user, $start_date, $end_date);
+        $customers = $this->customerRepository->find([
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'merchant_id' => $user->id
+        ]);
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 

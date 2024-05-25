@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * Route handler methods for Product resource
+ */
 class ProductController extends Controller
 {
     public function __construct(

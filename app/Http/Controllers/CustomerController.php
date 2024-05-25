@@ -34,8 +34,10 @@ class CustomerController extends Controller
             $filter['end_date'] = $end_date;
         }
 
+        $relations = $user->customers();
+
         // Get customers with filtering
-        $customersQuery = $this->customerRepository->findByRelation($user, $filter);
+        $customersQuery = $this->customerRepository->queryRelation($relations, $filter);
 
         // Paginate the results
         $customers = $customersQuery->paginate(10);
@@ -56,7 +58,7 @@ class CustomerController extends Controller
 
         $end_date = $request->end_date;
 
-        $customers = $this->customerRepository->find($user, $start_date, $end_date)->get();
+        $customers = $this->customerRepository->find($user, $start_date, $end_date);
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 

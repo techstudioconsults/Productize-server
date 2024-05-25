@@ -15,13 +15,14 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 
 class UserRepository extends Repository
@@ -67,11 +68,15 @@ class UserRepository extends Repository
         return $user;
     }
 
-    public function find(?array $filter): Builder
+    // /**
+    //  * Query carts based on the provided filter.
+    //  *
+    //  * @param array $filter The filter criteria to apply.
+    //  * @return Builder The query builder for carts.
+    //  */
+    public function query(array $filter): Builder
     {
         $query = User::query();
-
-        if ($filter === null) return $query;
 
         // Apply date filter
         $this->applyDateFilters($query, $filter);
@@ -79,14 +84,30 @@ class UserRepository extends Repository
         // Apply other filters
         $query->where($filter);
 
-        // For each filter array, entry, validate presence in model and query
-        // foreach ($filter as $key => $value) {
-        //     if (Schema::hasColumn('users', $key)) {
-        //         $query->where($key, $value);
-        //     }
-        // }
-
         return $query;
+    }
+
+    public function find(?array $filter): ?Collection
+    {
+        return $this->query($filter ?? [])->get();
+        // $query = User::query();
+
+        // if ($filter === null) return $query;
+
+        // // Apply date filter
+        // $this->applyDateFilters($query, $filter);
+
+        // // Apply other filters
+        // $query->where($filter);
+
+        // // For each filter array, entry, validate presence in model and query
+        // // foreach ($filter as $key => $value) {
+        // //     if (Schema::hasColumn('users', $key)) {
+        // //         $query->where($key, $value);
+        // //     }
+        // // }
+
+        // return $query;
     }
 
     public function findByRelation(Model $parent, ?array $filter): Relation

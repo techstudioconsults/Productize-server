@@ -8,16 +8,14 @@
 
 namespace App\Repositories;
 
-use App\Exceptions\ApiException;
 use App\Exceptions\ModelCastException;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class CustomerRepository extends Repository
 {
@@ -54,58 +52,38 @@ class CustomerRepository extends Repository
         return Customer::create($entity);
     }
 
-    public function find(?array $filter = null): Builder
+    /**
+     * Query carts based on the provided filter.
+     *
+     * @param array $filter The filter criteria to apply.
+     * @return Builder The query builder for carts.
+     */
+    public function query(array $filter): Builder
     {
-        // Start with the base query
         $query = Customer::query();
 
-        // Apply filters if provided
-        if ($filter !== null) {
-            // Check if start_date and end_date are provided in the filter array
-            if (isset($filter['start_date']) && isset($filter['end_date'])) {
-                $query->whereBetween('created_at', [$filter['start_date'], $filter['end_date']]);
-            }
+        // Apply date filter
+        $this->applyDateFilters($query, $filter);
 
-            foreach ($filter as $key => $value) {
-                // Check if the key exists as a column in the orders table
-                if (Schema::hasColumn('customers', $key)) {
-                    // Apply where condition based on the filter
-                    $query->where($key, $value);
-                }
-            }
-        }
+        // Apply other filters
+        $query->where($filter);
 
         return $query;
     }
 
-    public function findById(string $id): Model
+    public function find(?array $filter = null): ?Collection
+    {
+        return $this->query($filter ?? [])->get();
+    }
+
+    public function findById(string $id): ?Customer
     {
         return Customer::find($id);
     }
 
-    public function findOne(array $filter): Customer
+    public function findOne(array $filter): ?Customer
     {
-        return Customer::where($filter)->first();
-    }
-
-    public function findByRelation(Model $parent, ?array $filter = null): Relation
-    {
-        // Start with the base relation
-        $relation = $parent?->customers();
-
-        if (!$relation) throw new ApiException("Error", 500);
-
-        if (empty($filter)) return $relation;
-
-        $this->applyDateFilters($relation, $filter);
-
-        foreach ($filter as $key => $value) {
-            if (Schema::hasColumn('customers', $key)) {
-                $relation->where($key, $value);
-            }
-        }
-
-        return $relation;
+        return $this->query($filter)->first();
     }
 
     /**
@@ -130,16 +108,5 @@ class CustomerRepository extends Repository
 
         // Return the updated Customer model
         return $entity;
-    }
-
-    public function updateMany(array $filter, array $updates): int
-    {
-        return 1;
-    }
-
-
-    public function deleteMany(array $filter): int
-    {
-        return 1;
     }
 }

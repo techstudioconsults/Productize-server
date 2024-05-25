@@ -11,11 +11,13 @@ Route::controller(CartController::class)
         'auth:sanctum',
     ])
     ->group(function () {
-        Route::post('/', 'store');
+        Route::post('/', 'store')->name('store');
 
-        Route::get('/', 'index');
+        Route::get('/', 'index')->name('index');
 
-        Route::patch('/{cart}', 'update')->middleware('can:update,cart');
+        Route::get('/{cart}', 'show')->middleware('can:view,cart')->name('show');
 
-        Route::delete('/{cart}', 'delete')->middleware('can:delete,cart');
+        Route::patch('/{cart}', 'update')->middleware('can:update,cart')->name('update');
+
+        Route::delete('/{cart}', 'delete')->middleware('can:delete,cart')->name('delete');
     });

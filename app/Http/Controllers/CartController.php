@@ -13,6 +13,7 @@ use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
+use App\Repositories\CartRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 
@@ -21,6 +22,10 @@ use Illuminate\Http\JsonResponse;
  */
 class CartController extends Controller
 {
+    public function __construct(
+        protected CartRepository $cartRepository
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -33,9 +38,9 @@ class CartController extends Controller
     {
         $user = Auth::user();
 
-        $items = Cart::where('user_id', $user->id)->get();
+        $carts = $this->cartRepository->find(['user_id' => $user->id]);
 
-        return CartResource::collection($items);
+        return CartResource::collection($carts);
     }
 
     /**
@@ -57,14 +62,13 @@ class CartController extends Controller
         // Add the user's id to the payload
         $payload['user_id'] = $user->id;
 
-        // Check for ducplicate
-        $exist = $user->carts()->where(['product_slug' => $payload['product_slug']])->first();
+        // Validate cart exists
+        $exists = $this->cartRepository->query(['product_slug' => $payload['product_slug']])->exists();
 
         // Throw exception, if duplicate
-        if ($exist) throw new ConflictException('Item exist in cart');
+        if ($exists) throw new ConflictException('Item exist in cart');
 
-        // Create cart
-        $cart = Cart::create($payload);
+        $cart = $this->cartRepository->create($payload);
 
         // Return response
         return new CartResource($cart);
@@ -92,11 +96,7 @@ class CartController extends Controller
      */
     public function update(UpdateCartRequest $request, Cart $cart)
     {
-        $payload = $request->validated();
-
-        $cart->quantity = $payload['quantity'];
-
-        $cart->save();
+        $cart = $this->cartRepository->update($cart, $request->validated());
 
         return new CartResource($cart);
     }
@@ -111,7 +111,7 @@ class CartController extends Controller
      */
     public function delete(Cart $cart)
     {
-        $cart->delete();
+        $this->cartRepository->deleteOne($cart);
 
         return new JsonResponse([
             'message' => 'Item deleted'

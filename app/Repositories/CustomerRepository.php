@@ -17,6 +17,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * @author Tobi Olanitori
+ *
+ * Repository for Customer resource
+ */
 class CustomerRepository extends Repository
 {
     public function seed(): void
@@ -47,16 +52,22 @@ class CustomerRepository extends Repository
         }
     }
 
+    /**
+     * Create a new customer.
+     *
+     * @param array $entity The data for creating the customer.
+     * @return Customer The newly created cart instance.
+     */
     public function create(array $entity): Model
     {
         return Customer::create($entity);
     }
 
     /**
-     * Query carts based on the provided filter.
+     * Query customers based on the provided filter.
      *
      * @param array $filter The filter criteria to apply.
-     * @return Builder The query builder for carts.
+     * @return Builder The query builder for customers.
      */
     public function query(array $filter): Builder
     {
@@ -71,16 +82,34 @@ class CustomerRepository extends Repository
         return $query;
     }
 
+    /**
+     * Find customers based on the provided filter.
+     *
+     * @param array|null $filter The filter criteria to apply (optional).
+     * @return Collection The collection of found customers.
+     */
     public function find(?array $filter = null): ?Collection
     {
         return $this->query($filter ?? [])->get();
     }
 
+    /**
+     * Find a customer by its ID.
+     *
+     * @param string $id The ID of the customer to find.
+     * @return Customer|null The found customer instance, or null if not found.
+     */
     public function findById(string $id): ?Customer
     {
         return Customer::find($id);
     }
 
+    /**
+     * Find a single customer based on the provided filter.
+     *
+     * @param array $filter The filter criteria to apply.
+     * @return Customer|null The found cart instance, or null if not found.
+     */
     public function findOne(array $filter): ?Customer
     {
         return $this->query($filter)->first();
@@ -89,11 +118,11 @@ class CustomerRepository extends Repository
     /**
      * Update an entity in the database.
      *
-     * @param  Model $entity The model to be updated
+     * @param  Model $entity The customer to be updated
      * @param array $updates The array of data containing the fields to be updated.
-     * @return Model The updated model
+     * @return Model The updated customer
      */
-    public function update(Model $entity, array $updates): Model
+    public function update(Model $entity, array $updates): Customer
     {
         // Ensure that the provided entity is an instance of Customer
         if (!$entity instanceof Customer) {

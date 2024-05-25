@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @author Tobi Olanitori
  *
- * Repository for Cart
+ * Repository for Cart resource
  */
 class CartRepository extends Repository
 {

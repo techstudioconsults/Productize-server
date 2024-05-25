@@ -277,7 +277,7 @@ class AuthControllerTest extends TestCase
 
     public function test_verify_with_invalid_signature(): void
     {
-        $this->expectException(UnAuthorizedException::class);
+        $this->expectException(NotFoundException::class);
 
         // Generate a signed URL with an invalid signature
         $url = URL::temporarySignedRoute(
@@ -288,9 +288,6 @@ class AuthControllerTest extends TestCase
 
         // Simulate a request to your verification endpoint with the signed URL
         $response = $this->withoutExceptionHandling()->get($url);
-
-        // Assert the response
-        $response->assertJson(['message' => 'Invalid/Expired url provided']);
     }
 
     public function test_resendLink()

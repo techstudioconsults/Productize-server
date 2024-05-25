@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  * @version 1.0
  * @since 25-05-2024
  */
@@ -76,7 +76,7 @@ class CartController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Retrive the specified product.
      *
      * @param  \App\Models\Cart  $cart The cart to display.

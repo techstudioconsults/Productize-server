@@ -207,9 +207,6 @@ class CustomerControllerTest extends TestCase
         // Assert the response headers
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $response->assertHeader('Content-Disposition', 'attachment; filename=' . $fileName);
-
-        // Clean up by deleting the created file
-        Storage::disk('local')->delete($filePath);
     }
 
     public function test_download_with_date_range(): void
@@ -293,8 +290,5 @@ class CustomerControllerTest extends TestCase
         // Assert the response headers
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $response->assertHeader('Content-Disposition', 'attachment; filename=' . $fileName);
-
-        // Clean up by deleting the created file
-        Storage::disk('local')->delete($filePath);
     }
 }

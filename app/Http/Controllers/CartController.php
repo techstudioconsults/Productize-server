@@ -75,6 +75,8 @@ class CartController extends Controller
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     * 
      * Retrive the specified product.
      *
      * @param  \App\Models\Cart  $cart The cart to display.

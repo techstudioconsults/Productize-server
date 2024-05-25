@@ -73,7 +73,7 @@ abstract class Repository extends ValidationService
      * @param array|null $filter An optional filter to apply when retrieving entities.
      * @return \Illuminate\Database\Eloquent\Collection The collection for retrieved entities.
      */
-    abstract public function find(?array $filter): Collection;
+    abstract public function find(?array $filter): ?Collection;
 
     /**
      * Retrieves a model by its id from the database.

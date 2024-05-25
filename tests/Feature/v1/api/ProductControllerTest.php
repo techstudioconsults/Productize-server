@@ -641,14 +641,125 @@ class ProductControllerTest extends TestCase
 
     public function test_analytics(): void
     {
+        $total_products = 10;
+        $total_sales = 5;
+        $total_customers = 20;
+        $total_revenues = 100;
+        $new_orders = 3;
+        $new_orders_revenue = 50;
+        $views = 1;
+
+        // Create a user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        // Mocking the product repository
+        $productRepository = $this->createMock(ProductRepository::class);
+        $this->instance(ProductRepository::class, $productRepository);
+
+        // Mocking the product repository methods
+        $productRepository->expects($this->once())
+            ->method('getTotalProductCountPerUser')
+            ->with($user, null, null)
+            ->willReturn($total_products);
+
+        $productRepository->expects($this->once())
+            ->method('getUserTotalRevenues')
+            ->with($user, null, null)
+            ->willReturn($total_revenues);
+
+        $productRepository->expects($this->once())
+            ->method('getTotalSales')
+            ->with($user, null, null)
+            ->willReturn($total_sales);
+
+        $productRepository->expects($this->once())
+            ->method('getTotalCustomers')
+            ->with($user, null, null)
+            ->willReturn($total_customers);
+
+        $productRepository->expects($this->once())
+            ->method('getNewOrders')
+            ->with($user)
+            ->willReturn(['count' => $new_orders, 'revenue' => $new_orders_revenue]);
+
+        // Define the start date and end date
+        $startDate = '2024-01-01';
+        $endDate = '2024-12-31';
+        // Make a GET request to the analytics endpoint
+        $response = $this->actingAs($user, 'web')->get(route('product.analytics'), [
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]);
+
+        // Then
+        $response->assertOk();
+        $response->assertJsonStructure(['data' => [
+            'total_products',
+            'total_sales',
+            'total_customers',
+            'total_revenues',
+            'new_orders',
+            'new_orders_revenue',
+            'views'
+        ]]);
+
+        $response->assertJson(['data' => [
+            'total_products' => $total_products,
+            'total_sales' => $total_sales,
+            'total_customers' => $total_customers,
+            'total_revenues' => $total_revenues,
+            'new_orders' => $new_orders,
+            'new_orders_revenue' => $new_orders_revenue,
+            'views' => $views
+        ]]);
     }
 
     public function test_analytics_unauthenticated(): void
     {
+        $this->expectException(UnAuthorizedException::class);
+
+        // Define the start date and end date
+        $startDate = '2024-01-01';
+        $endDate = '2024-12-31';
+
+        // When
+        $this->withoutExceptionHandling()->getJson(route('product.analytics', [
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]));
     }
 
     public function test_records(): void
     {
+        // create user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $products = Product::factory(3)->create(['user_id' => $user->id]);
+
+        $request = [
+            'status' =>  ProductStatusEnum::Published->value,
+            'start_date' => now()->subDays(7)->format('Y-m-d'),
+            'end_date' => now()->format('Y-m-d'),
+        ];
+
+        // Mocking the product repository
+        $productRepository = $this->createMock(ProductRepository::class);
+        $this->instance(ProductRepository::class, $productRepository);
+
+        $productRepository->expects($this->once())
+            ->method('getUserProducts')
+            ->with($user, null, $request['start_date'], $request['end_date'])
+            ->willReturn($products);
+
+        // act
+        $response = $this->actingAs($user, 'web')->withoutExceptionHandling()->get(route('product.record'), $request);
+
+        // assert
+        $response->assertStatus(200);
+        $response->assertHeader('Content-type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', "attachment; filename=products_" . now()->format('d_F_Y') . ".csv");
     }
 
     public function test_records_unauthenticated(): void

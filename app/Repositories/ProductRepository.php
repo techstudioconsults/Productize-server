@@ -99,7 +99,6 @@ class ProductRepository
     /**
      * getUserProducts
      *
-    //  * @return void
      */
     public function getUserProducts(
         User $user,
@@ -112,9 +111,9 @@ class ProductRepository
         /**
          * Filter products by Product status
          */
-        if ($status && $status === 'deleted') {
+        if ($status === 'deleted') {
             $products->onlyTrashed();
-        } else if ($status && $status !== 'deleted') {
+        } else if ($status !== null && $status !== 'deleted') {
             // Validate status
             $rules = [
                 'status' => ['required', new Enum(ProductStatusEnum::class)]

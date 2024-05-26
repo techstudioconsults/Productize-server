@@ -139,7 +139,7 @@ class OrderRepository extends Repository
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Applies filters to an Eloquent relation.
      *
      * This method accepts an Eloquent relation and an array of filters. It applies the filters
@@ -149,7 +149,7 @@ class OrderRepository extends Repository
      * @param Relation $relation The Eloquent relation to which the filters will be applied.
      * @param array $filter An associative array of filters to apply to the relation.
      *                      Supported filters include:
-     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column.
+     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
      *                      - Other key-value pairs will be used as where conditions on the relation.
      * @return Relation The filtered Eloquent relation.
      * @throws UnprocessableException If the date range filter is invalid.

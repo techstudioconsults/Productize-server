@@ -38,7 +38,7 @@ class UserRepositoryTest extends TestCase
         $this->email = "tobiolanitori@gmail.com";
         $this->password = "password123";
 
-        $this->userRepository = new UserRepository();
+        $this->userRepository = app(UserRepository::class);
     }
 
     /**
@@ -213,8 +213,8 @@ class UserRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         // Define the date range
-        $startDate = Carbon::create(2024, 1, 1, 0);
-        $endDate = Carbon::create(2024, 3, 20, 0);
+        $start_date = Carbon::create(2024, 1, 1, 0);
+        $end_date = Carbon::create(2024, 3, 20, 0);
 
         // Create orders within the date range
         Order::factory()->count(3)->state([
@@ -232,8 +232,13 @@ class UserRepositoryTest extends TestCase
         // Set up the expected total sales
         $expectedTotalSales = 3;
 
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
         // Act
-        $totalSales = $this->userRepository->getTotalSales($user, $startDate, $endDate);
+        $totalSales = $this->userRepository->getTotalSales($user, $filter);
 
         // Assert
         $this->assertEquals($expectedTotalSales, $totalSales);
@@ -245,14 +250,19 @@ class UserRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         // Define an invalid date range
-        $startDate = 'invalid-date';
-        $endDate = 'invalid-date';
+        $start_date = 'invalid-date';
+        $end_date = 'invalid-date';
+
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
 
         // Assert that the expected exception is thrown
         $this->expectException(UnprocessableException::class);
 
         // Act
-        $this->userRepository->getTotalSales($user, $startDate, $endDate);
+        $this->userRepository->getTotalSales($user, $filter);
     }
 
     public function test_get_total_revenues()
@@ -321,7 +331,12 @@ class UserRepositoryTest extends TestCase
 
         $expected_result = $amount1 + $amount2 + $amount3;
 
-        $result = $this->userRepository->getTotalRevenues($user, $start_date, $end_date);
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $result = $this->userRepository->getTotalRevenues($user, $filter);
 
         $this->assertEquals($expected_result, $result);
     }
@@ -332,14 +347,19 @@ class UserRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         // Define an invalid date range
-        $startDate = 'invalid-date';
-        $endDate = 'invalid-date';
+        $start_date = 'invalid-date';
+        $end_date = 'invalid-date';
+
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
 
         // Assert that the expected exception is thrown
         $this->expectException(UnprocessableException::class);
 
         // Act
-        $this->userRepository->getTotalRevenues($user, $startDate, $endDate);
+        $this->userRepository->getTotalRevenues($user, $filter);
     }
 
     public function test_get_total_customers()
@@ -413,7 +433,12 @@ class UserRepositoryTest extends TestCase
             'created_at' => Carbon::create(2024, 3, 15, 0)
         ]);
 
-        $result = $this->userRepository->getTotalCustomers($merchant, $start_date, $end_date);
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $result = $this->userRepository->getTotalCustomers($merchant, $filter);
 
         $this->assertEquals($expected_result, $result);
     }
@@ -429,6 +454,11 @@ class UserRepositoryTest extends TestCase
         $start_date = 'invalid-date';
         $end_date = 'invalid-date';
 
-        $this->userRepository->getTotalCustomers($user, $start_date, $end_date);
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $this->userRepository->getTotalCustomers($user, $filter);
     }
 }

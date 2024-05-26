@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author Tobi Olanitori
+ * @version 1.0
+ * @since 26-05-2024
+ */
+
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
@@ -13,6 +19,11 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
+/**
+ * @author Tobi Olanitori
+ *
+ * Repository for Order resource
+ */
 class OrderRepository extends Repository
 {
     public function seed(): void
@@ -34,10 +45,18 @@ class OrderRepository extends Repository
     }
 
     /**
-     * array with params:
-     * @param reference_no Paystack reference number
-     * @param product_id Product ID
-     * @param order_id Order ID
+     * @author Tobi Olanitori
+     *
+     * Create a new order.
+     *
+     * @param array $entity The data for creating the order:
+     *                             - reference_no: Paystack reference number
+     *                             - product_id: The Product ID
+     *                             - quantity: The order quantity
+     *                             - total_amount: quantity * product price
+     *                             - user_id: The user making the order
+     *
+     * @return Order The newly created order instance.
      */
     public function create(array $array): Model
     {
@@ -46,6 +65,14 @@ class OrderRepository extends Repository
         return $order;
     }
 
+    /**
+     * @author Tobi Olanitori
+     *
+     * Find orders based on the provided filter.
+     *
+     * @param array|null $filter The filter criteria to apply (optional).
+     * @return Collection The collection of found orders.
+     */
     public function find(?array $filter = null): ?Collection
     {
         return $this->query($filter ?? [])->get();

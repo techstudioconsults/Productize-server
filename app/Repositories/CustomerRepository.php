@@ -58,7 +58,7 @@ class CustomerRepository extends Repository
      * Create a new customer.
      *
      * @param array $entity The data for creating the customer.
-     * @return Customer The newly created cart instance.
+     * @return Customer The newly created customer instance.
      */
     public function create(array $entity): Model
     {

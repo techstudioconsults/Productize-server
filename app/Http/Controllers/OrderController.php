@@ -18,7 +18,7 @@ class OrderController extends Controller
         protected OrderRepository $orderRepository
     ) {
     }
-    
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -30,7 +30,13 @@ class OrderController extends Controller
         // Get the search query from the request
         $product_title = $request->product_title;
 
-        $orders = $this->orderRepository->find($user, $product_title, $start_date, $end_date);
+        $filter = [
+            'product_title' => $product_title,
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $orders = $this->orderRepository->queryRelation($user->orders(), $filter);
 
         $orders = $orders->paginate(10);
 
@@ -72,7 +78,13 @@ class OrderController extends Controller
         // Get the search query from the request
         $product_title = $request->product_title;
 
-        $orders = $this->orderRepository->find($user, $product_title, $start_date, $end_date)->get();
+        $filter = [
+            'product_title' => $product_title,
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 

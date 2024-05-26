@@ -53,6 +53,8 @@ class CustomerRepository extends Repository
     }
 
     /**
+     * @author Tobi Olanitori
+     *
      * Create a new customer.
      *
      * @param array $entity The data for creating the customer.
@@ -64,6 +66,8 @@ class CustomerRepository extends Repository
     }
 
     /**
+     * @author Tobi Olanitori
+     *
      * Query customers based on the provided filter.
      *
      * @param array $filter The filter criteria to apply.
@@ -83,6 +87,8 @@ class CustomerRepository extends Repository
     }
 
     /**
+     * @author Tobi Olanitori
+     *
      * Find customers based on the provided filter.
      *
      * @param array|null $filter The filter criteria to apply (optional).
@@ -94,6 +100,8 @@ class CustomerRepository extends Repository
     }
 
     /**
+     * @author Tobi Olanitori
+     *
      * Find a customer by its ID.
      *
      * @param string $id The ID of the customer to find.
@@ -105,6 +113,8 @@ class CustomerRepository extends Repository
     }
 
     /**
+     * @author Tobi Olanitori
+     *
      * Find a single customer based on the provided filter.
      *
      * @param array $filter The filter criteria to apply.
@@ -116,6 +126,8 @@ class CustomerRepository extends Repository
     }
 
     /**
+     * @author Tobi Olanitori
+     *
      * Update an entity in the database.
      *
      * @param  Model $entity The customer to be updated

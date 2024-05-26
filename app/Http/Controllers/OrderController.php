@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author Tobi Olanitori
+ *  @author @Intuneteq Tobi Olanitori
  * @version 1.0
  * @since 26-05-2024
  */

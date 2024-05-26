@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  * @version 1.0
  * @since 26-05-2024
  */
@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  *
  * Repository for Order resource
  */
@@ -45,7 +45,7 @@ class OrderRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Create a new order.
      *
@@ -66,7 +66,7 @@ class OrderRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Find orders based on the provided filter.
      *
@@ -79,7 +79,7 @@ class OrderRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Find a order by its ID.
      *
@@ -92,7 +92,7 @@ class OrderRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Find a single order based on the provided filter.
      *
@@ -105,7 +105,7 @@ class OrderRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Query orders based on the provided filter.
      *
@@ -138,6 +138,8 @@ class OrderRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     * 
      * Applies filters to an Eloquent relation.
      *
      * This method accepts an Eloquent relation and an array of filters. It applies the filters
@@ -186,7 +188,7 @@ class OrderRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Update an entity in the database.
      *

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  * @version 1.0
  * @since 21-05-2024
  */
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  *
  * Repository for Cart resource
  */
@@ -27,6 +27,8 @@ class CartRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Create a new cart.
      *
      * @param array $entity The data for creating the cart.
@@ -38,6 +40,8 @@ class CartRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Query carts based on the provided filter.
      *
      * @param array $filter The filter criteria to apply.
@@ -57,6 +61,8 @@ class CartRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Find carts based on the provided filter.
      *
      * @param array|null $filter The filter criteria to apply (optional).
@@ -68,6 +74,8 @@ class CartRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Find a cart by its ID.
      *
      * @param string $id The ID of the cart to find.
@@ -79,6 +87,8 @@ class CartRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Find a single cart based on the provided filter.
      *
      * @param array $filter The filter criteria to apply.
@@ -90,6 +100,8 @@ class CartRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     * 
      * Update a cart entity with the provided updates.
      *
      * @param Model $entity The cart entity to update.

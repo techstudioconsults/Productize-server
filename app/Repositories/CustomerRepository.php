@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  * @version 1.0
  * @since 12-05-2024
  */
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  *
  * Repository for Customer resource
  */
@@ -53,7 +53,7 @@ class CustomerRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Create a new customer.
      *
@@ -66,7 +66,7 @@ class CustomerRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Query customers based on the provided filter.
      *
@@ -87,7 +87,7 @@ class CustomerRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Find customers based on the provided filter.
      *
@@ -100,7 +100,7 @@ class CustomerRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Find a customer by its ID.
      *
@@ -113,12 +113,12 @@ class CustomerRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Find a single customer based on the provided filter.
      *
      * @param array $filter The filter criteria to apply.
-     * @return Customer|null The found cart instance, or null if not found.
+     * @return Customer|null The found customer instance, or null if not found.
      */
     public function findOne(array $filter): ?Customer
     {
@@ -126,7 +126,7 @@ class CustomerRepository extends Repository
     }
 
     /**
-     * @author Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Update an entity in the database.
      *

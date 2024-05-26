@@ -50,10 +50,11 @@ class OrderController extends Controller
 
     public function showByProduct(Product $product)
     {
-        $user = Auth::user();
+        $filter = [
+            'product_id' => $product->id
+        ];
 
-        $orders = $user->orders()->where('product_id', $product->id)->take(3)
-            ->get();
+        $orders = $this->orderRepository->query($filter)->take(3)->get();
 
         return OrderResource::collection($orders);
     }
@@ -62,7 +63,11 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        $orders = $user->orders()->where('orders.user_id', $customer->user->id)->get();
+        $filter = [
+            'user_id' => $customer->user->id
+        ];
+
+        $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
 
         return OrderResource::collection($orders);
     }

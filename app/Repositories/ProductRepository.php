@@ -27,9 +27,9 @@ use Illuminate\Validation\Rules\Enum;
 
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  *
- * Repository for Products
+ * Repository for Product resource
  */
 class ProductRepository extends Repository
 {
@@ -40,9 +40,9 @@ class ProductRepository extends Repository
     /**
      * Constructor for ProductRepository.
      *
-     * @param \App\Repositories\UserRepository - User repository class
+     * @param \App\Repositories\UserRepository  - User repository class
+     * @param \App\Repositories\OrderRepository - Order repository class
      *
-     * @see \App\Repositories\UserRepository   Constructor with UserRepository dependency injection.
      * @return void
      */
     public function __construct(
@@ -68,14 +68,16 @@ class ProductRepository extends Repository
     }
 
     /**
-     * @Intuneteq
+     *  @author @Intuneteq Tobi Olanitori
      *
-     * @param array credentials All products properties required in the StoreProductRequest along with the user_id.
-     * @uses App\Events\Products
+     * Create a new product with the provided credentials.
      *
-     * @return Product
+     * @param array $credentials An array containing all product properties required in the StoreProductRequest,
+     *                           along with the user_id.
      *
-     * @see \App\Http\Requests\StoreProductRequest
+     * @return \App\Models\Product The newly created product instance.
+     *
+     * @throws \App\Exceptions\BadRequestException If validation of the provided credentials fails.
      */
     public function create(array $credentials): Product
     {
@@ -112,6 +114,15 @@ class ProductRepository extends Repository
         return $product;
     }
 
+    /**
+     *  @author @Intuneteq Tobi Olanitori
+     *
+     * Create a query builder for products based on the provided filter.
+     *
+     * @param array $filter The filter criteria to apply.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder The query builder for products.
+     */
     public function query(array $filter): Builder
     {
         $query = Product::query();
@@ -127,16 +138,45 @@ class ProductRepository extends Repository
         return $query;
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find products based on the provided filter.
+     *
+     * @param array|null $filter The filter criteria to apply.
+     *
+     * @return Collection|null A collection of found products, or null if none are found.
+     */
     public function find(?array $filter = []): ?Collection
     {
         return $this->query($filter ?? [])->get();
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find a product by its ID.
+     *
+     * @param string $id The ID of the product to find.
+     *
+     * @return \App\Models\Product|null The found product, or null if not found.
+     */
     public function findById(string $id): ?Product
     {
         return Product::find($id);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find a single product based on the provided filter criteria.
+     *
+     * @param array $filter The filter criteria to search for the product.
+     *
+     * @return \App\Models\Product|null The found product, or null if not found.
+     *
+     * @throws \App\Exceptions\ApiException If an unexpected error occurs during the search.
+     */
     public function findOne(array $filter): ?Product
     {
         try {
@@ -168,6 +208,15 @@ class ProductRepository extends Repository
         ];
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve top products based on sales within a specified date range.
+     *
+     * @param array|null $filter An optional array of filters including 'start_date' and 'end_date'.
+     *
+     * @return Builder The query builder instance.
+     */
     public function topProducts(?array $filter = []): Builder
     {
         $query = Product::query();
@@ -192,8 +241,19 @@ class ProductRepository extends Repository
         return $query;
     }
 
-
-
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Updates a product model with the provided updatable attributes.
+     *
+     * @param \Illuminate\Database\Eloquent\Model $product The product model to update.
+     * @param array $updatables An array of updatable attributes for the product.
+     *
+     * @return \App\Models\Product The updated product model.
+     *
+     * @throws \App\Exceptions\ModelCastException If the provided model is not an instance of Product.
+     * @throws \App\Exceptions\BadRequestException If any of the provided updatable attributes fail validation.
+     */
     public function update(Model $product, array $updatables): Product
     {
         if (!$product instanceof Product) {
@@ -230,6 +290,19 @@ class ProductRepository extends Repository
         return $product;
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Uploads an array of the product's data files and returns their storage paths.
+     *
+     * The data is the actual resource being sold.
+     *
+     * @param array $data An array of data files to upload.
+     *
+     * @return array An array containing the storage paths of the uploaded data files.
+     *
+     * @throws BadRequestException If any of the provided data files fail validation.
+     */
     public function uploadData(array $data): array
     {
         // Each item in the 'data' array must be a file
@@ -246,7 +319,18 @@ class ProductRepository extends Repository
         })->all();
     }
 
-    public function uploadCoverPhoto(array $cover_photos)
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Uploads an array of cover photos and returns their storage paths.
+     *
+     * @param array $cover_photos An array of cover photo image files to upload.
+     *
+     * @return array An array containing the storage paths of the uploaded cover photos.
+     *
+     * @throws BadRequestException If any of the provided cover photos fail validation.
+     */
+    public function uploadCoverPhoto(array $cover_photos): array
     {
         // Each item in the 'data' array must be an image
         if (!$this->isValidated($cover_photos, ['required|image'])) {
@@ -262,6 +346,17 @@ class ProductRepository extends Repository
         })->all();
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Uploads a product's thumbnail image and returns its storage path.
+     *
+     * @param object $thumbnail The thumbnail image file to upload.
+     *
+     * @return string The storage path of the uploaded thumbnail.
+     *
+     * @throws BadRequestException If the provided thumbnail fails validation.
+     */
     public function uploadThumbnail(object $thumbnail): string
     {
         // Each item in the 'data' array must be a file
@@ -278,6 +373,15 @@ class ProductRepository extends Repository
         return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve file metadata for a given file path.
+     *
+     * @param string $filePath The path of the file.
+     *
+     * @return array|null An array containing file metadata including size and MIME type, or null if the file doesn't exist.
+     */
     public function getFileMetaData(string $filePath)
     {
         if (Storage::disk('spaces')->exists($filePath)) {
@@ -293,6 +397,17 @@ class ProductRepository extends Repository
         }
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Apply a status filter to the query based on the provided status value.
+     * It removes the status key and value from the array.
+     *
+     * @param Builder|Relation $query The query builder or relation instance.
+     * @param array &$filter The filter array containing the status key.
+     *
+     * @throws BadRequestException If the status value fails validation.
+     */
     private function applyStatusFilter(Builder | Relation $query, array &$filter)
     {
         if (isset($filter['status'])) {

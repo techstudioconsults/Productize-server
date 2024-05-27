@@ -51,7 +51,7 @@ class ProductController extends Controller
     {
         $status = ProductStatusEnum::Published->value;
 
-        $products = Product::where('status', $status)->paginate();
+        $products = $this->productRepository->query(['status' => $status])->paginate();
 
         return new ProductCollection($products);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ProductEnum;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -27,7 +28,6 @@ class UpdateProductRequest extends FormRequest
         return [
             'title' => 'string',
             'price' => 'integer',
-            'product_type' => [new Enum(ProductEnum::class)],
             'description' => 'string',
             'data.*' => 'file',
             'cover_photos.*' => 'image',

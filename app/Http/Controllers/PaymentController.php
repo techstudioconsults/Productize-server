@@ -28,6 +28,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Storage;
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * @deprecated Too ambigous, high coupling and does not follow SOLID principle.
+ * I am breaking it down into Account and Subscription resource
+ */
 class PaymentController extends Controller
 {
 
@@ -293,6 +299,10 @@ class PaymentController extends Controller
         return new PayOutAccountResource($account);
     }
 
+    /**
+     * Move to the cart controller
+     * Name it `clear`
+     */
     public function purchase(PurchaseRequest $request)
     {
         $user = Auth::user();
@@ -307,7 +317,7 @@ class PaymentController extends Controller
             $slug = $item['product_slug'];
 
             // Find the product by slug
-            $product = $this->productRepository->getProductBySlug($slug);
+            $product = $this->productRepository->find(['slug' => $slug]);
 
             // Product Not Found, Cannot continue with payment.
             if (!$product) {

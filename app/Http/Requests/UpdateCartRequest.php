@@ -25,6 +25,7 @@ class UpdateCartRequest extends FormRequest
     {
         return [
             'quantity' => 'required|numeric|min:0',
+            'product_slug' => 'prohibited'
         ];
     }
 

@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Support\Arr;
 
 class ProductCollection extends ResourceCollection
 {
@@ -21,7 +20,7 @@ class ProductCollection extends ResourceCollection
                 return [
                     'title' => $product->title,
                     'thumbnail' => $product->thumbnail,
-                    'price' => $product->price,
+                    'price' => (int)$product->price,
                     'publisher' => $product->user->full_name,
                     'slug' => $product->slug,
                     'highlights' => $product->highlights,
@@ -29,6 +28,7 @@ class ProductCollection extends ResourceCollection
                     'cover_photos' => $product->cover_photos,
                     'tags' => $product->tags,
                     'description' => $product->description,
+                    'status' => $product->status
                 ];
             }),
         ];

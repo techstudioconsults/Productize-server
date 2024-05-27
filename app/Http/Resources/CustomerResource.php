@@ -29,7 +29,6 @@ class CustomerResource extends JsonResource
                 return $purchase->product->price * $purchase->quantity;
             });
 
-
         // name, email, latest purchase, price, date (last product purchase date - updated at), joined(created at), total order, total_transaction
         return [
             'id' => $this->id,

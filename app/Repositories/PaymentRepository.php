@@ -66,7 +66,7 @@ class PaymentRepository
         $payment->save();
     }
 
-    public function updateWithdraws(string $user_id, int $amount)
+    public function updateWithdraws(string $user_id, int $amount): void
     {
         $payment = Payment::firstWhere('user_id', $user_id);
 

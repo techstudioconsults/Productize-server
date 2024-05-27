@@ -352,38 +352,4 @@ class OrderRepositoryTest extends TestCase
         $this->assertStringContainsString('product', $sql);
         $this->assertStringContainsString('title', $sql);
     }
-
-
-
-    // public function test_find_orders_with_filter_product_title()
-    // {
-    //     $product_title = 'Product 1';
-
-    //     // Arrange
-    //     $user = User::factory()->create();
-    //     $product1 = Product::factory()->create(['user_id' => $user->id, 'title' => $product_title]);
-    //     $product2 = Product::factory()->create(['user_id' => $user->id, 'title' => 'Product 2']);
-
-    //     Order::factory()->create(['user_id' => $user->id, 'product_id' => $product1->id]);
-    //     Order::factory()->create(['user_id' => $user->id, 'product_id' => $product2->id]);
-
-    //     // Act
-    //     $orders = $this->orderRepository->find(['product_title' => $product_title]);
-
-    //     // Assert
-    //     $this->assertCount(1, $orders);
-    //     $this->assertEquals($product1->id, $orders->first()->product_id);
-    //     $this->assertEquals($product_title, $orders->first()->product->title);
-    // }
-
-    // public function test_find_orders_with_invalid_date_range_should_throw_unprocceable_exception()
-    // {
-    //     // Arrange
-    //     $user = User::factory()->create();
-
-    //     // Act & Assert
-    //     $this->expectException(UnprocessableException::class);
-
-    //     $this->orderRepository->find($user, null, 'invalid_date', 'invalid_date');
-    // }
 }

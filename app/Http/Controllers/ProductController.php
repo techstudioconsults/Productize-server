@@ -17,7 +17,9 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
+use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
+use App\Repositories\UserRepository;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,7 +34,9 @@ use Illuminate\Support\Str;
 class ProductController extends Controller
 {
     public function __construct(
-        protected ProductRepository $productRepository
+        protected ProductRepository $productRepository,
+        protected UserRepository $userRepository,
+        protected OrderRepository $orderRepository
     ) {
     }
 
@@ -70,15 +74,17 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $products = $this->productRepository->getUserProducts(
-            $user,
-            $request->status,
-            $request->start_date,
-            $request->end_date
-        );
+        $filter = [
+            'user_id' => $user->id,
+            'status' => $request->status,
+            'start_date' => $request->start_date,
+            'end_date' =>  $request->end_date
+        ];
+
+        $query = $this->productRepository->query($filter);
 
         // Paginate the results
-        $paginatedProducts = $products->paginate(10);
+        $paginatedProducts = $query->paginate(10);
 
         // Append the query parameters to the pagination links
         $paginatedProducts->appends($request->query());
@@ -232,23 +238,33 @@ class ProductController extends Controller
 
         $end_date = $request->end_date;
 
-        $total_products = $this->productRepository->getTotalProductCountPerUser($user, $start_date, $end_date);
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ];
 
-        $total_revenues = $this->productRepository->getUserTotalRevenues($user, $start_date, $end_date);
+        $order_query = $this->orderRepository->queryRelation($user->orders(), $filter);
 
-        $total_sales = $this->productRepository->getTotalSales($user, $start_date, $end_date);
+        $total_products = $this->productRepository->query([...$filter, 'user_id' => $user->id])->count();
 
-        $total_customers = $this->productRepository->getTotalCustomers($user, $start_date, $end_date);
+        $total_revenues = $order_query->sum('total_amount');
 
-        $new_orders = $this->productRepository->getNewOrders($user);
+        $total_sales = $order_query->count();
+
+        $total_customers = $this->userRepository->getTotalCustomers($user, $filter);
+
+        $new_orders_query = $this->orderRepository->queryRelation($user->orders(), [
+            'start_date' => Carbon::now()->subDays(2), // 2 days ago
+            'end_date' => now()
+        ]);
 
         $result = [
             'total_products' => $total_products,
             'total_sales' => $total_sales,
             'total_customers' => $total_customers,
             'total_revenues' => $total_revenues,
-            'new_orders' => $new_orders['count'],
-            'new_orders_revenue' => $new_orders['revenue'],
+            'new_orders' => $new_orders_query->count(),
+            'new_orders_revenue' => $new_orders_query->sum('total_amount'),
             'views' => 1
         ];
 
@@ -266,12 +282,21 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $products = $this->productRepository->getUserProducts(
-            $user,
-            $request->status,
-            $request->start_date,
-            $request->end_date
-        )->get();
+        // $products = $this->productRepository->getUserProducts(
+        //     $user,
+        //     $request->status,
+        //     $request->start_date,
+        //     $request->end_date
+        // )->get();
+
+        $filter = [
+            'user_id' => $user->id,
+            'status' => $request->status,
+            'start_date' => $request->start_date,
+            'end_date' =>  $request->end_date
+        ];
+
+        $products = $this->productRepository->query($filter)->get();
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 
@@ -392,36 +417,27 @@ class ProductController extends Controller
 
     public function topProducts()
     {
-        $products = $this->productRepository->find();
+        $top_products = $this->productRepository->topProducts();
 
-        $top_products = $products
-            ->join('orders', 'products.id', '=', 'orders.product_id')
-            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
-            ->groupBy('products.id')
-            ->orderByDesc('total_sales')
-            ->limit(5)
-            ->paginate(5);
-
-        return new ProductCollection($top_products);
+        return new ProductCollection($top_products
+            ->limit(5)->paginate(5));
     }
 
     public function getUserTopProducts()
     {
         $user = Auth::user();
 
-        $top_products = $user->products()
-            ->join('orders', 'products.id', '=', 'orders.product_id')
-            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
-            ->groupBy('products.id')
-            ->orderByDesc('total_sales')
-            ->limit(5);
+        $top_products = $this->productRepository->topProducts(['user_id' => $user->id]);
 
-        return ProductResource::collection($top_products->paginate(5));
+        return ProductResource::collection($top_products
+            ->limit(5)->paginate(5));
     }
 
     public function productsRevenue()
     {
         $user = Auth::user();
+
+        $relation = $user->orders();
 
         $today = Carbon::today();
         $lastWeekStart = $today->copy()->subWeek()->startOfWeek();
@@ -431,10 +447,25 @@ class ProductController extends Controller
         $threeWeeksAgoStart = $today->copy()->subWeeks(3)->startOfWeek();
         $threeWeeksAgoEnd = $today->copy()->subWeeks(3)->endOfWeek();
 
-        $revForThisWeek = $this->productRepository->getUserTotalRevenues($user, $today->startOfWeek(), $today->endOfWeek());
-        $revForLastWeek = $this->productRepository->getUserTotalRevenues($user, $lastWeekStart, $lastWeekEnd);
-        $revForTwoWeeksAgo = $this->productRepository->getUserTotalRevenues($user, $twoWeeksAgoStart, $twoWeeksAgoEnd);
-        $revForThreeWeeksAgo = $this->productRepository->getUserTotalRevenues($user, $threeWeeksAgoStart, $threeWeeksAgoEnd);
+        $revForThisWeek = $this->orderRepository->queryRelation($relation, [
+            'start_date' => $today->startOfWeek(),
+            'end_date' => $today->endOfWeek()
+        ])->sum('total_amount');
+
+        $revForLastWeek = $this->orderRepository->queryRelation($relation, [
+            'start_date' => $lastWeekStart,
+            'end_date' => $lastWeekEnd
+        ])->sum('total_amount');
+
+        $revForTwoWeeksAgo = $this->orderRepository->queryRelation($relation, [
+            'start_date' => $twoWeeksAgoStart,
+            'end_date' => $twoWeeksAgoEnd
+        ])->sum('total_amount');
+
+        $revForThreeWeeksAgo =  $this->orderRepository->queryRelation($relation, [
+            'start_date' => $threeWeeksAgoStart,
+            'end_date' => $threeWeeksAgoEnd
+        ])->sum('total_amount');
 
         return new JsonResponse([
             'data' => [

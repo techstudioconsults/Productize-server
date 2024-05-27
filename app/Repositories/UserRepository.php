@@ -276,7 +276,7 @@ class UserRepository extends Repository
      *                      - Other key-value pairs will be used as where conditions on the relation.
      *
      * @return int The total number of customers associated with the user within the specified date range.
-     * 
+     *
      * @throws \App\Exceptions\UnprocessableException If the provided date range is invalid.
      */
     public function getTotalCustomers(User $user, ?array $filter = []): int

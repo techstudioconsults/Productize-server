@@ -9,20 +9,20 @@
 namespace App\Repositories;
 
 use App\Enums\ProductStatusEnum;
-use App\Events\Products;
+use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\UnprocessableException;
+use App\Exceptions\ModelCastException;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Validator;
-use Illuminate\Support\Facades\Validator as Validation;
 use Illuminate\Validation\Rules\Enum;
 
 
@@ -31,13 +31,11 @@ use Illuminate\Validation\Rules\Enum;
  *
  * Repository for Products
  */
-class ProductRepository
+class ProductRepository extends Repository
 {
     const PRODUCT_DATA_PATH = "digital-products";
     const COVER_PHOTOS_PATH = "products-cover-photos";
     const THUMBNAIL_PATH = "products-thumbnail";
-
-    private ?Validator $validator = null;
 
     /**
      * Constructor for ProductRepository.
@@ -48,18 +46,9 @@ class ProductRepository
      * @return void
      */
     public function __construct(
-        public UserRepository $userRepository
+        public UserRepository $userRepository,
+        public OrderRepository $orderRepository
     ) {
-    }
-
-    public function getValidator(): ?Validator
-    {
-        return $this->validator;
-    }
-
-    public function setValidator(Validator $validator): void
-    {
-        $this->validator = $validator;
     }
 
     public function seed(): void
@@ -78,102 +67,6 @@ class ProductRepository
         }
     }
 
-    public function find(?array $filter = null): Builder
-    {
-        $query = Product::query();
-
-        if ($filter === null) return $query;
-
-        // $this->applyDateFilters($query, $filter);
-
-        // For each filter array, entry, validate presence in model and query
-        foreach ($filter as $key => $value) {
-            if (Schema::hasColumn('products', $key)) {
-                $query->where($key, $value);
-            }
-        }
-
-        return $query;
-    }
-
-    /**
-     * getUserProducts
-     *
-     */
-    public function getUserProducts(
-        User $user,
-        ?string $status = null,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ) {
-        $products = Product::where('user_id', $user->id);
-
-        /**
-         * Filter products by Product status
-         */
-        if ($status === 'deleted') {
-            $products->onlyTrashed();
-        } else if ($status !== null && $status !== 'deleted') {
-            // Validate status
-            $rules = [
-                'status' => ['required', new Enum(ProductStatusEnum::class)]
-            ];
-
-            if ($this->isValidated(['status' => $status], $rules))
-                throw new BadRequestException($this->getValidator()->errors()->first());
-
-            $products->where('status', $status);
-        }
-
-        /**
-         * Filter by date of creation
-         * start date reps the date to start filtering from
-         * end_date reps the date to end the filtering
-         */
-        if ($start_date && $end_date) {
-
-            $validator = Validation::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
-
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
-
-            $products->whereBetween('created_at', [$start_date, $end_date]);
-        }
-
-        return $products;
-    }
-
-    public function getProductExternal(Product $product)
-    {
-        $total_order = $this->getTotalOrder($product);
-        return [
-            'title' => $product->title,
-            'thumbnail' => $product->thumbnail,
-            'price' => $product->price,
-            'publisher' => $product->user->full_name,
-            'publisher_logo' => $product->user->logo,
-            'slug' => $product->slug,
-            'highlights' => $product->highlights,
-            'product_type' => $product->product_type,
-            'cover_photos' => $product->cover_photos,
-            'tags' => $product->tags,
-            'description' => $product->description,
-            'total_orders' => $total_order
-        ];
-    }
-
-    public function getProductBySlug(string $slug)
-    {
-        return Product::firstWhere('slug', $slug);
-    }
-
     /**
      * @Intuneteq
      *
@@ -184,7 +77,7 @@ class ProductRepository
      *
      * @see \App\Http\Requests\StoreProductRequest
      */
-    public function create(array $credentials)
+    public function create(array $credentials): Product
     {
         // Get the validation rules from the StoreProductRequest
         $rules = (new StoreProductRequest())->rules();
@@ -219,8 +112,93 @@ class ProductRepository
         return $product;
     }
 
-    public function update(Product $product, array $updatables)
+    public function query(array $filter): Builder
     {
+        $query = Product::query();
+
+        // Apply date filter
+        $this->applyDateFilters($query, $filter);
+
+        $this->applyStatusFilter($query, $filter);
+
+        // Apply other filters
+        $query->where($filter);
+
+        return $query;
+    }
+
+    public function find(?array $filter = []): ?Collection
+    {
+        return $this->query($filter ?? [])->get();
+    }
+
+    public function findById(string $id): ?Product
+    {
+        return Product::find($id);
+    }
+
+    public function findOne(array $filter): ?Product
+    {
+        try {
+            return Product::where($filter)->first();
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), 500);
+        }
+    }
+
+    /**
+     * @deprecated This method will be deleted when product data table is implemented
+     */
+    public function getProductExternal(Product $product)
+    {
+        $total_order = $this->orderRepository->query(['product_id' => $product->id])->count();
+        return [
+            'title' => $product->title,
+            'thumbnail' => $product->thumbnail,
+            'price' => $product->price,
+            'publisher' => $product->user->full_name,
+            'publisher_logo' => $product->user->logo,
+            'slug' => $product->slug,
+            'highlights' => $product->highlights,
+            'product_type' => $product->product_type,
+            'cover_photos' => $product->cover_photos,
+            'tags' => $product->tags,
+            'description' => $product->description,
+            'total_orders' => $total_order
+        ];
+    }
+
+    public function topProducts(?array $filter = []): Builder
+    {
+        $query = Product::query();
+
+        $query->join('orders', 'products.id', '=', 'orders.product_id')
+            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
+            ->groupBy('products.id')
+            ->orderByDesc('total_sales');
+
+        // Apply date filter specifically to the products table
+        if (!empty($filter['start_date']) && !empty($filter['end_date'])) {
+            $query->whereBetween('products.created_at', [$filter['start_date'], $filter['end_date']]);
+
+            unset($filter['start_date'], $filter['end_date']);
+        }
+
+        $this->applyStatusFilter($query, $filter);
+
+
+        $query->where($filter);
+
+        return $query;
+    }
+
+
+
+    public function update(Model $product, array $updatables): Product
+    {
+        if (!$product instanceof Product) {
+            throw new ModelCastException("Product", get_class($product));
+        }
         // Get the validation rules from the StoreProductRequest
         $rules = (new UpdateProductRequest())->rules();
 
@@ -250,75 +228,6 @@ class ProductRepository
         $product->save();
 
         return $product;
-    }
-
-    public function getTotalProductCountPerUser(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ): int {
-        $products = Product::where('user_id', $user->id);
-
-        if ($start_date && $end_date) {
-            $validator = Validation::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
-
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
-
-            $products->whereBetween('created_at', [$start_date, $end_date]);
-        }
-
-        return $products->count();
-    }
-
-    public function getTotalOrder(Product $product)
-    {
-        return $product->totalOrder();
-    }
-
-    public function getTotalSales(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ): int {
-        return $this->userRepository->getTotalSales($user, $start_date, $end_date);
-    }
-
-    public function getUserTotalRevenues(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ): int {
-        return $this->userRepository->getTotalRevenues($user, $start_date, $end_date);
-    }
-
-    public function getTotalCustomers(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ): int {
-        return $this->userRepository->getTotalCustomers($user, $start_date, $end_date);
-    }
-
-    public function getNewOrders(User $user)
-    {
-        $two_days_ago = Carbon::now()->subDays(2);
-
-        $new_orders = $user->orders->whereBetween('created_at', [$two_days_ago, now()]);
-
-        $result = [
-            'count' => $new_orders->count(),
-            'revenue' => $new_orders->sum('total_amount')
-        ];
-
-        return $result;
     }
 
     public function uploadData(array $data): array
@@ -384,18 +293,26 @@ class ProductRepository
         }
     }
 
-    private function isValidated(array $data, array $rules): bool
+    private function applyStatusFilter(Builder | Relation $query, array &$filter)
     {
-        // Validate the credentials
-        $validator = validator($data, $rules);
+        if (isset($filter['status'])) {
+            $status = $filter['status'];
 
-        // Check if validation fails
-        if ($validator->fails()) {
-            $this->setValidator($validator);
+            if ($status === 'deleted') {
+                $query->onlyTrashed();
+            } else if ($status && $status !== null && $status !== 'deleted') {
+                // Validate status
+                $rules = [
+                    'status' => ['required', new Enum(ProductStatusEnum::class)]
+                ];
 
-            return false;
-        };
+                if (!$this->isValidated(['status' => $status], $rules)) {
+                    throw new BadRequestException($this->getValidator()->errors()->first());
+                }
 
-        return true;
+                $query->where('status', $status);
+            }
+        }
+        unset($filter['status']);
     }
 }

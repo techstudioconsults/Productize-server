@@ -6,6 +6,12 @@ use App\Models\Payment;
 use App\Models\PayOutAccount;
 use App\Models\User;
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * @deprecated Too ambigous and does not follow SOLID principle.
+ * I am breaking it down into Account and Subscription resource
+ */
 class PaymentRepository
 {
     private $commission = 0.05;

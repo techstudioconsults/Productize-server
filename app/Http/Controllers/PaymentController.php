@@ -31,7 +31,7 @@ use Storage;
 /**
  * @author @Intuneteq Tobi Olanitori
  *
- * @deprecated Too ambigous and does not follow SOLID principle.
+ * @deprecated Too ambigous, high coupling and does not follow SOLID principle.
  * I am breaking it down into Account and Subscription resource
  */
 class PaymentController extends Controller

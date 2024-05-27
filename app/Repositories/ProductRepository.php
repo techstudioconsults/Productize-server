@@ -37,20 +37,6 @@ class ProductRepository extends Repository
     const COVER_PHOTOS_PATH = "products-cover-photos";
     const THUMBNAIL_PATH = "products-thumbnail";
 
-    /**
-     * Constructor for ProductRepository.
-     *
-     * @param \App\Repositories\UserRepository  - User repository class
-     * @param \App\Repositories\OrderRepository - Order repository class
-     *
-     * @return void
-     */
-    public function __construct(
-        public UserRepository $userRepository,
-        public OrderRepository $orderRepository
-    ) {
-    }
-
     public function seed(): void
     {
         $users = User::factory(5)->create();
@@ -191,7 +177,6 @@ class ProductRepository extends Repository
      */
     public function getProductExternal(Product $product)
     {
-        $total_order = $this->orderRepository->query(['product_id' => $product->id])->count();
         return [
             'title' => $product->title,
             'thumbnail' => $product->thumbnail,
@@ -204,7 +189,7 @@ class ProductRepository extends Repository
             'cover_photos' => $product->cover_photos,
             'tags' => $product->tags,
             'description' => $product->description,
-            'total_orders' => $total_order
+            'total_orders' => $product->totalOrder()
         ];
     }
 

@@ -42,4 +42,9 @@ class Order extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    public function customer()
+    {
+        return $this->hasOne(Customer::class);
+    }
 }

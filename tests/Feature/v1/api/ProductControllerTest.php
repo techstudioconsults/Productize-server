@@ -3,6 +3,7 @@
 namespace Tests\Feature\v1\api;
 
 use App\Enums\ProductStatusEnum;
+use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
@@ -11,6 +12,7 @@ use App\Exceptions\UnprocessableException;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Listeners\SendProductCreatedMail;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -641,56 +643,38 @@ class ProductControllerTest extends TestCase
 
     public function test_analytics(): void
     {
+        $total_amount = 100;
         $total_products = 10;
-        $total_sales = 5;
+        $total_sales = 20;
         $total_customers = 20;
-        $total_revenues = 100;
-        $new_orders = 3;
-        $new_orders_revenue = 50;
+        $total_revenues = $total_amount * 20;
+        $new_orders = 20;
+        $new_orders_revenue = $total_amount * 20;
         $views = 1;
 
         // Create a user
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        // Mocking the product repository
-        $productRepository = $this->createMock(ProductRepository::class);
-        $this->instance(ProductRepository::class, $productRepository);
-
-        // Mocking the product repository methods
-        $productRepository->expects($this->once())
-            ->method('getTotalProductCountPerUser')
-            ->with($user, null, null)
-            ->willReturn($total_products);
-
-        $productRepository->expects($this->once())
-            ->method('getUserTotalRevenues')
-            ->with($user, null, null)
-            ->willReturn($total_revenues);
-
-        $productRepository->expects($this->once())
-            ->method('getTotalSales')
-            ->with($user, null, null)
-            ->willReturn($total_sales);
-
-        $productRepository->expects($this->once())
-            ->method('getTotalCustomers')
-            ->with($user, null, null)
-            ->willReturn($total_customers);
-
-        $productRepository->expects($this->once())
-            ->method('getNewOrders')
-            ->with($user)
-            ->willReturn(['count' => $new_orders, 'revenue' => $new_orders_revenue]);
-
-        // Define the start date and end date
-        $startDate = '2024-01-01';
-        $endDate = '2024-12-31';
-        // Make a GET request to the analytics endpoint
-        $response = $this->actingAs($user, 'web')->get(route('product.analytics'), [
-            'start_date' => $startDate,
-            'end_date' => $endDate
+        $user = User::factory()->create([
+            'account_type' => 'free_trial'
         ]);
+
+        Product::factory()
+            ->count($total_products)
+            ->has(
+                Order::factory()
+                    ->count(2)
+                    ->state([
+                        'total_amount' => 100
+                    ])
+                    ->has(Customer::factory()->state([
+                        'merchant_id' => $user->id
+                    ]))
+            )
+            ->create([
+                'user_id' => $user->id,
+            ]);
+
+        // Make a GET request to the analytics endpoint
+        $response = $this->actingAs($user, 'web')->get(route('product.analytics'));
 
         // Then
         $response->assertOk();
@@ -709,6 +693,90 @@ class ProductControllerTest extends TestCase
             'total_sales' => $total_sales,
             'total_customers' => $total_customers,
             'total_revenues' => $total_revenues,
+            'new_orders' => $new_orders,
+            'new_orders_revenue' => $new_orders_revenue,
+            'views' => $views
+        ]]);
+    }
+
+    public function test_analytics_with_filter(): void
+    {
+        $total_amount = 100;
+        $total_products = 10;
+        $total_sales = 20;
+        $total_customers = 20;
+        $total_revenues = $total_amount * 20;
+        $new_orders = 0;
+        $new_orders_revenue = 0;
+        $views = 1;
+
+        $start_date = Carbon::create(2024, 1, 1, 0);
+        $end_date = Carbon::create(2024, 3, 20, 0);
+
+        $within_range_date = Carbon::create(2024, 2, 20, 0);
+        $out_of_range_date = Carbon::create(2024, 5, 20, 0);
+
+        // Create a user
+        $user = User::factory()->create([
+            'account_type' => 'free_trial'
+        ]);
+
+        Product::factory()
+            ->count($total_products)
+            ->has(
+                Order::factory()
+                    ->count(2)
+                    ->state([
+                        'total_amount' => $total_amount
+                    ])
+                    ->sequence(
+                        ['created_at' => $within_range_date],
+                        ['created_at' => $out_of_range_date],
+                    )
+                    ->has(
+                        Customer::factory()
+                            ->state([
+                                'merchant_id' => $user->id
+                            ])
+                            ->sequence(
+                                ['created_at' => $within_range_date],
+                                ['created_at' => $out_of_range_date],
+                            )
+                    )
+            )
+            ->sequence(
+                ['created_at' => $within_range_date],
+                ['created_at' => $out_of_range_date],
+            )
+            ->create([
+                'user_id' => $user->id,
+            ]);
+
+        $filter = [
+            'start_date' => $start_date->toDateString(),
+            'end_date' => $end_date->toDateString()
+        ];
+
+        // Make a GET request to the analytics endpoint
+        $response = $this->actingAs($user, 'web')->get(route('product.analytics', $filter));
+
+        // Then
+        $response->assertOk();
+        $response->assertJsonStructure(['data' => [
+            'total_products',
+            'total_sales',
+            'total_customers',
+            'total_revenues',
+            'new_orders',
+            'new_orders_revenue',
+            'views'
+        ]]);
+
+        $response->assertJson(['data' => [
+            'total_products' => $total_products / 2, // Half of the total products will be within range
+            'total_sales' => $total_sales / 2,
+            'total_customers' => $total_customers / 2,
+            'total_revenues' => $total_revenues / 2,
             'new_orders' => $new_orders,
             'new_orders_revenue' => $new_orders_revenue,
             'views' => $views
@@ -736,22 +804,13 @@ class ProductControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $products = Product::factory(3)->create(['user_id' => $user->id]);
+        Product::factory(3)->create(['user_id' => $user->id]);
 
         $request = [
             'status' =>  ProductStatusEnum::Published->value,
             'start_date' => now()->subDays(7)->format('Y-m-d'),
             'end_date' => now()->format('Y-m-d'),
         ];
-
-        // Mocking the product repository
-        $productRepository = $this->createMock(ProductRepository::class);
-        $this->instance(ProductRepository::class, $productRepository);
-
-        $productRepository->expects($this->once())
-            ->method('getUserProducts')
-            ->with($user, null, $request['start_date'], $request['end_date'])
-            ->willReturn($products);
 
         // act
         $response = $this->actingAs($user, 'web')->withoutExceptionHandling()->get(route('product.record'), $request);
@@ -764,19 +823,107 @@ class ProductControllerTest extends TestCase
 
     public function test_records_unauthenticated(): void
     {
+        // We expect that an UnAuthorizedException will be thrown
+        $this->expectException(UnAuthorizedException::class);
+
+        // Create a user and some products
+        $user = User::factory()->create();
+        Product::factory(3)->create(['user_id' => $user->id]);
+
+        // Prepare the request parameters
+        $request = [
+            'status' => 'published',
+            'start_date' => now()->subDays(7)->format('Y-m-d'),
+            'end_date' => now()->format('Y-m-d'),
+            'format' => 'csv'
+        ];
+
+        // Send a request to the 'product.record' route, expecting an UnAuthorizedException to be thrown
+        $this->withoutExceptionHandling()->get(route('product.record'), $request);
     }
 
     public function test_togglepublish(): void
     {
+        // Create user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        // Act
+        $response = $this->actingAs($user, 'web')->patch(route('product.publish', $product->id));
+
+        // Then
+        $response->assertStatus(200);
+
+        $product->refresh();
+
+        // Assert
+        $this->assertEquals(ProductStatusEnum::Published->value, $product->status);
     }
+
+    public function test_toggle_publish_when_already_published()
+    {
+        // Create user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        // Act
+        $response = $this->actingAs($user, 'web')->patch(route('product.publish', $product->id));
+
+        // Assert
+        $response->assertStatus(200);
+
+        $product->refresh();
+        $this->assertEquals(ProductStatusEnum::Draft->value, $product->status);
+    }
+
 
     public function test_togglepublish_unauthenticated(): void
     {
+        // We expect that an UnAuthorizedException will be thrown
+        $this->expectException(UnAuthorizedException::class);
+
+        // create a user
+        $user = User::factory()->create();
+
+        // Create a product
+        $product = Product::factory()->create(['user_id' => $user->id]);
+
+        // Send a request to the 'product.publish' route, expecting an UnAuthorizedException to be thrown
+        $this->withoutExceptionHandling()->patch(route('product.publish', $product->id));
     }
 
     public function test_togglepublish_deleted_product_throws_400(): void
     {
+        $this->expectException(BadRequestException::class);
+
+        // Create a user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        // Create a product and soft delete it
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+        $product->delete(); // Soft delete the product
+
+        // Act
+        $response = $this->withoutExceptionHandling()->actingAs($user, 'web')->patch(route('product.publish', ['product' => $product->id]));
+
+        // Assert
+        $response->assertStatus(400);
     }
+
 
     public function test_top_products(): void
     {
@@ -809,67 +956,345 @@ class ProductControllerTest extends TestCase
 
     public function test_delete(): void
     {
+        // create user
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        // Act
+        $response = $this->delete(route('product.delete', [$product->id]));
+
+        // Assert
+        $response->assertStatus(200);
+
+
+        // Assert that the product status is 'draft'
+        $this->assertEquals('draft', $product->fresh()->status);
+
+        // Assert that the product is soft deleted
+        $this->assertSoftDeleted('products', ['id' => $product->id]);
     }
 
     public function test_delete_unauthenticated(): void
     {
-    }
+        // We expect that an UnAuthorizedException will be thrown
+        $this->expectException(UnAuthorizedException::class);
 
-    public function test_delete_user_not_found(): void
-    {
+        // create user
+        $user = User::factory()->create();
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->delete(route('product.delete', ['product' => $product->id]));
+
+        // Assert
+        $response->assertStatus(401); // Expecting Unauthorized status code
+
+        // Assert that the product still exists
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
     public function test_delete_not_for_user_return_403(): void
     {
+        // We expect that a fprbidden request will be thrown
+        $this->expectException(ForbiddenException::class);
+
+        // create user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $user2 = User::factory()->create();
+        // create product
+        $product = Product::factory()->create([
+            'user_id' => $user2->id, // not found
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        // delete user
+        $user->delete();
+
+
+        // Act
+        $response = $this->withoutExceptionHandling()->delete(route('product.delete', ['product' => $product->id]));
+
+        // Assert
+        $response->assertStatus(403);
+
+        // Assert that the product still exists
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
     public function test_restore(): void
     {
+        // Create user
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        // Create Product
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        $product->delete();
+
+        $this->assertSoftDeleted($product);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->get(route('product.restore', ['product' => $product->id]));
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertNotSoftDeleted($product);
     }
 
     public function test_restore_unauthenticated(): void
     {
+        // We expect that an UnAuthorizedException will be thrown
+        $this->expectException(UnAuthorizedException::class);
+
+        // Create User
+        $user = User::factory()->create();
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        $response = $this->withoutExceptionHandling()->get(route('product.restore', ['product' => $product->id]));
+
+        // Assert
+        $response->assertStatus(401); // Expecting Unauthorized status code
+
+        // Assert that the product still exists
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
     public function test_restore_not_found(): void
     {
+        // We expect that a ModelNotFoundException will be thrown
+        $this->expectException(ModelNotFoundException::class);
+
+        // Create a user and act as this user
+        $user = User::factory()->create();
+        $this->actingAs($user, 'web');
+
+        // Attempt to restore a non-existent product
+        $this->withoutExceptionHandling()->get(route('product.restore', ['product' => '234553']));
     }
 
     public function test_restore_not_for_user(): void
     {
+        // We expect that a forbidden request will be thrown
+        $this->expectException(ForbiddenException::class);
+
+        // Create two users
+        $user = User::factory()->create();
+
+        $user2 = User::factory()->create();
+
+        $this->actingAs($user);
+
+        // Create a product that belongs to the second user and soft delete it
+        $product = Product::factory()->create([
+            'user_id' => $user2->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        $product->delete();
+
+        // Assert that the product is soft deleted
+        $this->assertSoftDeleted($product);
+
+        // Act: Attempt to restore the product as the first user
+        $response = $this->withoutExceptionHandling()->get(route('product.restore', ['product' => $product->id]));
+
+        // Assert that the response status is 403
+        $response->assertStatus(403);
+
+        // Assert that the product is still soft deleted
+        $this->assertSoftDeleted('products', ['id' => $product->id]);
     }
 
     public function test_forcedelete(): void
     {
+        // Create a user and act as this user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        // Create product
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        // Soft delete the product
+        $product->delete();
+
+        // Ensure the product is soft deleted
+        $this->assertSoftDeleted($product);
+
+        $response = $this->delete(route('product.delete.force', [$product->id]));
+
+
+        // Assert: Check the response status
+        $response->assertStatus(200);
+        $response->assertSee('product is permanently deleted');
     }
 
     public function test_forcedelete_unauthenticated(): void
     {
+        // We expect that an UnAuthorizedException will be thrown
+        $this->expectException(UnAuthorizedException::class);
+
+        // Create User
+        $user = User::factory()->create();
+        $product = Product::factory()->create([
+            'user_id' => $user->id,
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        // Soft delete the product
+        $product->delete();
+
+        // Ensure the product is soft deleted
+        $this->assertSoftDeleted($product);
+
+        $response = $this->withoutExceptionHandling()->delete(route('product.delete.force', [$product->id]));
+
+        // Assert
+        $response->assertStatus(401); // Expecting Unauthorized status code
+
+        // Assert that the product still exists
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
     public function test_forcedelete_not_found(): void
     {
+        // We expect that a ModelNotFoundException will be thrown
+        $this->expectException(ModelNotFoundException::class);
+
+        // Create a user and act as this user
+        $user = User::factory()->create();
+        $this->actingAs($user, 'web');
+
+        // Attempt to force delete a non-existent product
+        $this->withoutExceptionHandling()->delete(route('product.delete.force', ['product' => '234553']));
     }
 
     public function test_forcedelete_not_for_user(): void
     {
+        // We expect that a forbidden request will be thrown
+        $this->expectException(ForbiddenException::class);
+
+        // Create two users
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $user2 = User::factory()->create();
+
+        // Create a product that belongs to the second user
+        $product = Product::factory()->create([
+            'user_id' => $user2->id, // Product does not belong to $user
+            'status' => ProductStatusEnum::Draft->value
+        ]);
+
+        // Act: Attempt to force delete the product as the first user
+        $response = $this->withoutExceptionHandling()->delete(route('product.delete.force', ['product' => $product->id]));
+
+        // Assert that the response status is 403
+        $response->assertStatus(403);
+
+        // Assert that the product still exists in the database
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
     public function test_downloads(): void
     {
+        // Create a user and authenticate
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        // Create another user who will be the product publisher
+        $publisher = User::factory()->create();
+
+        // Create products and associate them with the publisher
+        $products = Product::factory()->count(3)->create([
+            'user_id' => $publisher->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        // Create orders for the authenticated user
+        foreach ($products as $product) {
+            Order::factory()->create([
+                'user_id' => $user->id,
+                'product_id' => $product->id,
+            ]);
+        }
+
+        // Act
+        $response = $this->get(route('product.download'));
+
+        // Assert
+        $response->assertStatus(200);
+
+        $response->assertJsonStructure([
+            '*' => [
+                'id',
+                'title',
+                'data',
+                'thumbnail',
+                'slug',
+                'publisher',
+                'price',
+            ],
+        ]);
+
+        foreach ($products as $product) {
+            $response->assertJsonFragment([
+                'id' => $product->id,
+                'title' => $product->title,
+                'data' => $product->data,
+                'thumbnail' => $product->thumbnail,
+                'slug' => $product->slug,
+                'publisher' => $publisher->full_name,
+                'price' => $product->price,
+            ]);
+        }
     }
 
     public function test_downloads_unauthenticated(): void
     {
-    }
-    public function test_revenue(): void
-    {
+        // We expect that an UnAuthorizedException will be thrown
+        $this->expectException(UnAuthorizedException::class);
+
+        // Act
+        $response = $this->withoutExceptionHandling()->get(route('product.download'));
+
+        // Assert that the response status is 401 Unauthorized
+        $response->assertStatus(401);
     }
 
-    public function test_revenue_unauthenticated(): void
-    {
-    }
     public function test_tags(): void
     {
+        $expectedTags = array_map(function ($tags) {
+            return $tags->value;;
+        }, ProductTagsEnum::cases());
+
+        // Act
+        $response = $this->get(route('product.tags'));
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson([
+            'data' => $expectedTags
+        ]);
     }
 }

@@ -32,10 +32,11 @@ class UserFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (User $user) {
-            if($user->account_type === 'premium') {
-                Product::factory(30)->create([
-                    'user_id' => $user->id
-                ]);
+            if ($user->account_type === 'premium' && $user->email === "tobiolanitori@gmail.com") {
+                Product::factory(30)
+                    ->create([
+                        'user_id' => $user->id
+                    ]);
             }
         });
     }

@@ -282,13 +282,6 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        // $products = $this->productRepository->getUserProducts(
-        //     $user,
-        //     $request->status,
-        //     $request->start_date,
-        //     $request->end_date
-        // )->get();
-
         $filter = [
             'user_id' => $user->id,
             'status' => $request->status,

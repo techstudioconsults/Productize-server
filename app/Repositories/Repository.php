@@ -3,36 +3,25 @@
 /**
  * @author Tobi Olanitori
  * @version 1.0
- * @since 05-08-2024
+ * @since 08-05-2024
  */
 
 namespace App\Repositories;
 
+use App\Helpers\Services\ValidationService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Validator as Validation;
-use Illuminate\Validation\Validator;
 
 /**
  * The Repository class provides a template for repository classes.
  */
-abstract class Repository
+abstract class Repository extends ValidationService
 {
-    private ?Validator $validator = null;
-
-    public function getValidator(): ?Validator
-    {
-        return $this->validator;
-    }
-
-    public function setValidator(Validator $validator): void
-    {
-        $this->validator = $validator;
-    }
-
     /**
      * Seeds the repository with initial data.
-     * It is suitable for unit testing
+     * It is suitable for unit and feature testing.
      *
      * @return void
      */
@@ -44,39 +33,63 @@ abstract class Repository
      * @param array array of data for The entity to create.
      * @return Model The created entity.
      */
-    abstract public function create(array $entity);
+    abstract public function create(array $entity): Model;
 
     /**
-     * Retrieves all entities from the database.
+     * Queries entities from the database based on the provided filter.
      *
-     * @return array<Model> A list of all entities stored in the database.
+     * @param array|null $filter An optional filter to apply when retrieving entities.
+     * @return \Illuminate\Database\Eloquent\Builder The query builder for retrieving entities.
      */
-    abstract public function find(): array;
+    abstract public function query(array $filter): Builder;
 
     /**
-     * Retrieves all entities from the database by a filter
+     * Applies filters to an Eloquent relation.
      *
-     * @param  array $filter Associative array of filter colums and their value
-     * @return array<Model>
+     * This method accepts an Eloquent relation and an array of filters. It applies the filters
+     * to the relation, including date filters if they are present in the filter array.
+     * If the filter array is empty, the original relation is returned.
+     *
+     * @param Relation $relation The Eloquent relation to which the filters will be applied.
+     * @param array $filter An associative array of filters to apply to the relation.
+     *                      Supported filters include:
+     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column.
+     *                      - Other key-value pairs will be used as where conditions on the relation.
+     * @return Relation The filtered Eloquent relation.
+     * @throws UnprocessableException If the date range filter is invalid.
      */
-    abstract public function findMany(array $filter): array;
+    public function queryRelation(Relation $relation, array $filter): Relation
+    {
+        if (empty($filter)) return $relation;
+
+        $this->applyDateFilters($relation, $filter);
+
+        return $relation->where($filter);
+    }
 
     /**
-     * Retrieves a model by its id from the repository.
+     * Retrieves entities from the database based on the provided filter.
+     *
+     * @param array|null $filter An optional filter to apply when retrieving entities.
+     * @return \Illuminate\Database\Eloquent\Collection The collection for retrieved entities.
+     */
+    abstract public function find(?array $filter): ?Collection;
+
+    /**
+     * Retrieves a model by its id from the database.
      *
      * @param string $id The unique identifier of the entity.
      * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
-    abstract public function findById(string $id);
+    abstract public function findById(string $id): Model | null;
 
     /**
-     * Retrieves all entities from the database by a Model and an array of filter
+     * Retrieves a model by an array of filter from the database.
      *
-     * @param Model $parent Use a model relation to retrieve entities.
-     * @param  array $filter Associative array of filter colums and their value
-     * @return Relation
+     * @param string $id The unique identifier of the entity.
+     * @return Model|null The entity corresponding to the given identifier, or null if not found.
      */
-    abstract public function findByRelation(Model $parent, ?array $filter): Relation;
+    abstract public function findOne(array $filter): Model | null;
 
     /**
      * Update an entity in the database.
@@ -90,11 +103,14 @@ abstract class Repository
     /**
      * Update multiple entities in the database based on a given filter.
      *
-     * @param string $filter The filter to select entities to be updated.
+     * @param array $filter The filter to select entities to be updated.
      * @param array $updates An associative array of data containing the fields to be updated.
      * @return int The total count of updated entities.
      */
-    abstract public function updateMany(string $filter, array $updates): int;
+    public function updateMany(array $filter, array $updates): int
+    {
+        return $this->find($filter)->update($updates);
+    }
 
     /**
      * Delete an entity from the database
@@ -102,43 +118,23 @@ abstract class Repository
      * @param  Model $entity The entity to be deleted.
      * @return bool True if the deletion was successful, false otherwise
      */
-    abstract public function deleteOne(Model $entity): bool;
+    public function deleteOne(Model $entity): bool
+    {
+        try {
+            $entity->delete();
+            return true;
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
 
     /**
      * Removes all entities from the database.
      *
-     * @return void
+     * @return int
      */
-    abstract public function deleteMany(string $filter): void;
-
-    /**
-     * It validates a date range is invalid.
-     * Returns true if date range is invalid, returns false otherwise.
-     *
-     * @param  string $start_date
-     * @param  string $end_date
-     * @return bool
-     */
-    protected function isInValidDateRange(string $start_date, string $end_date)
+    public function deleteMany(array $filter): int
     {
-        /**
-         * Validator is imported as Validator. Check top of the file.
-         */
-        $validator = Validation::make([
-            'start_date' => $start_date,
-            'end_date' => $end_date
-        ], [
-            'start_date' => 'date',
-            'end_date' => 'date'
-        ]);
-
-        if ($validator->fails()) {
-            // Set current validator object.
-            $this->setValidator($validator);
-
-            return true;
-        }
-
-        return false;
+        return $this->find($filter)->delete();
     }
 }

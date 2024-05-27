@@ -53,7 +53,7 @@ class ProductPolicy
 
     public function restore(User $user, Product $product)
     {
-        if (!$user->id === $product->user_id) {
+        if ($user->id !== $product->user_id) {
             throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to restore this resource');
         }
 
@@ -65,7 +65,7 @@ class ProductPolicy
 
     public function forceDelete(User $user, Product $product)
     {
-        if (!$user->id === $product->user_id) {
+        if ($user->id !== $product->user_id) {
             throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to parmenently delete this resource');
         }
 

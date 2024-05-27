@@ -18,10 +18,12 @@ class CustomerFactory extends Factory
      */
     public function definition(): array
     {
+        $user = User::factory()->create();
+
         return [
-            'user_id' => User::factory(), // The merchant
-            'order_id' => Order::factory(), // The order
-            'merchant_id' => User::factory(), // Th
+            'user_id' => $user->id,
+            'order_id' => Order::factory()->create(['user_id' => $user->id])->id,
+            'merchant_id' => User::factory()->create()->id,
         ];
     }
 }

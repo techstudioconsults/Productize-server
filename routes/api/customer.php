@@ -12,9 +12,9 @@ Route::controller(CustomerController::class)
         'can:premium,App\Models\Customer',
     ])
     ->group(function () {
-        Route::get('/', 'index');
+        Route::get('/', 'index')->name('index');
 
-        Route::get('/download', 'downloadList');
+        Route::get('/download', 'download')->name('download');
 
-        Route::get('/{customer}', 'show')->middleware('can:view,customer');
+        Route::get('/{customer}', 'show')->name('show')->middleware('can:view,customer');
     });

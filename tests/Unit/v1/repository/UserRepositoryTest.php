@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Sequence;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -39,7 +38,7 @@ class UserRepositoryTest extends TestCase
         $this->email = "tobiolanitori@gmail.com";
         $this->password = "password123";
 
-        $this->userRepository = new UserRepository();
+        $this->userRepository = app(UserRepository::class);
     }
 
     /**
@@ -54,7 +53,7 @@ class UserRepositoryTest extends TestCase
         ];
 
         // Create the user
-        $user = $this->userRepository->createUser($credentials);
+        $user = $this->userRepository->create($credentials);
 
         // Assert user is saved in the db
         $this->assertDatabaseHas('users', [
@@ -82,7 +81,7 @@ class UserRepositoryTest extends TestCase
         $this->expectException(BadRequestException::class);
 
         // Attempt to create a user without an email
-        $this->userRepository->createUser([
+        $this->userRepository->create([
             'full_name' => $this->full_name,
             'password' => $this->password
         ]);
@@ -92,7 +91,7 @@ class UserRepositoryTest extends TestCase
     {
         $expected_user = User::factory()->create();
 
-        $user = $this->userRepository->update('email', $expected_user->email, [
+        $user = $this->userRepository->update($expected_user, [
             'full_name' => 'updated',
             'username' => 'updated',
             'phone_number' => '123456',
@@ -143,26 +142,8 @@ class UserRepositoryTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->userRepository->update('email', $user->email, [
+        $this->userRepository->update($user, [
             'email' => 'updated@email.com'
-        ]);
-    }
-
-    public function test_update_user_with_invalid_filter_throws_UnprocessableException()
-    {
-        $this->expectException(UnprocessableException::class);
-
-        $this->userRepository->update("invalid_column", "inavalid_column", [
-            'full_name' => "this will not save",
-        ]);
-    }
-
-    public function test_update_user_throws_model_not_found_exception()
-    {
-        $this->expectException(ModelNotFoundException::class);
-
-        $this->userRepository->update("email", "unsavedemail@email.com", [
-            'full_name' => "this will not save",
         ]);
     }
 
@@ -232,8 +213,8 @@ class UserRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         // Define the date range
-        $startDate = Carbon::create(2024, 1, 1, 0);
-        $endDate = Carbon::create(2024, 3, 20, 0);
+        $start_date = Carbon::create(2024, 1, 1, 0);
+        $end_date = Carbon::create(2024, 3, 20, 0);
 
         // Create orders within the date range
         Order::factory()->count(3)->state([
@@ -251,8 +232,13 @@ class UserRepositoryTest extends TestCase
         // Set up the expected total sales
         $expectedTotalSales = 3;
 
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
         // Act
-        $totalSales = $this->userRepository->getTotalSales($user, $startDate, $endDate);
+        $totalSales = $this->userRepository->getTotalSales($user, $filter);
 
         // Assert
         $this->assertEquals($expectedTotalSales, $totalSales);
@@ -264,14 +250,19 @@ class UserRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         // Define an invalid date range
-        $startDate = 'invalid-date';
-        $endDate = 'invalid-date';
+        $start_date = 'invalid-date';
+        $end_date = 'invalid-date';
+
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
 
         // Assert that the expected exception is thrown
         $this->expectException(UnprocessableException::class);
 
         // Act
-        $this->userRepository->getTotalSales($user, $startDate, $endDate);
+        $this->userRepository->getTotalSales($user, $filter);
     }
 
     public function test_get_total_revenues()
@@ -340,7 +331,12 @@ class UserRepositoryTest extends TestCase
 
         $expected_result = $amount1 + $amount2 + $amount3;
 
-        $result = $this->userRepository->getTotalRevenues($user, $start_date, $end_date);
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $result = $this->userRepository->getTotalRevenues($user, $filter);
 
         $this->assertEquals($expected_result, $result);
     }
@@ -351,14 +347,19 @@ class UserRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         // Define an invalid date range
-        $startDate = 'invalid-date';
-        $endDate = 'invalid-date';
+        $start_date = 'invalid-date';
+        $end_date = 'invalid-date';
+
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
 
         // Assert that the expected exception is thrown
         $this->expectException(UnprocessableException::class);
 
         // Act
-        $this->userRepository->getTotalRevenues($user, $startDate, $endDate);
+        $this->userRepository->getTotalRevenues($user, $filter);
     }
 
     public function test_get_total_customers()
@@ -432,10 +433,14 @@ class UserRepositoryTest extends TestCase
             'created_at' => Carbon::create(2024, 3, 15, 0)
         ]);
 
-        $result = $this->userRepository->getTotalCustomers($merchant, $start_date, $end_date);
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
+
+        $result = $this->userRepository->getTotalCustomers($merchant, $filter);
 
         $this->assertEquals($expected_result, $result);
-
     }
 
     public function test_get_total_customers_with_invalid_date_range()
@@ -449,63 +454,11 @@ class UserRepositoryTest extends TestCase
         $start_date = 'invalid-date';
         $end_date = 'invalid-date';
 
-        $this->userRepository->getTotalCustomers($user, $start_date, $end_date);
-    }
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date
+        ];
 
-    public function test_isinvaliddaterange_returns_false_with_valid_date_range()
-    {
-        // Define the date range
-        $start_date = Carbon::create(2024, 1, 1, 0);
-        $end_date = Carbon::create(2024, 3, 20, 0);
-
-        /**
-         * @author Tobi Olanitori
-         *
-         * The isInValidDateRange method is a private one,
-         * so it can't be directly tested.
-         *
-         * To solve this, we use a reflection class.
-         */
-        // Create a reflection of the user repository
-        $userRepositoryReflection = new ReflectionClass($this->userRepository);
-
-        $method = $userRepositoryReflection->getMethod('isInValidDateRange');
-
-        $method->setAccessible(true); // Make the method accessible
-
-        // Call the private method with test data
-        $result = $method->invoke($this->userRepository, $start_date, $end_date);
-
-        // Assert the result
-        $this->assertFalse($result);
-
-        // Ensure Validator was not updated.
-        $this->assertNull($this->userRepository->getValidator());
-    }
-
-    public function test_isinvaliddaterange_returns_true_with_invalid_date_range()
-    {
-        // Define an invalid date range
-        $start_date = 'invalid-date';
-        $end_date = 'invalid-date';
-
-        // Create a reflection of the user repository
-        $userRepositoryReflection = new ReflectionClass($this->userRepository);
-
-        $method = $userRepositoryReflection->getMethod('isInValidDateRange');
-
-        $method->setAccessible(true); // Make the method accessible
-
-        // Call the private method with test data
-        $result = $method->invoke($this->userRepository, $start_date, $end_date);
-
-        // Assert the result
-        $this->assertTrue($result);
-
-        // Ensure Validator was updated.
-        $this->assertNotNull($this->userRepository->getValidator());
-
-        // Assert a validator instance is set
-        $this->assertInstanceOf(Validator::class, $this->userRepository->getValidator());
+        $this->userRepository->getTotalCustomers($user, $filter);
     }
 }

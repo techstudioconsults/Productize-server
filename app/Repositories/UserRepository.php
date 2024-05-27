@@ -1,25 +1,58 @@
 <?php
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ * @version 1.0
+ * @since 12-05-2024
+ */
+
 namespace App\Repositories;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ModelCastException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator as Validation;
-use Illuminate\Validation\Validator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
-
-class UserRepository
+/**
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * Repository for Order resource
+ */
+class UserRepository extends Repository
 {
-    private ?Validator $validator = null;
+    public function __construct(
+        protected OrderRepository $orderRepository,
+        protected CustomerRepository $customerRepository
+    ) {
+    }
 
-    public function createUser(array $credentials): User
+    public function seed(): void
+    {
+        User::factory(20)->create();
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Create a new user with the provided credentials.
+     *
+     * @param array $credentials The user credentials.
+     *                           Required keys: 'email', 'full_name', 'password'.
+     *                           Optional keys: 'alt_email', 'username', 'phone_number', 'bio', 'logo',
+     *                           'twitter_account', 'facebook_account', 'youtube_account'.
+     * @return \App\Models\User The newly created user.
+     * @throws \App\Exceptions\BadRequestException If no email is provided in the credentials.
+     */
+    public function create(array $credentials): User
     {
         $user = new User();
 
@@ -56,39 +89,111 @@ class UserRepository
     }
 
     /**
-     * @param filter - is the table column to be used to query
-     * @param value - is the value of the column for the user
-     * @param updatables - is an associative array of items to be updated
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Query orders based on the provided filter.
+     *
+     * @param array $filter The filter criteria to apply.
+     * @return Builder The query builder for orders.
      */
-    public function update(string $filter, string $value, array $updatables): User
+    public function query(array $filter): Builder
     {
-        // Ensure the user is not attempting to update the user's email
-        if (array_key_exists('email', $updatables)) throw new BadRequestException("Column 'email' cannot be updated");
+        $query = User::query();
 
-        if (!Schema::hasColumn((new User)->getTable(), $filter)) {
-            throw new UnprocessableException("Column '$filter' does not exist in the User table.");
-        }
+        // Apply date filter
+        $this->applyDateFilters($query, $filter);
 
-        /**
-         * Exclude the filter column from the updatables
-         * Preventing coder from updating the filter used to make the update
-         * Now, the filter can be safely used to retrieve user after update
-         */
-        $filteredUpdatables = array_diff_key($updatables, [$filter => null]);
+        // Apply other filters
+        $query->where($filter);
 
-        $user = User::where($filter, $value)->firstOrFail();
-
-        $user->update($filteredUpdatables);
-
-        // Retrieve and return the updated User instance
-        return $user;
+        return $query;
     }
 
     /**
-     * Use guarded update for columns that are not available for mass assignment.
-     * @param email - User email
-     * @param column - column to be updated
-     * @param value - value of column to be updated
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find users based on the provided filter.
+     *
+     * @param array|null $filter The filter criteria to apply (optional).
+     * @return Collection The collection of found users.
+     */
+    public function find(?array $filter): ?Collection
+    {
+        return $this->query($filter ?? [])->get();
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find a user by their ID.
+     *
+     * @param string $id The ID of the user to find.
+     * @return User|null The found user instance, or null if not found.
+     */
+    public function findById(string $id): ?User
+    {
+        return User::find($id);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find a single user based on the provided filter.
+     *
+     * @param array $filter The filter criteria to apply.
+     * @return User|null The found user instance, or null if not found.
+     */
+    public function findOne(array $filter): ?User
+    {
+        return User::where($filter)->first();
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Update an entity in the database.
+     *
+     * @param  Model $entity The user to be updated
+     * @param array $updates The array of data containing the fields to be updated.
+     * @return User The updated user
+     */
+    public function update(Model $entity, array $updatables): User
+    {
+        if (!$entity instanceof User) {
+            throw new ModelCastException("User", get_class($entity));
+        }
+
+        // Ensure the user is not attempting to update the user's email
+        if (array_key_exists('email', $updatables)) throw new BadRequestException("Column 'email' cannot be updated");
+
+        // Assign the updates to the corresponding fields of the User instance
+        $entity->fill($updatables);
+
+        // Save the updated Customer instance
+        $entity->save();
+
+        // Return the updated Customer model
+        return $entity;
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Perform a guarded update on the specified user.
+     *
+     * This method updates the specified column of a user while guarding against mass assignment vulnerabilities.
+     * It ensures that the provided column is valid and not part of the guarded columns.
+     * If the column is 'email', it throws a BadRequestException since the email cannot be updated.
+     *
+     * @param string $email The email of the user to update.
+     * @param string $column The column to be updated.
+     * @param string $value The new value for the specified column.
+     *
+     * @return \App\Models\User The updated user instance.
+     *
+     * @throws \App\Exceptions\BadRequestException If the column to update is 'email'.
+     * @throws \App\Exceptions\UnprocessableException If the specified column does not exist in the User table.
+     * @throws \App\Exceptions\NotFoundException If the user with the given email is not found.
      */
     public function guardedUpdate(string $email, string $column, string $value): User
     {
@@ -110,71 +215,85 @@ class UserRepository
     }
 
     /**
-     * @return int - Total number of products sold
-     */
-    public function getTotalSales(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ): int {
-        $orders = $user->orders();
-
-        // Filter by start date and end date.
-        if ($start_date && $end_date) {
-            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
-
-            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
-
-            $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
-        }
-
-        return $orders->count();
-    }
-
-    /**
-     * total sales * price
-     * @return int - Total revenue generated by the user
-     */
-    public function getTotalRevenues(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ): int {
-        $orders =  $user->orders();
-
-        if ($start_date && $end_date) {
-            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
-
-            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
-
-            $orders->whereBetween('orders.created_at', [$start_date, $end_date]);
-        }
-
-        return $orders->sum('total_amount');
-    }
-
-    public function getTotalCustomers(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ): int {
-        $customers = $user->customers();
-
-        if ($start_date && $end_date) {
-            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
-
-            if ($isInvalid) throw new UnprocessableException($this->validator->errors()->first());
-
-            $customers->whereBetween('created_at', [$start_date, $end_date]);
-        }
-
-        return $customers->count();
-    }
-
-    /**
-     * profileCompletedAt
+     * @author @Intuneteq Tobi Olanitori
      *
-     * @param  User $user
+     * Get the total number of products sold by the specified user within the given date range.
+     *
+     * This method calculates the total number of products sold by the specified user.
+     * Optionally, it allows filtering orders based on a start date and an end date.
+     *
+     * @param \App\Models\User $user The user for whom to calculate the total sales.
+     * @param array $filter An associative array of filters to apply to the relation.
+     *                      Supported filters include:
+     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
+     *                      - Other key-value pairs will be used as where conditions on the relation.
+     *
+     * @return int The total number of products sold by the user within the specified date range.
+     *
+     * @throws \App\Exceptions\UnprocessableException If the provided date range is invalid.
+     */
+    public function getTotalSales(User $user, ?array $filter = []): int
+    {
+        return $this->orderRepository->queryRelation($user->orders(), $filter)->count();
+    }
+
+    /**
+     *  @author @Intuneteq Tobi Olanitori
+     *
+     * Calculate the total revenue generated by the user within the specified date range.
+     *
+     * This method calculates the total revenue generated by the user, considering the total amount
+     * of each order placed within the given date range.
+     *
+     * @param \App\Models\User $user The user for whom to calculate the total revenue.
+     * @param array $filter (optional) An associative array of filters to apply to the relation.
+     *                      Supported filters include:
+     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
+     *                      - Other key-value pairs will be used as where conditions on the relation.
+     *
+     * @return int The total revenue generated by the user within the specified date range.
+     *
+     * @throws \App\Exceptions\UnprocessableException If the provided date range is invalid.
+     */
+    public function getTotalRevenues(User $user, ?array $filter = []): int
+    {
+
+        return $this->orderRepository->queryRelation($user->orders(), $filter)->sum('total_amount');
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Calculate the total number of customers associated with the user within the specified date range.
+     *
+     * This method calculates the total number of customers associated with the user, considering
+     * the customers created within the given date range.
+     *
+     * @param \App\Models\User $user The user for whom to calculate the total number of customers.
+     *@param array $filter (optional) An associative array of filters to apply to the relation.
+     *                      Supported filters include:
+     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the customer's table.
+     *                      - Other key-value pairs will be used as where conditions on the relation.
+     *
+     * @return int The total number of customers associated with the user within the specified date range.
+     *
+     * @throws \App\Exceptions\UnprocessableException If the provided date range is invalid.
+     */
+    public function getTotalCustomers(User $user, ?array $filter = []): int
+    {
+        return $this->customerRepository->queryRelation($user->customers(), $filter)->count();
+    }
+
+    /**
+     *  @author @Intuneteq Tobi Olanitori
+     *
+     * Update the profile completion timestamp for the user if all required profile properties are filled.
+     *
+     * This method checks if all required profile properties (such as username, phone number, bio, etc.)
+     * are not null for the given user. If all required properties are filled and the profile completion
+     * timestamp is not already set, it updates the profile_completed_at field to the current date and time.
+     *
+     * @param \App\Models\User $user The user for whom to update the profile completion timestamp.
      * @return void
      */
     public function profileCompletedAt(User $user)
@@ -201,46 +320,5 @@ class UserRepository
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
-    }
-
-    public function getValidator(): ?Validator
-    {
-        return $this->validator;
-    }
-
-    public function setValidator(Validator $validator): void
-    {
-        $this->validator = $validator;
-    }
-
-    /**
-     * It validates a date range is invalid.
-     * Returns true if date range is invalid, returns false otherwise.
-     *
-     * @param  string $start_date
-     * @param  string $end_date
-     * @return bool
-     */
-    private function isInValidDateRange(string $start_date, string $end_date)
-    {
-        /**
-         * Validator is imported as Validator. Check top of the file.
-         */
-        $validator = Validation::make([
-            'start_date' => $start_date,
-            'end_date' => $end_date
-        ], [
-            'start_date' => 'date',
-            'end_date' => 'date'
-        ]);
-
-        if ($validator->fails()) {
-            // Set current validator object.
-            $this->setValidator($validator);
-
-            return true;
-        }
-
-        return false;
     }
 }

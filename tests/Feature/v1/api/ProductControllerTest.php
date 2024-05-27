@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\v1\api;
 
+use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
@@ -48,6 +49,7 @@ class ProductControllerTest extends TestCase
 
     public function test_index(): void
     {
+        // dump(ProductEnum::cases());
         $response = $this->get(route('product.index'));
 
         $response->assertStatus(200)->assertJson(

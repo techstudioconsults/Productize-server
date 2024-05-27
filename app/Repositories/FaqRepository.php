@@ -12,7 +12,7 @@ use App\Http\Resources\FaqResource;
 use App\Models\Faq;
 
 
-class FaqRepository
+class FaqRepository 
 {
     /**
      *  array with params:

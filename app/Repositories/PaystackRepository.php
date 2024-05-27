@@ -17,7 +17,6 @@ class PaystackRepository
         protected UserRepository $userRepository,
         protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
-        protected ProductRepository $productRepository,
         protected PayoutRepository $payoutRepository,
     ) {
         $this->secret_key = config('payment.paystack.secret');

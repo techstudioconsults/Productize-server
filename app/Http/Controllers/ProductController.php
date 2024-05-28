@@ -628,7 +628,7 @@ class ProductController extends Controller
     {
         // Get the search string, defaulting to an empty string if null.
         $text = $request->input('text', "");
-
+  
         // Query the database.
         $query = $this->productRepository->search($text);
 

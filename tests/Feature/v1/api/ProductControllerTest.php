@@ -1287,7 +1287,7 @@ class ProductControllerTest extends TestCase
     public function test_tags(): void
     {
         $expectedTags = array_map(function ($tags) {
-            return $tags->value;;
+            return $tags->value;
         }, ProductTagsEnum::cases());
 
         // Act

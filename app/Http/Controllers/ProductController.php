@@ -604,16 +604,32 @@ class ProductController extends Controller
     }
 
     /**
-     * @author @Intuneteq Tobi Olanitori
+     *  @author @Intuneteq Tobi Olanitori
      *
-     * Search for products that match a given string.
+     * Handles the search request for products.
+     *
+     * This method retrieves the search string from the request and queries the product repository
+     * to find products that match the given string. The search includes:
+     * - Matching the product title
+     * - Matching the product description
+     * - Matching tags within the JSON tags column
+     * - Matching the full name of the associated user
+     *
+     * Results are returned in a collection of products.
+     *
+     * @param SearchRequest $request The incoming search request.
+     *
+     * @return ProductCollection The collection of products matching the search criteria.
+     *
+     * @see \App\Repositories\ProductRepository::search() The repository method used for querying the products.
+     * @see \App\Models\Product scope methods for search query defined.
      */
     public function search(SearchRequest $request)
     {
-        // Get the search string. default to an empty string if null.
+        // Get the search string, defaulting to an empty string if null.
         $text = $request->input('text', "");
 
-        // query db
+        // Query the database.
         $query = $this->productRepository->search($text);
 
         return new ProductCollection($query->get());

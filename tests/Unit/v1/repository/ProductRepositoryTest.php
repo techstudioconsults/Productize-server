@@ -447,6 +447,73 @@ class ProductRepositoryTest extends TestCase
         $this->productRepository->update($product, $data);
     }
 
+    public function test_search_with_unpublished_products(): void
+    {
+        // Create some sample products
+        Product::factory()->create(['title' => 'Sample Product 1', 'user_id' => $this->user->id]);
+        Product::factory()->create(['title' => 'Sample Product 2', 'user_id' => $this->user->id]);
+        Product::factory()->create([
+            'title' => 'Sample Product 3',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Another Product',
+            'description' => 'This is another sample product',
+            'user_id' => $this->user->id
+        ]);
+
+        // Perform the search
+        $results = $this->productRepository->search('Sample')->get();
+
+        // Assertions
+        $this->assertCount(1, $results); // Expecting 1 products with 'Sample' in title or description
+        $this->assertEquals('Sample Product 3', $results[0]->title);
+    }
+
+    public function test_search_with_all_published_products(): void
+    {
+        // Create some sample products
+        Product::factory()->create([
+            'title' => 'Sample Product 1',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Sample Product 2',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Sample Product 3',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Another Product',
+            'description' => 'This is another sample product',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'full_name',
+            'description' => 'Searching with full name',
+            'user_id' => User::factory()->create(['full_name' => 'sample name']),
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        // Perform the search
+        $results = $this->productRepository->search('sample')->get();
+
+        // Assertions
+        $this->assertCount(5, $results); // Expecting 3 products with 'Sample' in title or description
+        $this->assertEquals('Sample Product 1', $results[0]->title);
+        $this->assertEquals('Sample Product 2', $results[1]->title);
+        $this->assertEquals('Sample Product 3', $results[2]->title);
+        $this->assertEquals('Another Product', $results[3]->title);
+        $this->assertEquals('full_name', $results[4]->title);
+    }
+
     public function test_upload_product_data(): void
     {
         // Fake spaces storage

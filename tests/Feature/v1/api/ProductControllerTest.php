@@ -28,6 +28,8 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use Storage;
 use Tests\TestCase;
 
+use function PHPUnit\Framework\assertArrayHasKey;
+
 class ProductControllerTest extends TestCase
 {
     use RefreshDatabase;
@@ -353,6 +355,8 @@ class ProductControllerTest extends TestCase
                 'slug' => "1234"
             ]));
     }
+
+    // test store event triggered and all listeners and listening
 
     public function test_store_first_product_should_update_user_first_product_created(): void
     {
@@ -1287,7 +1291,7 @@ class ProductControllerTest extends TestCase
     public function test_tags(): void
     {
         $expectedTags = array_map(function ($tags) {
-            return $tags->value;;
+            return $tags->value;
         }, ProductTagsEnum::cases());
 
         // Act
@@ -1298,5 +1302,51 @@ class ProductControllerTest extends TestCase
         $response->assertJson([
             'data' => $expectedTags
         ]);
+    }
+
+    public function test_search(): void
+    {
+        // Create some sample products
+        Product::factory()->create([
+            'title' => 'Osh Product 1',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Osh Product 2',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Osh Product 3',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Another Product',
+            'description' => 'This is another osh product',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'full_name',
+            'description' => 'Searching with full name',
+            'user_id' => User::factory()->create(['full_name' => 'osh name']),
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        $response = $this->post(route('product.search'), [
+            'text' => 'osh'
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data', fn (array $data) => count($data) === 5) // Check count of returned data
+            ->assertJsonPath('data.*.status', [
+                0 => ProductStatusEnum::Published->value,
+                1 => ProductStatusEnum::Published->value,
+                2 => ProductStatusEnum::Published->value,
+                3 => ProductStatusEnum::Published->value,
+                4 => ProductStatusEnum::Published->value,
+            ]);  
     }
 }

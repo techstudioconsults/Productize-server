@@ -43,6 +43,10 @@ Route::group([
         'auth:sanctum',
     ])->name('tags');
 
+    Route::post('/search', [ProductController::class, 'search'])->withoutMiddleware([
+        'auth:sanctum',
+    ])->name('search');
+
     Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product')->name('restore');

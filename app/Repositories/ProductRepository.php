@@ -278,6 +278,34 @@ class ProductRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
+     * Searches for products based on the given text.
+     *
+     * The search scope includes:
+     * - Matching the product title
+     * - Matching the product description
+     * - Matching tags within the JSON tags column
+     * - Matching the full name of the associated user
+     *
+     * Results are ordered by relevance:
+     * 1. Title matches
+     * 2. Description matches
+     * 3. Tag matches
+     * 4. User full name matches
+     *
+     * @param string $text The text to search for.
+     *
+     * @return Builder The query builder instance with the applied search conditions.
+     *
+     * @see \App\Models\Product scope methods for search query defined.
+     */
+    public function search(string $text): Builder
+    {
+        return Product::Search($text);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Uploads an array of the product's data files and returns their storage paths.
      *
      * The data is the actual resource being sold.

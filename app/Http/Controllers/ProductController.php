@@ -12,6 +12,7 @@ use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
+use App\Http\Requests\SearchRequest;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -600,5 +601,21 @@ class ProductController extends Controller
         $tags = ProductTagsEnum::cases();
 
         return new JsonResponse(['data' => $tags]);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Search for products that match a given string.
+     */
+    public function search(SearchRequest $request)
+    {
+        // Get the search string. default to an empty string if null.
+        $text = $request->input('text', "");
+
+        // query db
+        $query = $this->productRepository->search($text);
+
+        return new ProductCollection($query->get());
     }
 }

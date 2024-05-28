@@ -2,10 +2,9 @@
 
 namespace App\Listeners;
 
-use App\Events\Products;
+use App\Events\ProductCreated as EventsProductCreated;
 use App\Mail\FirstProductCreated;
 use App\Mail\ProductCreated;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
@@ -22,7 +21,7 @@ class SendProductCreatedMail
     /**
      * Handle the event.
      */
-    public function handle(Products $event)
+    public function handle(EventsProductCreated $event)
     {
         $user = Auth::user();
 

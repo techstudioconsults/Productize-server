@@ -352,6 +352,8 @@ class ProductControllerTest extends TestCase
             ]));
     }
 
+    // test store event triggered and all listeners and listening
+
     public function test_store_first_product_should_update_user_first_product_created(): void
     {
         // Fake spaces storage
@@ -1296,5 +1298,10 @@ class ProductControllerTest extends TestCase
         $response->assertJson([
             'data' => $expectedTags
         ]);
+    }
+
+    public function test_search(): void
+    {
+        // should only return published products
     }
 }

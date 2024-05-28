@@ -28,6 +28,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Storage;
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * @deprecated Too ambigous, high coupling and does not follow SOLID principle.
+ * I am breaking it down into Account and Subscription resource
+ */
 class PaymentController extends Controller
 {
 
@@ -60,6 +66,7 @@ class PaymentController extends Controller
         return new PaymentResource($user->payment);
     }
 
+    // move to subcription
     public function createPaystackSubscription()
     {
         $user = Auth::user();
@@ -155,6 +162,7 @@ class PaymentController extends Controller
         }
     }
 
+    // move to subscription
     public function enablePaystackSubscription()
     {
         $user = Auth::user();
@@ -169,6 +177,7 @@ class PaymentController extends Controller
         }
     }
 
+    // move to subcription
     public function managePaystackSubscription()
     {
         $user = Auth::user();
@@ -184,6 +193,7 @@ class PaymentController extends Controller
         }
     }
 
+    // move to sbucription
     public function cancelSubscription()
     {
         $user = Auth::user();
@@ -199,6 +209,7 @@ class PaymentController extends Controller
         }
     }
 
+    // create a webhook resource and move there
     public function handlePaystackWebHook(Request $request)
     {
         $payload = $request->getContent();
@@ -224,6 +235,7 @@ class PaymentController extends Controller
         }
     }
 
+    // move to payout
     public function createPayOutAccount(StorePayOutRequest $request)
     {
         $user = Auth::user();
@@ -273,6 +285,7 @@ class PaymentController extends Controller
         }
     }
 
+    // move to payout
     public function getAllPayOutAccounts()
     {
         $user = Auth::user();
@@ -282,6 +295,7 @@ class PaymentController extends Controller
         return PayOutAccountResource::collection($payout_accounts);
     }
 
+    // move to payout
     public function updatePayOutAccount(PayOutAccount $account, UpdatePayOutRequest $request)
     {
         $validated = $request->validated();
@@ -293,6 +307,10 @@ class PaymentController extends Controller
         return new PayOutAccountResource($account);
     }
 
+    /**
+     * Move to the cart controller
+     * Name it `clear`
+     */
     public function purchase(PurchaseRequest $request)
     {
         $user = Auth::user();
@@ -366,6 +384,8 @@ class PaymentController extends Controller
     /**
      * Ensure Paystack Account is a business account
      * https://support.paystack.com/hc/en-us/articles/360009881960-How-do-I-upgrade-from-a-Starter-Business-to-a-Registered-Business-on-Paystack
+     *
+     * move to account
      */
     public function initiateWithdrawal(InitiateWithdrawalRequest $request)
     {
@@ -411,6 +431,7 @@ class PaymentController extends Controller
         }
     }
 
+    // move to payout
     public function getPayouts(Request $request)
     {
         $user = Auth::user();
@@ -424,6 +445,7 @@ class PaymentController extends Controller
         return PayoutResource::collection($payouts);
     }
 
+    // move to payout out
     public function downloadPayoutList(Request $request)
     {
         $user = Auth::user();
@@ -480,6 +502,8 @@ class PaymentController extends Controller
     }
 
     /**
+     * move to payout
+     *
      * Get a List of all banks supported by paystack
      * @return array - keys name, code
      */
@@ -497,6 +521,7 @@ class PaymentController extends Controller
         return new JsonResponse($response, 200);
     }
 
+    // move to subcription
     public function billing()
     {
         $user = Auth::user();

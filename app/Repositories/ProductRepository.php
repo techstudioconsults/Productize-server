@@ -15,6 +15,7 @@ use App\Exceptions\ModelCastException;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use App\Models\ProductSearch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
-
+use Str;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -306,6 +307,58 @@ class ProductRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
+     * Store the user's searched product IDs.
+     *
+     * @param Product $product The product searched by the user.
+     * @param User $user The user whose searches are being tracked.
+     *
+     * @return void
+     */
+    public function trackSearch(Product $product, User $user): void
+    {
+        $upserts = [
+            'user_id' => $user->id,
+            'product_id' => $product->id
+        ];
+
+        ProductSearch::upsert(
+            [$upserts],
+            uniqueBy: ['user_id', 'product_id']
+        );
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve the last 10 products a user has searched for.
+     *
+     * This method fetches the last 10 products that a user has searched for
+     * based on their search history. It queries the ProductSearch model to get
+     * the recent searches, then retrieves the corresponding products from the
+     * Product model.
+     *
+     * @param User $user The logged-in user whose search history is being retrieved.
+     *
+     * @return Collection|null A collection of found products, or null if none are found.
+     */
+    public function findSearches(User $user): ?Collection
+    {
+        // Get the last 10 products the user searched for
+        $searches = ProductSearch::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        // Get the product ids from the searches
+        $product_ids = $searches->pluck('product_id');
+
+        // Retrieve product information for the last 10 searched products
+        return Product::whereIn('id', $product_ids)->get();
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Uploads an array of the product's data files and returns their storage paths.
      *
      * The data is the actual resource being sold.
@@ -442,5 +495,62 @@ class ProductRepository extends Repository
             }
         }
         unset($filter['status']);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Check if the product is part of the user's recent searches.
+     *
+     * @param  Product  $product The product to check.
+     * @param  array|string  $cookie The cookie from the incoming request instance.
+     *
+     * @return bool Returns true if the product is in the search history, false otherwise.
+     */
+    public function isSearchedProduct(Product $product, array|string $cookie): bool
+    {
+        $product_ids = json_decode($cookie, true) ?? [];
+        return in_array($product->id, $product_ids);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Ensure the product status is published.
+     *
+     * @param  Product  $product The product to check.
+     *
+     * @return bool It returns true if the product status is published, false otherwise.
+     */
+    public function isPublished(Product $product): bool
+    {
+        if ($product->status !== ProductStatusEnum::Published->value) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get metadata for the product's associated resources.
+     *
+     * @param  Product  $product The product to get metadata for.
+     *
+     * @return array An array of metadata for the product's resources.
+     */
+    public function getProductMetaData(Product $product): array
+    {
+        $meta_data_array = [];
+        foreach ($product->data as $value) {
+            $filePath = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
+            $meta_data = $this->getFileMetaData($filePath);
+
+            if ($meta_data) {
+                $meta_data_array[] = $meta_data;
+            }
+        }
+        return $meta_data_array;
     }
 }

@@ -21,13 +21,16 @@ use App\Http\Resources\ProductResource;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
-use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
+// use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * Route handler methods for Product resource
@@ -152,31 +155,32 @@ class ProductController extends Controller
      *
      * Retrieve product information by its slug.
      *
-     * @param  \App\Models\Product  $product The product identified by its slug.
-     * @return \Illuminate\Http\JsonResponse Returns a JSON response containing detailed information about the product and its associated resources.
+     * This method retrieves detailed information about a product identified by its slug,
+     * including checking if the product is part of the user's recent searches, tracking
+     * user interest, and fetching associated metadata.
      *
-     * @throws \App\Exceptions\BadRequestException Throws a BadRequestException if the product status is not published.
+     * @param  Product  $product The product identified by its slug.
+     * @param  Request  $request The incoming request instance.
+     *
+     * @return JsonResponse Returns a JSON response containing detailed information about the product and its associated resources.
+     *
+     * @throws BadRequestException Throws a BadRequestException if the product status is not published.
      */
-    public function slug(Product $product)
+    public function slug(Product $product, Request $request)
     {
-        $status = ProductStatusEnum::Published->value;
+        // Retrieve the user if they are logged in - If a token is sent with the request.
+        $user = $request->user('sanctum');
+        $cookie = $request->cookie('search_term');
 
-        if ($product->status !== $status) {
+        if ($this->productRepository->isSearchedProduct($product, $cookie) && $user) {
+            $this->productRepository->trackSearch($product, $user);
+        }
+
+        if (!$this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
-        $data = $product->data;
-
-        $meta_data_array = [];
-        foreach ($data as $value) {
-            $filePath =  Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
-
-            $meta_data = $this->productRepository->getFileMetaData($filePath);
-
-            if ($meta_data) {
-                array_push($meta_data_array, $meta_data);
-            }
-        }
+        $meta_data_array = $this->productRepository->getProductMetaData($product);
 
         $product_info = $this->productRepository->getProductExternal($product);
 
@@ -615,11 +619,13 @@ class ProductController extends Controller
      * - Matching tags within the JSON tags column
      * - Matching the full name of the associated user
      *
-     * Results are returned in a collection of products.
+     * Results are returned in a collection of products, and the search results are stored
+     * in a cookie.
      *
      * @param SearchRequest $request The incoming search request.
      *
-     * @return ProductCollection The collection of products matching the search criteria.
+     * @return ProductCollection The JSON response containing the collection of products matching the search criteria,
+     * with a search results cookie.
      *
      * @see \App\Repositories\ProductRepository::search() The repository method used for querying the products.
      * @see \App\Models\Product scope methods for search query defined.
@@ -628,10 +634,39 @@ class ProductController extends Controller
     {
         // Get the search string, defaulting to an empty string if null.
         $text = $request->input('text', "");
-  
-        // Query the database.
-        $query = $this->productRepository->search($text);
 
-        return new ProductCollection($query->get());
+        // Query the database.
+        $products = $this->productRepository->search($text)->get();
+
+        // Save the search results in cookie
+        $cookie = cookie('search_term', json_encode($products->pluck('id')->toArray()), 60);
+
+        return response()->json(new ProductCollection($products))->cookie($cookie);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Suggest products to the user based on their previous searches.
+     *
+     * This method retrieves the currently authenticated user via Sanctum,
+     * then fetches the last 10 products they have searched for using the
+     * product repository. It returns these products as a collection.
+     *
+     * @param Request $request The incoming request instance.
+     *
+     * @return ProductCollection A collection of products based on the user's previous searches.
+     */
+    public function basedOnSearch(Request $request)
+    {
+        $products = [];
+
+        $user = $request->user('sanctum');
+
+        if ($user) {
+            $products = $this->productRepository->findSearches($user);
+        }
+
+        return new ProductCollection($products);
     }
 }

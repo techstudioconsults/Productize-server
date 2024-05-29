@@ -507,11 +507,11 @@ class ProductRepository extends Repository
      * Check if the product is part of the user's recent searches.
      *
      * @param  Product  $product The product to check.
-     * @param  array|string  $cookie The cookie from the incoming request instance.
+     * @param  array|string|null  $cookie The cookie from the incoming request instance.
      *
      * @return bool Returns true if the product is in the search history, false otherwise.
      */
-    public function isSearchedProduct(Product $product, array|string $cookie): bool
+    public function isSearchedProduct(Product $product, array|string|null $cookie): bool
     {
         $product_ids = json_decode($cookie, true) ?? [];
         return in_array($product->id, $product_ids);

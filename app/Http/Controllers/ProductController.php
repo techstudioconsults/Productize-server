@@ -633,7 +633,7 @@ class ProductController extends Controller
     public function search(SearchRequest $request)
     {
         // Get the search string, defaulting to an empty string if null.
-        $text = $request->input('text', "");
+        $text = $request->input('text') ?? "";
 
         // Query the database.
         $products = $this->productRepository->search($text)->get();

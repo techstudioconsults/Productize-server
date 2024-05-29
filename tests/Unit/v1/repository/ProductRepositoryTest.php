@@ -830,6 +830,18 @@ class ProductRepositoryTest extends TestCase
         $this->assertFalse($result);
     }
 
+    public function test_isSearchedProduct_with_null_cookie()
+    {
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id
+        ]);
+        $cookie = null;
+
+        $result = $this->productRepository->isSearchedProduct($product, $cookie);
+
+        $this->assertFalse($result);
+    }
+
     public function test_ispublished_with_published_product()
     {
         $product = Product::factory()->create([

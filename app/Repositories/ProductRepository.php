@@ -38,6 +38,10 @@ class ProductRepository extends Repository
     const COVER_PHOTOS_PATH = "products-cover-photos";
     const THUMBNAIL_PATH = "products-thumbnail";
 
+    const PUBLISHED = ProductStatusEnum::Published->value;
+    const DRAFT = ProductStatusEnum::Draft->value;
+    const DELETED = 'deleted';
+
     public function seed(): void
     {
         $users = User::factory(5)->create();
@@ -323,7 +327,7 @@ class ProductRepository extends Repository
 
         ProductSearch::upsert(
             [$upserts],
-            uniqueBy: ['user_id', 'product_id']
+            uniqueBy: ['user_id', 'product_id'],
         );
     }
 
@@ -352,8 +356,8 @@ class ProductRepository extends Repository
         // Get the product ids from the searches
         $product_ids = $searches->pluck('product_id');
 
-        // Retrieve product information for the last 10 searched products
-        return Product::whereIn('id', $product_ids)->get();
+        // Retrieve product information for the last 10 searched products - where they are still published.
+        return Product::whereIn('id', $product_ids)->where('status', self::PUBLISHED)->get();
     }
 
     /**

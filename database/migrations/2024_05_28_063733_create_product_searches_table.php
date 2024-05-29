@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Product::class, 'product_id')->cascadeOnDelete();
+            $table->unique(['user_id', 'product_id']);
             $table->timestamps();
         });
     }

@@ -8,6 +8,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductSearch;
 use App\Models\User;
 use App\Repositories\ProductRepository;
 use Carbon\Carbon;
@@ -514,6 +515,142 @@ class ProductRepositoryTest extends TestCase
         $this->assertEquals('full_name', $results[4]->title);
     }
 
+    public function test_tracksearch(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        $this->productRepository->trackSearch($product, $user);
+
+        $this->assertDatabaseHas('product_searches', [
+            'user_id' => $user->id,
+            'product_id' => $product->id
+        ]);
+
+        $this->assertDatabaseCount('product_searches', 1);
+    }
+
+    public function test_tracksearch_duplicate_user_product_pair_should_not_exist()
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        // Track the search the first time
+        $this->productRepository->trackSearch($product, $user);
+
+        // Track the search the second time
+        $this->productRepository->trackSearch($product, $user);
+
+        $this->assertDatabaseHas('product_searches', [
+            'user_id' => $user->id,
+            'product_id' => $product->id
+        ]);
+
+        // The second one should not be added - A pair product_id and user_id cannot be duplicate
+        $this->assertDatabaseCount('product_searches', 1);
+    }
+
+    public function test_tracksearch_a_user_and_product_can_have_multiple_entries_if_pair_not_duplicate(): void
+    {
+        $user_one = User::factory()->create();
+        $product_one = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        $user_two = User::factory()->create();
+        $product_two = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        // Track the search the first time
+        $this->productRepository->trackSearch($product_one, $user_one);
+
+        // Track the search the second time
+        $this->productRepository->trackSearch($product_one, $user_two);
+
+        // Track the search the third time
+        $this->productRepository->trackSearch($product_two, $user_one);
+
+        // Track the search the fourth time
+        $this->productRepository->trackSearch($product_two, $user_two);
+
+        $this->assertDatabaseCount('product_searches', 4);
+    }
+
+    public function test_findsearches(): void
+    {
+        $user = User::factory()->create();
+
+        $expected = Product::factory()->count(2)->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        ProductSearch::factory()
+            ->count(2)
+            ->state(new Sequence(
+                ['product_id' => $expected[0]->id],
+                ['product_id' => $expected[1]->id],
+            ))
+            ->create([
+                'user_id' => $user->id
+            ]);
+
+        ProductSearch::factory()
+            ->count(2)
+            ->state(new Sequence(
+                ['product_id' => Product::factory()->create(['user_id' => User::factory()->create()->id])],
+                ['product_id' => Product::factory()->create(['user_id' => User::factory()->create()->id])],
+            ))
+            ->create([
+                'user_id' => User::factory()->create()->id,
+            ]);
+
+        $results = $this->productRepository->findSearches($user);
+
+        $this->assertCount(2, $results);
+        $this->assertDatabaseCount('product_searches', 4);
+    }
+
+    public function test_findsearches_draft_products_should_not_be_returned(): void
+    {
+        $user = User::factory()->create();
+
+        $expected = Product::factory()->count(2)->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        ProductSearch::factory()
+            ->count(2)
+            ->state(new Sequence(
+                ['product_id' => $expected[0]->id],
+                ['product_id' => $expected[1]->id],
+            ))
+            ->create([
+                'user_id' => $user->id
+            ]);
+
+        // change the status of the first product to draft
+        $expected[0]->status = ProductStatusEnum::Draft->value;
+        $expected[0]->save();
+        $expected[0]->refresh();
+
+        $results = $this->productRepository->findSearches($user);
+
+        // Only the published product is returned
+        $this->assertCount(1, $results);
+        $this->assertEquals($expected[1]->id, $results[0]->id);
+    }
+
     public function test_upload_product_data(): void
     {
         // Fake spaces storage
@@ -655,5 +792,65 @@ class ProductRepositoryTest extends TestCase
 
         // Assertion
         $this->assertNull($metaData);
+    }
+
+    public function test_isSearchedproduct_with_valid_cookie()
+    {
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id
+        ]);
+        $cookie = json_encode([$product->id]);
+
+        $result = $this->productRepository->isSearchedProduct($product, $cookie);
+
+        $this->assertTrue($result);
+    }
+
+    public function test_isSearchedproduct_with_empty_cookie()
+    {
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id
+        ]);
+        $cookie = json_encode([]);
+
+        $result = $this->productRepository->isSearchedProduct($product, $cookie);
+
+        $this->assertFalse($result);
+    }
+
+    public function test_isSearchedproduct_with_invalid_cookie()
+    {
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id
+        ]);
+        $cookie = 'invalid_json';
+
+        $result = $this->productRepository->isSearchedProduct($product, $cookie);
+
+        $this->assertFalse($result);
+    }
+
+    public function test_ispublished_with_published_product()
+    {
+        $product = Product::factory()->create([
+            'status' => ProductStatusEnum::Published->value,
+            'user_id' => $this->user->id
+        ]);
+
+        $result = $this->productRepository->isPublished($product);
+
+        $this->assertTrue($result);
+    }
+
+    public function test_ispublished_with_unpublished_product()
+    {
+        $product = Product::factory()->create([
+            'status' => ProductStatusEnum::Draft->value,
+            'user_id' => $this->user->id
+        ]);
+
+        $result = $this->productRepository->isPublished($product);
+
+        $this->assertFalse($result);
     }
 }

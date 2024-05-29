@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\v1\api;
 
+use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
@@ -18,6 +19,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Repositories\ProductRepository;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -26,6 +28,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Storage;
 use Tests\TestCase;
+
+use function PHPUnit\Framework\assertArrayHasKey;
 
 class ProductControllerTest extends TestCase
 {
@@ -350,6 +354,60 @@ class ProductControllerTest extends TestCase
                 'product' => $product->slug,
                 'slug' => "1234"
             ]));
+    }
+
+    public function test_slug_search_product_should_be_tracked(): void
+    {
+        $data = [
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
+            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+        ];
+
+        $user = User::factory()->create();
+
+        // Create a product
+        $product = Product::factory()->create([
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
+            'data' => $data
+        ]);
+
+        // Mock product repository
+        $mock = $this->partialMock(ProductRepository::class);
+
+        // Mock the getFileMetaData method
+        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
+
+            // Mock metadata based on the file path
+            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
+            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
+            } else {
+                return null; // Return null for unknown file paths
+            }
+        });
+
+        // mock the isSeachedProductMethod
+        $mock->shouldReceive('isSearchedProduct')->andReturn(true);
+
+        // Invoke the slug method
+        $response = $this
+            ->withoutExceptionHandling()
+            ->actingAs($user, 'web')
+            ->get(route('product.slug', [
+                'product' => $product->slug,
+                'slug' => "1234"
+            ]));
+
+        // Assert response status
+        $response
+            ->assertOk();
+
+        $this->assertDatabaseHas('product_searches', [
+            'user_id' => $user->id,
+            'product_id' => $product->id
+        ]);
     }
 
     public function test_store_first_product_should_update_user_first_product_created(): void
@@ -1285,7 +1343,7 @@ class ProductControllerTest extends TestCase
     public function test_tags(): void
     {
         $expectedTags = array_map(function ($tags) {
-            return $tags->value;;
+            return $tags->value;
         }, ProductTagsEnum::cases());
 
         // Act
@@ -1296,5 +1354,127 @@ class ProductControllerTest extends TestCase
         $response->assertJson([
             'data' => $expectedTags
         ]);
+    }
+
+    public function test_search(): void
+    {
+        // Create some sample products
+        Product::factory()->create([
+            'title' => 'Osh Product 1',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Osh Product 2',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Osh Product 3',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'Another Product',
+            'description' => 'This is another osh product',
+            'user_id' => $this->user->id,
+            'status' => ProductStatusEnum::Published->value
+        ]);
+        Product::factory()->create([
+            'title' => 'full_name',
+            'description' => 'Searching with full name',
+            'user_id' => User::factory()->create(['full_name' => 'osh name']),
+            'status' => ProductStatusEnum::Published->value
+        ]);
+
+        $response = $this->post(route('product.search'), [
+            'text' => 'osh'
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data', fn (array $data) => count($data) === 5) // Check count of returned data
+            ->assertJsonPath('data.*.status', [
+                0 => ProductStatusEnum::Published->value,
+                1 => ProductStatusEnum::Published->value,
+                2 => ProductStatusEnum::Published->value,
+                3 => ProductStatusEnum::Published->value,
+                4 => ProductStatusEnum::Published->value,
+            ]);
+    }
+
+    public function test_search_sets_correct_cookie()
+    {
+        $products = Product::factory()->count(3)->create([
+            'user_id' => $this->user->id
+        ]);
+
+        $searchText = $products[0]->title;
+
+        // Mock the search method to return a Builder instance
+        $builder = Product::query()->whereIn('id', $products->pluck('id'));
+
+        // Mock product repository
+        $mock = $this->partialMock(ProductRepository::class);
+
+        // Mock the getFileMetaData method
+        $mock->shouldReceive('search')
+            ->with($searchText)
+            ->andReturn($builder);
+
+        $response = $this->withoutExceptionHandling()->post(route('product.search'), ['text' => $searchText]);
+
+        $product_ids = $products->pluck('id')->toArray();
+
+        $expectedCookie = json_encode($product_ids);
+
+        $this->assertEquals($expectedCookie, $response->headers->getCookies()[0]->getValue());
+        $this->assertEquals('search_term', $response->headers->getCookies()[0]->getName());
+    }
+
+    public function test_search_handles_empty_search_text()
+    {
+        $response = $this->withoutExceptionHandling()->post(route('product.search'), ['text' => ""]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'data' => []
+        ]);
+    }
+
+    public function test_basedonsearch_returns_products_for_authenticated_user()
+    {
+        $user = User::factory()->create();
+        $products = Product::factory()->count(3)->create([
+            'user_id' => $this->user->id
+        ]);
+
+        // Mock product repository
+        $mock = $this->partialMock(ProductRepository::class);
+
+        $collection = new Collection($products);
+
+        // Mock the getFileMetaData method
+        $mock->shouldReceive('findSearches')
+            ->with($user)
+            ->andReturn($collection);
+
+        $this->actingAs($user);
+
+        $response = $this->withoutExceptionHandling()->get(route('product.search.get'));
+
+        $expected_json = ProductCollection::make($products)->response()->getData(true);
+
+        $response->assertStatus(200);
+        $response->assertJson($expected_json);
+    }
+
+    public function test_basedOnSearch_returns_empty_collection_for_unauthenticated_user()
+    {
+        $response = $this->get(route('product.search.get'));
+
+        $response->assertStatus(200);
+        $response->assertJson(
+            ['data' => []]
+        );
     }
 }

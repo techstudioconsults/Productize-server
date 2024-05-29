@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ProductEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete();
             $table->string('title');
             $table->integer('price');
-            $table->enum('product_type', ['digital_product', 'print_on_demand', 'video_streaming', 'subscription']);
+            $table->enum('product_type', array_column(ProductEnum::cases(), 'value'));
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->longText('description');
             $table->json('data');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\ProductCreated;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,12 @@ Route::group([
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',
     ])->name('tags');
+
+    Route::post('/search', [ProductController::class, 'search'])->withoutMiddleware([
+        'auth:sanctum',
+    ])->name('search');
+
+    Route::get('/search', [ProductController::class, 'basedOnSearch'])->withoutMiddleware('auth:sanctum')->name('search.get');
 
     Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 

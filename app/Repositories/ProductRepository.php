@@ -15,6 +15,7 @@ use App\Exceptions\ModelCastException;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use App\Models\ProductSearch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
-
+use Str;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -36,6 +37,10 @@ class ProductRepository extends Repository
     const PRODUCT_DATA_PATH = "digital-products";
     const COVER_PHOTOS_PATH = "products-cover-photos";
     const THUMBNAIL_PATH = "products-thumbnail";
+
+    const PUBLISHED = ProductStatusEnum::Published->value;
+    const DRAFT = ProductStatusEnum::Draft->value;
+    const DELETED = 'deleted';
 
     public function seed(): void
     {
@@ -278,6 +283,86 @@ class ProductRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
+     * Searches for products based on the given text.
+     *
+     * The search scope includes:
+     * - Matching the product title
+     * - Matching the product description
+     * - Matching tags within the JSON tags column
+     * - Matching the full name of the associated user
+     *
+     * Results are ordered by relevance:
+     * 1. Title matches
+     * 2. Description matches
+     * 3. Tag matches
+     * 4. User full name matches
+     *
+     * @param string $text The text to search for.
+     *
+     * @return Builder The query builder instance with the applied search conditions.
+     *
+     * @see \App\Models\Product scope methods for search query defined.
+     */
+    public function search(string $text): Builder
+    {
+        return Product::Search($text);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Store the user's searched product IDs.
+     *
+     * @param Product $product The product searched by the user.
+     * @param User $user The user whose searches are being tracked.
+     *
+     * @return void
+     */
+    public function trackSearch(Product $product, User $user): void
+    {
+        $upserts = [
+            'user_id' => $user->id,
+            'product_id' => $product->id
+        ];
+
+        ProductSearch::upsert(
+            [$upserts],
+            uniqueBy: ['user_id', 'product_id'],
+        );
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve the last 10 products a user has searched for.
+     *
+     * This method fetches the last 10 products that a user has searched for
+     * based on their search history. It queries the ProductSearch model to get
+     * the recent searches, then retrieves the corresponding products from the
+     * Product model.
+     *
+     * @param User $user The logged-in user whose search history is being retrieved.
+     *
+     * @return Collection|null A collection of found products, or null if none are found.
+     */
+    public function findSearches(User $user): ?Collection
+    {
+        // Get the last 10 products the user searched for
+        $searches = ProductSearch::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        // Get the product ids from the searches
+        $product_ids = $searches->pluck('product_id');
+
+        // Retrieve product information for the last 10 searched products - where they are still published.
+        return Product::whereIn('id', $product_ids)->where('status', self::PUBLISHED)->get();
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Uploads an array of the product's data files and returns their storage paths.
      *
      * The data is the actual resource being sold.
@@ -414,5 +499,62 @@ class ProductRepository extends Repository
             }
         }
         unset($filter['status']);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Check if the product is part of the user's recent searches.
+     *
+     * @param  Product  $product The product to check.
+     * @param  array|string|null  $cookie The cookie from the incoming request instance.
+     *
+     * @return bool Returns true if the product is in the search history, false otherwise.
+     */
+    public function isSearchedProduct(Product $product, array|string|null $cookie): bool
+    {
+        $product_ids = json_decode($cookie, true) ?? [];
+        return in_array($product->id, $product_ids);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Ensure the product status is published.
+     *
+     * @param  Product  $product The product to check.
+     *
+     * @return bool It returns true if the product status is published, false otherwise.
+     */
+    public function isPublished(Product $product): bool
+    {
+        if ($product->status !== ProductStatusEnum::Published->value) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get metadata for the product's associated resources.
+     *
+     * @param  Product  $product The product to get metadata for.
+     *
+     * @return array An array of metadata for the product's resources.
+     */
+    public function getProductMetaData(Product $product): array
+    {
+        $meta_data_array = [];
+        foreach ($product->data as $value) {
+            $filePath = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
+            $meta_data = $this->getFileMetaData($filePath);
+
+            if ($meta_data) {
+                $meta_data_array[] = $meta_data;
+            }
+        }
+        return $meta_data_array;
     }
 }

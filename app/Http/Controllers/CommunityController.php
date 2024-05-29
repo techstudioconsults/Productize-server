@@ -8,9 +8,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\community;
 use App\Http\Requests\StorecommunityRequest;
-use App\Http\Requests\UpdatecommunityRequest;
 use App\Http\Resources\CommunityResource;
 use App\Repositories\CommunityRepository;
 use App\Mail\CommunityWelcomeMail;
@@ -23,24 +21,28 @@ class CommunityController extends Controller
     ) {
     }
 
+    
     /**
-     * Display a listing of the resource.
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Retrieves a paginated list of all community member.
+     *
+     * @return \App\Http\Resources\CommunityResource Returns a paginated collection of all community members.
      */
     public function index()
     {
-        $community = $this->communityRepository->findAll();
+        $community = $this->communityRepository->find();
         return CommunityResource::collection($community);
     }
 
 
-    /**
+     /**
+     * @author @obajide028 Odesanya Babajide
+     * 
      * Store a newly created resource in storage.
      * @param StorecommunityRequest $request 
      * 
-     * creates a new StorecommunityRequest $request The HTTP request containing query parameters:
-     *                         - title (required)
-     *                         - question (required)
-     *                         - answer (required)
+     * creates a new community member
      */
     public function store(StorecommunityRequest $request)
     {

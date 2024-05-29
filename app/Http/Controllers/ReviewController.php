@@ -23,25 +23,27 @@ class ReviewController extends Controller
     {
         
     }
-    /**
-     * Display a listing of the resource.
+     /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Retrieves a paginated list of a user's review.
+     *
+     * @return \App\Http\Resources\ReviewResource Returns a paginated collection of a user reviews.
      */
     public function index()
     {
-       $reviews = $this->reviewRepository->findAll();
+       $reviews = $this->reviewRepository->find();
        return ReviewResource::collection($reviews);
     }
     
-     /**
-    * Store a newly created resource in storage.
-    * @param StoreReviewRequest $request 
-    * 
-    * creates a new faq $request The HTTP request containing query parameters:
-    *                         - comment(required)
-    *                         - rating(required)
-    *                         - productId(required)
-    *                         - userId (make sure user is authenticated)
-    */
+   /**
+     * @author @obajide028 Odesanya Babajide
+     * 
+     * Store a newly created resource in storage.
+     * @param StoreReviewRequest $request 
+     * 
+     * creates a new review
+     */
     public function store(StoreReviewRequest $request, $productId)
     {
         // Retrieve the authenticated user
@@ -74,6 +76,25 @@ class ReviewController extends Controller
         return response()->json(new ReviewResource($review), 201);
     }
     
+     /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Retrieve a collection of reviews associated with a specific product.
+     *
+     * It returns the first 3 in the collection.
+     *
+     * @param Product $product The product for which to retrieve orders.
+     * @return \App\Http\Resources\ReviewResource A collection of review resources.
+     */
+    public function findByProduct($productId)
+    {
+        $filter = ['product_id' =>$productId];
+        
+        $reviews = $this->reviewRepository->query($filter)->take(2)->get();
+
+        return ReviewResource::collection($reviews);
+
+    }
 
     /**
      * Update the specified resource in storage.
@@ -89,17 +110,5 @@ class ReviewController extends Controller
     public function destroy(Review $review)
     {
         //
-    }
-
-    /**
-     *  Get each product review
-     * 
-     * @param - $productId
-     */
-    public function getReviewsByProduct($productId)
-    {
-        $reviews = $this->reviewRepository->findByProduct($productId);
-
-        return (ReviewResource::collection($reviews));
     }
 }

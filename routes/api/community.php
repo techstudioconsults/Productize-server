@@ -16,6 +16,6 @@ Route::controller(CommunityController::class)
     ->namespace("\App\Http\Controllers")
     ->group(function () {
 
-        Route::get('/', 'index');
-        Route::post('/create', 'store');
+        Route::get('/', 'index')->name('index');
+        Route::post('/create', 'store')->name('store');
     });

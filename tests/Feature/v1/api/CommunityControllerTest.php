@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use Faker\Factory as Faker;
 use Tests\TestCase;
 
-class CommunityTest extends TestCase
+class CommunityControllerTest extends TestCase
 {
 
     public function test_getAllCommunity(): void

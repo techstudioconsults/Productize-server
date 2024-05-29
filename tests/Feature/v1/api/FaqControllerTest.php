@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 use Faker\Factory as Faker;
 
-class FaqTest extends TestCase
+class FaqControllerTest extends TestCase
 {
 
     use RefreshDatabase;

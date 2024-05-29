@@ -1,4 +1,5 @@
 <?php
+
 /**
  *  @author @obajide028 Odesanya Babajide
  *  @version 1.0
@@ -23,23 +24,25 @@ class FaqController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Retrieves a paginated list of user's faqs.
+     *
+     * @return \App\Http\Resources\FaqResource Returns a paginated collection of a user faqs.
      */
     public function index()
     {
-        $faq = $this->faqRepository->findAll();
+        $faq = $this->faqRepository->find();
         return FaqResource::collection($faq);
     }
 
     /**
+     * @author @obajide028 Odesanya Babajide
+     * 
      * Store a newly created resource in storage.
      * @param StoreFaqRequest $request 
      * 
-     * creates a new faq $request The HTTP request containing query parameters:
-     *                         - title (required)
-     *                         - question (required)
-     *                         - answer (required)
-     * 
+     * creates a new faq
      */
     public function store(StoreFaqRequest $request)
     {
@@ -49,29 +52,32 @@ class FaqController extends Controller
 
 
     /**
-     * Update the specified resource in storage.
-     * @param UpdateFaqRequest $request The HTTP request containing query parameters:
-     *                         - title (required)
-     *                         - question (required)
-     *                         - answer (required)
-     * @return  
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Update a given faq.
+     *
+     * @param  \App\Http\Requests\UpdateFaqRequest  $request The incoming request containing validated faq update data.
+     * @param  \App\Models\Faq  $cfaq The faq to be updated.
+     * @return \App\Http\Resources\FaqResource Returns a resource representing the newly updated faq.
      */
     public function update(UpdateFaqRequest $request, Faq $faq)
     {
-        $faqResource = new FaqResource($faq);
-        $updatedFaq = $this->faqRepository->update($faqResource, $request->validated());
-        return response()->json(new FaqResource($updatedFaq), 200);
+        $faq = $this->faqRepository->update($faq, $request->validated());
+
+        return new FaqResource($faq);
     }
 
-/**
- * Remove the specified resource from storage.
- *
- * @param Faq $faq - The Faq model instance to delete
- */
-public function destroy(Faq $faq)
-{
-    $faqResource = new FaqResource($faq);
-    $this->faqRepository->delete($faqResource);
-    return response()->json(['Message' => 'FAQ deleted successfully']);
-}
+    /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Delete a given faq.
+     *
+     * @param  \App\Models\Faq  $faq The faq to be deleted.
+     * @return \Illuminate\Http\JsonResponse Returns a resource with a confirmation message.
+     */
+    public function delete(Faq $faq)
+    {
+        $this->faqRepository->deleteOne($faq);
+        return response()->json(['Message' => 'FAQ deleted successfully']);
+    }
 }

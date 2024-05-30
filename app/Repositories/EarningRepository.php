@@ -24,7 +24,7 @@ class EarningRepository extends Repository
     {
         $user_id = $entity['user_id'];
         $amount = $entity['amount'];
-        
+
         $earning = Earning::firstOrCreate([
             'user_id' => $user_id
         ]);
@@ -81,5 +81,10 @@ class EarningRepository extends Repository
 
         // Return the updated Customer model
         return $entity;
+    }
+
+    public function getBalance(Earning $earning): int
+    {
+        return $earning->total_earnings - $earning->withdrawn_earnings;
     }
 }

@@ -2,14 +2,22 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\ModelCastException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Payout;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 
-class PayoutRepository
+class PayoutRepository extends Repository
 {
-    public function create(array $credentials)
+    public function seed(): void
+    {
+    }
+
+    public function create(array $credentials): Payout
     {
         $payout = new Payout();
 
@@ -24,37 +32,50 @@ class PayoutRepository
         return $payout;
     }
 
-    public function find(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null,
-    ) {
-        $payouts = $user->payouts();
+    public function query(array $filter): Builder
+    {
+        $query = Payout::query();
 
-        if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+        // Apply date filter
+        $this->applyDateFilters($query, $filter);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+        // Apply other filters
+        $query->where($filter);
 
-            $payouts->whereBetween('created_at', [$start_date, $end_date]);
-        }
-
-        return $payouts;
+        return $query;
     }
 
-
-    public function findByReference(string $reference)
+    public function find(?array $filter): ?Collection
     {
-        $payout = Payout::where('reference', $reference)->first();
+        return $this->query($filter ?? [])->get();
+    }
 
-        return $payout;
+    public function findById(string $id): ?Payout
+    {
+        return Payout::find($id);
+    }
+
+    public function findOne(array $filter): ?Payout
+    {
+        return Payout::where($filter)->firstOr(function () {
+            return null;
+        });
+    }
+
+    public function update(Model $entity, array $updates): Payout
+    {
+        // Ensure that the provided entity is an instance of Order
+        if (!$entity instanceof Payout) {
+            throw new ModelCastException("Payout", get_class($entity));
+        }
+
+        // Assign the updates to the corresponding fields of the payout instance
+        $entity->fill($updates);
+
+        // Save the updated payout instance
+        $entity->save();
+
+        // Return the updated payout model
+        return $entity;
     }
 }

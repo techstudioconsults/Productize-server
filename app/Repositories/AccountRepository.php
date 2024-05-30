@@ -21,7 +21,15 @@ class AccountRepository extends Repository
 
     public function query(array $filter): Builder
     {
-        return Account::query();
+        $query = Account::query();
+
+        // Apply date filter
+        $this->applyDateFilters($query, $filter);
+
+        // Apply other filters
+        $query->where($filter);
+
+        return $query;
     }
 
     public function find(?array $filter): ?Collection
@@ -37,6 +45,13 @@ class AccountRepository extends Repository
     public function findOne(array $filter): ?Account
     {
         return Account::where($filter)->firstOr(function () {
+            return null;
+        });
+    }
+
+    public function findActive(): Account
+    {
+        return Account::where(['active' => true])->firstOr(function () {
             return null;
         });
     }

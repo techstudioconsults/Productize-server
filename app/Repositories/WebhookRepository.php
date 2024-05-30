@@ -13,7 +13,8 @@ class WebhookRepository
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository,
-        protected EarningRepository $earningRepository
+        protected EarningRepository $earningRepository,
+        protected PayoutRepository $payoutRepository
     ) {
     }
     public function paystack(string $type, $data)
@@ -125,62 +126,63 @@ class WebhookRepository
 
                 case 'transfer.success':
 
-                    //     $reference = $data['reference'];
+                    $reference = $data['reference'];
 
-                    //     try {
-                    //         $payout = $this->payoutRepository->findByReference($reference);
+                    try {
+                        // update payout history status
+                        $payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
-                    //         $payout->status = 'completed';
+                        $payout = $this->payoutRepository->update($payout, ['status' => 'completed']);
 
-                    //         $payout->save();
+                        $user_id = $payout->payoutAccount->user->id;
 
-                    //         $user_id = $payout->payoutAccount->user->id;
+                        $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
 
-                    //         $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
+                        $new_withdrawn_earnings = $earnings->withdrawn_earnings + $data['amount'];
 
-                    //         // Email User
-                    //     } catch (\Throwable $th) {
-                    //         Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    //     }
+                        $this->earningRepository->update($earnings, [
+                            'withdrawn_earnings' => $new_withdrawn_earnings
+                        ]);
 
-                    //     break;
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
 
-                    // case 'transfer.failed':
+                    break;
 
-                    //     $reference = $data['reference'];
+                case 'transfer.failed':
 
-                    //     try {
-                    //         $payout = $this->payoutRepository->findByReference($reference);
+                    $reference = $data['reference'];
 
-                    //         $payout->status = 'failed';
+                    try {
+                        $$payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
-                    //         $payout->save();
+                        $payout = $this->payoutRepository->update($payout, ['status' => 'failed']);
 
-                    //         // Email User
-                    //     } catch (\Throwable $th) {
-                    //         Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    //     }
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
                     break;
 
                 case 'transfer.reversed':
 
-                    // $reference = $data['reference'];
+                    $reference = $data['reference'];
 
-                    // try {
-                    //     $payout = $this->payoutRepository->findByReference($reference);
+                    try {
+                        $$payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
-                    //     $payout->status = 'reversed';
+                        $payout = $this->payoutRepository->update($payout, ['status' => 'reversed']);
 
-                    //     $payout->save();
-
-                    //     // Email User
-                    // } catch (\Throwable $th) {
-                    //     Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    // }
+                        // Email User
+                    } catch (\Throwable $th) {
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    }
                     break;
             }
         } catch (\Throwable $th) {
-            // Log::critical('paystack webhook error', ['error_message' => $th->getMessage()]);
+            Log::critical('paystack webhook error', ['error_message' => $th->getMessage()]);
         }
     }
 }

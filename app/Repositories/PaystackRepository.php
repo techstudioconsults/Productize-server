@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Models\Cart;
 use App\Models\Paystack;
@@ -458,5 +459,31 @@ class PaystackRepository
         ])->post("{$this->baseUrl}/transfer", $payload)->throw()->json();
 
         return $response['data'];
+    }
+
+    public function isNewCustomer(string $email): bool
+    {
+        $customer = $this->fetchCustomer($email);
+
+        if ($customer) return true;
+        return false;
+    }
+
+    public function getSubscriptionStatus(array $customer): SubscriptionStatusEnum
+    {
+        // Check subscription count, if zero, return false
+        if (!count($customer['subscriptions'])) return null;
+
+        $subscriptions = $customer['subscriptions'];
+
+        // The first item in the array is the latest one, return the status.
+        return $subscriptions[0]['status'];
+    }
+
+    public function hasSubscription(array|null $customer)
+    {
+        if (!$customer) return false;
+        if (!count($customer['subscriptions'])) return false;
+        return true;
     }
 }

@@ -96,12 +96,14 @@ class CartRepository extends Repository
      */
     public function findOne(array $filter): ?Cart
     {
-        return $this->query($filter)->first();
+        return Cart::where($filter)->firstOr(function () {
+            return null;
+        });
     }
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Update a cart entity with the provided updates.
      *
      * @param Model $entity The cart entity to update.

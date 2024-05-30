@@ -2,11 +2,18 @@
 
 namespace App\Repositories;
 
+use Log;
+
 class WebhookRepository
 {
     public function __construct(
         protected SubscriptionRepository $subscriptionRepository,
-        protected UserRepository $userRepository
+        protected UserRepository $userRepository,
+        protected CartRepository $cartRepository,
+        protected ProductRepository $productRepository,
+        protected OrderRepository $orderRepository,
+        protected CustomerRepository $customerRepository,
+        protected EarningRepository $earningRepository
     ) {
     }
     public function paystack(string $type, $data)
@@ -33,46 +40,53 @@ class WebhookRepository
 
                 case 'charge.success':
 
-                    // // Handle if isPurchase is present in metadata
-                    // /**
-                    //  * This is a product purchase charge success webhook
-                    //  */
-                    // if ($data['metadata'] && isset($data['metadata']['isPurchase']) && $data['metadata']['isPurchase']) {
-                    //     $metadata = $data['metadata'];
-                    //     $buyer_id = $metadata['buyer_id'];
-                    //     $products = $metadata['products'];
+                    // Handle if isPurchase is present in metadata
+                    /**
+                     * This is a product purchase charge success webhook
+                     */
+                    if ($data['metadata'] && isset($data['metadata']['isPurchase']) && $data['metadata']['isPurchase']) {
+                        $metadata = $data['metadata'];
+                        $buyer_id = $metadata['buyer_id'];
+                        $products = $metadata['products'];
 
-                    //     // Delete Cart
-                    //     Cart::where('user_id', $buyer_id)->delete();
+                        // Delete Cart
+                        $cart = $this->cartRepository->findOne(['user_id' => $buyer_id]);
 
-                    //     try {
-                    //         foreach ($products as $product) {
-                    //             $product_saved = Product::find($product['product_id']);
-                    //             $user = $product_saved->user;
+                        if ($cart) {
+                            $this->cartRepository->deleteOne($cart);
+                        }
 
-                    //             $buildOrder = [
-                    //                 'reference_no' => $data['reference'],
-                    //                 'user_id' => $buyer_id,
-                    //                 'total_amount' => $product_saved->price * $product['quantity'],
-                    //                 'quantity' => $product['quantity'],
-                    //                 'product_id' => $product_saved->id
-                    //             ];
+                        try {
+                            foreach ($products as $product) {
+                                $product_saved = $this->productRepository->findById($product['product_id']);
+                                $user = $product_saved->user;
 
-                    //             $order = $this->orderRepository->create($buildOrder);
+                                $buildOrder = [
+                                    'reference_no' => $data['reference'],
+                                    'user_id' => $buyer_id,
+                                    'total_amount' => $product_saved->price * $product['quantity'],
+                                    'quantity' => $product['quantity'],
+                                    'product_id' => $product_saved->id
+                                ];
 
-                    //             $this->customerRepository->create([
-                    //                 'user_id' => $order->user->id,
-                    //                 'merchant_id' => $order->product->user->id,
-                    //                 'order_id' => $order->id
-                    //             ]);
+                                $order = $this->orderRepository->create($buildOrder);
 
-                    //             // Update earnings
-                    //             $this->paymentRepository->updateEarnings($user->id, $product['amount']);
-                    //         }
-                    //     } catch (\Throwable $th) {
-                    //         Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
-                    //     }
-                    // }
+                                $this->customerRepository->create([
+                                    'user_id' => $order->user->id,
+                                    'merchant_id' => $order->product->user->id,
+                                    'order_id' => $order->id
+                                ]);
+
+                                // Update earnings
+                                $this->earningRepository->create([
+                                    'user_id' => $user->id,
+                                    'amount' => $product['amount']
+                                ]);
+                            }
+                        } catch (\Throwable $th) {
+                            Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
+                        }
+                    }
 
                     break;
 
@@ -111,41 +125,41 @@ class WebhookRepository
 
                 case 'transfer.success':
 
-                //     $reference = $data['reference'];
+                    //     $reference = $data['reference'];
 
-                //     try {
-                //         $payout = $this->payoutRepository->findByReference($reference);
+                    //     try {
+                    //         $payout = $this->payoutRepository->findByReference($reference);
 
-                //         $payout->status = 'completed';
+                    //         $payout->status = 'completed';
 
-                //         $payout->save();
+                    //         $payout->save();
 
-                //         $user_id = $payout->payoutAccount->user->id;
+                    //         $user_id = $payout->payoutAccount->user->id;
 
-                //         $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
+                    //         $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
 
-                //         // Email User
-                //     } catch (\Throwable $th) {
-                //         Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                //     }
+                    //         // Email User
+                    //     } catch (\Throwable $th) {
+                    //         Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    //     }
 
-                //     break;
+                    //     break;
 
-                // case 'transfer.failed':
+                    // case 'transfer.failed':
 
-                //     $reference = $data['reference'];
+                    //     $reference = $data['reference'];
 
-                //     try {
-                //         $payout = $this->payoutRepository->findByReference($reference);
+                    //     try {
+                    //         $payout = $this->payoutRepository->findByReference($reference);
 
-                //         $payout->status = 'failed';
+                    //         $payout->status = 'failed';
 
-                //         $payout->save();
+                    //         $payout->save();
 
-                //         // Email User
-                //     } catch (\Throwable $th) {
-                //         Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                //     }
+                    //         // Email User
+                    //     } catch (\Throwable $th) {
+                    //         Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    //     }
                     break;
 
                 case 'transfer.reversed':

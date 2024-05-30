@@ -2,26 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Models\Subscription;
 use App\Http\Requests\StoreSubscriptionRequest;
-use App\Http\Requests\UpdateSubscriptionRequest;
+use App\Repositories\PaystackRepository;
 use App\Repositories\SubscriptionRepository;
+use Auth;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
 
 class SubscriptionController extends Controller
 {
     public function __construct(
-        protected SubscriptionRepository $subscriptionRepository
+        protected SubscriptionRepository $subscriptionRepository,
+        protected PaystackRepository $paystackRepository
     ) {
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
     }
 
     /**
@@ -44,7 +42,7 @@ class SubscriptionController extends Controller
 
         //if no user found or no subscription, create a new subscription
 
-        $user = $request->user();
+        $user = $request->user('sanctum');
 
         // Is the user subscribed ?
         if ($user->isSubscribed()) {
@@ -71,35 +69,80 @@ class SubscriptionController extends Controller
         return new JsonResource($subscription);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Subscription $subscription)
+    public function enable(Subscription $subscription)
     {
-        //
+        try {
+            $response = $this->paystackRepository->enableSubscription($subscription->subscription_code);
+            return new JsonResponse(['data' => $response]);
+        } catch (\Exception $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Subscription $subscription)
+    public function manage(Subscription $subscription)
     {
-        //
+        try {
+            $response = $this->paystackRepository->manageSubscription($subscription->subscription_code);
+
+            return new JsonResponse(['data' => $response]);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateSubscriptionRequest $request, Subscription $subscription)
+    public function cancel(Subscription $subscription)
     {
-        //
+        try {
+            $response = $this->paystackRepository->disableSubscription($subscription->subscription_code);
+
+            return new JsonResponse(['data' => $response]);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Subscription $subscription)
+    public function billing()
     {
-        //
+        $user = Auth::user();
+
+        $response = [
+            'renewal_date' => null,
+            'plan' => $user->account_type,
+            'billing_total' => null,
+            'plans' => []
+        ];
+
+        if ($user->account_type === 'free_trial') {
+            $response['renewal_date'] = Carbon::parse($user->created_at)->addDays(30);
+            return new JsonResponse($response);
+        }
+
+        if ($user->isSubscribed()) {
+
+            $subscription_id = $this->subscriptionRepository->findOne(['user_id' => $user->id])->subscription_code;
+
+            if ($subscription_id) {
+                $subscription = $this->paystackRepository->fetchSubscription($subscription_id);
+
+                $plans = Arr::map($subscription['invoices'], function ($plan) {
+                    return [
+                        'plan' => 'premium',
+                        'price' => $plan['amount'] / 100,
+                        'status' => $plan['status'],
+                        'reference' => $plan['reference'],
+                        'date' => $plan['createdAt'],
+                    ];
+                });
+
+                $response = [
+                    'renewal_date' => $subscription['next_payment_date'],
+                    'plan' => $user->account_type,
+                    'billing_total' => $subscription['amount'] / 100,
+                    'plans' => $plans
+                ];
+            }
+        }
+
+        return new JsonResponse($response);
     }
 }

@@ -13,11 +13,11 @@ Route::controller(SubscriptionController::class)
     ->group(function () {
         Route::post('/', 'store')->name('store');
 
-        Route::get('/', 'index')->name('index');
+        Route::get('/', 'billing')->middleware('can:view')->name('billing');
 
-        Route::get('/{subscription}', 'show')->middleware('can:view,subscription')->name('show');
+        Route::get('/enable/{subscription}', 'enable')->middleware('can:enable,subscription')->name('enable');
 
-        Route::patch('/{subscription}', 'update')->middleware('can:update,subscription')->name('update');
+        Route::get('/manage/{subscription}', 'manage')->middleware('can:manage,subscription')->name('manage');
 
-        Route::delete('/{subscription}', 'delete')->middleware('can:delete,subscription')->name('delete');
+        Route::get('/cancel/{subscription}', 'cancel')->middleware('can:cancel,subscription')->name('cancel');
     });

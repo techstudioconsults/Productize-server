@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ModelCastException;
 use App\Exceptions\ServerErrorException;
 use App\Models\Subscription;
 use Illuminate\Database\Eloquent\Builder;
@@ -58,17 +59,25 @@ class SubscriptionRepository extends Repository
 
     public function create(array $entity): Subscription
     {
-        return Subscription::create([$entity]);
+        return Subscription::create($entity);
     }
 
     public function query(array $filter): Builder
     {
-        return Subscription::query();
+        $query = Subscription::query();
+
+        // Apply date filter
+        $this->applyDateFilters($query, $filter);
+
+        // Apply other filters
+        $query->where($filter);
+
+        return $query;
     }
 
-    public function find(?array $filter): ?Collection
+    public function find(?array $filter = []): ?Collection
     {
-        return Subscription::all();
+        return $this->query($filter ?? [])->get();
     }
 
     public function findById(string $id): ?Subscription
@@ -78,12 +87,26 @@ class SubscriptionRepository extends Repository
 
     public function findOne(array $filter): ?Subscription
     {
-        return Subscription::where($filter)->first();
+        return Subscription::where($filter)->firstOr(function () {
+            return null;
+        });
     }
 
     public function update(Model $entity, array $updates): Subscription
     {
-        return new Subscription();
+        // Ensure that the provided entity is an instance of Order
+        if (!$entity instanceof Subscription) {
+            throw new ModelCastException("Subscription", get_class($entity));
+        }
+
+        // Assign the updates to the corresponding fields of the Order instance
+        $entity->fill($updates);
+
+        // Save the updated Order instance
+        $entity->save();
+
+        // Return the updated Order model
+        return $entity;
     }
 
     /**

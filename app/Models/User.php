@@ -122,7 +122,7 @@ class User extends Authenticatable implements CanResetPassword
 
     public function payouts()
     {
-        return $this->hasManyThrough(Payout::class, PayOutAccount::class, 'user_id', 'pay_out_account_id');
+        return $this->hasManyThrough(Payout::class, Account::class, 'user_id', 'account_id');
     }
 
     public function isSubscribed()

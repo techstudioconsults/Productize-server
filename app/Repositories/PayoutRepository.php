@@ -3,13 +3,10 @@
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
-use App\Exceptions\UnprocessableException;
 use App\Models\Payout;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Validator;
 
 class PayoutRepository extends Repository
 {

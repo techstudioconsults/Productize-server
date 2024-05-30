@@ -17,8 +17,8 @@ class Payout extends Model
 
     public $incrementing = false;
 
-    public function payoutAccount()
+    public function account()
     {
-        return $this->belongsTo(PayOutAccount::class, 'pay_out_account_id');
+        return $this->belongsTo(Account::class, 'account_id');
     }
 }

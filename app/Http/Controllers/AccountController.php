@@ -12,8 +12,10 @@ use App\Models\Account;
 use App\Repositories\AccountRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\UserRepository;
+use Arr;
 use Auth;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class AccountController extends Controller
 {
@@ -94,5 +96,25 @@ class AccountController extends Controller
         $account->save();
 
         return new AccountResource($account);
+    }
+
+    /**
+     * move to payout
+     *
+     * Get a List of all banks supported by paystack
+     * @return array - keys name, code
+     */
+    public function getBankList()
+    {
+        $banks = $this->paystackRepository->getBankList();
+
+        $response = Arr::map($banks, function ($bank) {
+            return [
+                'name' => $bank['name'],
+                'code' => $bank['code']
+            ];
+        });
+
+        return new JsonResponse($response, 200);
     }
 }

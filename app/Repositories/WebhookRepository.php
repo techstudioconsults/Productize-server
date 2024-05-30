@@ -141,7 +141,8 @@ class WebhookRepository
                         $new_withdrawn_earnings = $earnings->withdrawn_earnings + $data['amount'];
 
                         $this->earningRepository->update($earnings, [
-                            'withdrawn_earnings' => $new_withdrawn_earnings
+                            'withdrawn_earnings' => $new_withdrawn_earnings,
+                            'pending' => 0
                         ]);
 
                         // Email User
@@ -156,9 +157,17 @@ class WebhookRepository
                     $reference = $data['reference'];
 
                     try {
-                        $$payout = $this->payoutRepository->findOne(['reference' => $reference]);
+                        $payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
                         $payout = $this->payoutRepository->update($payout, ['status' => 'failed']);
+
+                        $user_id = $payout->payoutAccount->user->id;
+
+                        $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
+
+                        $this->earningRepository->update($earnings, [
+                            'pending' => 0
+                        ]);
 
                         // Email User
                     } catch (\Throwable $th) {
@@ -171,9 +180,17 @@ class WebhookRepository
                     $reference = $data['reference'];
 
                     try {
-                        $$payout = $this->payoutRepository->findOne(['reference' => $reference]);
+                        $payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
                         $payout = $this->payoutRepository->update($payout, ['status' => 'reversed']);
+
+                        $user_id = $payout->payoutAccount->user->id;
+
+                        $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
+
+                        $this->earningRepository->update($earnings, [
+                            'pending' => 0
+                        ]);
 
                         // Email User
                     } catch (\Throwable $th) {

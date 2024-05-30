@@ -448,57 +448,57 @@ class PaymentController extends Controller
     // move to payout out
     public function downloadPayoutList(Request $request)
     {
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        $start_date = $request->start_date;
+        // $start_date = $request->start_date;
 
-        $end_date = $request->end_date;
+        // $end_date = $request->end_date;
 
 
-        $payouts = $this->payoutRepository->find($user, $start_date, $end_date)->get();
+        // $payouts = $this->payoutRepository->find($user, $start_date, $end_date)->get();
 
-        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+        // $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 
-        $columns = array('Price', 'BankName', 'BankAccountNumber', 'Period', 'Status');
+        // $columns = array('Price', 'BankName', 'BankAccountNumber', 'Period', 'Status');
 
-        $data = [];
+        // $data = [];
 
-        $data[] = $columns;
+        // $data[] = $columns;
 
-        $fileName = "payouts_$now.csv";
+        // $fileName = "payouts_$now.csv";
 
-        foreach ($payouts as $payout) {
-            $row['Price']  = $payout->amount;
-            $row['BankName']  = $payout->payoutAccount->bank_name;
-            $row['BankAccountNumber']  = $payout->payoutAccount->account_number;
-            $row['Period']  = $payout->created_at;
-            $row['Status']  = $payout->status;
+        // foreach ($payouts as $payout) {
+        //     $row['Price']  = $payout->amount;
+        //     $row['BankName']  = $payout->payoutAccount->bank_name;
+        //     $row['BankAccountNumber']  = $payout->payoutAccount->account_number;
+        //     $row['Period']  = $payout->created_at;
+        //     $row['Status']  = $payout->status;
 
-            $data[] = array($row['Price'], $row['BankName'], $row['BankAccountNumber'], $row['Period']);
-        }
+        //     $data[] = array($row['Price'], $row['BankName'], $row['BankAccountNumber'], $row['Period']);
+        // }
 
-        $csvContent = '';
-        foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
-        }
+        // $csvContent = '';
+        // foreach ($data as $csvRow) {
+        //     $csvContent .= implode(',', $csvRow) . "\n";
+        // }
 
-        $filePath = 'csv/' . $fileName;
+        // $filePath = 'csv/' . $fileName;
 
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
+        // // Store the CSV content in the storage/app/csv directory
+        // Storage::disk('local')->put($filePath, $csvContent);
 
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
+        // $headers = array(
+        //     "Content-type"        => "text/csv",
+        //     "Content-Disposition" => "attachment; filename=$fileName",
+        //     "Pragma"              => "no-cache",
+        //     "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+        //     "Expires"             => "0"
+        // );
 
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
-        }, 200, $headers);
+        // // Return the response with the file from storage
+        // return response()->stream(function () use ($filePath) {
+        //     readfile(storage_path('app/' . $filePath));
+        // }, 200, $headers);
     }
 
     /**
@@ -507,7 +507,7 @@ class PaymentController extends Controller
      * Get a List of all banks supported by paystack
      * @return array - keys name, code
      */
-    public function getBankList()
+    public function bankList()
     {
         $banks = $this->paystackRepository->getBankList();
 

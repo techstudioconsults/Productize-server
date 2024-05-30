@@ -325,58 +325,58 @@ class PaystackRepository
 
                 case 'transfer.success':
 
-                    $reference = $data['reference'];
+                    // $reference = $data['reference'];
 
-                    try {
-                        $payout = $this->payoutRepository->findByReference($reference);
+                    // try {
+                    //     $payout = $this->payoutRepository->findByReference($reference);
 
-                        $payout->status = 'completed';
+                    //     $payout->status = 'completed';
 
-                        $payout->save();
+                    //     $payout->save();
 
-                        $user_id = $payout->payoutAccount->user->id;
+                    //     $user_id = $payout->payoutAccount->user->id;
 
-                        $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
+                    //     $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
 
-                        // Email User
-                    } catch (\Throwable $th) {
-                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    }
+                    //     // Email User
+                    // } catch (\Throwable $th) {
+                    //     Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    // }
 
                     break;
 
                 case 'transfer.failed':
 
-                    $reference = $data['reference'];
+                    // $reference = $data['reference'];
 
-                    try {
-                        $payout = $this->payoutRepository->findByReference($reference);
+                    // try {
+                    //     $payout = $this->payoutRepository->findByReference($reference);
 
-                        $payout->status = 'failed';
+                    //     $payout->status = 'failed';
 
-                        $payout->save();
+                    //     $payout->save();
 
-                        // Email User
-                    } catch (\Throwable $th) {
-                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    }
+                    //     // Email User
+                    // } catch (\Throwable $th) {
+                    //     Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    // }
                     break;
 
                 case 'transfer.reversed':
 
-                    $reference = $data['reference'];
+                    // $reference = $data['reference'];
 
-                    try {
-                        $payout = $this->payoutRepository->findByReference($reference);
+                    // try {
+                    //     $payout = $this->payoutRepository->findByReference($reference);
 
-                        $payout->status = 'reversed';
+                    //     $payout->status = 'reversed';
 
-                        $payout->save();
+                    //     $payout->save();
 
-                        // Email User
-                    } catch (\Throwable $th) {
-                        Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    }
+                    //     // Email User
+                    // } catch (\Throwable $th) {
+                    //     Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
+                    // }
                     break;
             }
         } catch (\Throwable $th) {

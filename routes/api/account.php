@@ -17,5 +17,7 @@ Route::controller(AccountController::class)
 
         Route::post('/', 'store')->name('store')->name('store');
 
+        Route::get('/bank-list', 'bankList')->name('bank-list');
+
         Route::patch('/update', 'update')->middleware('can:update')->name('update');
     });

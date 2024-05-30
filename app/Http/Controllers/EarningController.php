@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Http\Requests\InitiateWithdrawalRequest;
+use App\Http\Resources\EarningResource;
 use App\Repositories\AccountRepository;
 use App\Repositories\EarningRepository;
 use App\Repositories\PayoutRepository;
@@ -24,7 +25,11 @@ class EarningController extends Controller
     }
     public function index()
     {
-        //
+        $user = Auth::user();
+
+        $earning = $this->earningRepository->findOne(['user_id' => $user->id]);
+
+        return new EarningResource($earning);
     }
 
     public function withdraw(InitiateWithdrawalRequest $request)
@@ -69,12 +74,17 @@ class EarningController extends Controller
                 'status' => 'pending',
                 'reference' => $reference,
                 'paystack_transfer_code' => $response['transfer_code'],
-                'pay_out_account_id' => $account->id,
+                'account_id' => $account->id,
                 'amount' => $amount
             ];
 
             // Create a payout history
             $this->payoutRepository->create($payout_entity);
+
+            // update the user's pending amount
+            $this->earningRepository->update($earning, [
+                'pending' => $amount
+            ]);
 
             return new JsonResponse(['data' => 'Withdrawal Initiated']);
         } catch (\Throwable $th) {

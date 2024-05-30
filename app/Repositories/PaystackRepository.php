@@ -415,7 +415,6 @@ class PaystackRepository
 
     public function validateAccountNumber(string $account_number, string $bank_code)
     {
-
         $response = Http::withHeaders([
             "Authorization" => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . "&bank_code=" . $bank_code);

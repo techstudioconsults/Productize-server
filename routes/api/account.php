@@ -9,9 +9,13 @@ Route::controller(AccountController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
+        'can:allowed,App\Models\Account',
+        'can:subscribed,App\Models\Account'
     ])
     ->group(function () {
-        Route::post('/', 'store')->name('store');
+        Route::get('/', 'index')->name('index')->name('index');
 
-        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store')->name('store');
+
+        Route::patch('/update', 'update')->middleware('can:update')->name('update');
     });

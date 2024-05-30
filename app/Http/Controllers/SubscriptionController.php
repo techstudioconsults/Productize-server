@@ -73,7 +73,7 @@ class SubscriptionController extends Controller
     {
         try {
             $response = $this->paystackRepository->enableSubscription($subscription->subscription_code);
-            return new JsonResponse(['data' => $response]);
+            return new JsonResponse(['data' => ['id' => $subscription->id, ...$response]]);
         } catch (\Exception $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }
@@ -84,7 +84,7 @@ class SubscriptionController extends Controller
         try {
             $response = $this->paystackRepository->manageSubscription($subscription->subscription_code);
 
-            return new JsonResponse(['data' => $response]);
+            return new JsonResponse(['data' => ['id' => $subscription->id, ...$response]]);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }
@@ -95,7 +95,7 @@ class SubscriptionController extends Controller
         try {
             $response = $this->paystackRepository->disableSubscription($subscription->subscription_code);
 
-            return new JsonResponse(['data' => $response]);
+            return new JsonResponse(['data' => ['id' => $subscription->id, ...$response]]);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }

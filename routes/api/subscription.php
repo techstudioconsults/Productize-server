@@ -9,11 +9,12 @@ Route::controller(SubscriptionController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
+        'can:allowed,App\Models\Subscription'
     ])
     ->group(function () {
         Route::post('/', 'store')->name('store');
 
-        Route::get('/', 'billing')->middleware('can:view')->name('billing');
+        Route::get('/', 'billing')->name('billing');
 
         Route::get('/enable/{subscription}', 'enable')->middleware('can:enable,subscription')->name('enable');
 

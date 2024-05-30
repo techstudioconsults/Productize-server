@@ -2,65 +2,47 @@
 
 namespace App\Policies;
 
+use App\Exceptions\ForbiddenException;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
 class SubscriptionPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function allowed(User $user)
     {
-        //
+        return $user->hasVerifiedEmail()
+            ? Response::allow()
+            : throw new ForbiddenException('Email Address Not Verified');
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Determine whether the user can enable the subscription.
      */
-    public function view(User $user, Subscription $subscription): bool
+    public function enable(User $user, Subscription $subscription)
     {
-        //
+        return $user->id === $subscription->user_id
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to access this resource');
     }
 
     /**
-     * Determine whether the user can create models.
+     * Determine whether the user can manage this subscription.
      */
-    public function create(User $user): bool
+    public function manage(User $user, Subscription $subscription)
     {
-        //
+        return $user->id === $subscription->user_id
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to access this resource');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Determine whether the user can cancel the subscription.
      */
-    public function update(User $user, Subscription $subscription): bool
+    public function cancel(User $user, Subscription $subscription)
     {
-        //
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Subscription $subscription): bool
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Subscription $subscription): bool
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Subscription $subscription): bool
-    {
-        //
+        return $user->id === $subscription->user_id
+            ? Response::allow()
+            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to access this resource');
     }
 }

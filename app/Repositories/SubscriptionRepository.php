@@ -45,13 +45,18 @@ class SubscriptionRepository extends Repository
 
             $customer_code = $customer['customer_code'];
 
-            $this->create([
+            $subcription = $this->create([
                 'customer_code' => $customer_code,
                 'user_id' => $user->id,
                 'status' => SubscriptionStatusEnum::PENDING->value
             ]);
 
-            return $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+            $response = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+
+            return [
+                'id' => $subcription->id,
+                ...$response
+            ];
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }

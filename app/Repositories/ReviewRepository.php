@@ -30,7 +30,7 @@ class ReviewRepository extends Repository
 
     public function seed(): void
     {
-        Review::factory()->create()->count(10);
+        Review::factory()->count(10)->create();
     }
 
 
@@ -48,7 +48,7 @@ class ReviewRepository extends Repository
     }
 
      /**
-     * @author @obajide028 Odesanya 
+     * @author @obajide028 Odesanya
      *
      * Find reviews based on the provided filter.
      *
@@ -119,7 +119,7 @@ class ReviewRepository extends Repository
         return $query;
     }
 
-    
+
     /**
      * @author @obajide028 Odesanya Babajide
      *
@@ -141,7 +141,7 @@ class ReviewRepository extends Repository
 
           // Save the updated Review instance
           $entity->save();
-  
+
           // Return the updated Review model
           return $entity;
     }

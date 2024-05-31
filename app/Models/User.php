@@ -141,4 +141,14 @@ class User extends Authenticatable implements CanResetPassword
     {
         return $this->payOutAccounts()->exists();
     }
+
+     /**
+      * @author obajide028 Odesanya Babajide 
+      *
+     * Get the reviews for the user.
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

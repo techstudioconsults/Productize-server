@@ -11,20 +11,29 @@ namespace Database\Seeders;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
+use Database\Seeders\Traits\DisableForeignKeys;
+use Database\Seeders\Traits\TruncateTable;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
 {
+    use TruncateTable, DisableForeignKeys;
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Fetch some products and users
-        $products = Product::inRandomOrder()->take(10)->get();
-        $users = User::inRandomOrder()->take(20)->get();
+        $this->disableForeignKeys();
+        $this->truncate('reviews');
 
+
+        // Fetch some products and users
+        $user = User::factory()->create();
+        $products = Product::factory()->count(10)->create([
+            'user_id'=> $user->id
+        ]);
+        $users = User::factory()->count(10)->create();
         foreach ($products as $product) {
             $numReviews = random_int(3, 10);
 
@@ -33,7 +42,7 @@ class ReviewSeeder extends Seeder
                 $rating = random_int(1, 5);
                 $comment = fake()->paragraph();
 
-                Review::create([
+                Review::factory()->create([
                     'user_id' => $user->id,
                     'product_id' => $product->id,
                     'rating' => $rating,
@@ -41,5 +50,7 @@ class ReviewSeeder extends Seeder
                 ]);
             }
         }
+
+        $this->enableForeignKeys();
     }
 }

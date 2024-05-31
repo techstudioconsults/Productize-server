@@ -29,13 +29,6 @@ class StoreReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'product_id' => [
-            //     'required',
-            //     'exists:products,id',
-            //     Rule::unique('reviews')->where(function ($query) {
-            //         return $query->where('user_id', auth()->id());
-            //     }),
-            // ],
             'rating' => 'required|integer|between:1,5',
             'comment' => 'required|string',
         ];

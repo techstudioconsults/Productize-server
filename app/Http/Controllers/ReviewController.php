@@ -8,19 +8,25 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\ConflictException;
+use App\Exceptions\NotFoundException;
 use App\Models\Review;
 use App\Http\Requests\StoreReviewRequest;
 use App\Http\Requests\UpdateReviewRequest;
 use App\Http\Resources\ReviewResource;
 use App\Models\Product;
+use App\Repositories\ProductRepository;
 use App\Repositories\ReviewRepository;
+use App\Repositories\UserRepository;
 use Auth;
 
 class ReviewController extends Controller
 {
 
-    public function __construct(protected ReviewRepository $reviewRepository)
-    {
+    public function __construct(
+        protected ReviewRepository $reviewRepository,
+        protected ProductRepository $productRepository,
+        protected UserRepository $userRepository
+) {
         
     }
      /**
@@ -44,7 +50,7 @@ class ReviewController extends Controller
      * 
      * creates a new review
      */
-    public function store(StoreReviewRequest $request, $productId)
+    public function store(StoreReviewRequest $request, Product $productId)
     {
         // Retrieve the authenticated user
         $user = Auth::user();
@@ -54,7 +60,11 @@ class ReviewController extends Controller
     
 
           // Find the product or throw an exception if it doesn't exist
-         $product = Product::findOrFail($productId);
+         $product = $this->productRepository->findById($productId);
+
+         if(!$product){
+            throw new NotFoundException('Product does not exist');
+        };
 
         // Add the user ID to the payload
         $payload['user_id'] = $user->id;
@@ -63,7 +73,10 @@ class ReviewController extends Controller
         $payload['product_id'] = $product->id;
     
         // Check if the review already exists
-        $exist = $user->reviews()->where('product_id', $payload['product_id'])->first();
+        $exist = $this->userRepository->query([
+        'user_id' => $user->id,
+        'product_id' => $product->id
+        ])->exists();
     
         if ($exist) {
             throw new ConflictException('You have already reviewed this product.');
@@ -73,7 +86,7 @@ class ReviewController extends Controller
         $review = $this->reviewRepository->create($payload);
     
         // Return the created review
-        return response()->json(new ReviewResource($review), 201);
+        return new ReviewResource(($review));
     }
     
      /**
@@ -86,29 +99,13 @@ class ReviewController extends Controller
      * @param Product $product The product for which to retrieve orders.
      * @return \App\Http\Resources\ReviewResource A collection of review resources.
      */
-    public function findByProduct($productId)
+    public function findByProduct(Product $product)
     {
-        $filter = ['product_id' =>$productId];
+        $filter = ['product_id' =>$product];
         
         $reviews = $this->reviewRepository->query($filter)->take(2)->get();
 
         return ReviewResource::collection($reviews);
 
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateReviewRequest $request, Review $review)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Review $review)
-    {
-        //
     }
 }

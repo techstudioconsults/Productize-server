@@ -104,7 +104,7 @@ class AccountController extends Controller
      * Get a List of all banks supported by paystack
      * @return array - keys name, code
      */
-    public function getBankList()
+    public function bankList()
     {
         $banks = $this->paystackRepository->getBankList();
 

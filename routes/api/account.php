@@ -19,5 +19,5 @@ Route::controller(AccountController::class)
 
         Route::get('/bank-list', 'bankList')->name('bank-list');
 
-        Route::patch('/update', 'update')->middleware('can:update')->name('update');
+        Route::patch('/{account}', 'update')->middleware('can:update,account')->name('update');
     });

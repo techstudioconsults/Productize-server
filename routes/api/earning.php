@@ -13,5 +13,7 @@ Route::controller(EarningController::class)
         'can:subscribed,App\Models\Earning'
     ])
     ->group(function () {
+        Route::get('/', 'index')->name('index');
+        
         Route::post('/withdraw', 'withdraw')->name('withdraw');
     });

@@ -152,9 +152,11 @@ class WebhookRepository
 
                         $payout = $this->payoutRepository->update($payout, ['status' => 'completed']);
 
-                        $user_id = $payout->payoutAccount->user->id;
+                        $user_id = $payout->account->user->id;
 
                         $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
+
+                        Log::channel('webhook')->error('Updating Payout', ['data' => $earnings]);
 
                         $new_withdrawn_earnings = $earnings->withdrawn_earnings + $data['amount'];
 
@@ -179,7 +181,7 @@ class WebhookRepository
 
                         $payout = $this->payoutRepository->update($payout, ['status' => 'failed']);
 
-                        $user_id = $payout->payoutAccount->user->id;
+                        $user_id = $payout->account->user->id;
 
                         $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
 
@@ -202,7 +204,7 @@ class WebhookRepository
 
                         $payout = $this->payoutRepository->update($payout, ['status' => 'reversed']);
 
-                        $user_id = $payout->payoutAccount->user->id;
+                        $user_id = $payout->account->user->id;
 
                         $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
 

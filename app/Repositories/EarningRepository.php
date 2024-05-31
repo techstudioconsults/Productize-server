@@ -74,7 +74,9 @@ class EarningRepository extends Repository
 
         // Assign the updates to the corresponding fields of the User instance
         // It ignores keys passed but not present in model columns
-        $entity->fill($updates);
+        foreach ($updates as $column => $value) {
+            $entity->$column = $value;
+        }
 
         // Save the updated Customer instance
         $entity->save();

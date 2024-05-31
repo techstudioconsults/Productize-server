@@ -17,8 +17,12 @@ class Payout extends Model
 
     public $incrementing = false;
 
+    protected $fillable = [
+        'status'
+    ];
+
     public function account()
     {
-        return $this->belongsTo(Account::class, 'account_id');
+        return $this->belongsTo(Account::class);
     }
 }

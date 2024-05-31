@@ -18,7 +18,7 @@ class PayoutRepository extends Repository
     {
         $payout = new Payout();
 
-        $payout->pay_out_account_id = $credentials['pay_out_account_id'];
+        $payout->account_id = $credentials['account_id'];
         $payout->reference = $credentials['reference'];
         $payout->status = $credentials['status'];
         $payout->paystack_transfer_code = $credentials['paystack_transfer_code'];

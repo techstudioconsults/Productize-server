@@ -41,7 +41,9 @@ class SubscriptionRepository extends Repository
         $user = $this->userRepository->findById($user_id);
 
         try {
-            $customer = $this->paystackRepository->createCustomer($user);
+            if (!$customer) {
+                $customer = $this->paystackRepository->createCustomer($user);
+            }
 
             $customer_code = $customer['customer_code'];
 

@@ -15,5 +15,5 @@ Route::controller(PayoutController::class)
     ->group(function () {
         Route::get('/', 'index')->name('index')->name('index');
 
-        Route::get('/download', 'download')->name('download')->name('download');
+        Route::get('/download', 'download')->name('download');
     });

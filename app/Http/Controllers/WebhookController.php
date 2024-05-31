@@ -23,7 +23,7 @@ class WebhookController extends Controller
 
         $paystackHeader = $request->header('x-paystack-signature');
 
-        if ($this->webhookRepository->paystack($payload, $paystackHeader)) {
+        if ($this->paystackRepository->isValidPaystackWebhook($payload, $paystackHeader)) {
 
             try {
                 $data = json_decode($payload, true);

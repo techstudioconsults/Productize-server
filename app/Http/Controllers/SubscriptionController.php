@@ -60,7 +60,7 @@ class SubscriptionController extends Controller
         }
 
         $data = [
-            'id' => $user->id,
+            'user_id' => $user->id,
             'email' => $user->email,
         ];
 
@@ -119,10 +119,11 @@ class SubscriptionController extends Controller
 
         if ($user->isSubscribed()) {
 
-            $subscription_id = $this->subscriptionRepository->findOne(['user_id' => $user->id])->subscription_code;
+            $subscription = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
+            $subscription_code = $subscription->subscription_code;
 
-            if ($subscription_id) {
-                $subscription = $this->paystackRepository->fetchSubscription($subscription_id);
+            if ($subscription_code) {
+                $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
 
                 $plans = Arr::map($subscription['invoices'], function ($plan) {
                     return [
@@ -135,6 +136,7 @@ class SubscriptionController extends Controller
                 });
 
                 $response = [
+                    'id' => $subscription->id,
                     'renewal_date' => $subscription['next_payment_date'],
                     'plan' => $user->account_type,
                     'billing_total' => $subscription['amount'] / 100,

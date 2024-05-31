@@ -32,7 +32,7 @@ class SubscriptionRepository extends Repository
         // check if customer exist on paystack
         $customer = $this->paystackRepository->fetchCustomer($email);
 
-        // The customer has subscription
+        // The customer has subscription - actve, non-renewing, attention, completed, cancelled
         if ($this->paystackRepository->hasSubscription($customer)) {
             $this->handleCustomerHasSubscriptionNotOnDb($customer, $user_id);
         }
@@ -117,6 +117,8 @@ class SubscriptionRepository extends Repository
     }
 
     /**
+     * This Keeps database in sync with paystack.
+     *
      * The Customer has a subcription customer account with registered with us but not in our database.
      *
      * Check if the paystack subscription is active.
@@ -140,7 +142,8 @@ class SubscriptionRepository extends Repository
             'user_id' => $user_id
         ]);
 
-        if ($status !== SubscriptionStatusEnum::CANCELLED->value) {
+        // If the user subscription status is not cancelled or pending, upgrade the user to premium
+        if ($status !== SubscriptionStatusEnum::CANCELLED->value && $status !== SubscriptionStatusEnum::PENDING->value) {
             Log::channel('slack')->alert(
                 'USER HAS AN ACTIVE SUBSCRIPTION BUT IS NOT A PREMIUM USER IN DB',
                 ['context' => [
@@ -153,6 +156,7 @@ class SubscriptionRepository extends Repository
             $this->userRepository->guardedUpdate($customer["email"], 'account_type', 'premium');
         }
 
+        // Then return an error.
         throw new BadRequestException("Sorry, you can't perform this action. It appears you already have a subscription plan.");
     }
 }

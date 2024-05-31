@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Models\Subscription;
@@ -54,6 +55,7 @@ class SubscriptionController extends Controller
         // The user has a subscription plan
         if ($subscription) {
             $status = $subscription['status'];
+            
             throw new BadRequestException(
                 "Sorry, you can't perform this action. It appears you already have a subscription plan with status $status."
             );
@@ -71,6 +73,13 @@ class SubscriptionController extends Controller
 
     public function enable(Subscription $subscription)
     {
+        if (
+            $subscription->status === SubscriptionStatusEnum::CANCELLED->value ||
+            $subscription->status === SubscriptionStatusEnum::NON_RENEWING->value
+        ) {
+            throw new BadRequestException("Subscription status is cancelled");
+        }
+
         try {
             $response = $this->paystackRepository->enableSubscription($subscription->subscription_code);
             return new JsonResponse(['data' => ['id' => $subscription->id, ...$response]]);
@@ -92,6 +101,13 @@ class SubscriptionController extends Controller
 
     public function cancel(Subscription $subscription)
     {
+        if (
+            $subscription->status === SubscriptionStatusEnum::CANCELLED->value ||
+            $subscription->status === SubscriptionStatusEnum::NON_RENEWING->value
+        ) {
+            throw new BadRequestException("Subscription status is cancelled");
+        }
+
         try {
             $response = $this->paystackRepository->disableSubscription($subscription->subscription_code);
 

@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\SubscriptionStatusEnum;
 use Log;
 
 class WebhookRepository
@@ -92,7 +93,16 @@ class WebhookRepository
                     break;
 
                 case 'subscription.not_renew':
-                    // email customer
+                    $subscription_code = $data['subscription_code'];
+
+                    $subscription = $this->subscriptionRepository->findOne([
+                        'subscription_code' => $subscription_code
+                    ]);
+
+                    // update the status
+                    $this->subscriptionRepository->update($subscription, [
+                        'status' => $data['status']
+                    ]);
                     break;
 
                 case 'invoice.create':
@@ -113,6 +123,15 @@ class WebhookRepository
 
                 case 'subscription.disable':
                     $email = $data['customer']['email'];
+
+                    $subscription_code = $data['subscription_code'];
+
+                    $subscription = $this->subscriptionRepository->findOne([
+                        'subscription_code' => $subscription_code
+                    ]);
+
+                    // delete the subscription
+                    $this->subscriptionRepository->deleteOne($subscription);
 
                     $this->userRepository->guardedUpdate($email, 'account_type', 'free');
                     break;

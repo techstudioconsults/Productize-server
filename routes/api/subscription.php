@@ -16,9 +16,7 @@ Route::controller(SubscriptionController::class)
 
         Route::get('/', 'billing')->name('billing');
 
-        Route::get('/enable/{subscription}', 'enable')->middleware('can:enable,subscription')->name('enable');
+        Route::get('/{subscription}/manage', 'manage')->middleware('can:manage,subscription')->name('manage');
 
-        Route::get('/manage/{subscription}', 'manage')->middleware('can:manage,subscription')->name('manage');
-
-        Route::get('/cancel/{subscription}', 'cancel')->middleware('can:cancel,subscription')->name('cancel');
+        Route::get('/{subscription}/cancel', 'cancel')->middleware('can:cancel,subscription')->name('cancel');
     });

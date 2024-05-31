@@ -4,9 +4,7 @@ namespace App\Repositories;
 
 use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
-use App\Models\Cart;
 use App\Models\Paystack;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 class PaystackRepository
 {
     public function __construct(
-        protected PaymentRepository $paymentRepository,
         protected UserRepository $userRepository,
         protected CustomerRepository $customerRepository,
         protected OrderRepository $orderRepository,
@@ -225,165 +222,6 @@ class PaystackRepository
         return $response['data'];
     }
 
-    /**
-     * Api Doc: https://paystack.com/docs/payments/subscriptions/#listen-for-subscription-events
-     */
-    public function webhookEvents(string $type, $data)
-    {
-        try {
-            switch ($type) {
-                case 'subscription.create':
-
-                    // update sub code
-                    $customer = $data['customer'];
-
-                    Paystack::where('customer_code', $customer['customer_code'])->update(
-                        ['subscription_code' => $data['subscription_code']]
-                    );
-
-                    // update user to premium
-                    $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
-                    break;
-
-                case 'charge.success':
-
-                    // Handle if isPurchase is present in metadata
-                    /**
-                     * This is a product purchase charge success webhook
-                     */
-                    if ($data['metadata'] && isset($data['metadata']['isPurchase']) && $data['metadata']['isPurchase']) {
-                        $metadata = $data['metadata'];
-                        $buyer_id = $metadata['buyer_id'];
-                        $products = $metadata['products'];
-
-                        // Delete Cart
-                        Cart::where('user_id', $buyer_id)->delete();
-
-                        try {
-                            foreach ($products as $product) {
-                                $product_saved = Product::find($product['product_id']);
-                                $user = $product_saved->user;
-
-                                $buildOrder = [
-                                    'reference_no' => $data['reference'],
-                                    'user_id' => $buyer_id,
-                                    'total_amount' => $product_saved->price * $product['quantity'],
-                                    'quantity' => $product['quantity'],
-                                    'product_id' => $product_saved->id
-                                ];
-
-                                $order = $this->orderRepository->create($buildOrder);
-
-                                $this->customerRepository->create([
-                                    'user_id' => $order->user->id,
-                                    'merchant_id' => $order->product->user->id,
-                                    'order_id' => $order->id
-                                ]);
-
-                                // Update earnings
-                                $this->paymentRepository->updateEarnings($user->id, $product['amount']);
-                            }
-                        } catch (\Throwable $th) {
-                            Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
-                        }
-                    }
-
-                    break;
-
-                case 'subscription.not_renew':
-                    // email customer
-                    break;
-
-                case 'invoice.create':
-                    # code...
-                    break;
-
-                case 'invoice.update':
-                    # code...
-                    break;
-
-                    /**
-                     * Cancelling a subscription will also trigger the following events:
-                     */
-
-                case 'invoice.payment_failed':
-                    # code...
-                    break;
-
-                case 'subscription.disable':
-                    $email = $data['customer']['email'];
-
-                    $this->userRepository->guardedUpdate($email, 'account_type', 'free');
-                    break;
-
-                case 'subscription.expiring_cards':
-                    /**
-                     * Might want to reach out to customers
-                     * https://paystack.com/docs/payments/subscriptions/#handling-subscription-payment-issues
-                     */
-                    break;
-
-                case 'transfer.success':
-
-                    // $reference = $data['reference'];
-
-                    // try {
-                    //     $payout = $this->payoutRepository->findByReference($reference);
-
-                    //     $payout->status = 'completed';
-
-                    //     $payout->save();
-
-                    //     $user_id = $payout->payoutAccount->user->id;
-
-                    //     $this->paymentRepository->updateWithdraws($user_id, $data['amount']);
-
-                    //     // Email User
-                    // } catch (\Throwable $th) {
-                    //     Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    // }
-
-                    break;
-
-                case 'transfer.failed':
-
-                    // $reference = $data['reference'];
-
-                    // try {
-                    //     $payout = $this->payoutRepository->findByReference($reference);
-
-                    //     $payout->status = 'failed';
-
-                    //     $payout->save();
-
-                    //     // Email User
-                    // } catch (\Throwable $th) {
-                    //     Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    // }
-                    break;
-
-                case 'transfer.reversed':
-
-                    // $reference = $data['reference'];
-
-                    // try {
-                    //     $payout = $this->payoutRepository->findByReference($reference);
-
-                    //     $payout->status = 'reversed';
-
-                    //     $payout->save();
-
-                    //     // Email User
-                    // } catch (\Throwable $th) {
-                    //     Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
-                    // }
-                    break;
-            }
-        } catch (\Throwable $th) {
-            Log::critical('paystack webhook error', ['error_message' => $th->getMessage()]);
-        }
-    }
-
     public function isValidPaystackWebhook($payload, $signature)
     {
         $computedSignature = hash_hmac('sha512', $payload, $this->secret_key);
@@ -487,7 +325,7 @@ class PaystackRepository
         if(!$status) return false;
 
         if($status === SubscriptionStatusEnum::ACTIVE->value) return true;
-        
+
         return false;
     }
 }

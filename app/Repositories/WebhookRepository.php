@@ -2,7 +2,6 @@
 
 namespace App\Repositories;
 
-use App\Enums\SubscriptionStatusEnum;
 use Log;
 
 class WebhookRepository

@@ -55,7 +55,7 @@ class SubscriptionController extends Controller
         // The user has a subscription plan
         if ($subscription) {
             $status = $subscription['status'];
-            
+
             throw new BadRequestException(
                 "Sorry, you can't perform this action. It appears you already have a subscription plan with status $status."
             );
@@ -135,8 +135,8 @@ class SubscriptionController extends Controller
 
         if ($user->isSubscribed()) {
 
-            $subscription = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
-            $subscription_code = $subscription->subscription_code;
+            $db = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
+            $subscription_code = $db->subscription_code;
 
             if ($subscription_code) {
                 $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
@@ -152,7 +152,7 @@ class SubscriptionController extends Controller
                 });
 
                 $response = [
-                    'id' => $subscription->id,
+                    'id' => $db->id,
                     'renewal_date' => $subscription['next_payment_date'],
                     'plan' => $user->account_type,
                     'billing_total' => $subscription['amount'] / 100,

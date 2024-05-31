@@ -66,7 +66,7 @@ class PayoutController extends Controller
             $row['Period']  = $payout->created_at;
             $row['Status']  = $payout->status;
 
-            $data[] = array($row['Price'], $row['BankName'], $row['BankAccountNumber'], $row['Period']);
+            $data[] = array($row['Price'], $row['BankName'], $row['BankAccountNumber'], $row['Period'], $row['Status']);
         }
 
         $csvContent = '';

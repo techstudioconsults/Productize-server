@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Policies;
+
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
+use App\Models\User;
+use Illuminate\Auth\Access\Response;
+
+class PayoutPolicy
+{
+
+    public function allowed(User $user)
+    {
+        return $user->hasVerifiedEmail()
+            ? Response::allow()
+            : throw new ForbiddenException('Email Address not verified');
+    }
+
+    public function subscribed(User $user)
+    {
+        return $user->isPremium()
+            ? Response::allow()
+            : throw new BadRequestException('User is not subscribed');
+    }
+}

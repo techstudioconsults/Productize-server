@@ -8,28 +8,28 @@
 // use App\Repositories\ReviewRepository;
 // use Illuminate\Foundation\Testing\DatabaseMigrations;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
-// use Tests\TestCase;
+use Tests\TestCase;
 
-// class ReviewRepositoryTest extends TestCase
-// {
+class ReviewRepositoryTest extends TestCase
+{
 
-//   use DatabaseMigrations, RefreshDatabase;
+    //   use DatabaseMigrations, RefreshDatabase;
 
-//   protected $reviewRepository;
+    //   protected $reviewRepository;
 
-//   public function setUp(): void
-//   {
-//      parent::setUp();
+    //   public function setUp(): void
+    //   {
+    //      parent::setUp();
 
-//      $this->reviewRepository = new ReviewRepository();
-//   }
+    //      $this->reviewRepository = new ReviewRepository();
+    //   }
 
-//   public function testSeed()
-//   {
-//       $this->reviewRepository->seed();
-//       $this->assertTrue(true);
-//     //   $this->assertDatabaseCount('reviews', 10);
-//   }
+    //   public function testSeed()
+    //   {
+    //       $this->reviewRepository->seed();
+    //       $this->assertTrue(true);
+    //     //   $this->assertDatabaseCount('reviews', 10);
+    //   }
 
 
-// }
+}

@@ -139,6 +139,6 @@ class User extends Authenticatable implements CanResetPassword
 
     public function hasPayoutSetup()
     {
-        return $this->payOutAccounts()->exists();
+        return $this->accounts()->exists();
     }
 }

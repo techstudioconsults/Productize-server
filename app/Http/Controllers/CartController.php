@@ -142,7 +142,7 @@ class CartController extends Controller
             $slug = $item['product_slug'];
 
             // Find the product by slug
-            $product = $this->productRepository->find(['slug' => $slug]);
+            $product = $this->productRepository->findOne(['slug' => $slug]);
 
             // Product Not Found, Cannot continue with payment.
             if (!$product) {

@@ -3,7 +3,7 @@ name: Main Branch Integration Test
 on: [pull_request]
 
 jobs:
-  feature-and-unit-test-main-branch:
+  main-branch-integration-test:
     runs-on: ubuntu-latest
 
     services:
@@ -29,7 +29,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: "8.1"
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-scripts --no-progress --optimize-autoloader

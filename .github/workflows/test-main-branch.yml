@@ -30,12 +30,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker Compose
+      - name: Build and run Docker containers
         run: |
           echo "version: '3.8'
           services:
             app:
-              image: shivammathur/setup-php:15c43e89cdef867065b0213be354c2841860869e
+              build: .
               container_name: app
               depends_on:
                 - mysql
@@ -52,7 +52,6 @@ jobs:
               command: >
                 sh -c '
                   cp .env.testing .env &&
-                  composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist &&
                   php artisan key:generate &&
                   chmod -R 777 storage bootstrap/cache &&
                   php artisan migrate &&
@@ -75,5 +74,4 @@ jobs:
                 retries: 5
           " > docker-compose.yml
 
-      - name: Run tests
-        run: docker-compose up --exit-code-from app
+          docker-compose up --exit-code-from app

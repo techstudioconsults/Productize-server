@@ -8,6 +8,15 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     git \
+    lsb-release \
+    ca-certificates \
+    apt-transport-https
+
+# Add the PHP repository
+RUN add-apt-repository ppa:ondrej/php && apt-get update
+
+# Install PHP and extensions
+RUN apt-get update && apt-get install -y \
     php8.1 \
     php8.1-cli \
     php8.1-fpm \

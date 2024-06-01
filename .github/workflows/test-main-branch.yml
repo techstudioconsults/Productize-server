@@ -46,15 +46,15 @@ jobs:
             echo "Waiting for database connection..."
             sleep 5
           done
-      - name: Prepare Database
-        run: php artisan migrate
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: productize_test
-          DB_USERNAME: test
-          DB_PASSWORD: 123456
+      # - name: Prepare Database
+      #   run: php artisan migrate
+      #   env:
+      #     DB_CONNECTION: mysql
+      #     DB_HOST: 127.0.0.1
+      #     DB_PORT: 3306
+      #     DB_DATABASE: productize_test
+      #     DB_USERNAME: test
+      #     DB_PASSWORD: 123456
       - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
         run: php artisan test
         env:

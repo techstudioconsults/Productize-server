@@ -1,9 +1,9 @@
-name: Laravel Test
+name: Main Branch Integration Test
 
 on: [pull_request]
 
 jobs:
-  laravel-tests-mysql:
+  feature-and-unit-test-main-branch:
     runs-on: ubuntu-latest
 
     services:

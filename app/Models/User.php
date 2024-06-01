@@ -46,7 +46,12 @@ class User extends Authenticatable implements CanResetPassword
         'logo',
         'twitter_account',
         'facebook_account',
-        'youtube_account'
+        'youtube_account',
+        'alt_email',
+        'product_creation_notification',
+        'purchase_notification',
+        'news_and_update_notification',
+        'payout_notification'
     ];
 
     /**
@@ -135,5 +140,15 @@ class User extends Authenticatable implements CanResetPassword
     public function hasPayoutSetup()
     {
         return $this->payOutAccounts()->exists();
+    }
+
+     /**
+      * @author obajide028 Odesanya Babajide 
+      *
+     * Get the reviews for the user.
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }

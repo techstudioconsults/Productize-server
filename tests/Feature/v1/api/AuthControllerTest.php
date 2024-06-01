@@ -3,42 +3,50 @@
 namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\TooManyRequestException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Socialite\Facades\Socialite;
 use Tests\TestCase;
-use URL;
 
-class AuthTest extends TestCase
+class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
     use WithFaker;
 
-    /**
-     * 1. Test input validation
-     * 2. Test password is hashed
-     * 3. Test Token created
-     * 4. Test user is created
-     */
+    protected $full_name;
+    protected $email;
+    protected $password;
+    private $base_url = "/api/auth";
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->full_name = "Tobi Olanitori";
+        $this->email = "tobiolanitori@gmail.com";
+        $this->password = "Password1231.";
+    }
+
     public function test_register_with_bad_credentials(): void
     {
         $this->expectException(UnprocessableException::class);
 
-        $response = $this->withoutExceptionHandling()
-            ->postJson('/api/auth/register', [
+        $this->withoutExceptionHandling()
+            ->postJson($this->base_url . '/register', [
                 'name' => 'Sally'
             ]);
     }
@@ -49,46 +57,34 @@ class AuthTest extends TestCase
      */
     public function test_register(): void
     {
-        $this->withoutExceptionHandling();
+        Event::fake();
 
         $credentials = [
-            'full_name' => 'Test User',
-            'email' => 'testuser20@email.com',
-            'password' => 'TestUserPassword1.',
-            'password_confirmation' => 'TestUserPassword1.'
+            'full_name' => $this->full_name,
+            'email' => $this->email,
+            'password' => $this->password,
+            'password_confirmation' => $this->password,
         ];
 
-        // $this->mock(UserRepository::class, function (MockInterface $mock) {
+        $response = $this->postJson($this->base_url . '/register', $credentials);
 
-        //     $values = [
-        //         'full_name' => 'Test User',
-        //         'email' => 'testuser20@email.com',
-        //         'password' => 'TestUserPassword1.',
-        //     ];
+        $response
+            ->assertCreated()
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->has(
+                    'user',
+                    fn (AssertableJson $json) =>
+                    $json->whereType('id', 'string')
+                        ->where('name', $this->full_name)
+                        ->where('email', fn (string $email) => str($email)->is($this->email))
+                        ->where('account_type', 'free_trial')
+                        ->missing('password')
+                        ->etc()
+                )->has('token')
+            );
 
-        //     $mock->shouldReceive('createdUser')
-        //         ->with([
-        //             'full_name' => 'Test User',
-        //             'email' => 'testuser20@email.com',
-        //             'password' => 'TestUserPassword1.',
-        //         ])
-        //         ->once()
-        //         ->andReturnUsing(function ($values) {
-        //             $mockedUser = new User();
-
-        //             foreach ($values as $column => $value) {
-        //                 $mockedUser->$column = $value;
-        //             }
-
-        //             $mockedUser->account_type = 'free';
-
-        //             return $mockedUser;
-        //         });
-        // });
-
-        $response = $this->postJson('/api/auth/register', $credentials);
-
-        $response->assertCreated();
+        Event::assertDispatched(Registered::class);
     }
 
     public function test_login(): void
@@ -97,20 +93,22 @@ class AuthTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response = $this->postJson('/api/auth/login', [
+        $response = $this->postJson($this->base_url . '/login', [
             'email' => $user->email,
             'password' => 'password'
         ]);
 
-        $response->assertStatus(200);
-        $response->assertJson(
-            fn (AssertableJson $json) =>
-            $json->hasAll(['token', 'user'])
-        );
+        // Create an instance of UserResource
+        $userResource = new UserResource($user);
 
-        // $response->dd();
+        // Access the array representation directly
+        $userArray = $userResource->jsonSerialize();
 
-        // $response->assertJsonPath('user', UserResource::make($user)->response()->getData(true));
+        // $response->assertStatus(200);
+        $response->assertOk()->assertJsonStructure([
+            'token',
+            'user' => array_keys($userArray), // Ensure the user structure matches
+        ]);
     }
 
     public function test_login_with_bad_credentials()
@@ -121,7 +119,7 @@ class AuthTest extends TestCase
             'password' => 'password',
         ]);
 
-        $this->withoutExceptionHandling()->postJson('/api/auth/login', [
+        $this->withoutExceptionHandling()->postJson($this->base_url . '/login', [
             'email' => $user->email,
             'password' => 'badpassword'
         ]);
@@ -131,6 +129,7 @@ class AuthTest extends TestCase
     {
         // Mock the Socialite driver's behavior
         $provider = 'google'; // Replace with the actual provider
+
         Socialite::shouldReceive('driver')
             ->with($provider)
             ->once()
@@ -146,7 +145,7 @@ class AuthTest extends TestCase
             ->andReturn('https://example.com/oauth/redirect-url');
 
         // Make a request to the oAuthRedirect endpoint
-        $response = $this->get('/api/auth/oauth/redirect?provider=' . $provider);
+        $response = $this->get($this->base_url . '/oauth/redirect?provider=' . $provider);
 
         // Assert the response
         $response->assertStatus(200)
@@ -156,12 +155,13 @@ class AuthTest extends TestCase
             ]);
     }
 
-    public function test_OAuthCallback(): void
+    public function test_OAuthCallback_unregistered_user(): void
     {
-        $this->withoutExceptionHandling();
+        Event::fake();
 
         // Mock the Socialite driver's behavior
         $provider = 'google'; // Replace with the actual provider
+
         Socialite::shouldReceive('driver')
             ->with($provider)
             ->once()
@@ -172,14 +172,9 @@ class AuthTest extends TestCase
         Socialite::shouldReceive('user')
             ->once()
             ->andReturn((object)[
-                'name' => 'Test User',
-                'email' => 'testuser@example.com',
+                'name' => $this->full_name,
+                'email' => $this->email,
             ]);
-
-        // Create a test user
-        $user = User::factory()->create([
-            'email' => 'testuser@example.com',
-        ]);
 
 
         $response = $this->postJson('/api/auth/oauth/callback', [
@@ -188,7 +183,73 @@ class AuthTest extends TestCase
         ]);
 
         // Assert the response
-        $response->assertStatus(200);
+        $response
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) =>
+                $json->has(
+                    'user',
+                    fn (AssertableJson $json) =>
+                    $json->whereType('id', 'string')
+                        ->where('name', $this->full_name)
+                        ->where('email', fn (string $email) => str($email)->is($this->email))
+                        ->where('account_type', 'free_trial')
+                        ->missing('password')
+                        ->etc()
+                )->has('token')
+            );
+
+        // Event should dispatch for unregistered user.
+        Event::assertDispatched(Registered::class);
+    }
+
+    public function test_OAuthCallback_login_user(): void
+    {
+        Event::fake();
+
+        $user = User::factory()->create([
+            'email' => $this->email,
+            'full_name' => $this->full_name,
+            'account_type' => "free_trial"
+        ]);
+
+        // Mock the Socialite driver's behavior
+        $provider = 'google'; // Replace with the actual provider
+
+        Socialite::shouldReceive('driver')
+            ->with($provider)
+            ->once()
+            ->andReturnSelf();
+        Socialite::shouldReceive('stateless')
+            ->once()
+            ->andReturnSelf();
+        Socialite::shouldReceive('user')
+            ->once()
+            ->andReturn((object)[
+                'name' => $this->full_name,
+                'email' => $this->email,
+            ]);
+
+
+        $response = $this->postJson('/api/auth/oauth/callback', [
+            'provider' => $provider,
+            'code' => '123'
+        ]);
+
+        // Create an instance of UserResource
+        $userResource = new UserResource($user);
+
+        // Access the array representation directly
+        $userArray = $userResource->jsonSerialize();
+
+        // $response->assertStatus(200);
+        $response->assertOk()->assertJsonStructure([
+            'token',
+            'user' => array_keys($userArray), // Ensure the user structure matches
+        ]);
+
+        // Event should not be dispatched for already registered user.
+        Event::assertNotDispatched(Registered::class);
     }
 
     public function test_verify(): void
@@ -216,7 +277,7 @@ class AuthTest extends TestCase
 
     public function test_verify_with_invalid_signature(): void
     {
-        $this->expectException(UnAuthorizedException::class);
+        $this->expectException(NotFoundException::class);
 
         // Generate a signed URL with an invalid signature
         $url = URL::temporarySignedRoute(
@@ -227,9 +288,6 @@ class AuthTest extends TestCase
 
         // Simulate a request to your verification endpoint with the signed URL
         $response = $this->withoutExceptionHandling()->get($url);
-
-        // Assert the response
-        $response->assertJson(['message' => 'Invalid/Expired url provided']);
     }
 
     public function test_resendLink()
@@ -255,8 +313,6 @@ class AuthTest extends TestCase
         $mailable = new EmailVerification($user);
 
         $response->assertStatus(200);
-
-        // $mailable->assertTo($user);
 
         $mailable->assertSeeInHtml($user->full_name);
 

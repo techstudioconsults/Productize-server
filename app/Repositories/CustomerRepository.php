@@ -1,63 +1,153 @@
 <?php
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ * @version 1.0
+ * @since 12-05-2024
+ */
+
 namespace App\Repositories;
 
-use App\Exceptions\UnprocessableException;
+use App\Exceptions\ModelCastException;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
-class CustomerRepository
+/**
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * Repository for Customer resource
+ */
+class CustomerRepository extends Repository
 {
-    public function __construct(
-        protected ProductRepository $productRepository,
-        protected UserRepository $userRepository,
-    ) {
+    public function seed(): void
+    {
+        // Create 5 users
+        $users = User::factory(5)->create();
+
+        foreach ($users as $user) {
+            // Create 5 products for each user
+            $products = Product::factory(5)->create(['user_id' => $user->id]);
+
+            foreach ($products as $product) {
+                // Create 5 orders for each product
+                $orders = Order::factory(5)->create([
+                    'user_id' => $user->id,
+                    'product_id' => $product->id
+                ]);
+
+                foreach ($orders as $order) {
+                    // Create a customer for each order
+                    Customer::factory()->create([
+                        'user_id' => $user->id,
+                        'merchant_id' => $product->user_id,
+                        'order_id' => $order->id
+                    ]);
+                }
+            }
+        }
     }
 
     /**
-     * Create a new customer for a user
-     * @param order Order made by the customer
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Create a new customer.
+     *
+     * @param array $entity The data for creating the customer.
+     * @return Customer The newly created customer instance.
      */
-    public function create(Order $order)
+    public function create(array $entity): Model
     {
-        $customer = new Customer();
-
-        $customer->user_id = $order->user->id;
-
-        $customer->merchant_id = $order->product->user->id;
-
-        $customer->order_id = $order->id;
-
-        $customer->save();
-
-        return $customer;
+        return Customer::create($entity);
     }
 
-    public function find(
-        User $user,
-        ?string $start_date = null,
-        ?string $end_date = null
-    ) {
-        $customers = $user->customers();
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Query customers based on the provided filter.
+     *
+     * @param array $filter The filter criteria to apply.
+     * @return Builder The query builder for customers.
+     */
+    public function query(array $filter): Builder
+    {
+        $query = Customer::query();
 
-        if ($start_date && $end_date) {
-            $validator = Validator::make([
-                'start_date' => $start_date,
-                'end_date' => $end_date
-            ], [
-                'start_date' => 'date',
-                'end_date' => 'date'
-            ]);
+        // Apply date filter
+        $this->applyDateFilters($query, $filter);
 
-            if ($validator->fails()) {
-                throw new UnprocessableException($validator->errors()->first());
-            }
+        // Apply other filters
+        $query->where($filter);
 
-            $customers->whereBetween('created_at', [$start_date, $end_date]);
+        return $query;
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find customers based on the provided filter.
+     *
+     * @param array|null $filter The filter criteria to apply (optional).
+     * @return Collection The collection of found customers.
+     */
+    public function find(?array $filter = null): ?Collection
+    {
+        return $this->query($filter ?? [])->get();
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find a customer by its ID.
+     *
+     * @param string $id The ID of the customer to find.
+     * @return Customer|null The found customer instance, or null if not found.
+     */
+    public function findById(string $id): ?Customer
+    {
+        return Customer::find($id);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Find a single customer based on the provided filter.
+     *
+     * @param array $filter The filter criteria to apply.
+     * @return Customer|null The found customer instance, or null if not found.
+     */
+    public function findOne(array $filter): ?Customer
+    {
+        return $this->query($filter)->first();
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Update an entity in the database.
+     *
+     * @param  Model $entity The customer to be updated
+     * @param array $updates The array of data containing the fields to be updated.
+     * @return Model The updated customer
+     */
+    public function update(Model $entity, array $updates): Customer
+    {
+        // Ensure that the provided entity is an instance of Customer
+        if (!$entity instanceof Customer) {
+            throw new ModelCastException("Customer", get_class($entity));
         }
 
-        return $customers;
+        // Assign the updates to the corresponding fields of the Customer instance
+        $entity->fill($updates);
+
+        // Save the updated Customer instance
+        $entity->save();
+
+        // Return the updated Customer model
+        return $entity;
     }
 }

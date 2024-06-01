@@ -19,9 +19,9 @@ class Customer extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'product_owner_id',
-        'buyer_id',
-        'latest_puchase_id'
+        'user_id',
+        'order_id',
+        'merchant_id'
     ];
 
     public function scopeLatestOfMany(Builder $query, $column)
@@ -48,9 +48,4 @@ class Customer extends Model
     {
         return $this->belongsTo(Order::class)->count();
     }
-
-    // public function product()
-    // {
-    //     return $this->belongsTo(Product::class, 'latest_puchase_id');
-    // }
 }

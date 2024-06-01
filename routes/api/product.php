@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\ProductCreated;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,48 +16,60 @@ Route::group([
         'auth:sanctum',
     ]
 ], function () {
-    Route::post('/', [ProductController::class, 'store']);
+    Route::post('/', [ProductController::class, 'store'])->name('store');
 
     Route::get('/', [ProductController::class, 'index'])->withoutMiddleware([
         'auth:sanctum',
         'can:allowed,App\Models\Product',
-    ]);
+    ])->name('index');
 
-    Route::get('/users', [ProductController::class, 'findByUser']);
+    Route::get('/users', [ProductController::class, 'user'])->name('user');
 
-    Route::get('/analytics', [ProductController::class, 'analytics']);
+    Route::get('/users/top-products', [ProductController::class, 'getUserTopProducts'])->name('user.top-products');
 
-    Route::get('/revenues', [ProductController::class, 'productsRevenue']);
+    Route::get('/analytics', [ProductController::class, 'analytics'])->name('analytics');
 
-    Route::get('/download', [ProductController::class, 'downloadList']);
+    Route::get('/revenues', [ProductController::class, 'productsRevenue'])->name('revenue');
 
-    Route::get('/downloads', [ProductController::class, 'downloads']);
+    Route::get('/records', [ProductController::class, 'records'])->name('record');
 
-    Route::get('/top', [ProductController::class, 'getTopProducts']);
+    Route::get('/downloads', [ProductController::class, 'downloads'])->name('download');
+
+    Route::get('/top-products', [ProductController::class, 'topProducts'])->withoutMiddleware([
+        'auth:sanctum',
+
+    ])->name('top-products');
 
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',
-    ]);
+    ])->name('tags');
 
-    Route::get('/{product}', [ProductController::class, 'show'])->middleware('can:view,product');
+    Route::post('/search', [ProductController::class, 'search'])->withoutMiddleware([
+        'auth:sanctum',
+    ])->name('search');
 
-    Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product');
+    Route::get('/search', [ProductController::class, 'basedOnSearch'])->withoutMiddleware('auth:sanctum')->name('search.get');
 
-    Route::get('/{product:slug}/{slug}', [ProductController::class, 'findBySlug'])
+    Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
+
+    Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product')->name('restore');
+
+    Route::get('/{product:slug}/{slug}', [ProductController::class, 'slug'])
+        ->name('slug')
         ->withoutMiddleware([
             'auth:sanctum',
             'can:allowed,App\Models\Product',
             'can:premium,App\Models\Product',
         ]);
 
-    Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product');
+    Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:update,product')->name('update');
 
     Route::patch('/{product}/publish', [ProductController::class, 'togglePublish'])->middleware([
         'can:update,product',
         'can:premium,App\Models\Product',
-    ]);
+    ])->name('publish');
 
-    Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product');
+    Route::delete('/{product}', [ProductController::class, 'delete'])->middleware('can:delete,product')->name('delete');
 
-    Route::delete('/{product}/force', [ProductController::class, 'forceDelete'])->middleware('can:forceDelete,product');
+    Route::delete('/{product}/force', [ProductController::class, 'forceDelete'])->middleware('can:forceDelete,product')->name('delete.force');
 });

@@ -42,7 +42,7 @@ jobs:
 
       - name: Create testing database
         run: |
-          mysql -h 127.0.0.1 -u test -p 123456 -e 'CREATE DATABASE IF NOT EXISTS productize_test;'
+          mysql -h 127.0.0.1 -u test -p123456 -e 'CREATE DATABASE IF NOT EXISTS productize_test;'
 
       - name: Run migrations
         run: php artisan migrate --env=testing

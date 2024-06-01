@@ -1,77 +1,33 @@
 name: Laravel
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   laravel-tests:
+
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: productize_test
-          MYSQL_USER: test
-          MYSQL_PASSWORD: 123456
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Build and run Docker containers
-        run: |
-          echo "version: '3.8'
-          services:
-            app:
-              build: .
-              container_name: app
-              depends_on:
-                - mysql
-              volumes:
-                - .:/var/www/html
-              working_dir: /var/www/html
-              environment:
-                DB_CONNECTION: mysql
-                DB_HOST: mysql
-                DB_PORT: 3306
-                DB_DATABASE: productize_test
-                DB_USERNAME: test
-                DB_PASSWORD: 123456
-              command: >
-                sh -c '
-                  cp .env.testing .env &&
-                  php artisan key:generate &&
-                  chmod -R 777 storage bootstrap/cache &&
-                  php artisan migrate &&
-                  php artisan test
-                '
-            mysql:
-              image: mysql:8.0
-              env_file: .env.testing
-              ports:
-                - 3306:3306
-              environment:
-                MYSQL_ROOT_PASSWORD: root_password
-                MYSQL_DATABASE: productize_test
-                MYSQL_USER: test
-                MYSQL_PASSWORD: 123456
-              healthcheck:
-                test: "mysqladmin ping --silent"
-                interval: 10s
-                timeout: 5s
-                retries: 5
-          " > docker-compose.yml
-
-          docker-compose up --exit-code-from app
+    - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
+      with:
+        php-version: '8.1'
+    - uses: actions/checkout@v3
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.testing', '.env');"
+    - name: Install Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    - name: Generate key
+      run: php artisan key:generate
+    - name: Directory Permissions
+      run: chmod -R 777 storage bootstrap/cache
+    - name: Create Database
+      run: |
+        mkdir -p database
+        touch database/database.sqlite
+    - name: Execute tests (Unit and Feature tests) via PHPUnit
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan test

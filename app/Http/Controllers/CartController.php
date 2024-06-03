@@ -19,6 +19,7 @@ use App\Http\Resources\CartResource;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
+use App\Repositories\UserRepository;
 use Arr;
 use Auth;
 use Illuminate\Http\JsonResponse;
@@ -31,7 +32,8 @@ class CartController extends Controller
     public function __construct(
         protected CartRepository $cartRepository,
         protected ProductRepository $productRepository,
-        protected PaystackRepository $paystackRepository
+        protected PaystackRepository $paystackRepository,
+        protected UserRepository $userRepository,
     ) {
     }
 
@@ -134,6 +136,26 @@ class CartController extends Controller
 
         $validated = $request->validated();
 
+        $gift_email = $validated['gift_email'];
+        $gift_name = $validated['gift_name'];
+
+        $gift_user = null;
+
+        $query = $this->userRepository->query(['email' => $gift_email]);
+
+        if ($gift_email) {
+            if ($query->exists()) {
+                $gift_user = $query->first();
+            } else {
+                $gift_user = $this->userRepository->create([
+                    'email' => $gift_email,
+                    'full_name' => $gift_name
+                ]);
+
+                // send login email
+            }
+        }
+
         // Extract the cart from the request
         $cart = $validated['products'];
 
@@ -186,7 +208,8 @@ class CartController extends Controller
             'metadata' => [
                 'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
                 'buyer_id' => $user->id,
-                'products' => $products
+                'products' => $products,
+                'gift_user_id' => $gift_user ? $gift_user->id : null
             ]
         ];
 

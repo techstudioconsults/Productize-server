@@ -16,6 +16,7 @@ use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
+use App\Mail\GiftAlert;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
@@ -23,6 +24,7 @@ use App\Repositories\UserRepository;
 use Arr;
 use Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Route handler methods for Cart resource
@@ -153,6 +155,7 @@ class CartController extends Controller
                 ]);
 
                 // send login email
+                Mail::to($gift_user)->send(new GiftAlert($gift_user));
             }
         }
 

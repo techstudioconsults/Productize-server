@@ -19,7 +19,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
-Broadcast::channel('new-order.{userId}', function (User $user, $userId) {
+Broadcast::channel('order-created.{userId}', function (User $user, $userId) {
     Log::info('Channel accessed for user: ' . $user->id . ', requested user ID: ' . $userId);
     return $user->id === $userId;
 });

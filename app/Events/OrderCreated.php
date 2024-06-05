@@ -32,7 +32,7 @@ class OrderCreated implements ShouldBroadcast
      */
     public function broadcastOn(): PrivateChannel
     {
-        return new PrivateChannel('new-order.' . $this->user->id);
+        return new PrivateChannel('order-created.' . $this->user->id);
     }
 
     /**
@@ -40,7 +40,7 @@ class OrderCreated implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'new-order';
+        return 'order-created';
     }
 
     /**

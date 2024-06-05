@@ -17,7 +17,6 @@ use App\Http\Requests\RequestHelpRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
-use App\Notifications\NewOrder;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;

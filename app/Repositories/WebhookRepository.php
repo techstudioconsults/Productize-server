@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Events\OrderCreated;
 use Log;
 
 class WebhookRepository
@@ -134,6 +135,8 @@ class WebhookRepository
                 ];
 
                 $order = $this->orderRepository->create($buildOrder);
+
+                // Trigger Order created Event
 
                 $this->customerRepository->create([
                     'user_id' => $order->user->id,

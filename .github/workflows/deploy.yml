@@ -36,14 +36,11 @@ jobs:
       - name: Autoload
         run: composer dump-autoload
 
-      - name: Clear route
-        run: php artisan route:clear
+      - name: Clear caches
+        run: php artisan optimize:clear
 
-      - name: Clear Cache
-        run: php artisan cache:clear
-
-      - name: Clear Config
-        run: php artisan config:clear
+      - name: Generate new Cache
+        run: php artisan optimize
 
       - name: Generate storage link
         run: php artisan storage:link

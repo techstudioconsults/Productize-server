@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Events\OrderCreated;
 use App\Events\ProductCreated;
+use App\Listeners\NotifyClient;
 use App\Listeners\SendEmailVerificationNotification;
 use App\Listeners\SendProductCreatedMail;
 use App\Listeners\SendWelcomeEmail;
@@ -24,7 +26,7 @@ class EventServiceProvider extends ServiceProvider
 
         ProductCreated::class => [
             SendProductCreatedMail::class,
-        ]
+        ],
     ];
 
     /**

@@ -14,5 +14,6 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    Log::info('Channel accessed for user: ' . $user->id . ', requested user ID: ' . $id);
     return (int) $user->id === (int) $id;
 });

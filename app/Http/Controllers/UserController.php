@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCreated;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
@@ -16,6 +17,7 @@ use App\Http\Requests\RequestHelpRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
+use App\Notifications\NewOrder;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;
@@ -52,6 +54,8 @@ class UserController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
+
+        OrderCreated::dispatch()->onQueue('high');
 
         return new UserResource($user);
     }
@@ -156,7 +160,7 @@ class UserController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Send a request for help.
      *
      * This method sends an email to the designated help email address with the subject and message provided

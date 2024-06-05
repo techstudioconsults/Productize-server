@@ -2,9 +2,8 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -16,24 +15,24 @@ class OrderCreated implements ShouldBroadcast
 
     public $data = 5;
 
+    public User $user;
+
     /**
      * Create a new event instance.
      */
-    public function __construct()
+    public function __construct(User $user)
     {
-        //
+        $this->user = $user;
     }
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return \Illuminate\Broadcasting\PrivateChannel
      */
-    public function broadcastOn(): array
+    public function broadcastOn(): PrivateChannel
     {
-        return [
-            new Channel('new-order'),
-        ];
+        return new PrivateChannel('new-order.' . $this->user->id);
     }
 
     /**
@@ -51,7 +50,10 @@ class OrderCreated implements ShouldBroadcast
      */
     public function broadcastWith(): array
     {
-        return ['data' => $this->data];
+        return [
+            'data' => $this->data,
+            'user_id' => $this->user->id
+        ];
     }
 
     /**

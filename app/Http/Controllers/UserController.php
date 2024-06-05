@@ -55,7 +55,7 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        OrderCreated::dispatch()->onQueue('high');
+        OrderCreated::dispatch($user);
 
         return new UserResource($user);
     }

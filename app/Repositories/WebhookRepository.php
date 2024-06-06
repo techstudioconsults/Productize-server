@@ -101,13 +101,13 @@ class WebhookRepository
         $metadata = $data['metadata'];
 
         // Retrieve the buyer's ID - The paying user's id.
-        $buyer_id = $metadata['buyer_id'];
+        $buyer_id = $metadata['buyer_id'] ?? null;
 
         // Retrieve the products info from the cart metadata
-        $products = $metadata['products'];
+        $products = $metadata['products'] ?? [];
 
         // Retrieve gift user id
-        $gift_user_id = $metadata['gift_user_id'];
+        $gift_user_id = $metadata['gift_user_id'] ?? null;
 
         // Find Cart
         $cart = $this->cartRepository->findOne(['user_id' => $buyer_id]);
@@ -126,14 +126,22 @@ class WebhookRepository
                 // Retrieve the user product
                 $user = $product_saved->user;
 
+                $order_user_id = null;
+
+                if ($gift_user_id) {
+                    $order_user_id = $gift_user_id;
+                } else {
+                    $order_user_id = $buyer_id;
+                }
+
                 $buildOrder = [
                     'reference_no' => $data['reference'],
-                    'user_id' => $gift_user_id ?? $buyer_id,
+                    'user_id' => $order_user_id,
                     'total_amount' => $product_saved->price * $product['quantity'],
                     'quantity' => $product['quantity'],
                     'product_id' => $product_saved->id
                 ];
-
+       
                 $order = $this->orderRepository->create($buildOrder);
 
                 // Trigger Order created Event

@@ -138,8 +138,8 @@ class CartController extends Controller
 
         $validated = $request->validated();
 
-        $gift_email = $validated['gift_email'];
-        $gift_name = $validated['gift_name'];
+        $gift_email = isset($validated['gift_email']) ? $validated['gift_email'] : null;
+        $gift_name = isset($validated['gift_name']) ? $validated['gift_name'] : null;
 
         $gift_user = null;
 

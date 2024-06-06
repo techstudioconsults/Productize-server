@@ -306,7 +306,7 @@ class PaystackRepository
         return false;
     }
 
-    public function getSubscriptionStatus(array $customer): ?SubscriptionStatusEnum
+    public function getSubscriptionStatus(array $customer)
     {
         // Check subscription count, if zero, return false
         if (!count($customer['subscriptions'])) return null;

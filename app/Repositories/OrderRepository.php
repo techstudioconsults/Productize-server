@@ -184,6 +184,10 @@ class OrderRepository extends Repository
             });
         }
 
+        unset($filter['product_title']);
+
+        $relation->where($filter);
+
         return $relation;
     }
 

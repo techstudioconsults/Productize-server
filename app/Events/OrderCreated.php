@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -13,16 +14,17 @@ class OrderCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $data = 5;
-
     public User $user;
+
+    public Order $order;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, Order $order)
     {
         $this->user = $user;
+        $this->order = $order;
     }
 
     /**
@@ -51,8 +53,11 @@ class OrderCreated implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'data' => $this->data,
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
+            'order_id' => $this->order->id,
+            'quantity' => $this->order->quantity,
+            'total_amount' => $this->order->total_amount,
+            'product_title' => $this->order->product->title,
         ];
     }
 

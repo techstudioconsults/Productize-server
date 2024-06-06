@@ -15,7 +15,9 @@ use App\Models\Product;
 use App\Repositories\OrderRepository;
 use Auth;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Storage;
 
 /**
@@ -185,5 +187,25 @@ class OrderController extends Controller
             // Delete the file after reading
             Storage::disk('local')->delete($filePath);
         }, 200, $headers);
+    }
+
+    public function unseen()
+    {
+        $user = Auth::user();
+
+        $count = $this->orderRepository->queryRelation($user->orders(), ['seen' => false])->count();
+
+        return new JsonResource(["count" => $count]);
+    }
+
+    public function markseen()
+    {
+        $user = Auth::user();
+
+        $query = $this->orderRepository->queryRelation($user->orders(), ['seen' => false]);
+
+        $query->update(['seen' => true]);
+
+        return new JsonResource(['message' => 'orders marked as seen']);
     }
 }

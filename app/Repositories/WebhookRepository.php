@@ -137,6 +137,7 @@ class WebhookRepository
                 $order = $this->orderRepository->create($buildOrder);
 
                 // Trigger Order created Event
+                OrderCreated::dispatch($user, $order);
 
                 $this->customerRepository->create([
                     'user_id' => $order->user->id,

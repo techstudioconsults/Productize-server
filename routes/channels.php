@@ -20,6 +20,11 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('order-created.{userId}', function (User $user, $userId) {
-    Log::info('Channel accessed for user: ' . $user->id . ', requested user ID: ' . $userId);
+    Log::info('Channel accessed for user event: ' . $user->id . ', requested user ID: ' . $userId);
+    return $user->id === $userId;
+});
+
+Broadcast::channel('users.{userId}', function (User $user, $userId) {
+    Log::info('Channel accessed for user notification: ' . $user->id . ', requested user ID: ' . $userId);
     return $user->id === $userId;
 });

@@ -8,7 +8,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\OrderCreated;
+// use App\Events\OrderCreated;
+
+use App\Events\OrderCreated as EventsOrderCreated;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
@@ -17,6 +19,7 @@ use App\Http\Requests\RequestHelpRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
+use App\Notifications\OrderCreated;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;
@@ -54,7 +57,8 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        OrderCreated::dispatch($user);
+        // EventsOrderCreated::dispatch($user);
+        $user->notify(new OrderCreated());
 
         return new UserResource($user);
     }

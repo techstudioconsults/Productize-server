@@ -16,15 +16,12 @@ use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
-use App\Mail\GiftAlert;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
-use Arr;
 use Auth;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Mail;
 
 /**
  * Route handler methods for Cart resource
@@ -132,73 +129,41 @@ class CartController extends Controller
         ]);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Clear the cart and initialize a purchase transaction.
+     *
+     * This method handles the process of clearing the user's cart, validating the request,
+     * checking for gift user details, and initializing a purchase transaction using Paystack.
+     *
+     * @param ClearCartRequest $request The request object containing validated cart data.
+     *
+     * @return JsonResponse The response containing the Paystack transaction initialization data.
+     *
+     * @throws BadRequestException If the product is not found or not published,
+     *                             or if the total amount does not match the quantity.
+     * @throws ApiException If an error occurs during the Paystack transaction initialization.
+     */
     public function clear(ClearCartRequest $request)
     {
+        // Retrieve the authenticated user
         $user = Auth::user();
 
+        // Retrieve validated data
         $validated = $request->validated();
 
-        $gift_email = isset($validated['gift_email']) ? $validated['gift_email'] : null;
-        $gift_name = isset($validated['gift_name']) ? $validated['gift_name'] : null;
+        // Handle gift user creation or retrieval
+        $gift_user = $this->userRepository->handleGiftUser(
+            $validated['gift_email'] ?? null,
+            $validated['gift_name'] ?? null
+        );
 
-        $gift_user = null;
+        // Organize the products for Paystack request
+        $products = $this->productRepository->organizeProducts($validated['products']);
 
-        $query = $this->userRepository->query(['email' => $gift_email]);
-
-        if ($gift_email) {
-            if ($query->exists()) {
-                $gift_user = $query->first();
-            } else {
-                $gift_user = $this->userRepository->create([
-                    'email' => $gift_email,
-                    'full_name' => $gift_name
-                ]);
-
-                // send login email
-                Mail::to($gift_user)->send(new GiftAlert($gift_user));
-            }
-        }
-
-        // Extract the cart from the request
-        $cart = $validated['products'];
-
-        $products = Arr::map($cart, function ($item) {
-            // Get Slug
-            $slug = $item['product_slug'];
-
-            // Find the product by slug
-            $product = $this->productRepository->findOne(['slug' => $slug]);
-
-            // Product Not Found, Cannot continue with payment.
-            if (!$product) {
-                throw new BadRequestException('Product with slug ' . $slug . ' not found');
-            }
-
-            if ($product->status !== 'published') {
-                throw new BadRequestException('Product with slug ' . $slug . ' not published');
-            }
-
-            // Total Product Amount
-            $amount = $product->price * $item['quantity'];
-
-            // Productize's %
-            $deduction = $amount * 0.05;
-
-            // This is what the product owner will earn from this sale.
-            $share = $amount - $deduction;
-
-            return [
-                "product_id" => $product->id,
-                "amount" => $amount,
-                "quantity" => $item['quantity'],
-                "share" => $share
-            ];
-        });
-
-        // Calculate Total Amount
-        $total_amount = array_reduce($products, function ($carry, $item) {
-            return $carry + ($item['amount']);
-        }, 0);
+        // Calculate total amount
+        $total_amount = array_reduce($products, fn ($carry, $item) => $carry + $item['amount'], 0);
 
         // Validate Total amount match that stated in request.
         if ($total_amount !== $validated['amount']) {
@@ -217,6 +182,7 @@ class CartController extends Controller
         ];
 
         try {
+            // Initialize payment
             $response = $this->paystackRepository->initializePurchaseTransaction($payload);
             return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {

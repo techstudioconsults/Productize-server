@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
@@ -556,5 +557,52 @@ class ProductRepository extends Repository
             }
         }
         return $meta_data_array;
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Organize the products for Paystack request.
+     *
+     * @param array $cart The cart items.
+     * @return array The organized products.
+     *
+     * @throws BadRequestException If the product is not found or not published.
+     */
+    public function organizeProducts(array $cart)
+    {
+        return Arr::map($cart, function ($item) {
+            // Get Slug
+            $slug = $item['product_slug'];
+
+            // Find the product by slug
+            $product = $this->findOne(['slug' => $slug]);
+
+            // Product Not Found, Cannot continue with payment.
+            if (!$product) {
+                throw new BadRequestException('Product with slug ' . $slug . ' not found');
+            }
+
+            // Unpublished product cannot be bought, end the request.
+            if ($product->status !== 'published') {
+                throw new BadRequestException('Product with slug ' . $slug . ' not published');
+            }
+
+            // Total Product Amount
+            $amount = $product->price * $item['quantity'];
+
+            // Productize's %
+            $deduction = $amount * 0.05;
+
+            // This is what the product owner will earn from this sale.
+            $share = $amount - $deduction;
+
+            return [
+                "product_id" => $product->id,
+                "amount" => $amount,
+                "quantity" => $item['quantity'],
+                "share" => $share
+            ];
+        });
     }
 }

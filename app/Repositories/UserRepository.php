@@ -12,7 +12,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
-
+use App\Mail\GiftAlert;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -320,5 +321,38 @@ class UserRepository extends Repository
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Handle gift user creation or retrieval.
+     *
+     * @param string|null $gift_email The email of the gift user.
+     * @param string|null $gift_name The name of the gift user.
+     *
+     * @return User|null The gift user or null.
+     */
+    public function handleGiftUser(?string $gift_email, ?string $gift_name): ?User
+    {
+        if (!$gift_email) {
+            return null;
+        }
+
+        $gift_user = $this->query(['email' => $gift_email])->first();
+
+        if ($gift_user) {
+            return $gift_user;
+        }
+
+        $gift_user = $this->create([
+            'email' => $gift_email,
+            'full_name' => $gift_name
+        ]);
+
+        // Send a notification email so they can register and access the product resource gifted to them.
+        Mail::to($gift_user)->send(new GiftAlert($gift_user));
+
+        return $gift_user;
     }
 }

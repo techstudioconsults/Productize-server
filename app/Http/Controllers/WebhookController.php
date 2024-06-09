@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ * @version 1.0
+ * @since 08-06-2024
+ */
+
 namespace App\Http\Controllers;
 
 use App\Exceptions\ServerErrorException;
@@ -8,15 +14,22 @@ use App\Repositories\WebhookRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ * 
+ * Listen for the application webhooks
+ */
 class WebhookController extends Controller
 {
     public function __construct(
         protected WebhookRepository $webhookRepository,
         protected PaystackRepository $paystackRepository
-    )
-    {
-
+    ) {
     }
+
+    /**
+     * Handle paystack webhook events
+     */
     public function paystack(Request $request)
     {
         $payload = $request->getContent();

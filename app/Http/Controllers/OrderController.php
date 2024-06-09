@@ -1,13 +1,13 @@
 <?php
-
 /**
- *  @author @Intuneteq Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  * @version 1.0
  * @since 26-05-2024
  */
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Services\FileGenerator;
 use App\Http\Resources\OrderResource;
 use App\Models\Customer;
 use App\Models\Order;
@@ -15,10 +15,8 @@ use App\Models\Product;
 use App\Repositories\OrderRepository;
 use Auth;
 use Carbon\Carbon;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Storage;
 
 /**
  * Route handler methods for Order resource
@@ -26,7 +24,8 @@ use Storage;
 class OrderController extends Controller
 {
     public function __construct(
-        protected OrderRepository $orderRepository
+        protected OrderRepository $orderRepository,
+        protected FileGenerator $fileGenerator
     ) {
     }
 
@@ -117,7 +116,7 @@ class OrderController extends Controller
     }
 
     /**
-     *  @author @Intuneteq Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Download a CSV file containing orders based on specified filters.
      *
@@ -144,51 +143,32 @@ class OrderController extends Controller
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
-
-        $columns = array('Product', 'Price', 'CustomerEmail', 'Date');
-
-        $data = [];
-
-        $data[] = $columns;
-
         $fileName = "orders_$now.csv";
 
+        $columns = array('Product', 'Price', 'CustomerEmail', 'Date');
+        $data = [$columns];
+
         foreach ($orders as $order) {
-            $row['Product']  = $order->product->title;
-            $row['Price']  = $order->product->price;
-            $row['CustomerEmail']  = $order->user->email;
-            $row['Date']   = $order->created_at;
-
-            $data[] = array($row['Product'], $row['Price'], $row['CustomerEmail'], $row['Date']);
+            $data[] = [
+                $order->product->title,
+                $order->product->price,
+                $order->user->email,
+                $order->created_at,
+            ];
         }
 
-        $csvContent = '';
-        foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
-        }
+        $filePath = $this->fileGenerator->generateCsv($fileName, $data);
 
-        $filePath = 'csv/' . $fileName;
-
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
-
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
-
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
-
-            // Delete the file after reading
-            Storage::disk('local')->delete($filePath);
-        }, 200, $headers);
+        return $this->fileGenerator->streamFile($filePath, $fileName, 'text/csv');
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get the count of unseen orders for the authenticated user.
+     *
+     * @return JsonResource
+     */
     public function unseen()
     {
         $user = Auth::user();
@@ -198,6 +178,13 @@ class OrderController extends Controller
         return new JsonResource(["count" => $count]);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Mark all unseen orders for the authenticated user as seen.
+     *
+     * @return \Illuminate\Http\Resources\Json\JsonResource
+     */
     public function markseen()
     {
         $user = Auth::user();

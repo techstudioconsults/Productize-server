@@ -8,21 +8,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Services\FileGenerator;
 use App\Models\Customer;
 use App\Http\Resources\CustomerResource;
 use App\Repositories\CustomerRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 /**
- * Route handler methods for Cart resource
+ * Route handler methods for Customer resource
  */
 class CustomerController extends Controller
 {
     public function __construct(
-        protected CustomerRepository $customerRepository
+        protected CustomerRepository $customerRepository,
+        protected FileGenerator $fileGenerator
     ) {
     }
 
@@ -92,7 +93,6 @@ class CustomerController extends Controller
         $user = Auth::user();
 
         $start_date = $request->start_date;
-
         $end_date = $request->end_date;
 
         $customers = $this->customerRepository->find([
@@ -102,49 +102,23 @@ class CustomerController extends Controller
         ]);
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
-
-        $columns = array('CustomerName', 'CustomerEmail', 'LatestPurchase', 'Price', 'Date');
-
-        $data = [];
-
-        $data[] = $columns;
-
         $fileName = "customers_$now.csv";
 
+        $columns = ['CustomerName', 'CustomerEmail', 'LatestPurchase', 'Price', 'Date'];
+        $data = [$columns];
+
         foreach ($customers as $customer) {
-            $row['CustomerName']  = $customer->user->full_name;
-            $row['CustomerEmail']  = $customer->user->email;
-            $row['LatestPurchase']  = $customer->order->product->title;
-            $row['Price']  = $customer->order->product->price;
-            $row['Date']   = $customer->created_at;
-
-            $data[] = array($row['CustomerName'], $row['CustomerEmail'], $row['LatestPurchase'], $row['Price'], $row['Date']);
+            $data[] = [
+                $customer->user->full_name,
+                $customer->user->email,
+                $customer->order->product->title,
+                $customer->order->product->price,
+                $customer->created_at
+            ];
         }
 
-        $csvContent = '';
-        foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
-        }
+        $filePath = $this->fileGenerator->generateCsv($fileName, $data);
 
-        $filePath = 'csv/' . $fileName;
-
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
-
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
-
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
-            
-            // Delete the file after reading
-            Storage::disk('local')->delete($filePath);
-        }, 200, $headers);
+        return $this->fileGenerator->streamFile($filePath, $fileName, 'text/csv');
     }
 }

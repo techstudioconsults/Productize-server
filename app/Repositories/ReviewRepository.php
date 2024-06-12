@@ -9,15 +9,10 @@
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
-use App\Http\Resources\FaqResource;
-use App\Http\Resources\ReviewResource;
-use App\Models\Community;
-use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Svg\Tag\Rect;
 
 /**
  * @author @obajide028 Odesanya Babajide

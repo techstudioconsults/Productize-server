@@ -25,7 +25,7 @@ class FaqRepository extends Repository
 
     public function seed(): void
     {
-        Faq::factory()->create()->count(10);
+        Faq::factory()->count(10)->create();
     }
 
     /**

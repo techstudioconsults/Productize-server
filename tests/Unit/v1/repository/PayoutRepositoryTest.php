@@ -1,44 +1,109 @@
 <?php
 
-namespace Tests\Unit\v1\repository;
+namespace Tests\Unit\Repositories;
 
+use App\Exceptions\ModelCastException;
+use App\Models\Payout;
+use App\Models\User;
 use App\Repositories\PayoutRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Tests\TestCase;
-
 
 class PayoutRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
+    protected PayoutRepository $payoutRepository;
 
-    private PayoutRepository $payoutRepository;
-
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
-        $this->payoutRepository = app(PayoutRepository::class);
+        $this->payoutRepository = new PayoutRepository();
     }
 
-    // public function test_create()
-    // {
-    //     // Arrange
-    //     $payoutData = [
-    //         'pay_out_account_id' => 1,
-    //         'reference' => 'Payout-123',
-    //         'status' => 'pending',
-    //         'paystack_transfer_code' => 'TR-123456',
-    //         'amount' => 100.00,
-    //     ];
+    public function test_Create()
+    {
+        $credentials = [
+            'account_id' => 1,
+            'reference' => 'REF123456',
+            'status' => 'completed',
+            'paystack_transfer_code' => 'TRANSFER123',
+            'amount' => 5000
+        ];
 
-    //     // Act
-    //     $payout = $this->payoutRepository->create($payoutData);
+        $payout = $this->payoutRepository->create($credentials);
 
-    //     // Assert
-    //     $this->assertInstanceOf(PayoutRepository::class, $payout);
-    //     $this->assertEquals($payoutData['pay_out_account_id'], $payout->pay_out_account_id);
-    //     $this->assertEquals($payoutData['reference'], $payout->reference);
-    //     $this->assertEquals($payoutData['status'], $payout->status);
-    //     $this->assertEquals($payoutData['paystack_transfer_code'], $payout->paystack_transfer_code);
-    //     $this->assertEquals($payoutData['amount'], $payout->amount);
-    // }
+        $this->assertInstanceOf(Payout::class, $payout);
+        $this->assertEquals('REF123456', $payout->reference);
+    }
+
+    public function test_Query()
+    {
+        $filter = [
+            'status' => 'completed',
+        ];
+
+        $query = $this->payoutRepository->query($filter);
+
+        $this->assertInstanceOf(Builder::class, $query);
+    }
+
+    public function test_Find()
+    {
+        Payout::factory()->count(3)->create();
+        $filter = [
+            'status' => 'completed',
+        ];
+
+        $result = $this->payoutRepository->find($filter);
+
+        $this->assertInstanceOf(Collection::class, $result);
+
+    }
+
+    public function test_Find_By_Id()
+    {
+        $payout = Payout::factory()->create();
+        $result = $this->payoutRepository->findById($payout->id);
+
+        $this->assertInstanceOf(Payout::class, $result);
+        $this->assertEquals($payout->id, $result->id);
+    }
+
+    public function test_Find_One()
+    {
+        $payout = Payout::factory()->create();
+        $filter = [
+            'reference' => $payout->reference,
+        ];
+
+        $result = $this->payoutRepository->findOne($filter);
+
+        $this->assertInstanceOf(Payout::class, $result);
+        $this->assertEquals($payout->id, $result->id);
+    }
+
+    public function test_Update()
+    {
+        $payout = Payout::factory()->create();
+        $updates = [
+            'status' => 'failed',
+        ];
+
+        $result = $this->payoutRepository->update($payout, $updates);
+
+        $this->assertInstanceOf(Payout::class, $result);
+        $this->assertEquals('failed', $result->status);
+    }
+
+    public function test_Update_Throws_ModelCastException()
+    {
+        $this->expectException(ModelCastException::class);
+
+        $user = User::factory()->create();
+        $updates = [
+            'status' => 'failed',
+        ];
+
+        $this->payoutRepository->update($user, $updates);
+    }
 }

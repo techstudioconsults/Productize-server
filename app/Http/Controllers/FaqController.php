@@ -57,7 +57,7 @@ class FaqController extends Controller
      * Update a given faq.
      *
      * @param  \App\Http\Requests\UpdateFaqRequest  $request The incoming request containing validated faq update data.
-     * @param  \App\Models\Faq  $cfaq The faq to be updated.
+     * @param  \App\Models\Faq  $faq The faq to be updated.
      * @return \App\Http\Resources\FaqResource Returns a resource representing the newly updated faq.
      */
     public function update(UpdateFaqRequest $request, Faq $faq)

@@ -19,6 +19,10 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
+
+          // Create a User instance
+          $user = User::factory()->create();
+
         return [
             'title' => fake()->text('20'),
             'price' => fake()->randomNumber(4),
@@ -30,6 +34,7 @@ class ProductFactory extends Factory
             'thumbnail' => 'https://productize.nyc3.cdn.digitaloceanspaces.com/products-thumbnail/3d_collection_showcase-20210110-0001.jpg',
             'highlights' => ["arrow", "oliver", "queen"],
             'tags' => ["Audio", "Business/Finance", "3D"],
+            'user_id' => $user->id, 
         ];
     }
 }

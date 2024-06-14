@@ -12,28 +12,25 @@ use App\Models\Faq;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-use Faker\Factory as Faker;
 
 class FaqControllerTest extends TestCase
 {
 
     use RefreshDatabase;
 
-    /**
-     * A basic feature test example.
-     */
-    // public function test_example(): void
-    // {
-    //     $response = $this->get('/');
-
-    //     $response->assertStatus(200);
-    // }
-
     public function test_getAllFaq(): void
     {
         $response = $this->get('api/faqs');
 
         $response->assertStatus(200);
+    }
+
+    public function test_getAllFaq_whenNoFaqsExist(): void
+    {
+        $response = $this->getJson('api/faqs');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data');
     }
 
     public function test_storeFaq(): void
@@ -109,5 +106,43 @@ class FaqControllerTest extends TestCase
         $this->assertDatabaseMissing('faqs', [
             'id' => $faq->id,
         ]);
+    }
+
+    public function test_updateFaq_withInvalidData(): void
+    {
+        $faq = Faq::factory()->create();
+
+        $newFaqData = [
+            'title' => '', // Empty title
+            'question' => '', // Empty question
+            'answer' => '' // Empty answer
+        ];
+
+        $response = $this->putJson("api/faqs/{$faq->id}", $newFaqData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['title', 'question', 'answer']);
+    }
+
+    public function test_updateFaq_nonExistentFaq(): void
+    {
+        $nonExistentId = 2345; // Assuming this ID doesn't exist
+
+        $response = $this->putJson("api/faqs/{$nonExistentId}", [
+            'title' => 'New Title',
+            'question' => 'New Question',
+            'answer' => 'New Answer'
+        ]);
+
+        $response->assertStatus(404);
+    }
+
+    public function test_destroyFaq_nonExistentFaq(): void
+    {
+        $nonExistentId = 657876; // Assuming this ID doesn't exist
+
+        $response = $this->deleteJson("api/faqs/{$nonExistentId}");
+
+        $response->assertStatus(404);
     }
 }

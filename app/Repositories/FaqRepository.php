@@ -8,6 +8,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Http\Resources\FaqResource;
 use App\Models\Faq;
@@ -39,6 +40,18 @@ class FaqRepository extends Repository
      */
     public function create(array $entity): Faq
     {
+        if (!isset($entity['title'])) {
+            throw new BadRequestException('No title Provided');
+        }
+        
+        if (!isset($entity['answer'])) {
+            throw new BadRequestException('No answer Provided');
+        }
+        
+        if (!isset($entity['question'])) {
+            throw new BadRequestException('No question Provided');
+        }
+
         return Faq::create($entity);
     }
 

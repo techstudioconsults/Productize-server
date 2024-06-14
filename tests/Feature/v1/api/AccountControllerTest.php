@@ -11,7 +11,6 @@ use App\Repositories\PaystackRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Mockery;
 
 class AccountControllerTest extends TestCase
 {

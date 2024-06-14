@@ -33,7 +33,7 @@ class PayoutControllerTest extends TestCase
 
         // Convert the payouts to PayoutResource
         $expected_json = PayoutResource::collection($payouts)->response()->getData(true);
-        $response->assertStatus(200)->assertJson($expected_json, true);
+        $response->assertOk()->assertJson($expected_json, true);
         $response
             ->assertJson(
                 fn (AssertableJson $json) =>

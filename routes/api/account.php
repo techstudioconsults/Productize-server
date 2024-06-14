@@ -13,9 +13,9 @@ Route::controller(AccountController::class)
         'can:subscribed,App\Models\Account'
     ])
     ->group(function () {
-        Route::get('/', 'index')->name('index')->name('index');
+        Route::get('/', 'index')->name('index');
 
-        Route::post('/', 'store')->name('store')->name('store');
+        Route::post('/', 'store')->name('store');
 
         Route::get('/bank-list', 'bankList')->name('bank-list');
 

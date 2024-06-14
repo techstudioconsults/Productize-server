@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\PayoutStatusEnum;
 use Log;
 
 class WebhookRepository
@@ -150,7 +151,7 @@ class WebhookRepository
                         // update payout history status
                         $payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
-                        $payout = $this->payoutRepository->update($payout, ['status' => 'completed']);
+                        $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatusEnum::Completed->value]);
 
                         $user_id = $payout->account->user->id;
 

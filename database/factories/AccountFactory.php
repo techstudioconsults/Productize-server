@@ -17,7 +17,11 @@ class AccountFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'account_number' => fake()->numerify('#########'),
+            'paystack_recipient_code' => 'RCP_2x5j67tnnw1t98k',
+            'name' => fake()->name(),
+            'bank_code' => "033",
+            'bank_name' => "United Bank of Africa",
         ];
     }
 }

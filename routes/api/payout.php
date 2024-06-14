@@ -13,7 +13,7 @@ Route::controller(PayoutController::class)
         'can:subscribed,App\Models\Payout'
     ])
     ->group(function () {
-        Route::get('/', 'index')->name('index')->name('index');
+        Route::get('/', 'index')->name('index');
 
         Route::get('/download', 'download')->name('download');
     });

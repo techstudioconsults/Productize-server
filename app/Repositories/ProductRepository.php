@@ -38,8 +38,8 @@ class ProductRepository extends Repository
     const COVER_PHOTOS_PATH = "products-cover-photos";
     const THUMBNAIL_PATH = "products-thumbnail";
 
-    const PUBLISHED = ProductStatusEnum::Published->value;
-    const DRAFT = ProductStatusEnum::Draft->value;
+    const PUBLISHED = 'published';
+    const DRAFT = 'draft';
     const DELETED = 'deleted';
 
     public function seed(): void

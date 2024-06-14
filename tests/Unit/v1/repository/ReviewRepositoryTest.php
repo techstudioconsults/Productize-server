@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ModelCastException;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
@@ -11,21 +13,21 @@ use Tests\TestCase;
 
 class ReviewRepositoryTest extends TestCase
 {
-   use RefreshDatabase;
+    use RefreshDatabase;
 
-   private ReviewRepository $reviewRepository;
+    private ReviewRepository $reviewRepository;
 
 
-   protected function setUp():void
-   {
+    protected function setUp(): void
+    {
 
-    parent::setUp();
-    $this->reviewRepository = new ReviewRepository();
-   }
+        parent::setUp();
+        $this->reviewRepository = new ReviewRepository();
+    }
 
-   /**
-    *  Test the create method
-    */
+    /**
+     *  Test the create method
+     */
 
     public function testCreateReview()
     {
@@ -33,7 +35,7 @@ class ReviewRepositoryTest extends TestCase
         $product = Product::factory()->create();
 
         $data = [
-            'rating'=> 4,
+            'rating' => 4,
             'comment' => 'Great Product',
             'product_id' => $product->id,
             'user_id' => $user->id,
@@ -85,5 +87,109 @@ class ReviewRepositoryTest extends TestCase
         $this->assertCount(1, $reviews);
         $this->assertEquals('Review for Product 1', $reviews->first()->comment);
     }
-   
+
+    public function test_update_review_successfully(): void
+    {
+        // Create a review instance for testing
+        $review = Review::factory()->create();
+
+        // Define updates for the review
+        $updates = [
+            'rating' => 5,
+            'comment' => 'Review Updated'
+        ];
+
+        // Update the review
+        $updatedReview = $this->reviewRepository->update($review, $updates);
+
+        // Assert the review was updated successfully
+        $this->assertEquals($review->id, $updatedReview->id);
+        $this->assertEquals($updates['rating'], $updatedReview->rating);
+        $this->assertEquals($updates['comment'], $updatedReview->comment);
+    }
+
+    public function testQueryByProductTitle()
+    {
+        $product1 = Product::factory()->create(['title' => 'Amazing Product']);
+        $product2 = Product::factory()->create(['title' => 'Ordinary Product']);
+
+        Review::factory()->create(['product_id' => $product1->id]);
+        Review::factory()->create(['product_id' => $product2->id]);
+
+        $query = $this->reviewRepository->query(['product_title' => 'Amazing']);
+        $results = $query->get();
+
+        $this->assertCount(1, $results);
+        $this->assertEquals($product1->id, $results->first()->product_id);
+    }
+
+    public function test_Create_Review_With_Invalid_Rating()
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        $data = [
+            'rating' => 6, // Invalid rating
+            'comment' => 'Great Product',
+            'product_id' => $product->id,
+            'user_id' => $user->id,
+        ];
+
+        $this->expectException(BadRequestException::class);
+        $this->reviewRepository->create($data);
+    }
+
+    public function test_findbyid_return_null_for_when_not_found(): void
+    {
+        $result = $this->reviewRepository->findById("id_does_not_exist");
+
+        $this->assertNull($result);
+    }
+
+    public function test_update_with_non_review_model_throws_model_cast_exception(): void
+    {
+        // Create a user instance for testing
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        // Define updates for the review
+        $updates = [
+            'rating' => 3,
+            'comment' => 'Fair product',
+            'product_id' => $product->id,
+            'user_id' => $user->id,
+        ];
+
+        // Expect ModelCastException when trying to update a non-review model
+        $this->expectException(ModelCastException::class);
+
+        // Attempt to update a review instance using the user repository (should throw exception)
+        $this->reviewRepository->update($user, $updates);
+    }
+
+    public function testQueryWithNonExistentProductTitle()
+    {
+        Review::factory()->count(3)->create();
+
+        $query = $this->reviewRepository->query(['product_title' => 'Non-existent Product']);
+        $results = $query->get();
+
+        $this->assertCount(0, $results);
+    }
+
+    public function testQueryWithProductTitleAndOtherFilters()
+    {
+        $product1 = Product::factory()->create(['title' => 'Fancy Product']);
+        $product2 = Product::factory()->create(['title' => 'Another Fancy Product']);
+
+        Review::factory()->create(['product_id' => $product1->id, 'rating' => 5]);
+        Review::factory()->create(['product_id' => $product2->id, 'rating' => 4]);
+        Review::factory()->create(['product_id' => $product2->id, 'rating' => 3]);
+
+        $query = $this->reviewRepository->query(['product_title' => 'Fancy', 'rating' => 4]);
+        $results = $query->get();
+
+        $this->assertCount(1, $results);
+        $this->assertEquals($product2->id, $results->first()->product_id);
+    }
 }

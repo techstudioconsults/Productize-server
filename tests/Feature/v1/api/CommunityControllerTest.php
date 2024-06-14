@@ -52,4 +52,36 @@ class CommunityControllerTest extends TestCase
             return $mail->hasTo($communityData['email']);
         });
     }
+
+    public function test_it_fails_to_store_a_community_member_with_invalid_email()
+    {
+        Mail::fake();
+        $invalidData = [
+            'email' => 'not-an-email',
+        ];
+
+        // Send a POST request to store the community member
+        $response = $this->postJson('api/community/create', $invalidData);
+
+        // Assert that the request failed (status code 422)
+        $response->assertStatus(422);
+
+        // Assert that the validation errors are returned
+        $response->assertJsonValidationErrors('email');
+    }
+
+    public function test_it_fails_to_store_a_community_member_with_empty_email()
+    {
+        Mail::fake();
+        $emptyEmailData = [];
+
+        // Send a POST request to store the community member
+        $response = $this->postJson('api/community/create', $emptyEmailData);
+
+        // Assert that the request failed (status code 422)
+        $response->assertStatus(422);
+
+        // Assert that the validation errors are returned
+        $response->assertJsonValidationErrors('email');
+    }
 }

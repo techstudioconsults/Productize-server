@@ -2,7 +2,10 @@
 
 namespace Tests\Unit;
 
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ModelCastException;
 use App\Models\Faq;
+use App\Models\Product;
 use App\Repositories\FaqRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -98,5 +101,85 @@ class FaqRepositoryTest extends TestCase
 
         $this->assertTrue($result);
         $this->assertDatabaseMissing('faqs', ['id' => $faq->id]);
+    }
+
+    public function test_create_faqs_without_title()
+    {
+        // Attempt to create faq without a title
+        $data = [
+            'question' => 'How are you?',
+            'answer' => 'I am fine'
+        ];
+
+        $this->expectException(BadRequestException::class);
+        $this->faqRepository->create($data);
+    }
+
+
+    public function test_update_faq_successfully(): void
+    {
+        // Create faq instance for testing
+        $faq = Faq::factory()->create();
+
+        // Define updates for the review
+        $updates = [
+            'title' => 'General Question',
+            'answer' => 'Helloo'
+        ];
+
+        // Update the review
+        $updatedFaq = $this->faqRepository->update($faq, $updates);
+
+        // Assert the cart was updated successfully
+        $this->assertEquals($faq->id, $updatedFaq->id);
+        $this->assertEquals($updates['title'], $updatedFaq->title);
+        $this->assertEquals($updates['answer'], $updatedFaq->answer);
+    }
+
+    public function test_findbyid_return_null_for_when_not_found(): void
+    {
+        $result = $this->faqRepository->findById("id_does_not_exist");
+
+        $this->assertNull($result);
+    }
+
+    public function test_update_with_non_faq_model_throws_model_cast_exception(): void
+    {
+        $product = Product::factory()->create();
+
+        // Define updates for the faq
+        $updates = [
+            'title' => 'Product',
+            'question' => 'Is it a nice product',
+            'answer' => 'It is a nice product',
+        ];
+
+        // Expect ModelCastException when trying to update a non-faq model
+        $this->expectException(ModelCastException::class);
+
+        // Attempt to update faq instance using the product repository (should throw exception)
+        $this->faqRepository->update($product, $updates);
+    }
+
+    public function testQueryWithNonExistentFaqTitle()
+    {
+        Faq::factory()->count(3)->create();
+
+        $query = $this->faqRepository->query(['title' => 'General Products']);
+        $results = $query->get();
+
+        $this->assertCount(0, $results);
+    }
+
+    public function testQueryAndFind()
+    {
+        Faq::factory()->count(5)->create(['title' => 'Common Title']);
+        Faq::factory()->count(3)->create();
+
+        $query = $this->faqRepository->query(['title' => 'Common Title']);
+        $this->assertEquals(5, $query->count());
+
+        $faqs = $this->faqRepository->find(['title' => 'Common Title']);
+        $this->assertCount(5, $faqs);
     }
 }

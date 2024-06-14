@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
-use App\Http\Requests\StorePayOutRequest;
-use App\Http\Requests\UpdatePayOutRequest;
+use App\Http\Requests\StoreAccountRequest;
+use App\Http\Requests\UpdateAccountRequest;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Repositories\AccountRepository;
@@ -37,7 +37,7 @@ class AccountController extends Controller
         return AccountResource::collection($accounts);
     }
 
-    public function store(StorePayOutRequest $request)
+    public function store(StoreAccountRequest $request)
     {
         $user = Auth::user();
 
@@ -87,7 +87,7 @@ class AccountController extends Controller
         }
     }
 
-    public function update(Account $account, UpdatePayOutRequest $request)
+    public function update(Account $account, UpdateAccountRequest $request)
     {
         $validated = $request->validated();
 

@@ -6,7 +6,7 @@ use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 
-class UpdatePayOutRequest extends FormRequest
+class StoreAccountRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,10 @@ class UpdatePayOutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'active' => 'boolean|required',
+            'name' => 'string|required',
+            'bank_code' => ['required'],
+            'bank_name' => 'string|required',
+            'account_number' => 'string|max:10'
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\UnAuthorizedException;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
@@ -78,5 +79,66 @@ class ReviewControllerTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertJsonCount(2, 'data');
+    }
+
+    public function test_storeReview_unauthenticated()
+    {
+        $product = Product::factory()->create();
+
+        $this->expectException(UnAuthorizedException::class);
+
+        $this->withoutExceptionHandling()
+            ->post('/api/reviews/products/' . $product->id);
+    }
+
+    public function testFindByProductWithNoReviews()
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->getJson("/api/reviews/products/" . $product->id);
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function testDuplicateReviewPrevention()
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        // Create an initial review
+        Review::factory()->create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+        ]);
+
+        $reviewData = [
+            'rating' => 3,
+            'comment' => 'Trying to add another review',
+        ];
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/reviews/products/{$product->id}", $reviewData);
+
+        $response->assertStatus(409) 
+            ->assertJson([
+                'message' => 'You have already reviewed this product.'
+            ]);
+    }
+
+    public function testReviewForNonExistentProduct()
+    {
+        $user = User::factory()->create();
+        $nonExistentProductId =1334; // Assuming this ID doesn't exist
+
+        $reviewData = [
+            'rating' => 4,
+            'comment' => 'Great product!'
+        ];
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/reviews/products/{$nonExistentProductId}", $reviewData);
+
+        $response->assertStatus(404); // Not Found
     }
 }

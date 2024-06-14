@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Community;
 use App\Repositories\CommunityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,5 +56,30 @@ class CommunityRepositoryTest extends TestCase
     $this->assertCount(10, $community);
   }
 
+  public function test_create_community_without_email()
+  {
+      // Attempt to create community without a email
+      $data = [];
+
+      $this->expectException(BadRequestException::class);
+      $this->communityRepository->create($data);
+  }
+
+  
+  public function test_findbyid_return_null_for_when_not_found(): void
+  {
+      $result = $this->communityRepository->findById("id_does_not_exist");
+
+      $this->assertNull($result);
+  }
+
+  public function testFindCommunityById()
+  {
+      $community = Community::factory()->create();
+
+      $foundCommunityMember = $this->communityRepository->findById($community->id);
+      $this->assertInstanceOf(Community::class, $foundCommunityMember);
+      $this->assertEquals($community->id, $foundCommunityMember->id);
+  }
 
 }

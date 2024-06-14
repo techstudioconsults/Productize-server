@@ -8,6 +8,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Models\Review;
 use Illuminate\Database\Eloquent\Builder;
@@ -39,6 +40,9 @@ class ReviewRepository extends Repository
      */
     public function create(array $entity): Review
     {
+        if (($entity['rating'] > 5)) {
+            throw new BadRequestException('Rating should be less than or equal to 5');
+        }
         return Review::create($entity);
     }
 

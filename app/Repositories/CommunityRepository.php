@@ -9,6 +9,7 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Models\Community;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,6 +39,9 @@ class CommunityRepository extends Repository
      */
     public function create(array $entity): Community
     {
+        if (!isset($entity['email'])) {
+            throw new BadRequestException('No email Provided');
+        }
         return Community::create($entity);
     }
 

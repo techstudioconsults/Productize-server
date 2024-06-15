@@ -69,6 +69,7 @@ class EmailVerification extends Mailable
      */
     public function content(): Content
     {
+
         $url = URL::temporarySignedRoute(
             'auth.verification.verify',
             now()->addMinutes(15),

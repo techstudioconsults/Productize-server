@@ -8,12 +8,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
+use App\Http\Requests\ClearCartRequest;
 use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
 use App\Repositories\CartRepository;
+use App\Repositories\PaystackRepository;
+use App\Repositories\ProductRepository;
+use Arr;
 use Auth;
 use Illuminate\Http\JsonResponse;
 
@@ -23,7 +29,9 @@ use Illuminate\Http\JsonResponse;
 class CartController extends Controller
 {
     public function __construct(
-        protected CartRepository $cartRepository
+        protected CartRepository $cartRepository,
+        protected ProductRepository $productRepository,
+        protected PaystackRepository $paystackRepository
     ) {
     }
 
@@ -118,5 +126,75 @@ class CartController extends Controller
         return new JsonResponse([
             'message' => 'Item deleted'
         ]);
+    }
+
+    public function clear(ClearCartRequest $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validated();
+
+        // Extract the cart from the request
+        $cart = $validated['products'];
+
+        $products = Arr::map($cart, function ($item) {
+            // Get Slug
+            $slug = $item['product_slug'];
+
+            // Find the product by slug
+            $product = $this->productRepository->findOne(['slug' => $slug]);
+
+            // Product Not Found, Cannot continue with payment.
+            if (!$product) {
+                throw new BadRequestException('Product with slug ' . $slug . ' not found');
+            }
+
+            if ($product->status !== 'published') {
+                throw new BadRequestException('Product with slug ' . $slug . ' not published');
+            }
+
+            // Total Product Amount
+            $amount = $product->price * $item['quantity'];
+
+            // Productize's %
+            $deduction = $amount * 0.05;
+
+            // This is what the product owner will earn from this sale.
+            $share = $amount - $deduction;
+
+            return [
+                "product_id" => $product->id,
+                "amount" => $amount,
+                "quantity" => $item['quantity'],
+                "share" => $share
+            ];
+        });
+
+        // Calculate Total Amount
+        $total_amount = array_reduce($products, function ($carry, $item) {
+            return $carry + ($item['amount']);
+        }, 0);
+
+        // Validate Total amount match that stated in request.
+        if ($total_amount !== $validated['amount']) {
+            throw new BadRequestException('Total amount does not match quantity');
+        }
+
+        $payload = [
+            'email' => $user->email,
+            'amount' => $total_amount * 100,
+            'metadata' => [
+                'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
+                'buyer_id' => $user->id,
+                'products' => $products
+            ]
+        ];
+
+        try {
+            $response = $this->paystackRepository->initializePurchaseTransaction($payload);
+            return new JsonResponse(['data' => $response]);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
     }
 }

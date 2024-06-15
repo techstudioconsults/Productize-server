@@ -110,19 +110,14 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasMany(Cart::class, 'user_id');
     }
 
-    public function payOutAccounts(): HasMany
+    public function accounts(): HasMany
     {
-        return $this->hasMany(PayOutAccount::class);
-    }
-
-    public function payment()
-    {
-        return $this->hasOne(Payment::class);
+        return $this->hasMany(Account::class);
     }
 
     public function payouts()
     {
-        return $this->hasManyThrough(Payout::class, PayOutAccount::class, 'user_id', 'pay_out_account_id');
+        return $this->hasManyThrough(Payout::class, Account::class, 'user_id', 'account_id');
     }
 
     public function isSubscribed()
@@ -139,11 +134,11 @@ class User extends Authenticatable implements CanResetPassword
 
     public function hasPayoutSetup()
     {
-        return $this->payOutAccounts()->exists();
+        return $this->accounts()->exists();
     }
 
      /**
-      * @author obajide028 Odesanya Babajide 
+      * @author obajide028 Odesanya Babajide
       *
      * Get the reviews for the user.
      */

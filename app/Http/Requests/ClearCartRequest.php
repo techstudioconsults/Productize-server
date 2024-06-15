@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
 
-class StorePayOutRequest extends FormRequest
+class ClearCartRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,15 +22,10 @@ class StorePayOutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|required',
-            'bank_code' => ['required'],
-            'bank_name' => 'string|required',
-            'account_number' => 'string|max:10'
+            'amount' => 'required|numeric|min:0',
+            'products' => 'required|array',
+            'products.*.product_slug' => 'required|string',
+            'products.*.quantity' => 'required|integer|min:1',
         ];
-    }
-
-    protected function failedValidation(Validator $validator)
-    {
-        throw new UnprocessableException($validator->errors()->first());
     }
 }

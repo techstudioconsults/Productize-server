@@ -73,13 +73,18 @@ class AuthController extends Controller
 
             $token = $user->createToken('access-token')->plainTextToken;
 
-            return ['user' => new UserResource($user), 'token' => $token];
+            return ['user' => $user, 'token' => $token];
         });
 
-        // Trigger register event
-        event(new Registered($result['user']));
+        $user = $result['user'];
+        $token = $result['token'];
 
-        return new JsonResponse($result, 201);
+        // Trigger register event
+        event(new Registered($user));
+
+        $response = ['user' => new UserResource($user), 'token' => $token];
+
+        return new JsonResponse($response, 201);
     }
 
     /**
@@ -279,7 +284,9 @@ class AuthController extends Controller
         $user = Auth::user();
         Mail::to($user)->send(new EmailVerification($user));
 
-        return response()->json(["msg" => "Email verification link sent on your email id"]);
+        return new JsonResponse([
+            'message' => "Email verification link sent on your email address"
+        ]);
     }
 
     /**
@@ -370,7 +377,7 @@ class AuthController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Logout the authenticated user.
      *
      * This method is responsible for logging out the authenticated user by revoking the current access token associated

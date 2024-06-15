@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PayOutAccount extends Model
+class Account extends Model
 {
     use HasFactory;
     use HasUuids;
@@ -36,12 +36,13 @@ class PayOutAccount extends Model
     {
         parent::boot();
 
-        static::saving(function ($payoutaccount) {
-            if ($payoutaccount->active) {
-                $user = $payoutaccount->user;
+        static::saving(function ($account) {
+            if ($account->active) {
+                $user = $account->user;
+
                 if ($user) {
                     // Set All other payout accounts to false
-                    $user->payOutAccounts()->where('id', '!=', $payoutaccount->id)->update(['active' => 0]);
+                    $user->accounts()->where('id', '!=', $account->id)->update(['active' => 0]);
                 }
             }
         });

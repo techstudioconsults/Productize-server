@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PaymentResource extends JsonResource
+class EarningResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -21,7 +21,6 @@ class PaymentResource extends JsonResource
             'withdrawn_earnings' => $this->withdrawn_earnings,
             'available_earnings' => $this->total_earnings - $this->withdrawn_earnings,
             'pending' => $this->pending,
-
         ];
     }
 }

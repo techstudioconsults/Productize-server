@@ -7,8 +7,9 @@ use App\Exceptions\ForbiddenException;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class PaymentPolicy
+class PayoutPolicy
 {
+
     public function allowed(User $user)
     {
         return $user->hasVerifiedEmail()
@@ -21,13 +22,5 @@ class PaymentPolicy
         return $user->isPremium()
             ? Response::allow()
             : throw new BadRequestException('User is not subscribed');
-    }
-
-    public function owner(User $user)
-    {
-        $payment = User::find($user->id)->payment;
-        return $payment
-            ? Response::allow()
-            : throw new ForbiddenException('Forbidden');
     }
 }

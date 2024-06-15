@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('earnings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\User::class, 'user_id')->unique()->cascadeOnDelete();
             $table->integer('total_earnings')->default(0);
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('earnings');
     }
 };

@@ -3,10 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Exceptions\UnprocessableException;
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
-class PurchaseRequest extends FormRequest
+class UpdateAccountRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +24,7 @@ class PurchaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'amount' => 'required|numeric|min:0',
-            'products' => 'required|array',
-            'products.*.product_slug' => 'required|string',
-            'products.*.quantity' => 'required|integer|min:1',
+            'active' => 'boolean|required',
         ];
     }
 

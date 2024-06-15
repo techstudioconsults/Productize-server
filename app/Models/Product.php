@@ -153,4 +153,8 @@ class Product extends Model
     {
         return $this->hasMany(Order::class)->sum('quantity');
     }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

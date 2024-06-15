@@ -1,13 +1,19 @@
 <?php
 
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ *  @since 09-05-2024
+ */
+
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Earning>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\community>
  */
-class EarningFactory extends Factory
+class CommunityFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,8 +23,7 @@ class EarningFactory extends Factory
     public function definition(): array
     {
         return [
-            'total_earnings' => 1000,
-            'withdrawn_earnings' => 500
+            'email' => fake()->unique()->safeEmail()
         ];
     }
 }

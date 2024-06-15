@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Models\Account;
 use App\Models\User;
@@ -21,7 +20,7 @@ class AccountPolicy
     {
         return $user->isPremium()
             ? Response::allow()
-            : throw new BadRequestException('User is not subscribed');
+            : throw new ForbiddenException('User is not subscribed');
     }
 
     /**

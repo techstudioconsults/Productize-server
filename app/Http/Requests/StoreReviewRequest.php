@@ -1,12 +1,17 @@
 <?php
 
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ *  @since 22-05-2024
+ */
+
 namespace App\Http\Requests;
 
-use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rule;
 
-class UpdatePayOutRequest extends FormRequest
+class StoreReviewRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,12 +29,8 @@ class UpdatePayOutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'active' => 'boolean|required',
+            'rating' => 'required|integer|between:1,5',
+            'comment' => 'required|string',
         ];
-    }
-
-    protected function failedValidation(Validator $validator)
-    {
-        throw new UnprocessableException($validator->errors()->first());
     }
 }

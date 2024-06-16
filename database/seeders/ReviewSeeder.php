@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 22-05-2024
  */
 
@@ -13,12 +15,12 @@ use App\Models\Review;
 use App\Models\User;
 use Database\Seeders\Traits\DisableForeignKeys;
 use Database\Seeders\Traits\TruncateTable;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
 {
-    use TruncateTable, DisableForeignKeys;
+    use DisableForeignKeys, TruncateTable;
+
     /**
      * Run the database seeds.
      */
@@ -27,11 +29,10 @@ class ReviewSeeder extends Seeder
         $this->disableForeignKeys();
         $this->truncate('reviews');
 
-
         // Fetch some products and users
         $user = User::factory()->create();
         $products = Product::factory()->count(10)->create([
-            'user_id'=> $user->id
+            'user_id' => $user->id,
         ]);
         $users = User::factory()->count(10)->create();
         foreach ($products as $product) {

@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -14,18 +16,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Community extends Model
 {
-  use HasFactory;
-  use HasUuids;
+    use HasFactory;
+    use HasUuids;
 
+    /**
+     * All three have to be included in other to use uuids as ids
+     */
+    protected $primaryKey = 'id';
 
-  /**
-   * All three have to be included in other to use uuids as ids
-   */
-  protected $primaryKey = 'id';
+    protected $keyType = 'string';
 
-  protected $keyType = 'string';
+    public $incrementing = false;
 
-  public $incrementing = false;
-
-  protected $fillable = ['email'];
+    protected $fillable = ['email'];
 }

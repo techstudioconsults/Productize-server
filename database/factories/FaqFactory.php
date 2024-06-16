@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -23,7 +25,10 @@ class FaqFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => $this->faker->sentence(),
+            'question' => $this->faker->sentence(),
+            'answer' => $this->faker->sentence(),
+
         ];
     }
 }

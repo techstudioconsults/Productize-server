@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -12,28 +14,23 @@ use App\Models\Faq;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-use Faker\Factory as Faker;
-
 class FaqControllerTest extends TestCase
 {
-
     use RefreshDatabase;
-
-    /**
-     * A basic feature test example.
-     */
-    // public function test_example(): void
-    // {
-    //     $response = $this->get('/');
-
-    //     $response->assertStatus(200);
-    // }
 
     public function test_getAllFaq(): void
     {
         $response = $this->get('api/faqs');
 
         $response->assertStatus(200);
+    }
+
+    public function test_getAllFaq_whenNoFaqsExist(): void
+    {
+        $response = $this->getJson('api/faqs');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data');
     }
 
     public function test_storeFaq(): void
@@ -55,7 +52,7 @@ class FaqControllerTest extends TestCase
         $this->assertDatabaseHas('faqs', [
             'title' => $faqData['title'],
             'question' => $faqData['question'],
-            'answer' => $faqData['answer']
+            'answer' => $faqData['answer'],
         ]);
     }
 
@@ -72,11 +69,11 @@ class FaqControllerTest extends TestCase
         $newFaqData = [
             'title' => 'General',
             'question' => 'What is productize?',
-            'answer' => 'Productize is an ecommerce application'
+            'answer' => 'Productize is an ecommerce application',
         ];
 
         // send a PUT request to update the user
-        $response = $this->put('api/faqs/' . $faqData->id, $newFaqData);
+        $response = $this->put('api/faqs/'.$faqData->id, $newFaqData);
 
         // Assert that the request was successful (status code 200)
         $response->assertStatus(200);
@@ -100,7 +97,7 @@ class FaqControllerTest extends TestCase
         ]);
 
         // Send a DELETE request to delete the faq
-        $response = $this->delete('api/faqs/' . $faq->id);
+        $response = $this->delete('api/faqs/'.$faq->id);
 
         // Assert that the request was successful (status code 200)
         $response->assertStatus(200);
@@ -109,5 +106,43 @@ class FaqControllerTest extends TestCase
         $this->assertDatabaseMissing('faqs', [
             'id' => $faq->id,
         ]);
+    }
+
+    public function test_updateFaq_withInvalidData(): void
+    {
+        $faq = Faq::factory()->create();
+
+        $newFaqData = [
+            'title' => '', // Empty title
+            'question' => '', // Empty question
+            'answer' => '', // Empty answer
+        ];
+
+        $response = $this->putJson("api/faqs/{$faq->id}", $newFaqData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['title', 'question', 'answer']);
+    }
+
+    public function test_updateFaq_nonExistentFaq(): void
+    {
+        $nonExistentId = 2345; // Assuming this ID doesn't exist
+
+        $response = $this->putJson("api/faqs/{$nonExistentId}", [
+            'title' => 'New Title',
+            'question' => 'New Question',
+            'answer' => 'New Answer',
+        ]);
+
+        $response->assertStatus(404);
+    }
+
+    public function test_destroyFaq_nonExistentFaq(): void
+    {
+        $nonExistentId = 657876; // Assuming this ID doesn't exist
+
+        $response = $this->deleteJson("api/faqs/{$nonExistentId}");
+
+        $response->assertStatus(404);
     }
 }

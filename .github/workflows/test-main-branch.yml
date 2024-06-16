@@ -1,6 +1,8 @@
 name: Main Branch Integration Test
 
-on: [pull_request]
+on:
+  pull_request:
+    branches: ["main"]
 
 jobs:
   main-branch-integration-test:

@@ -13,13 +13,13 @@ class CustomerPolicy
     {
         return $user->isPremium()
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' is not a subscribed user');
+            : throw new ForbiddenException($user->full_name.' is not a subscribed user');
     }
 
     public function view(User $user, Customer $customer)
     {
         return $user->id === $customer->order->product->user->id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name. ' is not permitted to request this resource');
+            : throw new ForbiddenException($user->full_name.' is not permitted to request this resource');
     }
 }

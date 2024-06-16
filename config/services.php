@@ -35,7 +35,7 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         /** This is overwritten in the boot method of the AppServiceProvider */
-        'redirect' => env('GOOGLE_REDIRECT_URI')
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
 ];

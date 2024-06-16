@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -23,7 +25,7 @@ class CommunityFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'email' => fake()->unique()->safeEmail(),
         ];
     }
 }

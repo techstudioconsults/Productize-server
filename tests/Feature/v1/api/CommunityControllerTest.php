@@ -2,29 +2,27 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use App\Mail\CommunityWelcomeMail;
-use Illuminate\Support\Facades\Mail;
 use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class CommunityControllerTest extends TestCase
 {
-
     public function test_getAllCommunity(): void
     {
         $response = $this->get('api/community');
 
         $response->assertStatus(200);
     }
-
 
     public function test_storeCommunity(): void
     {
@@ -51,5 +49,37 @@ class CommunityControllerTest extends TestCase
         Mail::assertSent(CommunityWelcomeMail::class, function ($mail) use ($communityData) {
             return $mail->hasTo($communityData['email']);
         });
+    }
+
+    public function test_it_fails_to_store_a_community_member_with_invalid_email()
+    {
+        Mail::fake();
+        $invalidData = [
+            'email' => 'not-an-email',
+        ];
+
+        // Send a POST request to store the community member
+        $response = $this->postJson('api/community/create', $invalidData);
+
+        // Assert that the request failed (status code 422)
+        $response->assertStatus(422);
+
+        // Assert that the validation errors are returned
+        $response->assertJsonValidationErrors('email');
+    }
+
+    public function test_it_fails_to_store_a_community_member_with_empty_email()
+    {
+        Mail::fake();
+        $emptyEmailData = [];
+
+        // Send a POST request to store the community member
+        $response = $this->postJson('api/community/create', $emptyEmailData);
+
+        // Assert that the request failed (status code 422)
+        $response->assertStatus(422);
+
+        // Assert that the validation errors are returned
+        $response->assertJsonValidationErrors('email');
     }
 }

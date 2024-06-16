@@ -18,7 +18,7 @@ class RouteHelpers
         //require the file in the iterator
         while ($it->valid()) {
             //check that iterator is pointing at a file
-            if (!$it->isDot() && $it->isFile() && $it->isReadable() && $it->current()->getExtension() === 'php') {
+            if (! $it->isDot() && $it->isFile() && $it->isReadable() && $it->current()->getExtension() === 'php') {
                 require $it->key();
             }
             $it->next();

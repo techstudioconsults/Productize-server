@@ -27,7 +27,7 @@ class OAuthRequest extends FormRequest
     {
         return [
             'provider' => ['required', new Enum(OAuthTypeEnum::class)],
-            'code' => 'required|string'
+            'code' => 'required|string',
         ];
     }
 

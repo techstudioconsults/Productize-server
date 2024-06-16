@@ -21,7 +21,7 @@ class Customer extends Model
     protected $fillable = [
         'user_id',
         'order_id',
-        'merchant_id'
+        'merchant_id',
     ];
 
     public function scopeLatestOfMany(Builder $query, $column)

@@ -1,13 +1,15 @@
 <?php
-
 /**
- *  @author @Intuneteq Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 26-05-2024
  */
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Services\FileGenerator;
 use App\Http\Resources\OrderResource;
 use App\Models\Customer;
 use App\Models\Order;
@@ -16,15 +18,17 @@ use App\Repositories\OrderRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Storage;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Route handler methods for Order resource
  */
 class OrderController extends Controller
 {
+    use FileGenerator;
+
     public function __construct(
-        protected OrderRepository $orderRepository
+        protected OrderRepository $orderRepository,
     ) {
     }
 
@@ -49,7 +53,7 @@ class OrderController extends Controller
         $filter = [
             'product_title' => $product_title,
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter);
@@ -64,7 +68,7 @@ class OrderController extends Controller
      *
      * Retrive the specified order.
      *
-     * @param  \App\Models\Order  $order The order to display.
+     * @param  \App\Models\Order  $order  The order to display.
      * @return \App\Http\Resources\OrderResource Returns a resource representing the queried order.
      */
     public function show(Order $order)
@@ -79,13 +83,13 @@ class OrderController extends Controller
      *
      * It returns the first 3 in the collection.
      *
-     * @param Product $product The product for which to retrieve orders.
+     * @param  Product  $product  The product for which to retrieve orders.
      * @return \App\Http\Resources\OrderResource A collection of order resources.
      */
     public function showByProduct(Product $product)
     {
         $filter = [
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ];
 
         $orders = $this->orderRepository->query($filter)->take(3)->get();
@@ -98,15 +102,15 @@ class OrderController extends Controller
      *
      * Retrieve a collection of orders associated with a specific user customer.
      *
-     * @param Customer $customer The customer for which to retrieve orders.
-     *  @return \App\Http\Resources\OrderResource A collection of order resources.
+     * @param  Customer  $customer  The customer for which to retrieve orders.
+     * @return \App\Http\Resources\OrderResource A collection of order resources.
      */
     public function showByCustomer(Customer $customer)
     {
         $user = Auth::user();
 
         $filter = [
-            'user_id' => $customer->user->id
+            'user_id' => $customer->user->id,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
@@ -115,11 +119,11 @@ class OrderController extends Controller
     }
 
     /**
-     *  @author @Intuneteq Tobi Olanitori
+     * @author @Intuneteq Tobi Olanitori
      *
      * Download a CSV file containing orders based on specified filters.
      *
-     * @param Request $request The HTTP request containing filters.
+     * @param  Request  $request  The HTTP request containing filters.
      * @return \Symfony\Component\HttpFoundation\StreamedResponse The streamed CSV file response.
      */
     public function downloadList(Request $request)
@@ -136,54 +140,62 @@ class OrderController extends Controller
         $filter = [
             'product_title' => $product_title,
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
-
-        $columns = array('Product', 'Price', 'CustomerEmail', 'Date');
-
-        $data = [];
-
-        $data[] = $columns;
-
         $fileName = "orders_$now.csv";
 
+        $columns = ['Product', 'Price', 'CustomerEmail', 'Date'];
+        $data = [$columns];
+
         foreach ($orders as $order) {
-            $row['Product']  = $order->product->title;
-            $row['Price']  = $order->product->price;
-            $row['CustomerEmail']  = $order->user->email;
-            $row['Date']   = $order->created_at;
-
-            $data[] = array($row['Product'], $row['Price'], $row['CustomerEmail'], $row['Date']);
+            $data[] = [
+                $order->product->title,
+                $order->product->price,
+                $order->user->email,
+                $order->created_at,
+            ];
         }
 
-        $csvContent = '';
-        foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
-        }
+        $filePath = $this->generateCsv($fileName, $data);
 
-        $filePath = 'csv/' . $fileName;
+        return $this->streamFile($filePath, $fileName, 'text/csv');
+    }
 
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get the count of unseen orders for the authenticated user.
+     *
+     * @return JsonResource
+     */
+    public function unseen()
+    {
+        $user = Auth::user();
 
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
+        $count = $this->orderRepository->queryRelation($user->orders(), ['seen' => false])->count();
 
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
+        return new JsonResource(['count' => $count]);
+    }
 
-            // Delete the file after reading
-            Storage::disk('local')->delete($filePath);
-        }, 200, $headers);
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Mark all unseen orders for the authenticated user as seen.
+     *
+     * @return \Illuminate\Http\Resources\Json\JsonResource
+     */
+    public function markseen()
+    {
+        $user = Auth::user();
+
+        $query = $this->orderRepository->queryRelation($user->orders(), ['seen' => false]);
+
+        $query->update(['seen' => true]);
+
+        return new JsonResource(['message' => 'orders marked as seen']);
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Exceptions\UnprocessableException;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 
 class ForgotPasswordRequest extends FormRequest
 {
@@ -24,7 +24,7 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email'
+            'email' => 'required|email',
         ];
     }
 

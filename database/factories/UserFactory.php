@@ -25,17 +25,17 @@ class UserFactory extends Factory
             'password' => 'Password1.',
             'email_verified_at' => now(),
             'remember_token' => Str::random(10),
-            'account_type' => 'premium'
+            'account_type' => 'premium',
         ];
     }
 
     public function configure(): static
     {
         return $this->afterCreating(function (User $user) {
-            if ($user->account_type === 'premium' && $user->email === "tobiolanitori@gmail.com") {
+            if ($user->account_type === 'premium' && $user->email === 'tobiolanitori@gmail.com') {
                 Product::factory(30)
                     ->create([
-                        'user_id' => $user->id
+                        'user_id' => $user->id,
                     ]);
             }
         });

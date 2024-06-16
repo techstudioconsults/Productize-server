@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
 {
-    use TruncateTable, DisableForeignKeys;
+    use DisableForeignKeys, TruncateTable;
 
     public function run(): void
     {

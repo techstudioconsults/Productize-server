@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -31,7 +33,7 @@ class UpdateFaqRequest extends FormRequest
         return [
             'title' => 'required|string',
             'question' => 'required|string',
-            'answer' => 'required|string'
+            'answer' => 'required|string',
         ];
     }
 }

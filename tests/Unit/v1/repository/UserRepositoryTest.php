@@ -461,4 +461,39 @@ class UserRepositoryTest extends TestCase
 
         $this->userRepository->getTotalCustomers($user, $filter);
     }
+
+    public function test_firstOrCreate_user_already_exists()
+    {
+        // Arrange: Create a user with the given email
+        $email = 'existing@example.com';
+        $name = 'Existing User';
+
+        $existingUser = User::factory()->create(['email' => $email, 'full_name' => $name]);
+
+        $user = $this->userRepository->firstOrCreate($email, 'Different Name');
+
+        // Assert: The user returned should be the existing user
+        $this->assertEquals($existingUser->id, $user->id);
+        $this->assertEquals($email, $user->email);
+        $this->assertEquals($name, $user->full_name);
+    }
+
+    public function test_firstOrCreate_user_does_not_exist()
+    {
+        // Arrange: Define the email and name for a new user
+        $email = 'new@example.com';
+        $name = 'New User';
+
+        // Act: Call the method
+        $user = $this->userRepository->firstOrCreate($email, $name);
+
+        // Assert: A new user should be created with the given email and name
+        $this->assertNotNull($user);
+        $this->assertEquals($email, $user->email);
+        $this->assertEquals($name, $user->full_name);
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+            'full_name' => $name
+        ]);
+    }
 }

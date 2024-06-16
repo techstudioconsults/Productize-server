@@ -127,4 +127,17 @@ class CartRepository extends Repository
         // Return the updated Customer model
         return $entity;
     }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Calculate the total amount for the given products in a cart.
+     *
+     * @param array $products Array of products with their details from the cart.
+     * @return int The total amount calculated from the product amounts.
+     */
+    public function calculateTotalAmount(array $products)
+    {
+        return array_reduce($products, fn ($total_amount, $product) => $total_amount + $product['amount'], 0);
+    }
 }

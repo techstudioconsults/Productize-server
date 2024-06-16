@@ -23,6 +23,8 @@ class ClearCartRequest extends FormRequest
     {
         return [
             'amount' => 'required|numeric|min:0',
+            'recipient_email' => 'string|email',
+            'recipient_name' => 'string|required_if_accepted:recipient_email,true',
             'products' => 'required|array',
             'products.*.product_slug' => 'required|string',
             'products.*.quantity' => 'required|integer|min:1',

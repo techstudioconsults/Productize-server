@@ -16,12 +16,15 @@ use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
+use App\Mail\GiftAlert;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
+use App\Repositories\UserRepository;
 use Arr;
 use Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Route handler methods for Cart resource
@@ -31,7 +34,8 @@ class CartController extends Controller
     public function __construct(
         protected CartRepository $cartRepository,
         protected ProductRepository $productRepository,
-        protected PaystackRepository $paystackRepository
+        protected PaystackRepository $paystackRepository,
+        protected UserRepository $userRepository,
     ) {
     }
 
@@ -130,63 +134,47 @@ class CartController extends Controller
 
     public function clear(ClearCartRequest $request)
     {
+        // Retrieve authenticated users
         $user = Auth::user();
 
+        // Retrieve validated payload
         $validated = $request->validated();
 
-        // Extract the cart from the request
-        $cart = $validated['products'];
+        // If purchase is a gift to another user, retrieve the recipient's email, else instantiate to null
+        $recipient_email = $validated['recipient_email'] ?? null;
 
-        $products = Arr::map($cart, function ($item) {
-            // Get Slug
-            $slug = $item['product_slug'];
+        // If purchase is a gift to another user, retrieve the recipient's name, else instantiate to null
+        $recipient_name = $validated['recipient_name'] ?? null;
 
-            // Find the product by slug
-            $product = $this->productRepository->findOne(['slug' => $slug]);
+        $recipient = null;
 
-            // Product Not Found, Cannot continue with payment.
-            if (!$product) {
-                throw new BadRequestException('Product with slug ' . $slug . ' not found');
-            }
+        if ($recipient_email) {
+            $recipient = $this->userRepository->firstOrCreate($recipient_email, $recipient_name);
 
-            if ($product->status !== 'published') {
-                throw new BadRequestException('Product with slug ' . $slug . ' not published');
-            }
+            // Send the Gift alert
+            Mail::to($recipient)->send(new GiftAlert($recipient));
+        }
 
-            // Total Product Amount
-            $amount = $product->price * $item['quantity'];
+        // Prepare products for the paystack transaction
+        $products = $this->productRepository->prepareProducts($validated['products']);
 
-            // Productize's %
-            $deduction = $amount * 0.05;
+        // Calculate the total amount for products in the cart
+        $totalAmount = $this->cartRepository->calculateTotalAmount($products);
 
-            // This is what the product owner will earn from this sale.
-            $share = $amount - $deduction;
-
-            return [
-                "product_id" => $product->id,
-                "amount" => $amount,
-                "quantity" => $item['quantity'],
-                "share" => $share
-            ];
-        });
-
-        // Calculate Total Amount
-        $total_amount = array_reduce($products, function ($carry, $item) {
-            return $carry + ($item['amount']);
-        }, 0);
-
-        // Validate Total amount match that stated in request.
-        if ($total_amount !== $validated['amount']) {
+        // Validate that the total amount declared in the request payload matches that which was calculated
+        if ($totalAmount !== $validated['amount']) {
             throw new BadRequestException('Total amount does not match quantity');
         }
 
+        // Prepare paystack's payload
         $payload = [
             'email' => $user->email,
-            'amount' => $total_amount * 100,
+            'amount' => $totalAmount * 100,
             'metadata' => [
-                'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
+                'isPurchase' => true,
                 'buyer_id' => $user->id,
-                'products' => $products
+                'products' => $products,
+                'recipient_id' => $recipient ? $recipient->id : null
             ]
         ];
 

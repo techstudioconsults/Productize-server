@@ -321,4 +321,22 @@ class UserRepository extends Repository
             $user->save();
         }
     }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get or create a user by email and name.
+     *
+     * @param string $email
+     * @param string|null $name
+     * @return User
+     */
+    public function firstOrCreate(string $email, ?string $name): User
+    {
+        $user = $this->findOne(['email' => $email]);
+
+        if (!$user) return $this->create(['email' => $email, 'full_name' => $name]);
+
+        return $user;
+    }
 }

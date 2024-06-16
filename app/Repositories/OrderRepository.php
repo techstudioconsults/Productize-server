@@ -9,6 +9,7 @@
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Order;
 use App\Models\Product;
@@ -60,6 +61,17 @@ class OrderRepository extends Repository
      */
     public function create(array $array): Model
     {
+        $rules = [
+            'reference_no' => 'required|string',
+            'user_id' => 'required|string',
+            'total_amount' => 'required|integer',
+            'quantity' => 'required|integer|min:1',
+            'product_id' =>  'required|string'
+        ];
+
+        if (!$this->isValidated($array, $rules))
+            throw new ServerErrorException($this->getValidator()->errors()->first() . " when calling order create");
+
         $order = Order::create($array);
 
         return $order;

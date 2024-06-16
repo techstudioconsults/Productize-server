@@ -127,14 +127,6 @@ class WebhookRepository
                 // Retrieve the user product
                 $user = $product_saved->user;
 
-                $order_user_id = null;
-
-                if ($gift_user_id) {
-                    $order_user_id = $gift_user_id;
-                } else {
-                    $order_user_id = $buyer_id;
-                }
-
                 $buildOrder = [
                     'reference_no' => $data['reference'],
                     'user_id' => $recipient_id ?? $buyer_id,
@@ -286,10 +278,5 @@ class WebhookRepository
         } catch (\Throwable $th) {
             Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
         }
-    }
-
-    private function isGiftPurchase(array $gift): bool
-    {
-        return isset($gift['email']) && isset($gift['full_name']);
     }
 }

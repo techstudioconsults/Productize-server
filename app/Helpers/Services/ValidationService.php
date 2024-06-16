@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Validator as Validation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
+/**
+ * The ValidationService class provides methods for validating data and applying date filters to queries.
+ *
+ * This service is used to ensure data integrity by validating input data against specified rules
+ * and to handle date range filtering on database queries.
+ */
 class ValidationService
 {
     /**

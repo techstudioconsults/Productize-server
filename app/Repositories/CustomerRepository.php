@@ -9,6 +9,7 @@
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
@@ -62,6 +63,15 @@ class CustomerRepository extends Repository
      */
     public function create(array $entity): Model
     {
+        $rules = [
+            'user_id' => 'required|string',
+            'merchant_id' => 'required|string',
+            'order_id' => 'required|string',
+        ];
+
+        if (!$this->isValidated($entity, $rules))
+            throw new ServerErrorException($this->getValidator()->errors()->first() . " when calling customer create");
+
         return Customer::create($entity);
     }
 

@@ -132,146 +132,44 @@ class CartController extends Controller
         ]);
     }
 
-    public function clear(ClearCartRequest $request)
-    {
-        $user = Auth::user();
-
-        $validated = $request->validated();
-
-        $recipient_email = $validated['recipient_email'] ?? null;
-        $recipient_name = $validated['recipient_name'] ?? null;
-
-        $recipient = null;
-
-        if ($recipient_email) {
-            $query = $this->userRepository->query(['email' => $recipient_email]);
-
-            if ($query->exists()) {
-                $recipient = $query->first();
-            } else {
-                $recipient = $this->userRepository->create([
-                    'email' => $recipient_email,
-                    'full_name' => $recipient_name
-                ]);
-
-                // send login email
-                Mail::to($recipient)->send(new GiftAlert($recipient));
-            }
-        }
-
-        // Extract the cart from the request
-        $cart = $validated['products'];
-
-        $products = Arr::map($cart, function ($item) {
-            // Get Slug
-            $slug = $item['product_slug'];
-
-            // Find the product by slug
-            $product = $this->productRepository->findOne(['slug' => $slug]);
-
-            // Product Not Found, Cannot continue with payment.
-            if (!$product) {
-                throw new BadRequestException('Product with slug ' . $slug . ' not found');
-            }
-
-            if ($product->status !== 'published') {
-                throw new BadRequestException('Product with slug ' . $slug . ' not published');
-            }
-
-            // Total Product Amount
-            $amount = $product->price * $item['quantity'];
-
-            // Productize's %
-            $deduction = $amount * 0.05;
-
-            // This is what the product owner will earn from this sale.
-            $share = $amount - $deduction;
-
-            return [
-                "product_id" => $product->id,
-                "amount" => $amount,
-                "quantity" => $item['quantity'],
-                "share" => $share
-            ];
-        });
-
-        // Calculate Total Amount
-        $total_amount = array_reduce($products, function ($carry, $item) {
-            return $carry + ($item['amount']);
-        }, 0);
-
-        // Validate Total amount match that stated in request.
-        if ($total_amount !== $validated['amount']) {
-            throw new BadRequestException('Total amount does not match quantity');
-        }
-
-        $payload = [
-            'email' => $user->email,
-            'amount' => $total_amount * 100,
-            'metadata' => [
-                'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
-                'buyer_id' => $user->id,
-                'products' => $products,
-                'recipient_id' => $recipient ? $recipient->id : null
-            ]
-        ];
-
-        try {
-            $response = $this->paystackRepository->initializePurchaseTransaction($payload);
-            return new JsonResponse(['data' => $response]);
-        } catch (\Throwable $th) {
-            throw new ApiException($th->getMessage(), $th->getCode());
-        }
-    }
-
     // public function clear(ClearCartRequest $request)
     // {
     //     $user = Auth::user();
+
     //     $validated = $request->validated();
 
-    //     $recipientEmail = $validated['recipient_email'] ?? null;
-    //     $recipientName = $validated['recipient_name'] ?? null;
+    //     $recipient_email = $validated['recipient_email'] ?? null;
+    //     $recipient_name = $validated['recipient_name'] ?? null;
 
-    //     $recipient = $this->handleRecipient($recipientEmail, $recipientName);
+    //     $recipient = null;
 
-    //     $products = $this->processCart($validated['products']);
-    //     $totalAmount = $this->calculateTotalAmount($products);
+    //     if ($recipient_email) {
+    //         $query = $this->userRepository->query(['email' => $recipient_email]);
 
-    //     if ($totalAmount !== $validated['amount']) {
-    //         throw new BadRequestException('Total amount does not match quantity');
+    //         if ($query->exists()) {
+    //             $recipient = $query->first();
+    //         } else {
+    //             $recipient = $this->userRepository->create([
+    //                 'email' => $recipient_email,
+    //                 'full_name' => $recipient_name
+    //             ]);
+
+    //             // send login email
+    //             Mail::to($recipient)->send(new GiftAlert($recipient));
+    //         }
     //     }
 
-    //     $payload = $this->preparePayload($user, $totalAmount, $products, $recipient);
+    //     // Extract the cart from the request
+    //     $cart = $validated['products'];
 
-    //     return $this->initializeTransaction($payload);
-    // }
-
-    // private function handleRecipient($recipientEmail, $recipientName)
-    // {
-    //     if (!$recipientEmail) {
-    //         return null;
-    //     }
-
-    //     $recipient = $this->userRepository->query(['email' => $recipientEmail])->first();
-
-    //     if (!$recipient) {
-    //         $recipient = $this->userRepository->create([
-    //             'email' => $recipientEmail,
-    //             'full_name' => $recipientName
-    //         ]);
-
-    //         Mail::to($recipient)->send(new GiftAlert($recipient));
-    //     }
-
-    //     return $recipient;
-    // }
-
-    // private function processCart(array $cart)
-    // {
-    //     return Arr::map($cart, function ($item) {
+    //     $products = Arr::map($cart, function ($item) {
+    //         // Get Slug
     //         $slug = $item['product_slug'];
+
+    //         // Find the product by slug
     //         $product = $this->productRepository->findOne(['slug' => $slug]);
 
+    //         // Product Not Found, Cannot continue with payment.
     //         if (!$product) {
     //             throw new BadRequestException('Product with slug ' . $slug . ' not found');
     //         }
@@ -280,41 +178,44 @@ class CartController extends Controller
     //             throw new BadRequestException('Product with slug ' . $slug . ' not published');
     //         }
 
+    //         // Total Product Amount
     //         $amount = $product->price * $item['quantity'];
-    //         $share = $amount - ($amount * 0.05);
+
+    //         // Productize's %
+    //         $deduction = $amount * 0.05;
+
+    //         // This is what the product owner will earn from this sale.
+    //         $share = $amount - $deduction;
 
     //         return [
-    //             'product_id' => $product->id,
-    //             'amount' => $amount,
-    //             'quantity' => $item['quantity'],
-    //             'share' => $share
+    //             "product_id" => $product->id,
+    //             "amount" => $amount,
+    //             "quantity" => $item['quantity'],
+    //             "share" => $share
     //         ];
     //     });
-    // }
 
-    // private function calculateTotalAmount(array $products)
-    // {
-    //     return array_reduce($products, function ($carry, $item) {
-    //         return $carry + $item['amount'];
+    //     // Calculate Total Amount
+    //     $total_amount = array_reduce($products, function ($carry, $item) {
+    //         return $carry + ($item['amount']);
     //     }, 0);
-    // }
 
-    // private function preparePayload($user, $totalAmount, $products, $recipient)
-    // {
-    //     return [
+    //     // Validate Total amount match that stated in request.
+    //     if ($total_amount !== $validated['amount']) {
+    //         throw new BadRequestException('Total amount does not match quantity');
+    //     }
+
+    //     $payload = [
     //         'email' => $user->email,
-    //         'amount' => $totalAmount * 100,
+    //         'amount' => $total_amount * 100,
     //         'metadata' => [
-    //             'isPurchase' => true,
+    //             'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
     //             'buyer_id' => $user->id,
     //             'products' => $products,
     //             'recipient_id' => $recipient ? $recipient->id : null
     //         ]
     //     ];
-    // }
 
-    // private function initializeTransaction(array $payload)
-    // {
     //     try {
     //         $response = $this->paystackRepository->initializePurchaseTransaction($payload);
     //         return new JsonResponse(['data' => $response]);
@@ -322,4 +223,139 @@ class CartController extends Controller
     //         throw new ApiException($th->getMessage(), $th->getCode());
     //     }
     // }
+
+    public function clear(ClearCartRequest $request)
+    {
+        // Retrieve authenticated users
+        $user = Auth::user();
+
+        // Retrieve validated payload
+        $validated = $request->validated();
+
+        // If purchase is a gift to another user, retrieve the recipient's email, else instantiate to null
+        $recipient_email = $validated['recipient_email'] ?? null;
+
+        // If purchase is a gift to another user, retrieve the recipient's name, else instantiate to null
+        $recipient_name = $validated['recipient_name'] ?? null;
+        
+        // Handle gift operation
+        $recipient = $this->handleRecipient($recipient_email, $recipient_name);
+
+        // Process the cart into an array that can be handled by paystack
+        $products = $this->processCart($validated['products']);
+
+        // Calculate the total amount for products in the cart
+        $totalAmount = $this->calculateTotalAmount($products);
+
+        // Validate that the total amount declared in the request payload matches that which was calculated
+        if ($totalAmount !== $validated['amount']) {
+            throw new BadRequestException('Total amount does not match quantity');
+        }
+
+        // Prepare paystack's payload
+        $payload = $this->preparePayload($user, $totalAmount, $products, $recipient);
+
+        return $this->initializeTransaction($payload);
+    }
+
+    private function isGift(?string $recipient_email): bool
+    {
+         // It is not a gift purchase
+         if (!$recipient_email) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param string $recipient_email The email of the recipient of the gift.
+     * @param string $recipient_name The name of the recipient of the gift.
+     * @return User|null The recipient if it is a gift purchase, else null
+     */
+    private function handleRecipient($recipient_email, $recipient_name)
+    {
+        // It is not a gift purchase
+        if (!$recipient_email) {
+            return null;
+        }
+
+        $recipient = $this->userRepository->query(['email' => $recipient_email])->first();
+
+        if (!$recipient) {
+            $recipient = $this->userRepository->create([
+                'email' => $recipient_email,
+                'full_name' => $recipient_name
+            ]);
+
+            Mail::to($recipient)->send(new GiftAlert($recipient));
+        }
+
+        return $recipient;
+    }
+
+    private function processCart(array $cart): array
+    {
+        return Arr::map($cart, function ($item) {
+            $slug = $item['product_slug'];
+            $product = $this->productRepository->findOne(['slug' => $slug]);
+
+            if (!$product) {
+                throw new BadRequestException('Product with slug ' . $slug . ' not found');
+            }
+
+            if ($product->status !== 'published') {
+                throw new BadRequestException('Product with slug ' . $slug . ' not published');
+            }
+
+            $amount = $product->price * $item['quantity'];
+            $share = $amount - ($amount * 0.05);
+
+            return [
+                'product_id' => $product->id,
+                'amount' => $amount,
+                'quantity' => $item['quantity'],
+                'share' => $share
+            ];
+        });
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Calculate the total amount for the given products in a cart.
+     *
+     * @param array $products Array of products with their details from the cart.
+     * @return int The total amount calculated from the product amounts.
+     */
+    private function calculateTotalAmount(array $products)
+    {
+        return array_reduce($products, fn ($total_amount, $product) => $total_amount + $product['amount'], 0);
+    }
+
+    private function preparePayload($user, $totalAmount, $products, $recipient)
+    {
+        return [
+            'email' => $user->email,
+            'amount' => $totalAmount * 100,
+            'metadata' => [
+                'isPurchase' => true,
+                'buyer_id' => $user->id,
+                'products' => $products,
+                'recipient_id' => $recipient ? $recipient->id : null
+            ]
+        ];
+    }
+
+    private function initializeTransaction(array $payload)
+    {
+        try {
+            $response = $this->paystackRepository->initializePurchaseTransaction($payload);
+            return new JsonResponse(['data' => $response]);
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
+    }
 }

@@ -138,6 +138,16 @@ class User extends Authenticatable implements CanResetPassword
     }
 
      /**
+      * @author obajide028 Odesanya Babajide
+      *
+     * Get the reviews for the user.
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+     /**
      * The channels the user receives notification broadcasts on.
      */
     public function receivesBroadcastNotificationsOn(): string

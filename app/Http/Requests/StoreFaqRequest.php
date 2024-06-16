@@ -1,12 +1,18 @@
 <?php
 
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *  @version 1.0
+ *  @since 09-05-2024
+ */
+
 namespace App\Http\Requests;
 
-use App\Exceptions\UnprocessableException;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
 
-class StorePayOutRequest extends FormRequest
+class StoreFaqRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +30,9 @@ class StorePayOutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|required',
-            'bank_code' => ['required'],
-            'bank_name' => 'string|required',
-            'account_number' => 'string|max:10'
+            'title' => 'required|string',
+            'question' => 'required|string',
+            'answer' => 'required|string'
         ];
     }
 

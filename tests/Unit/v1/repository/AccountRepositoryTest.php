@@ -10,7 +10,7 @@ use Tests\TestCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use App\Exceptions\ModelCastException;
-
+use App\Exceptions\ServerErrorException;
 
 class AccountRepositoryTest extends TestCase
 {
@@ -26,9 +26,6 @@ class AccountRepositoryTest extends TestCase
         $this->accountRepository = new AccountRepository();
     }
 
-    /**
-     * A basic unit test example.
-     */
     public function test_create(): void
     {
         $user = User::factory()->create(); // generating errors
@@ -37,11 +34,10 @@ class AccountRepositoryTest extends TestCase
         $data = [
             'user_id' => $user->id,
             'name' => 'Test Account',
-            'account_number' => "134rfcikc892noc9",
+            'account_number' => "2079753003",
             'paystack_recipient_code' => '934fjcnwunu9231',
             'bank_code' => "552kcmi",
             'bank_name' => "Banker",
-            'active' => true
         ];
 
         // Act
@@ -49,17 +45,40 @@ class AccountRepositoryTest extends TestCase
 
         // Assert
         $this->assertInstanceOf(Account::class, $account);
-        $this->assertEquals('Test Account', $account->name);
+        $this->assertEquals($data['name'], $account->name);
     }
 
-    /**
-     * @test
-     */
-    public function test_it_queries_accounts()
+    public function test_create_invalid_data_throws_server_error_exception(): void
     {
+        $this->expectException(ServerErrorException::class);
+
+        $data = [
+            'name' => 'Test Account',
+            'account_number' => "2079753003",
+            'paystack_recipient_code' => '934fjcnwunu9231',
+            'bank_code' => "552kcmi",
+            'bank_name' => "Banker",
+        ];
+
+        $this->accountRepository->create($data);
+    }
+
+    public function test_query()
+    {
+        $expected_count = 10;
+
+        $user = User::factory()->create();
+
+        $accounts = Account::factory()->count($expected_count)->create([
+            'user_id' => $user->id
+        ]);
+
+        // Create another 10 accounts not belonging to test user
+        Account::factory()->count(10)->create();
+
         // Arrange
         $filter = [
-            'name' => 'Test Account',
+            'user_id' => $user->id,
         ];
 
         // Act
@@ -67,16 +86,27 @@ class AccountRepositoryTest extends TestCase
 
         // Assert
         $this->assertInstanceOf(Builder::class, $query);
+        $this->assertCount($expected_count, $query->get());
+        $this->assertEquals($accounts->pluck('id')->sort()->values(), $query->pluck('id')->sort()->values());
+        $this->assertEquals($user->id, $query->first()->user->id);
     }
 
-    /**
-     * @test
-     */
-    public function test_it_finds_accounts()
+    public function test_find()
     {
+        $expected_count = 10;
+
+        $user = User::factory()->create();
+
+        $accounts = Account::factory()->count($expected_count)->create([
+            'user_id' => $user->id
+        ]);
+
+        // Create another 10 accounts not belonging to test user
+        Account::factory()->count(10)->create();
+
         // Arrange
         $filter = [
-            'name' => 'Test Account',
+            'user_id' => $user->id,
         ];
 
         // Act
@@ -84,12 +114,12 @@ class AccountRepositoryTest extends TestCase
 
         // Assert
         $this->assertInstanceOf(Collection::class, $accounts);
+        $this->assertCount($expected_count, $accounts);
+        $this->assertEquals($accounts->pluck('id')->sort()->values(), $accounts->pluck('id')->sort()->values());
+        $this->assertEquals($user->id, $accounts->first()->user->id);
     }
 
-    /**
-     * @test
-     */
-    public function test_it_finds_an_account_by_id()
+    public function test_findbyid()
     {
         // Arrange
         $user = User::factory()->create();
@@ -97,31 +127,47 @@ class AccountRepositoryTest extends TestCase
         $id = $account->id;
 
         // Act
-        $account = $this->accountRepository->findById($id);
+        $result = $this->accountRepository->findById($id);
 
         // Assert
-        $this->assertInstanceOf(Account::class, $account);
+        $this->assertInstanceOf(Account::class, $result);
+        $this->assertEquals($id, $result->id);
+    }
+
+    public function test_find_by_id_not_found_return_null(): void
+    {
+        $result = $this->accountRepository->findById("12345");
+
+        $this->assertNull($result);
     }
 
     /**
      * @test
      */
-    public function test_it_finds_an_account_by_filter()
+    public function test_findone()
     {
-
-
         // Arrange
         $user = User::factory()->create();
+
         $account = Account::factory()->create(['user_id' => $user->id]);
+
         $filter = [
             'name' => $account->name,
         ];
 
         // Act
-        $account = $this->accountRepository->findOne($filter);
+        $result = $this->accountRepository->findOne($filter);
 
         // Assert
         $this->assertInstanceOf(Account::class, $account);
+        $this->assertEquals($account->name, $result->name);
+    }
+
+    public function test_find_one_not_found_return_null(): void
+    {
+        $result = $this->accountRepository->findOne(['name' => '12345']);
+
+        $this->assertNull($result);
     }
 
     /**
@@ -131,14 +177,20 @@ class AccountRepositoryTest extends TestCase
     {
         // Arrange
         $user = User::factory()->create();
-        $account = Account::factory()->create(['user_id' => $user->id, 'active' => true]);
+        Account::factory()->count(2)->create(['user_id' => $user->id]);
+
+
         // Arrange
 
         // Act
-        $account = $this->accountRepository->findActive();
+        $result = $this->accountRepository->findActive();
 
         // Assert
-        $this->assertInstanceOf(Account::class, $account);
+        $this->assertInstanceOf(Account::class, $result);
+
+        // Ensure only one active account per user
+        $activeAccountsCount = $this->accountRepository->query(['user_id' => $user->id, 'active' => true])->count();
+        $this->assertEquals(1, $activeAccountsCount);
     }
 
     /**

@@ -1416,7 +1416,7 @@ class ProductControllerTest extends TestCase
         // Mock product repository
         $mock = $this->partialMock(ProductRepository::class);
 
-        // Mock the getFileMetaData method
+        // Mock the search method
         $mock->shouldReceive('search')
             ->with($searchText)
             ->andReturn($builder);

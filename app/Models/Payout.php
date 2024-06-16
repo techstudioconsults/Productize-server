@@ -21,6 +21,15 @@ class Payout extends Model
         'status'
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'amount' => 'string',
+    ];
+
     public function account()
     {
         return $this->belongsTo(Account::class);

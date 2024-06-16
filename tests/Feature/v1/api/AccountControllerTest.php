@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\UnAuthorizedException;
+use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Models\User;
+use App\Repositories\PaystackRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Mockery;
 
 class AccountControllerTest extends TestCase
 {
@@ -17,14 +20,42 @@ class AccountControllerTest extends TestCase
     public function test_Index()
     {
         $user = User::factory()->create();
-        $account = Account::factory()->count(3)->create([
-            'user_id' => $user->id
+
+        $expected_count = 3;
+
+        $accounts = Account::factory()->count($expected_count)->create([
+            'user_id' => $user->id,
+            'active' => 0
         ]);
+
+        $expected_json = AccountResource::collection($accounts)->response()->getData(true);
+
         $this->actingAs($user);
 
         $response = $this->withoutExceptionHandling()->get(route('account.index'));
-        $response->assertStatus(200)
-            ->assertJsonCount(3, 'data');
+
+        $response->assertOk()->assertJson($expected_json, true)
+            ->assertJsonCount($expected_count, 'data');
+    }
+
+    public function test_index_unauthenticated()
+    {
+        $this->expectException(UnAuthorizedException::class);
+
+        $this->withoutExceptionHandling()->get(route('account.index'));
+    }
+
+    public function test_index_unsubscribed_user()
+    {
+        $this->expectException(ForbiddenException::class);
+
+        $user = User::factory()->create([
+            'account_type' => 'free'
+        ]);
+
+        $this->actingAs($user);
+
+        $this->withoutExceptionHandling()->get(route('account.index'));
     }
 
     public function test_store()
@@ -40,20 +71,19 @@ class AccountControllerTest extends TestCase
         ];
 
         // Mock PaystackRepository
-        $paystackRepository = Mockery::mock('App\Repositories\PaystackRepository');
-        $paystackRepository->shouldReceive('validateAccountNumber')
+        $paystackRepositoryMock = $this->partialMock(PaystackRepository::class);
+
+        $paystackRepositoryMock->shouldReceive('validateAccountNumber')
             ->with($data['account_number'], $data['bank_code'])
             ->andReturn(true);
 
-        $paystackRepository->shouldReceive('createTransferRecipient')
+        $paystackRepositoryMock->shouldReceive('createTransferRecipient')
             ->with($data['name'], $data['account_number'], $data['bank_code'])
-            ->andReturn(['recipient_code' => 'RCP_123456']);
-
-        $this->app->instance('App\Repositories\PaystackRepository', $paystackRepository);
+            ->andReturn(['recipient_code' => 'RCP_2x5j67tnnw1t98k']);
 
 
         $response = $this->post(route('account.store'), $data);
-        $response->assertStatus(201)
+        $response->assertCreated()
             ->assertJsonStructure(['data' => ['id', 'name', 'account_number', 'bank_name']]);
     }
 
@@ -102,12 +132,12 @@ class AccountControllerTest extends TestCase
         ];
 
         // Mock PaystackRepository
-        $paystackRepository = Mockery::mock('App\Repositories\PaystackRepository');
-        $paystackRepository->shouldReceive('validateAccountNumber')
+        $paystackRepositoryMock = $this->partialMock(PaystackRepository::class);
+
+        // mock validation and return false
+        $paystackRepositoryMock->shouldReceive('validateAccountNumber')
             ->with($data['account_number'], $data['bank_code'])
             ->andReturn(false);
-
-        $this->app->instance('App\Repositories\PaystackRepository', $paystackRepository);
 
         $response = $this->post(route('account.store'), $data);
 
@@ -131,15 +161,4 @@ class AccountControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['data' => ['active' => false]]);
     }
-
-    // public function test_BankList()
-    // {
-    //     $user = User::factory()->create();
-    //     $this->actingAs($user);
-
-    //     $response = $this->get(route('account.bank-list'));
-
-    //     $response->assertStatus(200)
-    //         ->assertJsonStructure([['name', 'code']]);
-    // }
 }

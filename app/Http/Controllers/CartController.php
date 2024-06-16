@@ -16,12 +16,14 @@ use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
+use App\Mail\GiftAlert;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
+use Mail;
 
 /**
  * Route handler methods for Cart resource
@@ -147,37 +149,47 @@ class CartController extends Controller
      */
     public function clear(ClearCartRequest $request)
     {
-        // Retrieve the authenticated user
+        // Retrieve authenticated users
         $user = Auth::user();
 
-        // Retrieve validated data
+        // Retrieve validated payload
         $validated = $request->validated();
 
-        // Handle gift user creation or retrieval
-        $gift_user = $this->userRepository->handleGiftUser(
-            $validated['gift_email'] ?? null,
-            $validated['gift_name'] ?? null
-        );
+        // If purchase is a gift to another user, retrieve the recipient's email, else instantiate to null
+        $recipient_email = $validated['recipient_email'] ?? null;
 
-        // Organize the products for Paystack request
-        $products = $this->productRepository->organizeProducts($validated['products']);
+        // If purchase is a gift to another user, retrieve the recipient's name, else instantiate to null
+        $recipient_name = $validated['recipient_name'] ?? null;
 
-        // Calculate total amount
-        $total_amount = array_reduce($products, fn ($carry, $item) => $carry + $item['amount'], 0);
+        $recipient = null;
 
-        // Validate Total amount match that stated in request.
-        if ($total_amount !== $validated['amount']) {
+        if ($recipient_email) {
+            $recipient = $this->userRepository->firstOrCreate($recipient_email, $recipient_name);
+
+            // Send the Gift alert
+            Mail::to($recipient)->send(new GiftAlert($recipient));
+        }
+
+        // Prepare products for the paystack transaction
+        $products = $this->productRepository->prepareProducts($validated['products']);
+
+        // Calculate the total amount for products in the cart
+        $totalAmount = $this->cartRepository->calculateTotalAmount($products);
+
+        // Validate that the total amount declared in the request payload matches that which was calculated
+        if ($totalAmount !== $validated['amount']) {
             throw new BadRequestException('Total amount does not match quantity');
         }
 
+        // Prepare paystack's payload
         $payload = [
             'email' => $user->email,
-            'amount' => $total_amount * 100,
+            'amount' => $totalAmount * 100,
             'metadata' => [
-                'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
+                'isPurchase' => true,
                 'buyer_id' => $user->id,
                 'products' => $products,
-                'gift_user_id' => $gift_user ? $gift_user->id : null
+                'recipient_id' => $recipient ? $recipient->id : null
             ]
         ];
 

@@ -11,8 +11,8 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
-use App\Http\Requests\StorePayOutRequest;
-use App\Http\Requests\UpdatePayOutRequest;
+use App\Http\Requests\StoreAccountRequest;
+use App\Http\Requests\UpdateAccountRequest;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Repositories\AccountRepository;
@@ -67,7 +67,7 @@ class AccountController extends Controller
      * It validates the provided account details, checks for duplicates, and interacts with
      * the Paystack API to create a transfer recipient before storing the account in the database.
      *
-     * @param StorePayOutRequest $request
+     * @param StoreAccountRequest $request
      *        The request object containing the validated data for the new payout account.
      *
      * @return \App\Http\Resources\AccountResource
@@ -82,7 +82,7 @@ class AccountController extends Controller
      * @throws \App\Exceptions\ApiException
      *         If an error occurs while interacting with the Paystack API or while storing the account.
      */
-    public function store(StorePayOutRequest $request)
+    public function store(StoreAccountRequest $request)
     {
         // Retrieve the authenticated user
         $user = Auth::user();
@@ -145,13 +145,13 @@ class AccountController extends Controller
      *
      * @param \App\Models\Account $account
      *        The payout account instance to be updated.
-     * @param \App\Http\Requests\UpdatePayOutRequest $request
+     * @param \App\Http\Requests\UpdateAccountRequest $request
      *        The request object containing the validated data for updating the payout account.
      *
      * @return \App\Http\Resources\AccountResource
      *         The updated AccountResource instance.
      */
-    public function update(Account $account, UpdatePayOutRequest $request)
+    public function update(Account $account, UpdateAccountRequest $request)
     {
         $validated = $request->validated();
 
@@ -164,7 +164,7 @@ class AccountController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Get a list of all banks supported by Paystack.
      *
      * This method retrieves a list of banks supported by Paystack, mapping the data to include only the bank name and code.

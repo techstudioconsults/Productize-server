@@ -12,6 +12,7 @@ use App\Enums\ProductStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
@@ -39,8 +40,8 @@ class ProductRepository extends Repository
     const COVER_PHOTOS_PATH = "products-cover-photos";
     const THUMBNAIL_PATH = "products-thumbnail";
 
-    const PUBLISHED = ProductStatusEnum::Published->value;
-    const DRAFT = ProductStatusEnum::Draft->value;
+    const PUBLISHED = 'published';
+    const DRAFT = 'draft';
     const DELETED = 'deleted';
 
     public function seed(): void
@@ -562,40 +563,37 @@ class ProductRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Organize the products for Paystack request.
+     * Prepare products for the cart.
      *
-     * @param array $cart The cart items.
-     * @return array The organized products.
-     *
-     * @throws BadRequestException If the product is not found or not published.
+     * @param array $cart
+     * @return array
      */
-    public function organizeProducts(array $cart)
+    public function prepareProducts(array $cart): array
     {
+        $rules = [
+            '*.product_slug' => 'required|string',
+            '*.quantity' => 'required|integer|min:1',
+        ];
+
+        if (!$this->isValidated($cart, $rules))
+            throw new ServerErrorException("Invalid parameter called with prepareProducts ");
+
         return Arr::map($cart, function ($item) {
-            // Get Slug
             $slug = $item['product_slug'];
 
-            // Find the product by slug
-            $product = $this->findOne(['slug' => $slug]);
+            $product = $this->query(['slug' => $slug])->first();
 
-            // Product Not Found, Cannot continue with payment.
             if (!$product) {
                 throw new BadRequestException('Product with slug ' . $slug . ' not found');
             }
 
-            // Unpublished product cannot be bought, end the request.
             if ($product->status !== 'published') {
                 throw new BadRequestException('Product with slug ' . $slug . ' not published');
             }
 
-            // Total Product Amount
             $amount = $product->price * $item['quantity'];
 
-            // Productize's %
-            $deduction = $amount * 0.05;
-
-            // This is what the product owner will earn from this sale.
-            $share = $amount - $deduction;
+            $share = $amount - ($amount * 0.05);
 
             return [
                 "product_id" => $product->id,

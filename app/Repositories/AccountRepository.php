@@ -3,6 +3,8 @@
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
+use App\Http\Requests\StoreAccountRequest;
 use App\Models\Account;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,6 +18,15 @@ class AccountRepository extends Repository
 
     public function create(array $entity): Account
     {
+        $rules = (new StoreAccountRequest())->rules();
+
+        // Add the 'user_id' rule to the validation rules
+        $rules['user_id'] = 'required';
+
+        if (!$this->isValidated($entity, $rules)) {
+            throw new ServerErrorException($this->getValidator()->errors()->first());
+        }
+
         return Account::create($entity);
     }
 

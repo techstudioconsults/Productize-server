@@ -326,33 +326,18 @@ class UserRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Handle gift user creation or retrieval.
+     * Get or create a user by email and name.
      *
-     * @param string|null $gift_email The email of the gift user.
-     * @param string|null $gift_name The name of the gift user.
-     *
-     * @return User|null The gift user or null.
+     * @param string $email
+     * @param string|null $name
+     * @return User
      */
-    public function handleGiftUser(?string $gift_email, ?string $gift_name): ?User
+    public function firstOrCreate(string $email, ?string $name): User
     {
-        if (!$gift_email) {
-            return null;
-        }
+        $user = $this->findOne(['email' => $email]);
 
-        $gift_user = $this->query(['email' => $gift_email])->first();
+        if (!$user) return $this->create(['email' => $email, 'full_name' => $name]);
 
-        if ($gift_user) {
-            return $gift_user;
-        }
-
-        $gift_user = $this->create([
-            'email' => $gift_email,
-            'full_name' => $gift_name
-        ]);
-
-        // Send a notification email so they can register and access the product resource gifted to them.
-        Mail::to($gift_user)->send(new GiftAlert($gift_user));
-
-        return $gift_user;
+        return $user;
     }
 }

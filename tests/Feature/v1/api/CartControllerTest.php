@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Cart;
 use App\Models\User;
 use App\Models\Product;
@@ -9,10 +10,14 @@ use App\Exceptions\ConflictException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
+use App\Mail\GiftAlert;
+use App\Repositories\PaystackRepository;
+use App\Repositories\ProductRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class CartControllerTest extends TestCase
@@ -396,7 +401,8 @@ class CartControllerTest extends TestCase
         $this->assertDatabaseMissing('carts', ['id' => $cart->id]);
     }
 
-    public function test_delete_method_unauthenticated_user_throw_UnAuthorizedException(): void {
+    public function test_delete_method_unauthenticated_user_throw_UnAuthorizedException(): void
+    {
         $this->expectException(UnAuthorizedException::class);
 
         // Create a user, product and cart
@@ -413,7 +419,8 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart->id]));
     }
 
-    public function test_delete_method_forbidden_user_throw_ForbiddenException(): void {
+    public function test_delete_method_forbidden_user_throw_ForbiddenException(): void
+    {
         $this->expectException(ForbiddenException::class);
 
         // Create a user, product and cart
@@ -434,7 +441,8 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart->id]));
     }
 
-    public function test_delete_method_invalid_cart_id_throw_ModelNotFoundExeption(): void {
+    public function test_delete_method_invalid_cart_id_throw_ModelNotFoundExeption(): void
+    {
         $this->expectException(ModelNotFoundException::class);
 
         $cart_id = "invalid_cart_id";
@@ -445,5 +453,162 @@ class CartControllerTest extends TestCase
         $this->actingAs($user);
 
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart_id]));
+    }
+
+    public function test_clear_cart_without_gift_user()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        $paystackRepository = $this->partialMock(PaystackRepository::class);
+
+        $paystackRepository->shouldReceive('initializePurchaseTransaction')
+            ->once()
+            ->andReturn(['status' => 'success', 'data' => []]);
+
+        // Mock UserRepository and ensure firstOrCreate is never called
+        $userRepository = $this->partialMock(UserRepository::class);
+        $userRepository->shouldNotReceive('firstOrCreate');
+
+        $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'products' => [
+                ['product_slug' => $product->slug, 'quantity' => 1]
+            ],
+            'amount' => 1000
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_clear_cart_with_existing_gift_user()
+    {
+        Mail::fake();
+
+        // Create a user and authenticate
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        // Define recipient's email and name
+        $recipient_email = 'gift@example.com';
+        $recipient_name = 'Gift User';
+
+        // Create a recipient user with the specified email and name
+        $recipient = User::factory()->create(['email' => $recipient_email, 'full_name' => $recipient_name]);
+
+        // Create a product with specified attributes
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        // Mock UserRepository and set expectation for firstOrCreate method
+        $userRepository = $this->partialMock(UserRepository::class);
+        $userRepository->shouldReceive('firstOrCreate')
+            ->once()
+            ->with($recipient_email, $recipient_name)
+            ->andReturn($recipient);
+
+        // Mock PaystackRepository and set expectation for initializePurchaseTransaction method
+        $paystackRepository = $this->partialMock(PaystackRepository::class);
+        $paystackRepository->shouldReceive('initializePurchaseTransaction')
+            ->once()
+            ->andReturn(['status' => 'success', 'data' => []]);
+
+        // Perform the request to clear the cart with recipient information
+        $response = $this->post(route('cart.clear'), [
+            'recipient_email' => $recipient_email,
+            'recipient_name' => $recipient_name,
+            'products' => [
+                ['product_slug' => $product->slug, 'quantity' => 1]
+            ],
+            'amount' => 1000
+        ]);
+
+        // Assert the response status
+        $response->assertStatus(200);
+
+        // Assert that the GiftAlert mail was sent to the recipient email
+        Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {
+            return $mail->hasTo($recipient_email);
+        });
+    }
+
+    public function test_clear_cart_creates_new_gift_user_and_sends_email()
+    {
+        Mail::fake();
+
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $recipient_email = 'gift@example.com';
+        $recipient_name = 'Gift User';
+
+        $recipient = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
+
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        $userRepository = $this->partialMock(UserRepository::class);
+
+        $userRepository->shouldReceive('firstOrCreate')
+            ->once()
+            ->with($recipient_email, $recipient_name)
+            ->andReturn($recipient);
+
+        $paystackRepository = $this->partialMock(PaystackRepository::class);
+
+        $paystackRepository->shouldReceive('initializePurchaseTransaction')
+            ->once()
+            ->andReturn(['status' => 'success', 'data' => []]);
+
+        $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'recipient_email' => $recipient_email,
+            'recipient_name' => $recipient_name,
+            'products' => [
+                ['product_slug' => $product->slug, 'quantity' => 1]
+            ],
+            'amount' => $product->price
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['data' => ['status' => 'success']]);
+
+        Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {
+            return $mail->hasTo($recipient_email);
+        });
+    }
+
+    public function test_clear_cart_throws_error_if_product_not_found()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $slug = 'non-existent-product';
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Product with slug non-existent-product not found');
+
+        $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'products' => [
+                ['product_slug' => $slug, 'quantity' => 1]
+            ],
+            'amount' => 1000
+        ]);
+    }
+
+    public function test_clear_cart_throws_error_if_total_amount_mismatch()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+        
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Total amount does not match quantity');
+
+        $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'products' => [
+                ['product_slug' => $product->slug, 'quantity' => 1]
+            ],
+            'amount' => 2000 // Intentionally mismatched amount
+        ]);
     }
 }

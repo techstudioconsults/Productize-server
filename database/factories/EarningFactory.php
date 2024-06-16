@@ -17,7 +17,8 @@ class EarningFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'total_earnings' => 1000,
+            'withdrawn_earnings' => 500
         ];
     }
 }

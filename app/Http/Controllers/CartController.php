@@ -138,14 +138,14 @@ class CartController extends Controller
 
         $validated = $request->validated();
 
-        $gift_email = $validated['gift_email'];
-        $gift_name = $validated['gift_name'];
+        $gift_email = $validated['gift_email'] ?? null;
+        $gift_name = $validated['gift_name'] ?? null;
 
         $gift_user = null;
 
-        $query = $this->userRepository->query(['email' => $gift_email]);
-
         if ($gift_email) {
+            $query = $this->userRepository->query(['email' => $gift_email]);
+
             if ($query->exists()) {
                 $gift_user = $query->first();
             } else {
@@ -223,4 +223,103 @@ class CartController extends Controller
             throw new ApiException($th->getMessage(), $th->getCode());
         }
     }
+
+    // public function clear(ClearCartRequest $request)
+    // {
+    //     $user = Auth::user();
+    //     $validated = $request->validated();
+
+    //     $recipientEmail = $validated['recipient_email'] ?? null;
+    //     $recipientName = $validated['recipient_name'] ?? null;
+
+    //     $recipient = $this->handleRecipient($recipientEmail, $recipientName);
+
+    //     $products = $this->processCart($validated['products']);
+    //     $totalAmount = $this->calculateTotalAmount($products);
+
+    //     if ($totalAmount !== $validated['amount']) {
+    //         throw new BadRequestException('Total amount does not match quantity');
+    //     }
+
+    //     $payload = $this->preparePayload($user, $totalAmount, $products, $recipient);
+
+    //     return $this->initializeTransaction($payload);
+    // }
+
+    // private function handleRecipient($recipientEmail, $recipientName)
+    // {
+    //     if (!$recipientEmail) {
+    //         return null;
+    //     }
+
+    //     $recipient = $this->userRepository->query(['email' => $recipientEmail])->first();
+
+    //     if (!$recipient) {
+    //         $recipient = $this->userRepository->create([
+    //             'email' => $recipientEmail,
+    //             'full_name' => $recipientName
+    //         ]);
+
+    //         Mail::to($recipient)->send(new GiftAlert($recipient));
+    //     }
+
+    //     return $recipient;
+    // }
+
+    // private function processCart(array $cart)
+    // {
+    //     return Arr::map($cart, function ($item) {
+    //         $slug = $item['product_slug'];
+    //         $product = $this->productRepository->findOne(['slug' => $slug]);
+
+    //         if (!$product) {
+    //             throw new BadRequestException('Product with slug ' . $slug . ' not found');
+    //         }
+
+    //         if ($product->status !== 'published') {
+    //             throw new BadRequestException('Product with slug ' . $slug . ' not published');
+    //         }
+
+    //         $amount = $product->price * $item['quantity'];
+    //         $share = $amount - ($amount * 0.05);
+
+    //         return [
+    //             'product_id' => $product->id,
+    //             'amount' => $amount,
+    //             'quantity' => $item['quantity'],
+    //             'share' => $share
+    //         ];
+    //     });
+    // }
+
+    // private function calculateTotalAmount(array $products)
+    // {
+    //     return array_reduce($products, function ($carry, $item) {
+    //         return $carry + $item['amount'];
+    //     }, 0);
+    // }
+
+    // private function preparePayload($user, $totalAmount, $products, $recipient)
+    // {
+    //     return [
+    //         'email' => $user->email,
+    //         'amount' => $totalAmount * 100,
+    //         'metadata' => [
+    //             'isPurchase' => true,
+    //             'buyer_id' => $user->id,
+    //             'products' => $products,
+    //             'recipient_id' => $recipient ? $recipient->id : null
+    //         ]
+    //     ];
+    // }
+
+    // private function initializeTransaction(array $payload)
+    // {
+    //     try {
+    //         $response = $this->paystackRepository->initializePurchaseTransaction($payload);
+    //         return new JsonResponse(['data' => $response]);
+    //     } catch (\Throwable $th) {
+    //         throw new ApiException($th->getMessage(), $th->getCode());
+    //     }
+    // }
 }

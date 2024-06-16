@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Cart;
 use App\Models\User;
 use App\Models\Product;
@@ -9,10 +10,14 @@ use App\Exceptions\ConflictException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
+use App\Mail\GiftAlert;
+use App\Repositories\PaystackRepository;
+use App\Repositories\ProductRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class CartControllerTest extends TestCase
@@ -396,7 +401,8 @@ class CartControllerTest extends TestCase
         $this->assertDatabaseMissing('carts', ['id' => $cart->id]);
     }
 
-    public function test_delete_method_unauthenticated_user_throw_UnAuthorizedException(): void {
+    public function test_delete_method_unauthenticated_user_throw_UnAuthorizedException(): void
+    {
         $this->expectException(UnAuthorizedException::class);
 
         // Create a user, product and cart
@@ -413,7 +419,8 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart->id]));
     }
 
-    public function test_delete_method_forbidden_user_throw_ForbiddenException(): void {
+    public function test_delete_method_forbidden_user_throw_ForbiddenException(): void
+    {
         $this->expectException(ForbiddenException::class);
 
         // Create a user, product and cart
@@ -434,7 +441,8 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart->id]));
     }
 
-    public function test_delete_method_invalid_cart_id_throw_ModelNotFoundExeption(): void {
+    public function test_delete_method_invalid_cart_id_throw_ModelNotFoundExeption(): void
+    {
         $this->expectException(ModelNotFoundException::class);
 
         $cart_id = "invalid_cart_id";
@@ -445,5 +453,181 @@ class CartControllerTest extends TestCase
         $this->actingAs($user);
 
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart_id]));
+    }
+
+    public function test_clear_cart_without_gift_user()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        $productRepository = $this->partialMock(ProductRepository::class);
+
+        $productRepository->shouldReceive('findOne')
+            ->once()
+            ->with(['slug' => $product->slug])
+            ->andReturn($product);
+
+        $paystackRepository = $this->partialMock(PaystackRepository::class);
+
+        $paystackRepository->shouldReceive('initializePurchaseTransaction')
+            ->once()
+            ->andReturn(['status' => 'success', 'data' => []]);
+
+        $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'products' => [
+                ['product_slug' => $product->slug, 'quantity' => 1]
+            ],
+            'amount' => 1000
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_clear_cart_with_existing_gift_user()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        User::factory()->create(['email' => 'gift@example.com']);
+        $product = Product::factory()->create(['slug' => 'test-product', 'price' => 1000, 'status' => 'published']);
+
+        $userRepository = $this->partialMock(UserRepository::class);
+
+        $userRepository->shouldReceive('query')
+            ->once()
+            ->with(['email' => 'gift@example.com'])
+            ->andReturn(User::query()->where('email', 'gift@example.com'));
+
+        $productRepository = $this->partialMock(ProductRepository::class);
+
+        $productRepository->shouldReceive('findOne')
+            ->once()
+            ->with(['slug' => 'test-product'])
+            ->andReturn($product);
+
+        $paystackRepository = $this->partialMock(PaystackRepository::class);
+
+        $paystackRepository->shouldReceive('initializePurchaseTransaction')
+            ->once()
+            ->andReturn(['status' => 'success', 'data' => []]);
+
+        $response = $this->post(route('cart.clear'), [
+            'gift_email' => 'gift@example.com',
+            'gift_name' => 'Gift User',
+            'products' => [
+                ['product_slug' => 'test-product', 'quantity' => 1]
+            ],
+            'amount' => 1000
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_clear_cart_creates_new_gift_user_and_sends_email()
+    {
+        Mail::fake();
+
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $gift_email = 'gift@example.com';
+        $gift_name = 'Gift User';
+
+        $gift_user = User::factory()->make(['email' => $gift_email, 'full_name' => $gift_name]);
+
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        $userRepository = $this->partialMock(UserRepository::class);
+
+        $userRepository->shouldReceive('query')
+            ->once()
+            ->with(['email' => $gift_email])
+            ->andReturn(User::query()->where('email', $gift_email));
+
+        $userRepository->shouldReceive('create')
+            ->once()
+            ->with(['email' => $gift_email, 'full_name' => $gift_name])
+            ->andReturn($gift_user);
+
+        $productRepository = $this->partialMock(ProductRepository::class);
+
+        $productRepository->shouldReceive('findOne')
+            ->once()
+            ->with(['slug' => $product->slug])
+            ->andReturn($product);
+
+        $paystackRepository = $this->partialMock(PaystackRepository::class);
+
+        $paystackRepository->shouldReceive('initializePurchaseTransaction')
+            ->once()
+            ->andReturn(['status' => 'success', 'data' => []]);
+
+        $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'gift_email' => $gift_email,
+            'gift_name' => $gift_name,
+            'products' => [
+                ['product_slug' => $product->slug, 'quantity' => 1]
+            ],
+            'amount' => $product->price
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson(['data' => ['status' => 'success']]);
+
+        Mail::assertSent(GiftAlert::class, function ($mail) use ($gift_email) {
+            return $mail->hasTo($gift_email);
+        });
+    }
+
+    public function test_clear_cart_throws_error_if_product_not_found()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $slug = 'non-existent-product';
+
+        $productRepository = $this->partialMock(ProductRepository::class);
+
+        $productRepository->shouldReceive('findOne')
+            ->once()
+            ->with(['slug' => $slug])
+            ->andReturn(null);
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Product with slug non-existent-product not found');
+
+        $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'products' => [
+                ['product_slug' => $slug, 'quantity' => 1]
+            ],
+            'amount' => 1000
+        ]);
+    }
+
+    public function test_clear_cart_throws_error_if_total_amount_mismatch()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        $productRepository = $this->partialMock(ProductRepository::class);
+
+        $productRepository->shouldReceive('findOne')
+            ->once()
+            ->with(['slug' => $product->slug])
+            ->andReturn($product);
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Total amount does not match quantity');
+
+        $this->withoutExceptionHandling()->post(route('cart.clear'), [
+            'products' => [
+                ['product_slug' => $product->slug, 'quantity' => 1]
+            ],
+            'amount' => 2000 // Intentionally mismatched amount
+        ]);
     }
 }

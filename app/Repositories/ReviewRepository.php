@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 22-05-2024
  */
 
@@ -20,22 +22,19 @@ use Illuminate\Database\Eloquent\Model;
  *
  * Repository for Review resource
  */
-
 class ReviewRepository extends Repository
 {
-
     public function seed(): void
     {
         Review::factory()->count(10)->create();
     }
-
 
     /**
      * @author @obajide028 Odesanya Babajide
      *
      * Create a new review.
      *
-     * @param array $entity The data for creating the review.
+     * @param  array  $entity  The data for creating the review.
      * @return Review The newly created review instance.
      */
     public function create(array $entity): Review
@@ -43,15 +42,16 @@ class ReviewRepository extends Repository
         if (($entity['rating'] > 5)) {
             throw new BadRequestException('Rating should be less than or equal to 5');
         }
+
         return Review::create($entity);
     }
 
-     /**
+    /**
      * @author @obajide028 Odesanya
      *
      * Find reviews based on the provided filter.
      *
-     * @param array|null $filter The filter criteria to apply (optional).
+     * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found review.
      */
     public function find(?array $filter = null): ?Collection
@@ -59,12 +59,12 @@ class ReviewRepository extends Repository
         return $this->query($filter ?? [])->get();
     }
 
-     /**
+    /**
      * @author @obajide028 Odesanya Babajide
      *
      * Find a reviews by its ID.
      *
-     * @param string $id The ID of the order to find.
+     * @param  string  $id  The ID of the order to find.
      * @return Review|null The found review instance, or null if not found.
      */
     public function findById(string $id): ?Review
@@ -77,7 +77,7 @@ class ReviewRepository extends Repository
      *
      * Find a single review based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
+     * @param  array  $filter  The filter criteria to apply.
      * @return Review|null The found review instance, or null if not found.
      */
     public function findOne(array $filter): ?Review
@@ -85,12 +85,12 @@ class ReviewRepository extends Repository
         return $this->query($filter)->first();
     }
 
-     /**
+    /**
      * @author @obajide028 Odesanya Babajide
      *
      * Query review based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
+     * @param  array  $filter  The filter criteria to apply.
      * @return Builder The query builder for review.
      */
     public function query(array $filter): Builder
@@ -101,14 +101,14 @@ class ReviewRepository extends Repository
         $this->applyDateFilters($query, $filter);
 
         //Filter by product title
-        if(isset($filter['product_title'])){
+        if (isset($filter['product_title'])) {
             $product_title = $filter['product_title'];
 
             //remove product title from the filter array
             unset($filter['product_title']);
 
-            $query->whereHas('product', function(Builder  $productQuery) use ($product_title) {
-                $productQuery->where('title', 'like', '%' . $product_title . '%');
+            $query->whereHas('product', function (Builder $productQuery) use ($product_title) {
+                $productQuery->where('title', 'like', '%'.$product_title.'%');
             });
         }
 
@@ -118,30 +118,29 @@ class ReviewRepository extends Repository
         return $query;
     }
 
-
     /**
      * @author @obajide028 Odesanya Babajide
      *
      * Update an entity in the database.
      *
-     * @param  Model $entity The review to be updated
-     * @param array $updates The array of data containing the fields to be updated.
+     * @param  Model  $entity  The review to be updated
+     * @param  array  $updates  The array of data containing the fields to be updated.
      * @return Model The updated review
      */
     public function update(Model $entity, array $updates): Review
     {
         // Ensure that the provided entity is an instance of Review
-        if (!$entity instanceof Review) {
-            throw new ModelCastException("Review", get_class($entity));
+        if (! $entity instanceof Review) {
+            throw new ModelCastException('Review', get_class($entity));
         }
 
-          // Assign the updates to the corresponding fields of the Review instance
-          $entity->fill($updates);
+        // Assign the updates to the corresponding fields of the Review instance
+        $entity->fill($updates);
 
-          // Save the updated Review instance
-          $entity->save();
+        // Save the updated Review instance
+        $entity->save();
 
-          // Return the updated Review model
-          return $entity;
+        // Return the updated Review model
+        return $entity;
     }
 }

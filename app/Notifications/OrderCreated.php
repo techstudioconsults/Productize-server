@@ -43,9 +43,8 @@ class OrderCreated extends Notification
     {
         $message = new BroadcastMessage([
             'unread' => $this->unread,
-            'user' => $notifiable->id
+            'user' => $notifiable->id,
         ]);
-
 
         return $message->onQueue('broadcast');
     }
@@ -59,7 +58,7 @@ class OrderCreated extends Notification
     {
         return [
             'unread' => $this->unread,
-            'user' => $notifiable->id
+            'user' => $notifiable->id,
         ];
     }
 

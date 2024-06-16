@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 08-06-2024
  */
 
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * @author @Intuneteq Tobi Olanitori
- * 
+ *
  * Listen for the application webhooks
  */
 class WebhookController extends Controller

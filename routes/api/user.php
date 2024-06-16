@@ -7,7 +7,7 @@ Route::group([
     'as' => 'user.',
     'namespace' => "\App\Http\Controllers",
     'prefix' => 'users',
-    'middleware' => ['auth:sanctum', 'can:verified,App\Models\User']
+    'middleware' => ['auth:sanctum', 'can:verified,App\Models\User'],
 ], function () {
     Route::get('/me', [UserController::class, 'show'])->withoutMiddleware('can:verified,App\Models\User');
 

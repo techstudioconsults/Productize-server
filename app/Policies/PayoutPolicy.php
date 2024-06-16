@@ -9,7 +9,6 @@ use Illuminate\Auth\Access\Response;
 
 class PayoutPolicy
 {
-
     public function allowed(User $user)
     {
         return $user->hasVerifiedEmail()

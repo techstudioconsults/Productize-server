@@ -9,7 +9,7 @@ Route::controller(SubscriptionController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
-        'can:allowed,App\Models\Subscription'
+        'can:allowed,App\Models\Subscription',
     ])
     ->group(function () {
         Route::post('/', 'store')->name('store');

@@ -10,7 +10,7 @@ Route::controller(PayoutController::class)
     ->middleware([
         'auth:sanctum',
         'can:allowed,App\Models\Payout',
-        'can:subscribed,App\Models\Payout'
+        'can:subscribed,App\Models\Payout',
     ])
     ->group(function () {
         Route::get('/', 'index')->name('index');

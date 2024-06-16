@@ -48,7 +48,6 @@ class WelcomeNotification extends Notification implements ShouldQueue
      */
     public $backoff = 3;
 
-
     /**
      * Get the notification's delivery channels.
      *
@@ -66,7 +65,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage)->markdown('mail.welcome')->subject('Welcome To Productize')->with([
             'url' => $this->client_url,
-            'message' => 'welcome'
+            'message' => 'welcome',
         ]);
     }
 

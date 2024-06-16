@@ -19,6 +19,7 @@ class WebhookRepository
         protected PayoutRepository $payoutRepository
     ) {
     }
+
     public function paystack(string $type, $data)
     {
         try {
@@ -45,19 +46,18 @@ class WebhookRepository
                     break;
 
                 case 'invoice.create':
-                    # code...
+                    // code...
                     break;
 
                 case 'invoice.update':
-                    # code...
+                    // code...
                     break;
 
                     /**
                      * Cancelling a subscription will also trigger the following events:
                      */
-
                 case 'invoice.payment_failed':
-                    # code...
+                    // code...
                     break;
 
                 case 'subscription.disable':
@@ -132,7 +132,7 @@ class WebhookRepository
                     'user_id' => $recipient_id ?? $buyer_id,
                     'total_amount' => $product_saved->price * $product['quantity'],
                     'quantity' => $product['quantity'],
-                    'product_id' => $product_saved->id
+                    'product_id' => $product_saved->id,
                 ];
 
                 $order = $this->orderRepository->create($buildOrder);
@@ -143,13 +143,13 @@ class WebhookRepository
                 $this->customerRepository->create([
                     'user_id' => $order->user->id,
                     'merchant_id' => $order->product->user->id,
-                    'order_id' => $order->id
+                    'order_id' => $order->id,
                 ]);
 
                 // Update earnings
                 $this->earningRepository->create([
                     'user_id' => $user->id,
-                    'amount' => $product['amount']
+                    'amount' => $product['amount'],
                 ]);
             }
         } catch (\Throwable $th) {
@@ -163,12 +163,12 @@ class WebhookRepository
         $customer = $data['customer'];
 
         $subscription = $this->subscriptionRepository->findOne([
-            'customer_code' => $customer['customer_code']
+            'customer_code' => $customer['customer_code'],
         ]);
 
         $this->subscriptionRepository->update($subscription, [
             'subscription_code' => $data['subscription_code'],
-            'status' => $data['status']
+            'status' => $data['status'],
         ]);
 
         // update user to premium
@@ -180,12 +180,12 @@ class WebhookRepository
         $subscription_code = $data['subscription_code'];
 
         $subscription = $this->subscriptionRepository->findOne([
-            'subscription_code' => $subscription_code
+            'subscription_code' => $subscription_code,
         ]);
 
         // update the status
         $this->subscriptionRepository->update($subscription, [
-            'status' => $data['status']
+            'status' => $data['status'],
         ]);
     }
 
@@ -196,7 +196,7 @@ class WebhookRepository
         $subscription_code = $data['subscription_code'];
 
         $subscription = $this->subscriptionRepository->findOne([
-            'subscription_code' => $subscription_code
+            'subscription_code' => $subscription_code,
         ]);
 
         // delete the subscription
@@ -225,7 +225,7 @@ class WebhookRepository
 
             $this->earningRepository->update($earnings, [
                 'withdrawn_earnings' => $new_withdrawn_earnings,
-                'pending' => 0
+                'pending' => 0,
             ]);
 
             // Email User
@@ -248,7 +248,7 @@ class WebhookRepository
             $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
 
             $this->earningRepository->update($earnings, [
-                'pending' => 0
+                'pending' => 0,
             ]);
 
             // Email User
@@ -271,7 +271,7 @@ class WebhookRepository
             $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
 
             $this->earningRepository->update($earnings, [
-                'pending' => 0
+                'pending' => 0,
             ]);
 
             // Email User

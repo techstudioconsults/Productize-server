@@ -18,7 +18,7 @@ class EarningFactory extends Factory
     {
         return [
             'total_earnings' => 1000,
-            'withdrawn_earnings' => 500
+            'withdrawn_earnings' => 500,
         ];
     }
 }

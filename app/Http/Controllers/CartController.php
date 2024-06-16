@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 25-05-2024
  */
 
@@ -12,11 +14,11 @@ use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
 use App\Http\Requests\ClearCartRequest;
-use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
 use App\Mail\GiftAlert;
+use App\Models\Cart;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
@@ -59,7 +61,7 @@ class CartController extends Controller
      *
      * Create a new cart.
      *
-     * @param  \App\Http\Requests\StoreCartRequest  $request The incoming request containing validated cart data.
+     * @param  \App\Http\Requests\StoreCartRequest  $request  The incoming request containing validated cart data.
      * @return \App\Http\Resources\CartResource Returns a resource representing the newly created cart.
      */
     public function store(StoreCartRequest $request)
@@ -77,7 +79,9 @@ class CartController extends Controller
         $exists = $this->cartRepository->query(['product_slug' => $payload['product_slug']])->exists();
 
         // Throw exception, if duplicate
-        if ($exists) throw new ConflictException('Item exist in cart');
+        if ($exists) {
+            throw new ConflictException('Item exist in cart');
+        }
 
         $cart = $this->cartRepository->create($payload);
 
@@ -90,7 +94,7 @@ class CartController extends Controller
      *
      * Retrive the specified product.
      *
-     * @param  \App\Models\Cart  $cart The cart to display.
+     * @param  \App\Models\Cart  $cart  The cart to display.
      * @return \App\Http\Resources\CartResource Returns a resource representing the queried cart.
      */
     public function show(Cart $cart)
@@ -103,8 +107,8 @@ class CartController extends Controller
      *
      * Update a given cart.
      *
-     * @param  \App\Http\Requests\UpdateCartRequest  $request The incoming request containing validated product update data.
-     * @param  \App\Models\Cart  $cart The cart to be updated.
+     * @param  \App\Http\Requests\UpdateCartRequest  $request  The incoming request containing validated product update data.
+     * @param  \App\Models\Cart  $cart  The cart to be updated.
      * @return \App\Http\Resources\ProductResource Returns a resource representing the newly updated cart.
      */
     public function update(UpdateCartRequest $request, Cart $cart)
@@ -119,7 +123,7 @@ class CartController extends Controller
      *
      * Deelete a given cart.
      *
-     * @param  \App\Models\Cart  $cart The cart to be deleted.
+     * @param  \App\Models\Cart  $cart  The cart to be deleted.
      * @return \Illuminate\Http\JsonResponse Returns a resource with a confirmation message.
      */
     public function delete(Cart $cart)
@@ -127,7 +131,7 @@ class CartController extends Controller
         $this->cartRepository->deleteOne($cart);
 
         return new JsonResponse([
-            'message' => 'Item deleted'
+            'message' => 'Item deleted',
         ]);
     }
 
@@ -139,8 +143,7 @@ class CartController extends Controller
      * This method handles the process of clearing the user's cart, validating the request,
      * checking for gift user details, and initializing a purchase transaction using Paystack.
      *
-     * @param ClearCartRequest $request The request object containing validated cart data.
-     *
+     * @param  ClearCartRequest  $request  The request object containing validated cart data.
      * @return JsonResponse The response containing the Paystack transaction initialization data.
      *
      * @throws BadRequestException If the product is not found or not published,
@@ -189,13 +192,14 @@ class CartController extends Controller
                 'isPurchase' => true,
                 'buyer_id' => $user->id,
                 'products' => $products,
-                'recipient_id' => $recipient ? $recipient->id : null
-            ]
+                'recipient_id' => $recipient ? $recipient->id : null,
+            ],
         ];
 
         try {
             // Initialize payment
             $response = $this->paystackRepository->initializePurchaseTransaction($payload);
+
             return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());

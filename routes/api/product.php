@@ -1,6 +1,5 @@
 <?php
 
-use App\Events\ProductCreated;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +13,7 @@ Route::group([
     'prefix' => 'products',
     'middleware' => [
         'auth:sanctum',
-    ]
+    ],
 ], function () {
     Route::post('/', [ProductController::class, 'store'])->name('store');
 

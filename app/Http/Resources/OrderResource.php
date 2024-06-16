@@ -27,8 +27,8 @@ class OrderResource extends JsonResource
             'total_amount' => $this->product->price * $this->quantity,
             'quantity' => $this->quantity,
             'product_publish_date' => $this->product->created_at,
-            'link' => config('app.client_url') . "/products/".$this->product->slug,
-            'created_at' => $this->created_at
+            'link' => config('app.client_url').'/products/'.$this->product->slug,
+            'created_at' => $this->created_at,
         ];
     }
 }

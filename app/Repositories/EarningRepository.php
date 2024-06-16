@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 30-05-2024
  */
 
@@ -26,7 +28,7 @@ class EarningRepository extends Repository
         $amount = $entity['amount'];
 
         $earning = Earning::firstOrCreate([
-            'user_id' => $user_id
+            'user_id' => $user_id,
         ]);
 
         $earning->total_earnings = $earning->total_earnings + $amount;
@@ -68,8 +70,8 @@ class EarningRepository extends Repository
 
     public function update(Model $entity, array $updates): Earning
     {
-        if (!$entity instanceof Earning) {
-            throw new ModelCastException("Earning", get_class($entity));
+        if (! $entity instanceof Earning) {
+            throw new ModelCastException('Earning', get_class($entity));
         }
 
         // Assign the updates to the corresponding fields of the User instance

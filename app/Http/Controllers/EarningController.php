@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 09-06-2024
  */
 
@@ -52,11 +54,11 @@ class EarningController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Initiate a withdrawal for the authenticated user.
      *
-     * @param InitiateWithdrawalRequest $request
      * @return \Illuminate\Http\JsonResponse
+     *
      * @throws \App\Exceptions\BadRequestException
      * @throws \App\Exceptions\ApiException
      */
@@ -72,7 +74,9 @@ class EarningController extends Controller
         $exists = $this->accountRepository->query(['user_id' => $user->id])->exists();
 
         // if yes, throw error
-        if (!$exists) throw new BadRequestException('You need to set up your Payout account before requesting a payout.');
+        if (! $exists) {
+            throw new BadRequestException('You need to set up your Payout account before requesting a payout.');
+        }
 
         // get the first and only user's earning from the earnings table.
         $earning = $this->earningRepository->findOne(['user_id' => $user->id]);
@@ -81,7 +85,9 @@ class EarningController extends Controller
         $balance = $this->earningRepository->getBalance($earning);
 
         // Throw an error if the user attempts to withdraw more than balance.
-        if ($amount > $balance) throw new BadRequestException('Insufficient balance. You cannot withdraw more than your current balance.');
+        if ($amount > $balance) {
+            throw new BadRequestException('Insufficient balance. You cannot withdraw more than your current balance.');
+        }
 
         // Retrieve active payout account.
         $account = $this->accountRepository->findActive();
@@ -103,7 +109,7 @@ class EarningController extends Controller
                 'reference' => $reference,
                 'paystack_transfer_code' => $response['transfer_code'],
                 'account_id' => $account->id,
-                'amount' => $amount
+                'amount' => $amount,
             ];
 
             // Create a payout history
@@ -111,7 +117,7 @@ class EarningController extends Controller
 
             // update the user's pending amount
             $this->earningRepository->update($earning, [
-                'pending' => $amount
+                'pending' => $amount,
             ]);
 
             return new JsonResponse(['data' => 'Withdrawal Initiated']);

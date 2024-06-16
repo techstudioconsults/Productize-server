@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ApiException extends Exception
 {
-    public function __construct(string $message = "", int $code = null)
+    public function __construct(string $message = '', ?int $code = null)
     {
         $this->message = $message;
         $this->code = $code;
@@ -17,7 +17,7 @@ class ApiException extends Exception
     {
         return new JsonResponse([
             'message' => $this->getMessage(),
-            'success' => false
+            'success' => false,
         ], $this->getCode());
     }
 }

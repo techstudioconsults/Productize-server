@@ -26,7 +26,7 @@ class PayoutControllerTest extends TestCase
         $user = User::factory()->create();
 
         $payouts = Payout::factory()->count($expected_count)->create([
-            'account_id' => Account::factory()->create(['user_id' => $user->id])
+            'account_id' => Account::factory()->create(['user_id' => $user->id]),
         ]);
 
         $response = $this->actingAs($user, 'web')->get(route('payout.index'));
@@ -36,8 +36,7 @@ class PayoutControllerTest extends TestCase
         $response->assertOk()->assertJson($expected_json, true);
         $response
             ->assertJson(
-                fn (AssertableJson $json) =>
-                $json->has('meta')
+                fn (AssertableJson $json) => $json->has('meta')
                     ->has('links')
                     ->has('data', $expected_count)
             );
@@ -77,10 +76,10 @@ class PayoutControllerTest extends TestCase
         // Assert response is successful and CSV headers are correct
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', "attachment; filename=payouts_" . Carbon::today()->isoFormat('DD_MMMM_YYYY') . ".csv");
+        $response->assertHeader('Content-Disposition', 'attachment; filename=payouts_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
 
         // Clean up: Delete the CSV file from storage after testing
-        Storage::disk('local')->delete('csv/payouts_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        Storage::disk('local')->delete('csv/payouts_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     public function test_download_unauthenticated()

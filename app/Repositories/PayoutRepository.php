@@ -62,8 +62,8 @@ class PayoutRepository extends Repository
     public function update(Model $entity, array $updates): Payout
     {
         // Ensure that the provided entity is an instance of Order
-        if (!$entity instanceof Payout) {
-            throw new ModelCastException("Payout", get_class($entity));
+        if (! $entity instanceof Payout) {
+            throw new ModelCastException('Payout', get_class($entity));
         }
 
         // Assign the updates to the corresponding fields of the payout instance

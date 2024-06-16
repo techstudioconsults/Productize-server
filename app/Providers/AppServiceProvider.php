@@ -25,6 +25,6 @@ class AppServiceProvider extends ServiceProvider
         $client_url = request()->header('origin') ?? 'https://tsa-productize.vercel.app';
         config(['app.client_url' => $client_url]);
 
-        config(['services.google.redirect' => $client_url . '/auth/fetching-data/google']);
+        config(['services.google.redirect' => $client_url.'/auth/fetching-data/google']);
     }
 }

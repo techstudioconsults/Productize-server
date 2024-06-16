@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 08-06-2024
  */
 
@@ -33,7 +35,6 @@ class PayoutController extends Controller
      * Display a paginated list of payouts for the authenticated user,
      * filtered by the given start and end dates.
      *
-     * @param Request $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
@@ -46,7 +47,7 @@ class PayoutController extends Controller
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $payouts = $this->payoutRepository->queryRelation($user->payouts(), $filter)->paginate(5);
@@ -59,7 +60,6 @@ class PayoutController extends Controller
      *
      * Download a CSV file of the user's payouts filtered by the given start and end dates.
      *
-     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function download(Request $request)
@@ -72,7 +72,7 @@ class PayoutController extends Controller
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $payouts = $this->payoutRepository->queryRelation($user->payouts(), $filter)->get();
@@ -80,7 +80,7 @@ class PayoutController extends Controller
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
         $fileName = "payouts_$now.csv";
 
-        $columns = array('Price', 'BankName', 'BankAccountNumber', 'Period', 'Status');
+        $columns = ['Price', 'BankName', 'BankAccountNumber', 'Period', 'Status'];
         $data = [$columns];
 
         foreach ($payouts as $payout) {
@@ -89,7 +89,7 @@ class PayoutController extends Controller
                 $payout->account->bank_name,
                 $payout->account->account_number,
                 $payout->created_at,
-                $payout->status
+                $payout->status,
             ];
         }
 

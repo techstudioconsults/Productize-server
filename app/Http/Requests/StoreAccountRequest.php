@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Exceptions\UnprocessableException;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAccountRequest extends FormRequest
 {
@@ -27,7 +27,7 @@ class StoreAccountRequest extends FormRequest
             'name' => 'string|required',
             'bank_code' => ['required'],
             'bank_name' => 'string|required',
-            'account_number' => 'string|max:10'
+            'account_number' => 'string|max:10',
         ];
     }
 

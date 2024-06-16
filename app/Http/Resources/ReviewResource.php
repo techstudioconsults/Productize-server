@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 22-05-2024
  */
 
@@ -20,14 +22,14 @@ class ReviewResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-       return [
-        'id' => $this->id,
-        'user' => $this->user_id,
-        'product'=>$this->product_id,
-        'rating' => $this->rating,
-        'comment' => $this->comment,
-        // 'user_details' => new UserResource($this->whenLoaded('user')),
-        // 'product_details' => new ProductResource($this->whenLoaded('product')),
-       ];
+        return [
+            'id' => $this->id,
+            'user' => $this->user_id,
+            'product' => $this->product_id,
+            'rating' => $this->rating,
+            'comment' => $this->comment,
+            // 'user_details' => new UserResource($this->whenLoaded('user')),
+            // 'product_details' => new ProductResource($this->whenLoaded('product')),
+        ];
     }
 }

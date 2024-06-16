@@ -2,15 +2,17 @@
 
 /**
  * @author Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 25-05-2024
  */
 
 namespace App\Http\Controllers;
 
 use App\Helpers\Services\FileGenerator;
-use App\Models\Customer;
 use App\Http\Resources\CustomerResource;
+use App\Models\Customer;
 use App\Repositories\CustomerRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -65,7 +67,7 @@ class CustomerController extends Controller
      *
      * Retrive the specified customer.
      *
-     * @param  \App\Models\Customer  $customer The customer to display.
+     * @param  \App\Models\Customer  $customer  The customer to display.
      * @return \App\Http\Resources\CustomerResource Returns a resource representing the queried customer.
      */
     public function show(Customer $customer)
@@ -82,8 +84,7 @@ class CustomerController extends Controller
      * containing customer information such as name, email, latest purchase, price, and date.
      * The CSV file is then stored in the local storage and returned as a response for download.
      *
-     * @param Request $request The request object containing the start and end dates.
-     *
+     * @param  Request  $request  The request object containing the start and end dates.
      * @return \Symfony\Component\HttpFoundation\StreamedResponse The response containing the CSV file for download.
      *
      * @throws \Illuminate\Validation\ValidationException If the start_date or end_date are not valid dates.
@@ -99,7 +100,7 @@ class CustomerController extends Controller
         $customers = $this->customerRepository->find([
             'start_date' => $start_date,
             'end_date' => $end_date,
-            'merchant_id' => $user->id
+            'merchant_id' => $user->id,
         ]);
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
@@ -114,7 +115,7 @@ class CustomerController extends Controller
                 $customer->user->email,
                 $customer->order->product->title,
                 $customer->order->product->price,
-                $customer->created_at
+                $customer->created_at,
             ];
         }
 

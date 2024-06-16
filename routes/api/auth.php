@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::group([
     'as' => 'auth.',
     'namespace' => "\App\Http\Controllers",
-    'prefix' => 'auth'
+    'prefix' => 'auth',
 ], function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);

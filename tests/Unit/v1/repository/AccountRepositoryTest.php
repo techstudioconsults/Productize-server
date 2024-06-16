@@ -2,15 +2,15 @@
 
 namespace Tests\Unit\v1\repository;
 
+use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
 use App\Models\Account;
 use App\Models\User;
 use App\Repositories\AccountRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use App\Exceptions\ModelCastException;
-use App\Exceptions\ServerErrorException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class AccountRepositoryTest extends TestCase
 {
@@ -34,10 +34,10 @@ class AccountRepositoryTest extends TestCase
         $data = [
             'user_id' => $user->id,
             'name' => 'Test Account',
-            'account_number' => "2079753003",
+            'account_number' => '2079753003',
             'paystack_recipient_code' => '934fjcnwunu9231',
-            'bank_code' => "552kcmi",
-            'bank_name' => "Banker",
+            'bank_code' => '552kcmi',
+            'bank_name' => 'Banker',
         ];
 
         // Act
@@ -54,10 +54,10 @@ class AccountRepositoryTest extends TestCase
 
         $data = [
             'name' => 'Test Account',
-            'account_number' => "2079753003",
+            'account_number' => '2079753003',
             'paystack_recipient_code' => '934fjcnwunu9231',
-            'bank_code' => "552kcmi",
-            'bank_name' => "Banker",
+            'bank_code' => '552kcmi',
+            'bank_name' => 'Banker',
         ];
 
         $this->accountRepository->create($data);
@@ -70,7 +70,7 @@ class AccountRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         $accounts = Account::factory()->count($expected_count)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         // Create another 10 accounts not belonging to test user
@@ -98,7 +98,7 @@ class AccountRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         $accounts = Account::factory()->count($expected_count)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         // Create another 10 accounts not belonging to test user
@@ -136,7 +136,7 @@ class AccountRepositoryTest extends TestCase
 
     public function test_find_by_id_not_found_return_null(): void
     {
-        $result = $this->accountRepository->findById("12345");
+        $result = $this->accountRepository->findById('12345');
 
         $this->assertNull($result);
     }
@@ -178,7 +178,6 @@ class AccountRepositoryTest extends TestCase
         // Arrange
         $user = User::factory()->create();
         Account::factory()->count(2)->create(['user_id' => $user->id]);
-
 
         // Arrange
 

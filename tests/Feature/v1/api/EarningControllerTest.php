@@ -11,8 +11,8 @@ use App\Models\Payout;
 use App\Models\User;
 use App\Repositories\AccountRepository;
 use App\Repositories\EarningRepository;
-use App\Repositories\PaystackRepository;
 use App\Repositories\PayoutRepository;
+use App\Repositories\PaystackRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -22,9 +22,13 @@ class EarningControllerTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $earningRepository;
+
     protected $accountRepository;
+
     protected $paystackRepository;
+
     protected $payoutRepository;
 
     protected function setUp(): void
@@ -102,7 +106,6 @@ class EarningControllerTest extends TestCase
                     $payout['amount'] === 5000;
             }));
 
-
         $this->earningRepository->shouldReceive('update')
             ->once()
             ->with($earning, ['pending' => 5000]);
@@ -130,7 +133,7 @@ class EarningControllerTest extends TestCase
     {
         $earning = Earning::factory()->create(['user_id' => $this->user->id]);
         Payout::factory()->create([
-            'account_id' => Account::factory()->create(['user_id' => $this->user->id])
+            'account_id' => Account::factory()->create(['user_id' => $this->user->id]),
         ]);
 
         // Mock the account query

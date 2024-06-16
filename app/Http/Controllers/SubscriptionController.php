@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 08-06-2024
  */
 
@@ -11,8 +13,8 @@ namespace App\Http\Controllers;
 use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
-use App\Models\Subscription;
 use App\Http\Requests\StoreSubscriptionRequest;
+use App\Models\Subscription;
 use App\Repositories\PaystackRepository;
 use App\Repositories\SubscriptionRepository;
 use Auth;
@@ -42,7 +44,6 @@ class SubscriptionController extends Controller
      * it returns an error. If the user has a subscription that is cancelled,
      * it suggests reactivating it. If there are no subscriptions, it creates a new one.
      *
-     * @param \App\Http\Requests\StoreSubscriptionRequest $request
      * @return \Illuminate\Http\Resources\Json\JsonResource The substriction initialization from paystack
      *
      * @throws \App\Exceptions\BadRequestException If the user already has an active subscription or any subscription with any status.
@@ -105,7 +106,7 @@ class SubscriptionController extends Controller
      * If the subscription status is valid, it enables the subscription through Paystack.
      * If the subscription status is cancelled or non-renewing, it throws an error.
      *
-     * @param \App\Models\Subscription $subscription The subscription to be enabled.
+     * @param  \App\Models\Subscription  $subscription  The subscription to be enabled.
      * @return \Illuminate\Http\JsonResponse
      *
      * @throws \App\Exceptions\BadRequestException If the subscription status is cancelled or non-renewing.
@@ -117,11 +118,12 @@ class SubscriptionController extends Controller
             $subscription->status === SubscriptionStatusEnum::CANCELLED->value ||
             $subscription->status === SubscriptionStatusEnum::NON_RENEWING->value
         ) {
-            throw new BadRequestException("Subscription status is cancelled");
+            throw new BadRequestException('Subscription status is cancelled');
         }
 
         try {
             $response = $this->paystackRepository->enableSubscription($subscription->subscription_code);
+
             return new JsonResponse(['data' => ['id' => $subscription->id, ...$response]]);
         } catch (\Exception $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
@@ -136,7 +138,7 @@ class SubscriptionController extends Controller
      * This method sends a request to Paystack to manage the given subscription.
      * It catches any exceptions that occur during the process and throws an ApiException.
      *
-     * @param \App\Models\Subscription $subscription The subscription to be managed.
+     * @param  \App\Models\Subscription  $subscription  The subscription to be managed.
      * @return \Illuminate\Http\JsonResponse Paystack dedicated page for a user to manage their subscription
      *
      * @throws \App\Exceptions\ApiException If an error occurs while managing the subscription via Paystack.
@@ -161,7 +163,7 @@ class SubscriptionController extends Controller
      * It checks if the subscription is already cancelled or non-renewing before proceeding.
      * It catches any exceptions that occur during the process and throws an ApiException.
      *
-     * @param \App\Models\Subscription $subscription The subscription to be cancelled.
+     * @param  \App\Models\Subscription  $subscription  The subscription to be cancelled.
      * @return \Illuminate\Http\JsonResponse
      *
      * @throws \App\Exceptions\BadRequestException If the subscription is already cancelled or non-renewing.
@@ -173,7 +175,7 @@ class SubscriptionController extends Controller
             $subscription->status === SubscriptionStatusEnum::CANCELLED->value ||
             $subscription->status === SubscriptionStatusEnum::NON_RENEWING->value
         ) {
-            throw new BadRequestException("Subscription status is cancelled");
+            throw new BadRequestException('Subscription status is cancelled');
         }
 
         try {
@@ -187,7 +189,7 @@ class SubscriptionController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Get the billing details for the authenticated user.
      *
      * This method retrieves the billing information, including the current plan,
@@ -205,11 +207,12 @@ class SubscriptionController extends Controller
             'renewal_date' => null,
             'plan' => $user->account_type,
             'billing_total' => null,
-            'plans' => []
+            'plans' => [],
         ];
 
         if ($user->account_type === 'free_trial') {
             $response['renewal_date'] = Carbon::parse($user->created_at)->addDays(30);
+
             return new JsonResponse($response);
         }
 
@@ -236,7 +239,7 @@ class SubscriptionController extends Controller
                     'renewal_date' => $subscription['next_payment_date'],
                     'plan' => $user->account_type,
                     'billing_total' => $subscription['amount'] / 100,
-                    'plans' => $plans
+                    'plans' => $plans,
                 ];
             }
         }

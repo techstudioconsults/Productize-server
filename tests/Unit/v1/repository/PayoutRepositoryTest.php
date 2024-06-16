@@ -32,7 +32,7 @@ class PayoutRepositoryTest extends TestCase
             'reference' => 'REF123456',
             'status' => 'completed',
             'paystack_transfer_code' => 'TRANSFER123',
-            'amount' => 5000
+            'amount' => 5000,
         ];
 
         $payout = $this->payoutRepository->create($credentials);
@@ -47,7 +47,7 @@ class PayoutRepositoryTest extends TestCase
 
         $payouts = Payout::factory()->count($expected_count)->create([
             'account_id' => Account::factory()->create([
-                'user_id' => User::factory()->create()->id
+                'user_id' => User::factory()->create()->id,
             ])->id,
         ]);
 
@@ -56,7 +56,7 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value
+            'status' => PayoutStatusEnum::Pending->value,
         ]);
 
         $filter = [
@@ -78,7 +78,7 @@ class PayoutRepositoryTest extends TestCase
 
         $payouts = Payout::factory()->count($expected_count)->create([
             'account_id' => Account::factory()->create([
-                'user_id' => User::factory()->create()->id
+                'user_id' => User::factory()->create()->id,
             ])->id,
         ]);
 
@@ -87,7 +87,7 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value
+            'status' => PayoutStatusEnum::Pending->value,
         ]);
 
         $filter = [
@@ -109,7 +109,7 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value
+            'status' => PayoutStatusEnum::Pending->value,
         ]);
 
         $result = $this->payoutRepository->findById($payout->id);
@@ -121,12 +121,10 @@ class PayoutRepositoryTest extends TestCase
 
     /**
      * test_find_by_id_not_found_return_null
-     *
-     * @return void
      */
     public function test_find_by_id_not_found_return_null(): void
     {
-        $result = $this->payoutRepository->findById("12345");
+        $result = $this->payoutRepository->findById('12345');
 
         $this->assertNull($result);
     }
@@ -137,7 +135,7 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value
+            'status' => PayoutStatusEnum::Pending->value,
         ]);
 
         $filter = [
@@ -164,11 +162,11 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value
+            'status' => PayoutStatusEnum::Pending->value,
         ]);
 
         $updates = [
-            'status' => PayoutStatusEnum::Failed->value
+            'status' => PayoutStatusEnum::Failed->value,
         ];
 
         $result = $this->payoutRepository->update($payout, $updates);

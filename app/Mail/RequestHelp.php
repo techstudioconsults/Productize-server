@@ -3,11 +3,9 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
 class RequestHelp extends Mailable
 {
@@ -20,11 +18,10 @@ class RequestHelp extends Mailable
         public string $email,
         public string $subjected,
         public string $message
-    )
-    {
-     $this->email = $email;
-     $this->subjected = $subjected;
-     $this->message = $message;
+    ) {
+        $this->email = $email;
+        $this->subjected = $subjected;
+        $this->message = $message;
     }
 
     /**
@@ -47,7 +44,7 @@ class RequestHelp extends Mailable
             with: [
                 'email_subject' => $this->subjected,
                 'message' => $this->message,
-                'email' => $this->email
+                'email' => $this->email,
             ],
         );
     }

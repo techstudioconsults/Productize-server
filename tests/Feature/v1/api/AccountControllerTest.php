@@ -25,7 +25,7 @@ class AccountControllerTest extends TestCase
 
         $accounts = Account::factory()->count($expected_count)->create([
             'user_id' => $user->id,
-            'active' => 0
+            'active' => 0,
         ]);
 
         $expected_json = AccountResource::collection($accounts)->response()->getData(true);
@@ -50,7 +50,7 @@ class AccountControllerTest extends TestCase
         $this->expectException(ForbiddenException::class);
 
         $user = User::factory()->create([
-            'account_type' => 'free'
+            'account_type' => 'free',
         ]);
 
         $this->actingAs($user);
@@ -67,7 +67,7 @@ class AccountControllerTest extends TestCase
             'account_number' => '0123456789',
             'bank_code' => '033',
             'name' => $this->faker->name,
-            'bank_name' => 'Zenith Bank'
+            'bank_name' => 'Zenith Bank',
         ];
 
         // Mock PaystackRepository
@@ -80,7 +80,6 @@ class AccountControllerTest extends TestCase
         $paystackRepositoryMock->shouldReceive('createTransferRecipient')
             ->with($data['name'], $data['account_number'], $data['bank_code'])
             ->andReturn(['recipient_code' => 'RCP_2x5j67tnnw1t98k']);
-
 
         $response = $this->post(route('account.store'), $data);
         $response->assertCreated()
@@ -128,7 +127,7 @@ class AccountControllerTest extends TestCase
             'account_number' => '1234567890',
             'bank_code' => '033',
             'name' => $this->faker->name,
-            'bank_name' => 'Zenith Bank'
+            'bank_name' => 'Zenith Bank',
         ];
 
         // Mock PaystackRepository

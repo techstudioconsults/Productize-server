@@ -1,7 +1,9 @@
 <?php
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 26-05-2024
  */
 
@@ -51,7 +53,7 @@ class OrderController extends Controller
         $filter = [
             'product_title' => $product_title,
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter);
@@ -66,7 +68,7 @@ class OrderController extends Controller
      *
      * Retrive the specified order.
      *
-     * @param  \App\Models\Order  $order The order to display.
+     * @param  \App\Models\Order  $order  The order to display.
      * @return \App\Http\Resources\OrderResource Returns a resource representing the queried order.
      */
     public function show(Order $order)
@@ -81,13 +83,13 @@ class OrderController extends Controller
      *
      * It returns the first 3 in the collection.
      *
-     * @param Product $product The product for which to retrieve orders.
+     * @param  Product  $product  The product for which to retrieve orders.
      * @return \App\Http\Resources\OrderResource A collection of order resources.
      */
     public function showByProduct(Product $product)
     {
         $filter = [
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ];
 
         $orders = $this->orderRepository->query($filter)->take(3)->get();
@@ -100,15 +102,15 @@ class OrderController extends Controller
      *
      * Retrieve a collection of orders associated with a specific user customer.
      *
-     * @param Customer $customer The customer for which to retrieve orders.
-     *  @return \App\Http\Resources\OrderResource A collection of order resources.
+     * @param  Customer  $customer  The customer for which to retrieve orders.
+     * @return \App\Http\Resources\OrderResource A collection of order resources.
      */
     public function showByCustomer(Customer $customer)
     {
         $user = Auth::user();
 
         $filter = [
-            'user_id' => $customer->user->id
+            'user_id' => $customer->user->id,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
@@ -121,7 +123,7 @@ class OrderController extends Controller
      *
      * Download a CSV file containing orders based on specified filters.
      *
-     * @param Request $request The HTTP request containing filters.
+     * @param  Request  $request  The HTTP request containing filters.
      * @return \Symfony\Component\HttpFoundation\StreamedResponse The streamed CSV file response.
      */
     public function downloadList(Request $request)
@@ -138,7 +140,7 @@ class OrderController extends Controller
         $filter = [
             'product_title' => $product_title,
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
@@ -146,7 +148,7 @@ class OrderController extends Controller
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
         $fileName = "orders_$now.csv";
 
-        $columns = array('Product', 'Price', 'CustomerEmail', 'Date');
+        $columns = ['Product', 'Price', 'CustomerEmail', 'Date'];
         $data = [$columns];
 
         foreach ($orders as $order) {
@@ -176,7 +178,7 @@ class OrderController extends Controller
 
         $count = $this->orderRepository->queryRelation($user->orders(), ['seen' => false])->count();
 
-        return new JsonResource(["count" => $count]);
+        return new JsonResource(['count' => $count]);
     }
 
     /**

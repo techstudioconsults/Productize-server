@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 25-05-2024
  */
 
@@ -29,10 +31,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Password;
 use Mail;
 use Str;
 
@@ -56,8 +58,7 @@ class AuthController extends Controller
      * and the access token. The user creation and token generation are performed within a database
      * transaction to ensure data integrity. After successful registration, a `Registered` event is triggered.
      *
-     * @param \App\Http\Requests\RegisterRequest $request The request object containing the registration data.
-     *
+     * @param  \App\Http\Requests\RegisterRequest  $request  The request object containing the registration data.
      * @return \Illuminate\Http\JsonResponse The JSON response containing the newly registered user and the access token.
      *
      * @throws \App\Exceptions\UnprocessableException If the validation of the request data fails.
@@ -101,8 +102,7 @@ class AuthController extends Controller
      * to initialize CSRF protection for the application. It is recommended to chain waterfall requests, combining the CSRF and login
      * endpoints.
      *
-     * @param \App\Http\Requests\LoginRequest $request The request object containing the login credentials.
-     *
+     * @param  \App\Http\Requests\LoginRequest  $request  The request object containing the login credentials.
      * @return \Illuminate\Http\JsonResponse The JSON response containing the authenticated user and the access token.
      *
      * @throws \App\Exceptions\UnprocessableException If the provided credentials are incorrect.
@@ -114,7 +114,7 @@ class AuthController extends Controller
         $remember = $credentials['remember'] ?? false;
         unset($credentials['remember']);
 
-        if (!Auth::attempt($credentials, $remember)) {
+        if (! Auth::attempt($credentials, $remember)) {
             throw new UnprocessableException('The Provided credentials are not correct');
         }
 
@@ -136,20 +136,18 @@ class AuthController extends Controller
      * a redirect URL using the Socialite package. If the specified provider is invalid, it throws an UnprocessableException
      * with an error message indicating the validation failure.
      *
-     * @param Request $request The HTTP request containing query parameters:
+     * @param  Request  $request  The HTTP request containing query parameters:
      *                            - provider: (optional) OAuth Provider (enum OAuthTypeEnum).
-     *
      * @return \Illuminate\Http\Response The HTTP response containing the provider and the redirect URL.
      *
      * @throws \App\Exceptions\UnprocessableException If the OAuth provider is missing or invalid.
      */
-
     public function oAuthRedirect(Request $request)
     {
         $provider = $request->query('provider');
 
         $validator = Validator::make(['provider' => $provider], [
-            'provider' => ['required', new Enum(OAuthTypeEnum::class)]
+            'provider' => ['required', new Enum(OAuthTypeEnum::class)],
 
         ]);
 
@@ -174,8 +172,7 @@ class AuthController extends Controller
      * the OAuth user's email. If a user with the email does not exist, a new user is registered. If the user exists,
      * they are logged in. Finally, a JSON response containing the user information and access token is returned.
      *
-     * @param \App\Http\Requests\OAuthRequest $request The validated OAuth request object.
-     *
+     * @param  \App\Http\Requests\OAuthRequest  $request  The validated OAuth request object.
      * @return JsonResponse The JSON response containing the user information and access token.
      *
      * @throws \App\Exceptions\BadRequestException If an error occurs during the OAuth authentication process.
@@ -193,7 +190,7 @@ class AuthController extends Controller
 
         $user = User::firstWhere('email', $oauthUser->email);
 
-        if (!$user) {
+        if (! $user) {
             $credentials = [
                 'full_name' => $oauthUser->name,
                 'email' => $oauthUser->email,
@@ -226,9 +223,8 @@ class AuthController extends Controller
      * or expired, it throws an UnAuthorizedException. It then retrieves the user based on the provided user ID,
      * marks their email address as verified if it's not already verified, and redirects the user to the dashboard page.
      *
-     * @param string $user_id The ID of the user whose email is being verified.
-     * @param Request $request The HTTP request object containing the signed URL.
-     *
+     * @param  string  $user_id  The ID of the user whose email is being verified.
+     * @param  Request  $request  The HTTP request object containing the signed URL.
      * @return \Illuminate\Http\RedirectResponse The redirect response to the dashboard page.
      *
      * @throws \App\Exceptions\UnAuthorizedException If the provided URL is invalid or expired.
@@ -239,23 +235,22 @@ class AuthController extends Controller
 
         /**
          * Dont throw an error, render error page instead.
-         *
          */
-        if (!$request->hasValidSignature()) {
+        if (! $request->hasValidSignature()) {
             throw new UnAuthorizedException('Invalid/Expired url provided');
         }
 
         $user = User::find($user_id);
 
-        if (!$user) {
+        if (! $user) {
             throw new NotFoundException('User Does Not Exist');
         }
 
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url') . '/dashboard/home';
+        $redirectUrl = config('app.client_url').'/dashboard/home';
 
         return redirect($redirectUrl);
     }
@@ -278,14 +273,14 @@ class AuthController extends Controller
     public function resendLink()
     {
         if (Auth::user()->hasVerifiedEmail()) {
-            throw new BadRequestException("Email already verified.");
+            throw new BadRequestException('Email already verified.');
         }
 
         $user = Auth::user();
         Mail::to($user)->send(new EmailVerification($user));
 
         return new JsonResponse([
-            'message' => "Email verification link sent on your email address"
+            'message' => 'Email verification link sent on your email address',
         ]);
     }
 
@@ -301,7 +296,7 @@ class AuthController extends Controller
      * reset link is sent successfully, or throws appropriate exceptions for cases where the user is not found, the reset
      * request is throttled, or the email could not be sent for some other reason.
      *
-     * @param \App\Http\Requests\ForgotPasswordRequest $request The request containing the user's email address.
+     * @param  \App\Http\Requests\ForgotPasswordRequest  $request  The request containing the user's email address.
      * @return \Illuminate\Http\JsonResponse The JSON response indicating the status of the password reset email.
      *
      * @throws \App\Exceptions\NotFoundException If the user associated with the provided email address is not found.
@@ -321,9 +316,9 @@ class AuthController extends Controller
 
         if ($response == Password::RESET_LINK_SENT) {
             return new JsonResponse(['message' => 'Password reset email sent successfully']);
-        } else if ($response == Password::INVALID_USER) {
+        } elseif ($response == Password::INVALID_USER) {
             throw new NotFoundException('User not found');
-        } else if ($response == Password::RESET_THROTTLED) {
+        } elseif ($response == Password::RESET_THROTTLED) {
             throw new TooManyRequestException();
         } else {
             throw new ServerErrorException('Password reset email could not be sent');
@@ -343,7 +338,7 @@ class AuthController extends Controller
      * response with a success message if the password is reset successfully, or throws exceptions for cases where the token
      * is invalid or the password reset fails for some other reason.
      *
-     * @param \App\Http\Requests\ResetPasswordRequest $request The request containing the user's email, password, password confirmation, and reset token.
+     * @param  \App\Http\Requests\ResetPasswordRequest  $request  The request containing the user's email, password, password confirmation, and reset token.
      * @return \Illuminate\Http\JsonResponse The JSON response indicating the status of the password reset.
      *
      * @throws \App\Exceptions\UnAuthorizedException If the provided token is invalid.
@@ -355,7 +350,7 @@ class AuthController extends Controller
 
         $forceChangePassword = function (User $user, string $password) {
             $user->forceFill([
-                'password' => $password
+                'password' => $password,
             ])->setRememberToken(Str::random(60));
 
             $user->save();
@@ -366,9 +361,9 @@ class AuthController extends Controller
          */
         $res = Password::reset($credentials, $forceChangePassword);
 
-        if ($res ===  Password::PASSWORD_RESET) {
-            return new JsonResponse(['message' => "Password Reset Successful"]);
-        } else if ($res === Password::INVALID_TOKEN) {
+        if ($res === Password::PASSWORD_RESET) {
+            return new JsonResponse(['message' => 'Password Reset Successful']);
+        } elseif ($res === Password::INVALID_TOKEN) {
             throw new UnAuthorizedException('Invalid Token');
         } else {
             throw new BadRequestException('Password Reset Failed');
@@ -384,13 +379,13 @@ class AuthController extends Controller
      * with the user. It takes a request containing the authenticated user, deletes the current access token associated
      * with that user, and returns a JSON response indicating a successful logout.
      *
-     * @param \Illuminate\Http\Request $request The request containing the authenticated user.
+     * @param  \Illuminate\Http\Request  $request  The request containing the authenticated user.
      * @return \Illuminate\Http\JsonResponse The JSON response indicating a successful logout.
      */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return new JsonResponse(['message' => "Logout Successful"]);
+        return new JsonResponse(['message' => 'Logout Successful']);
     }
 }

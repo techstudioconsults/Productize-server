@@ -4,12 +4,12 @@ namespace App\Models;
 
 use App\Notifications\ResetPassword;
 use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements CanResetPassword
 {
@@ -51,7 +51,7 @@ class User extends Authenticatable implements CanResetPassword
         'product_creation_notification',
         'purchase_notification',
         'news_and_update_notification',
-        'payout_notification'
+        'payout_notification',
     ];
 
     /**
@@ -122,7 +122,7 @@ class User extends Authenticatable implements CanResetPassword
 
     public function isSubscribed()
     {
-        return $this->account_type === 'premium'  ? true : false;
+        return $this->account_type === 'premium' ? true : false;
     }
 
     public function firstSale()
@@ -137,9 +137,9 @@ class User extends Authenticatable implements CanResetPassword
         return $this->accounts()->exists();
     }
 
-     /**
-      * @author obajide028 Odesanya Babajide
-      *
+    /**
+     * @author obajide028 Odesanya Babajide
+     *
      * Get the reviews for the user.
      */
     public function reviews()
@@ -147,7 +147,7 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasMany(Review::class);
     }
 
-     /**
+    /**
      * The channels the user receives notification broadcasts on.
      */
     public function receivesBroadcastNotificationsOn(): string

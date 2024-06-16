@@ -23,7 +23,7 @@ class SubscriptionPolicy
     {
         return $user->id === $subscription->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to access this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to access this resource');
     }
 
     /**
@@ -33,7 +33,7 @@ class SubscriptionPolicy
     {
         return $user->id === $subscription->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to access this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to access this resource');
     }
 
     /**
@@ -43,6 +43,6 @@ class SubscriptionPolicy
     {
         return $user->id === $subscription->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to access this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to access this resource');
     }
 }

@@ -30,7 +30,7 @@ class AccountPolicy
     {
         return $user->id === $account->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to update this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to update this resource');
     }
 
     /**
@@ -40,6 +40,6 @@ class AccountPolicy
     {
         return $user->id === $account->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to delete this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to delete this resource');
     }
 }

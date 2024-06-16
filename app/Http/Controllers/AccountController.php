@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 08-06-2024
  */
 
@@ -51,7 +53,7 @@ class AccountController extends Controller
 
         // Find accounts associated with the authenticated user
         $accounts = $this->accountRepository->find([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         // Return a collection of AccountResource instances
@@ -67,20 +69,17 @@ class AccountController extends Controller
      * It validates the provided account details, checks for duplicates, and interacts with
      * the Paystack API to create a transfer recipient before storing the account in the database.
      *
-     * @param StoreAccountRequest $request
-     *        The request object containing the validated data for the new payout account.
-     *
+     * @param  StoreAccountRequest  $request
+     *                                        The request object containing the validated data for the new payout account.
      * @return \App\Http\Resources\AccountResource
-     *         The newly created AccountResource instance.
+     *                                             The newly created AccountResource instance.
      *
      * @throws \App\Exceptions\ConflictException
-     *         If an account with the provided account number already exists.
-     *
+     *                                           If an account with the provided account number already exists.
      * @throws \App\Exceptions\BadRequestException
-     *         If the provided account number is invalid.
-     *
+     *                                             If the provided account number is invalid.
      * @throws \App\Exceptions\ApiException
-     *         If an error occurs while interacting with the Paystack API or while storing the account.
+     *                                      If an error occurs while interacting with the Paystack API or while storing the account.
      */
     public function store(StoreAccountRequest $request)
     {
@@ -98,7 +97,7 @@ class AccountController extends Controller
 
         // Check for duplicate account
         $exists = $this->accountRepository->query([
-            'account_number' => $account_number
+            'account_number' => $account_number,
         ])->exists();
 
         if ($exists) {
@@ -108,7 +107,9 @@ class AccountController extends Controller
         // Validate the account number with Paystack
         $isValidated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
 
-        if (!$isValidated) throw new BadRequestException('Invalid Account Number');
+        if (! $isValidated) {
+            throw new BadRequestException('Invalid Account Number');
+        }
 
         try {
             // Create a transfer recipient with paystack
@@ -121,7 +122,7 @@ class AccountController extends Controller
                 'name' => $name,
                 'bank_code' => $bank_code,
                 'bank_name' => $bank_name,
-                'active' => 1 // Let it be the active account by default
+                'active' => 1, // Let it be the active account by default
             ];
 
             // Create the account in the database
@@ -143,13 +144,12 @@ class AccountController extends Controller
      *
      * This method updates the active status of an existing payout account based on the provided validated data.
      *
-     * @param \App\Models\Account $account
-     *        The payout account instance to be updated.
-     * @param \App\Http\Requests\UpdateAccountRequest $request
-     *        The request object containing the validated data for updating the payout account.
-     *
+     * @param  \App\Models\Account  $account
+     *                                        The payout account instance to be updated.
+     * @param  \App\Http\Requests\UpdateAccountRequest  $request
+     *                                                            The request object containing the validated data for updating the payout account.
      * @return \App\Http\Resources\AccountResource
-     *         The updated AccountResource instance.
+     *                                             The updated AccountResource instance.
      */
     public function update(Account $account, UpdateAccountRequest $request)
     {
@@ -170,7 +170,7 @@ class AccountController extends Controller
      * This method retrieves a list of banks supported by Paystack, mapping the data to include only the bank name and code.
      *
      * @return \Illuminate\Http\JsonResponse
-     *         The response containing the list of banks with their names and codes.
+     *                                       The response containing the list of banks with their names and codes.
      */
     public function bankList()
     {
@@ -181,7 +181,7 @@ class AccountController extends Controller
         $response = Arr::map($banks, function ($bank) {
             return [
                 'name' => $bank['name'],
-                'code' => $bank['code']
+                'code' => $bank['code'],
             ];
         });
 

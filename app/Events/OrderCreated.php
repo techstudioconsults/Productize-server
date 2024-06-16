@@ -29,12 +29,10 @@ class OrderCreated implements ShouldBroadcast
 
     /**
      * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\PrivateChannel
      */
     public function broadcastOn(): PrivateChannel
     {
-        return new PrivateChannel('order-created.' . $this->user->id);
+        return new PrivateChannel('order-created.'.$this->user->id);
     }
 
     /**

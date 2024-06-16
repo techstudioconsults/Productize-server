@@ -4,29 +4,32 @@ namespace Tests\Unit\v1\repository;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\UnprocessableException;
-use App\Models\User;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Customer;
+use App\Models\User;
 use App\Repositories\CustomerRepository;
-use Illuminate\Support\Carbon;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
-
 
 class CustomerRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     private CustomerRepository $customerRepository;
+
     private UserRepository $userRepository;
+
     private ProductRepository $productRepository;
 
     protected $full_name;
+
     protected $email;
+
     protected $password;
 
     public function setUp(): void
@@ -37,12 +40,10 @@ class CustomerRepositoryTest extends TestCase
         $this->userRepository = app(UserRepository::class);
         $this->productRepository = app(ProductRepository::class);
 
-
-        $this->full_name = "Tobi Olanitori";
-        $this->email = "tobiolanitori@gmail.com";
-        $this->password = "password123";
+        $this->full_name = 'Tobi Olanitori';
+        $this->email = 'tobiolanitori@gmail.com';
+        $this->password = 'password123';
     }
-
 
     public function test_Create_Customer()
     {
@@ -50,7 +51,6 @@ class CustomerRepositoryTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
-
 
         // Act
         $customer = $this->customerRepository->create([
@@ -80,7 +80,7 @@ class CustomerRepositoryTest extends TestCase
         Customer::factory()->count(2)->create([
             'merchant_id' => $order->product->user->id,
             'order_id' => $order->id,
-            'created_at' => $start_date
+            'created_at' => $start_date,
         ]);
 
         // Create two customers associated with the user outside the date range
@@ -94,7 +94,7 @@ class CustomerRepositoryTest extends TestCase
         $filter = [
             'start_date' => $start_date,
             'end_date' => $end_date,
-            'merchant_id' => $user->id
+            'merchant_id' => $user->id,
         ];
 
         $query = $this->customerRepository->query($filter);
@@ -120,7 +120,7 @@ class CustomerRepositoryTest extends TestCase
 
         // Test without date filter
         $filter = [
-            'merchant_id' => $user->id
+            'merchant_id' => $user->id,
         ];
 
         $query = $this->customerRepository->query($filter);
@@ -145,7 +145,7 @@ class CustomerRepositoryTest extends TestCase
         Customer::factory()->count(2)->create([
             'merchant_id' => $order->product->user->id,
             'order_id' => $order->id,
-            'created_at' => $start_date
+            'created_at' => $start_date,
         ]);
 
         // Create two customers associated with the user outside the date range
@@ -161,7 +161,7 @@ class CustomerRepositoryTest extends TestCase
         $filter = [
             'start_date' => $start_date,
             'end_date' => $end_date,
-            'merchant_id' => $user->id
+            'merchant_id' => $user->id,
         ];
 
         $result = $this->customerRepository->queryRelation($relation, $filter);
@@ -208,7 +208,7 @@ class CustomerRepositoryTest extends TestCase
         Customer::factory()->count(5)->create([
             'user_id' => $user->id,
             'merchant_id' => $order->product->user->id,
-            'order_id' => $order->id
+            'order_id' => $order->id,
         ]);
 
         // Assert
@@ -232,7 +232,7 @@ class CustomerRepositoryTest extends TestCase
         Customer::factory()->count(2)->create([
             'merchant_id' => $order->product->user->id,
             'order_id' => $order->id,
-            'created_at' => $start_date
+            'created_at' => $start_date,
         ]);
 
         // Create two customers associated with the user outside the date range
@@ -245,7 +245,7 @@ class CustomerRepositoryTest extends TestCase
         $filter = [
             'start_date' => $start_date,
             'end_date' => $end_date,
-            'merchant_id' => $user->id
+            'merchant_id' => $user->id,
         ];
 
         // Act
@@ -307,7 +307,7 @@ class CustomerRepositoryTest extends TestCase
 
     public function test_findbyid_wrong_id_return_null(): void
     {
-        $customer_id = "invalid_customer_id";
+        $customer_id = 'invalid_customer_id';
 
         $result = $this->customerRepository->findById($customer_id);
 
@@ -337,12 +337,12 @@ class CustomerRepositoryTest extends TestCase
         $product = Product::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create(['user_id' => $user->id, 'product_id' => $product->id]);
 
-      Customer::factory()->create([
+        Customer::factory()->create([
             'merchant_id' => $order->product->user->id,
             'order_id' => $order->id,
         ]);
 
-        $result = $this->customerRepository->findOne(['merchant_id' => "wrong id"]);
+        $result = $this->customerRepository->findOne(['merchant_id' => 'wrong id']);
 
         $this->assertEquals(null, $result);
     }

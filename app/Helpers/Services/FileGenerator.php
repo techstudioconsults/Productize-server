@@ -7,7 +7,9 @@ use Mpdf\Mpdf;
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 09-06-2024
  *
  * The FileGenerator trait provides methods for generating and handling files.
@@ -19,9 +21,7 @@ use Mpdf\Mpdf;
  * - Generate CSV files from an array of data.
  * - Generate PDF files from HTML content.
  * - Stream files to clients for download with the option to delete the file after streaming.
- *
  */
-
 trait FileGenerator
 {
     /**
@@ -29,19 +29,16 @@ trait FileGenerator
      *
      * Generate a CSV file.
      *
-     * @param string $fileName
-     * @param array $data
-     *
      * @return string The path to the generated CSV file.
      */
     public function generateCsv(string $fileName, array $data): string
     {
         $csvContent = '';
         foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
+            $csvContent .= implode(',', $csvRow)."\n";
         }
 
-        $filePath = 'csv/' . $fileName;
+        $filePath = 'csv/'.$fileName;
         Storage::disk('local')->put($filePath, $csvContent);
 
         return $filePath;
@@ -52,8 +49,6 @@ trait FileGenerator
      *
      * Generate a PDF file.
      *
-     * @param string $fileName
-     * @param string $htmlContent
      * @return string The path to the generated PDF file.
      */
     public function generatePdf(string $fileName, string $htmlContent): string
@@ -61,7 +56,7 @@ trait FileGenerator
         $mpdf = new Mpdf();
         $mpdf->WriteHTML($htmlContent);
 
-        $filePath = 'pdf/' . $fileName;
+        $filePath = 'pdf/'.$fileName;
         Storage::disk('local')->put($filePath, $mpdf->Output('', 'S'));
 
         return $filePath;
@@ -72,24 +67,21 @@ trait FileGenerator
      *
      * Stream a file to the client for download.
      *
-     * @param string $filePath
-     * @param string $fileName
-     * @param string $mimeType
-     * @param bool   $delete Delete the file from storage after stream
+     * @param  bool  $delete  Delete the file from storage after stream
      * @return \Illuminate\Http\Response
      */
     public function streamFile(string $filePath, string $fileName, string $mimeType, ?bool $delete = true)
     {
         $headers = [
-            "Content-type"        => $mimeType,
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
+            'Content-type' => $mimeType,
+            'Content-Disposition' => "attachment; filename=$fileName",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ];
 
         return response()->stream(function () use ($filePath, $delete) {
-            readfile(storage_path('app/' . $filePath));
+            readfile(storage_path('app/'.$filePath));
 
             if ($delete) {
                 Storage::disk('local')->delete($filePath);

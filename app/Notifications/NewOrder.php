@@ -35,7 +35,7 @@ class NewOrder extends Notification
     {
         return new BroadcastMessage([
             'order' => 1,
-            'message' => 'New Order Created'
+            'message' => 'New Order Created',
         ]);
     }
 

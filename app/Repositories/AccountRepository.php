@@ -23,7 +23,7 @@ class AccountRepository extends Repository
         // Add the 'user_id' rule to the validation rules
         $rules['user_id'] = 'required';
 
-        if (!$this->isValidated($entity, $rules)) {
+        if (! $this->isValidated($entity, $rules)) {
             throw new ServerErrorException($this->getValidator()->errors()->first());
         }
 
@@ -70,8 +70,8 @@ class AccountRepository extends Repository
     public function update(Model $entity, array $updates): Account
     {
         // Ensure that the provided entity is an instance of Order
-        if (!$entity instanceof Account) {
-            throw new ModelCastException("Account", get_class($entity));
+        if (! $entity instanceof Account) {
+            throw new ModelCastException('Account', get_class($entity));
         }
 
         // Assign the updates to the corresponding fields of the Account instance

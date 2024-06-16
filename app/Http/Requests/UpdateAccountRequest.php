@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Exceptions\UnprocessableException;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAccountRequest extends FormRequest
 {

@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * Random code snippets are pasted here
@@ -12,7 +12,6 @@
 echo asset('storage/file.txt');
 echo asset('images/img.png');
 echo asset('videos/video.mp3');
-
 
 /**
  * Uploaded file class methods
@@ -46,13 +45,11 @@ echo asset('videos/video.mp3');
 })->middleware(['auth:sanctum', 'ability:check-status,place-orders']);
  */
 
-
 /**
  * Add to ci/cd to clean up expired tokens
  * php artisan sanctum:prune-expired
  * sudo chmod -R 777 storage
  */
-
 
 /**
  * CICD

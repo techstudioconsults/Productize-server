@@ -3,16 +3,15 @@
 namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
-use App\Models\Cart;
-use App\Models\User;
-use App\Models\Product;
 use App\Exceptions\ConflictException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Mail\GiftAlert;
+use App\Models\Cart;
+use App\Models\Product;
+use App\Models\User;
 use App\Repositories\PaystackRepository;
-use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,7 +40,6 @@ class CartControllerTest extends TestCase
 
         // Make a GET request to the carts.index route
         $response = $this->withoutExceptionHandling()->get(route('cart.index'));
-
 
         // Assert that the response status is 200 (OK)
         $response->assertStatus(200);
@@ -92,7 +90,7 @@ class CartControllerTest extends TestCase
             'data' => [
                 'product_slug' => $expected_result['product_slug'],
                 'quantity' => $expected_result['quantity'],
-            ]
+            ],
         ]);
 
         // Check if the cart item is actually stored in the database
@@ -141,7 +139,7 @@ class CartControllerTest extends TestCase
         Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $existing_slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         // Prepare payload for the request with the same product
@@ -169,7 +167,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         // Mock authentication
@@ -185,8 +183,8 @@ class CartControllerTest extends TestCase
             'data' => [
                 'id' => $cart->id,
                 'quantity' => $cart->quantity,
-                'product_slug' => $product->slug
-            ]
+                'product_slug' => $product->slug,
+            ],
         ]);
     }
 
@@ -202,7 +200,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         $this->withoutExceptionHandling()->get(route('cart.show', ['cart' => $cart->id]));
@@ -212,7 +210,7 @@ class CartControllerTest extends TestCase
     {
         $this->expectException(ModelNotFoundException::class);
 
-        $cart_id = "invalid_cart_id";
+        $cart_id = 'invalid_cart_id';
 
         $user = User::factory()->create();
 
@@ -236,7 +234,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         // Mock authentication
@@ -258,7 +256,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         // Define the payload with the updated quantity
@@ -276,8 +274,8 @@ class CartControllerTest extends TestCase
         $response->assertJson([
             'data' => [
                 'id' => $cart->id,
-                'quantity' => $payload['quantity']
-            ]
+                'quantity' => $payload['quantity'],
+            ],
         ]);
     }
 
@@ -293,7 +291,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         $payload = [
@@ -317,7 +315,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         $payload = [
@@ -337,7 +335,7 @@ class CartControllerTest extends TestCase
         // Create a user, product and cart
         $user = User::factory()->create();
 
-        $cart_id = "invalid_cart_id";
+        $cart_id = 'invalid_cart_id';
 
         $payload = [
             'quantity' => 2,
@@ -361,11 +359,11 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         $payload = [
-            'product_slug' => "updated slug", // Attempt to update the product slug
+            'product_slug' => 'updated slug', // Attempt to update the product slug
         ];
 
         // Mock authentication
@@ -382,7 +380,6 @@ class CartControllerTest extends TestCase
 
         // Mock authentication
         $this->actingAs($user);
-
 
         // Create a cart instance
         $cart = Cart::factory()->create([
@@ -413,7 +410,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart->id]));
@@ -433,7 +430,7 @@ class CartControllerTest extends TestCase
         $cart = Cart::factory()->create([
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
         // Mock authentication
         $this->actingAs($forbidden_user);
@@ -445,7 +442,7 @@ class CartControllerTest extends TestCase
     {
         $this->expectException(ModelNotFoundException::class);
 
-        $cart_id = "invalid_cart_id";
+        $cart_id = 'invalid_cart_id';
 
         $user = User::factory()->create();
 
@@ -474,9 +471,9 @@ class CartControllerTest extends TestCase
 
         $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
             'products' => [
-                ['product_slug' => $product->slug, 'quantity' => 1]
+                ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => 1000
+            'amount' => 1000,
         ]);
 
         $response->assertStatus(200);
@@ -518,9 +515,9 @@ class CartControllerTest extends TestCase
             'recipient_email' => $recipient_email,
             'recipient_name' => $recipient_name,
             'products' => [
-                ['product_slug' => $product->slug, 'quantity' => 1]
+                ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => 1000
+            'amount' => 1000,
         ]);
 
         // Assert the response status
@@ -563,9 +560,9 @@ class CartControllerTest extends TestCase
             'recipient_email' => $recipient_email,
             'recipient_name' => $recipient_name,
             'products' => [
-                ['product_slug' => $product->slug, 'quantity' => 1]
+                ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => $product->price
+            'amount' => $product->price,
         ]);
 
         $response->assertStatus(200)
@@ -588,9 +585,9 @@ class CartControllerTest extends TestCase
 
         $this->withoutExceptionHandling()->post(route('cart.clear'), [
             'products' => [
-                ['product_slug' => $slug, 'quantity' => 1]
+                ['product_slug' => $slug, 'quantity' => 1],
             ],
-            'amount' => 1000
+            'amount' => 1000,
         ]);
     }
 
@@ -600,15 +597,15 @@ class CartControllerTest extends TestCase
         $this->actingAs($user);
 
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
-        
+
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('Total amount does not match quantity');
 
         $this->withoutExceptionHandling()->post(route('cart.clear'), [
             'products' => [
-                ['product_slug' => $product->slug, 'quantity' => 1]
+                ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => 2000 // Intentionally mismatched amount
+            'amount' => 2000, // Intentionally mismatched amount
         ]);
     }
 }

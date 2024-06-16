@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 12-05-2024
  */
 
@@ -12,16 +14,14 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
-use App\Mail\GiftAlert;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Mail;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -46,18 +46,19 @@ class UserRepository extends Repository
      *
      * Create a new user with the provided credentials.
      *
-     * @param array $credentials The user credentials.
-     *                           Required keys: 'email', 'full_name', 'password'.
-     *                           Optional keys: 'alt_email', 'username', 'phone_number', 'bio', 'logo',
-     *                           'twitter_account', 'facebook_account', 'youtube_account'.
+     * @param  array  $credentials  The user credentials.
+     *                              Required keys: 'email', 'full_name', 'password'.
+     *                              Optional keys: 'alt_email', 'username', 'phone_number', 'bio', 'logo',
+     *                              'twitter_account', 'facebook_account', 'youtube_account'.
      * @return \App\Models\User The newly created user.
+     *
      * @throws \App\Exceptions\BadRequestException If no email is provided in the credentials.
      */
     public function create(array $credentials): User
     {
         $user = new User();
 
-        if (!isset($credentials['email'])) {
+        if (! isset($credentials['email'])) {
             throw new BadRequestException('No Email Provided');
         }
 
@@ -72,7 +73,7 @@ class UserRepository extends Repository
             'logo',
             'twitter_account',
             'facebook_account',
-            'youtube_account'
+            'youtube_account',
         ];
 
         // Remove invalid keys from credentials
@@ -94,7 +95,7 @@ class UserRepository extends Repository
      *
      * Query orders based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
+     * @param  array  $filter  The filter criteria to apply.
      * @return Builder The query builder for orders.
      */
     public function query(array $filter): Builder
@@ -115,7 +116,7 @@ class UserRepository extends Repository
      *
      * Find users based on the provided filter.
      *
-     * @param array|null $filter The filter criteria to apply (optional).
+     * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found users.
      */
     public function find(?array $filter): ?Collection
@@ -128,7 +129,7 @@ class UserRepository extends Repository
      *
      * Find a user by their ID.
      *
-     * @param string $id The ID of the user to find.
+     * @param  string  $id  The ID of the user to find.
      * @return User|null The found user instance, or null if not found.
      */
     public function findById(string $id): ?User
@@ -141,7 +142,7 @@ class UserRepository extends Repository
      *
      * Find a single user based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
+     * @param  array  $filter  The filter criteria to apply.
      * @return User|null The found user instance, or null if not found.
      */
     public function findOne(array $filter): ?User
@@ -154,18 +155,20 @@ class UserRepository extends Repository
      *
      * Update an entity in the database.
      *
-     * @param  Model $entity The user to be updated
-     * @param array $updates The array of data containing the fields to be updated.
+     * @param  Model  $entity  The user to be updated
+     * @param  array  $updates  The array of data containing the fields to be updated.
      * @return User The updated user
      */
     public function update(Model $entity, array $updatables): User
     {
-        if (!$entity instanceof User) {
-            throw new ModelCastException("User", get_class($entity));
+        if (! $entity instanceof User) {
+            throw new ModelCastException('User', get_class($entity));
         }
 
         // Ensure the user is not attempting to update the user's email
-        if (array_key_exists('email', $updatables)) throw new BadRequestException("Column 'email' cannot be updated");
+        if (array_key_exists('email', $updatables)) {
+            throw new BadRequestException("Column 'email' cannot be updated");
+        }
 
         // Assign the updates to the corresponding fields of the User instance
         $entity->fill($updatables);
@@ -186,10 +189,9 @@ class UserRepository extends Repository
      * It ensures that the provided column is valid and not part of the guarded columns.
      * If the column is 'email', it throws a BadRequestException since the email cannot be updated.
      *
-     * @param string $email The email of the user to update.
-     * @param string $column The column to be updated.
-     * @param string $value The new value for the specified column.
-     *
+     * @param  string  $email  The email of the user to update.
+     * @param  string  $column  The column to be updated.
+     * @param  string  $value  The new value for the specified column.
      * @return \App\Models\User The updated user instance.
      *
      * @throws \App\Exceptions\BadRequestException If the column to update is 'email'.
@@ -198,9 +200,11 @@ class UserRepository extends Repository
      */
     public function guardedUpdate(string $email, string $column, string $value): User
     {
-        if ($column === "email") throw new BadRequestException("Column 'email' cannot be updated");
+        if ($column === 'email') {
+            throw new BadRequestException("Column 'email' cannot be updated");
+        }
 
-        if (!Schema::hasColumn((new User)->getTable(), $column)) {
+        if (! Schema::hasColumn((new User)->getTable(), $column)) {
             throw new UnprocessableException("Column '$column' does not exist in the User table.");
         }
 
@@ -223,12 +227,11 @@ class UserRepository extends Repository
      * This method calculates the total number of products sold by the specified user.
      * Optionally, it allows filtering orders based on a start date and an end date.
      *
-     * @param \App\Models\User $user The user for whom to calculate the total sales.
-     * @param array $filter An associative array of filters to apply to the relation.
-     *                      Supported filters include:
-     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
-     *                      - Other key-value pairs will be used as where conditions on the relation.
-     *
+     * @param  \App\Models\User  $user  The user for whom to calculate the total sales.
+     * @param  array  $filter  An associative array of filters to apply to the relation.
+     *                         Supported filters include:
+     *                         - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
+     *                         - Other key-value pairs will be used as where conditions on the relation.
      * @return int The total number of products sold by the user within the specified date range.
      *
      * @throws \App\Exceptions\UnprocessableException If the provided date range is invalid.
@@ -246,12 +249,11 @@ class UserRepository extends Repository
      * This method calculates the total revenue generated by the user, considering the total amount
      * of each order placed within the given date range.
      *
-     * @param \App\Models\User $user The user for whom to calculate the total revenue.
-     * @param array $filter (optional) An associative array of filters to apply to the relation.
-     *                      Supported filters include:
-     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
-     *                      - Other key-value pairs will be used as where conditions on the relation.
-     *
+     * @param  \App\Models\User  $user  The user for whom to calculate the total revenue.
+     * @param  array  $filter  (optional) An associative array of filters to apply to the relation.
+     *                         Supported filters include:
+     *                         - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
+     *                         - Other key-value pairs will be used as where conditions on the relation.
      * @return int The total revenue generated by the user within the specified date range.
      *
      * @throws \App\Exceptions\UnprocessableException If the provided date range is invalid.
@@ -270,12 +272,11 @@ class UserRepository extends Repository
      * This method calculates the total number of customers associated with the user, considering
      * the customers created within the given date range.
      *
-     * @param \App\Models\User $user The user for whom to calculate the total number of customers.
-     *@param array $filter (optional) An associative array of filters to apply to the relation.
-     *                      Supported filters include:
-     *                      - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the customer's table.
-     *                      - Other key-value pairs will be used as where conditions on the relation.
-     *
+     * @param  \App\Models\User  $user  The user for whom to calculate the total number of customers.
+     * @param  array  $filter  (optional) An associative array of filters to apply to the relation.
+     *                         Supported filters include:
+     *                         - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the customer's table.
+     *                         - Other key-value pairs will be used as where conditions on the relation.
      * @return int The total number of customers associated with the user within the specified date range.
      *
      * @throws \App\Exceptions\UnprocessableException If the provided date range is invalid.
@@ -294,7 +295,7 @@ class UserRepository extends Repository
      * are not null for the given user. If all required properties are filled and the profile completion
      * timestamp is not already set, it updates the profile_completed_at field to the current date and time.
      *
-     * @param \App\Models\User $user The user for whom to update the profile completion timestamp.
+     * @param  \App\Models\User  $user  The user for whom to update the profile completion timestamp.
      * @return void
      */
     public function profileCompletedAt(User $user)
@@ -317,7 +318,7 @@ class UserRepository extends Repository
 
         $un_filled = $collection->whereNull();
 
-        if ($un_filled->isEmpty() && !$user->profile_completed_at) {
+        if ($un_filled->isEmpty() && ! $user->profile_completed_at) {
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
@@ -327,16 +328,14 @@ class UserRepository extends Repository
      * @author @Intuneteq Tobi Olanitori
      *
      * Get or create a user by email and name.
-     *
-     * @param string $email
-     * @param string|null $name
-     * @return User
      */
     public function firstOrCreate(string $email, ?string $name): User
     {
         $user = $this->findOne(['email' => $email]);
 
-        if (!$user) return $this->create(['email' => $email, 'full_name' => $name]);
+        if (! $user) {
+            return $this->create(['email' => $email, 'full_name' => $name]);
+        }
 
         return $user;
     }

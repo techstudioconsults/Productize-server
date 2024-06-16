@@ -2,21 +2,20 @@
 
 namespace Tests\Unit\v1\repository;
 
-use App\Repositories\EarningRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Exceptions\ModelCastException;
 use App\Models\Earning;
 use App\Models\User;
+use App\Repositories\EarningRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class EarningRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
     private EarningRepository $earningRepository;
-
 
     public function setUp(): void
     {
@@ -31,7 +30,7 @@ class EarningRepositoryTest extends TestCase
 
         $entity = [
             'user_id' => $user->id,
-            'amount' => 1000
+            'amount' => 1000,
         ];
 
         // Act
@@ -47,7 +46,7 @@ class EarningRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         $filter = [
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ];
 
         $query = $this->earningRepository->query($filter);
@@ -60,7 +59,7 @@ class EarningRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         $filter = [
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ];
 
         $result = $this->earningRepository->find($filter);
@@ -73,7 +72,7 @@ class EarningRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         $earning = Earning::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $result = $this->earningRepository->findById($earning->id);
@@ -85,7 +84,7 @@ class EarningRepositoryTest extends TestCase
     {
         $user = User::factory()->create();
         $earning = Earning::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
         $filter = [
             'user_id' => $earning->user_id,
@@ -100,7 +99,7 @@ class EarningRepositoryTest extends TestCase
     {
         $user = User::factory()->create();
         $earning = Earning::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
         $updates = [
             'total_earnings' => 2000,
@@ -117,7 +116,7 @@ class EarningRepositoryTest extends TestCase
 
         $user = User::factory()->create();
         $earning = Earning::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
         $updates = [
             'total_earnings' => 2000,
@@ -135,7 +134,7 @@ class EarningRepositoryTest extends TestCase
         $earning = Earning::factory()->create([
             'user_id' => $user->id,
             'total_earnings' => 3000,
-            'withdrawn_earnings' => 1000
+            'withdrawn_earnings' => 1000,
         ]);
 
         $balance = $this->earningRepository->getBalance($earning);

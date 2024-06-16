@@ -41,7 +41,7 @@ class SubscriptionRepository extends Repository
         $user = $this->userRepository->findById($user_id);
 
         try {
-            if (!$customer) {
+            if (! $customer) {
                 $customer = $this->paystackRepository->createCustomer($user);
             }
 
@@ -50,14 +50,14 @@ class SubscriptionRepository extends Repository
             $subcription = $this->create([
                 'customer_code' => $customer_code,
                 'user_id' => $user->id,
-                'status' => SubscriptionStatusEnum::PENDING->value
+                'status' => SubscriptionStatusEnum::PENDING->value,
             ]);
 
             $response = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
 
             return [
                 'id' => $subcription->id,
-                ...$response
+                ...$response,
             ];
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
@@ -102,8 +102,8 @@ class SubscriptionRepository extends Repository
     public function update(Model $entity, array $updates): Subscription
     {
         // Ensure that the provided entity is an instance of Order
-        if (!$entity instanceof Subscription) {
-            throw new ModelCastException("Subscription", get_class($entity));
+        if (! $entity instanceof Subscription) {
+            throw new ModelCastException('Subscription', get_class($entity));
         }
 
         // Assign the updates to the corresponding fields of the Order instance
@@ -139,7 +139,7 @@ class SubscriptionRepository extends Repository
             'status' => $status,
             'customer_code' => $customer['customer_code'],
             'subscription_code' => $subscription['subscription_code'],
-            'user_id' => $user_id
+            'user_id' => $user_id,
         ]);
 
         // If the user subscription status is not cancelled or pending, upgrade the user to premium
@@ -147,13 +147,13 @@ class SubscriptionRepository extends Repository
             Log::channel('slack')->alert(
                 'USER HAS AN ACTIVE SUBSCRIPTION BUT IS NOT A PREMIUM USER IN DB',
                 ['context' => [
-                    'email' => $customer["email"],
+                    'email' => $customer['email'],
                     'paystack_customer_code' => $customer['customer_code'],
-                    'status' => $status
+                    'status' => $status,
                 ]]
             );
 
-            $this->userRepository->guardedUpdate($customer["email"], 'account_type', 'premium');
+            $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
         }
 
         // Then return an error.

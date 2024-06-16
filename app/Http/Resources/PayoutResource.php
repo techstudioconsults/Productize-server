@@ -22,7 +22,7 @@ class PayoutResource extends JsonResource
             'amount' => $this->amount,
             'status' => $this->status,
             'reference' => $this->reference,
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
         ];
     }
 }

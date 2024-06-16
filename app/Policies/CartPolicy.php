@@ -9,7 +9,6 @@ use Illuminate\Auth\Access\Response;
 
 class CartPolicy
 {
-
     /**
      * Determine whether the user can view the model.
      */
@@ -17,7 +16,7 @@ class CartPolicy
     {
         return $user->id === $cart->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to request this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to request this resource');
     }
 
     /**
@@ -27,7 +26,7 @@ class CartPolicy
     {
         return $user->id === $cart->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to update this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to update this resource');
     }
 
     /**
@@ -37,6 +36,6 @@ class CartPolicy
     {
         return $user->id === $cart->user_id
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' with id ' . $user->id . ' is not permitted to delete this resource');
+            : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to delete this resource');
     }
 }

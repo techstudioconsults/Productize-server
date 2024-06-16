@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -43,7 +42,7 @@ class GiftAlert extends Mailable
         return new Content(
             markdown: 'mail.gift',
             with: [
-                'url' => 'https://tobiolanitori.com'
+                'url' => 'https://tobiolanitori.com',
             ]
         );
     }

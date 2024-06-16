@@ -21,8 +21,8 @@ class PayoutFactory extends Factory
         return [
             'reference' => Str::random(10),
             'status' => PayoutStatusEnum::Completed->value,
-            "paystack_transfer_code" => "TRF_1ptvuv321ahaa7q",
-            "amount" => '20000'
+            'paystack_transfer_code' => 'TRF_1ptvuv321ahaa7q',
+            'amount' => '20000',
         ];
     }
 }

@@ -10,7 +10,7 @@ Route::controller(AccountController::class)
     ->middleware([
         'auth:sanctum',
         'can:allowed,App\Models\Account',
-        'can:subscribed,App\Models\Account'
+        'can:subscribed,App\Models\Account',
     ])
     ->group(function () {
         Route::get('/', 'index')->name('index');

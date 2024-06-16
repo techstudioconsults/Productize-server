@@ -18,7 +18,7 @@ class Payout extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'status'
+        'status',
     ];
 
     /**

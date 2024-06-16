@@ -2,7 +2,9 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 08-05-2024
  */
 
@@ -13,11 +15,11 @@ use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
 use App\Http\Requests\SearchRequest;
-use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
+use App\Models\Product;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
@@ -78,7 +80,7 @@ class ProductController extends Controller
             'user_id' => $user->id,
             'status' => $request->status,
             'start_date' => $request->start_date,
-            'end_date' =>  $request->end_date
+            'end_date' => $request->end_date,
         ];
 
         $query = $this->productRepository->query($filter);
@@ -97,7 +99,7 @@ class ProductController extends Controller
      *
      * Retrive the specified product.
      *
-     * @param  \App\Models\Product  $product The product to display.
+     * @param  \App\Models\Product  $product  The product to display.
      * @return array Returns an array containing detailed information about the product and its associated resources.
      */
     public function show(Product $product)
@@ -122,7 +124,8 @@ class ProductController extends Controller
              * after removing the CDN endpoint, the file path becomes "avatars/avatar.png".
              *
              * @see \config\filesystems.php
-             * @param string $value The absolute URL of the digital product.
+             *
+             * @param  string  $value  The absolute URL of the digital product.
              * @return string The relative file path of the digital product.
              */
             $file_path = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
@@ -155,9 +158,8 @@ class ProductController extends Controller
      * including checking if the product is part of the user's recent searches, tracking
      * user interest, and fetching associated metadata.
      *
-     * @param  Product  $product The product identified by its slug.
-     * @param  Request  $request The incoming request instance.
-     *
+     * @param  Product  $product  The product identified by its slug.
+     * @param  Request  $request  The incoming request instance.
      * @return JsonResponse Returns a JSON response containing detailed information about the product and its associated resources.
      *
      * @throws BadRequestException Throws a BadRequestException if the product status is not published.
@@ -172,7 +174,7 @@ class ProductController extends Controller
             $this->productRepository->trackSearch($product, $user);
         }
 
-        if (!$this->productRepository->isPublished($product)) {
+        if (! $this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
@@ -192,7 +194,7 @@ class ProductController extends Controller
      *
      * Create a new product.
      *
-     * @param  \App\Http\Requests\StoreProductRequest  $request The incoming request containing validated product data.
+     * @param  \App\Http\Requests\StoreProductRequest  $request  The incoming request containing validated product data.
      * @return \App\Http\Resources\ProductResource Returns a resource representing the newly created product.
      */
     public function store(StoreProductRequest $request)
@@ -216,7 +218,7 @@ class ProductController extends Controller
      *
      * Update a given product.
      *
-     * @param  \App\Http\Requests\UpdateProductRequest  $request The incoming request containing validated product update data.
+     * @param  \App\Http\Requests\UpdateProductRequest  $request  The incoming request containing validated product update data.
      * @return \App\Http\Resources\ProductResource Returns a resource representing the newly created product.
      */
     public function update(UpdateProductRequest $request, Product $product)
@@ -228,14 +230,12 @@ class ProductController extends Controller
         return new ProductResource($updated);
     }
 
-
     /**
      * @author @Intuneteq Tobi Olanitori
      *
      * Endpoint returns User Dashboard product Analytic numbers
      *
-     * @param Request $request The HTTP request object containing filter parameters.
-     *
+     * @param  Request  $request  The HTTP request object containing filter parameters.
      * @return JsonResponse A JSON response containing user dashboard analytics.
      *
      * The response contains the following keys:
@@ -272,7 +272,7 @@ class ProductController extends Controller
 
         $new_orders_query = $this->orderRepository->queryRelation($user->orders(), [
             'start_date' => Carbon::now()->subDays(2), // 2 days ago
-            'end_date' => now()
+            'end_date' => now(),
         ]);
 
         $result = [
@@ -282,20 +282,18 @@ class ProductController extends Controller
             'total_revenues' => $total_revenues,
             'new_orders' => $new_orders_query->count(),
             'new_orders_revenue' => $new_orders_query->sum('total_amount'),
-            'views' => 1
+            'views' => 1,
         ];
 
         return new JsonResponse(['data' => $result]);
     }
-
 
     /**
      * @author @Intuneteq Tobi Olanitori
      *
      * Generates and returns a CSV file with user product records.
      *
-     * @param Request $request The HTTP request object containing filter parameters.
-     *
+     * @param  Request  $request  The HTTP request object containing filter parameters.
      * @return \Symfony\Component\HttpFoundation\StreamedResponse A streamed response containing the CSV file.
      *
      * Request parameters:
@@ -312,14 +310,14 @@ class ProductController extends Controller
             'user_id' => $user->id,
             'status' => $request->status,
             'start_date' => $request->start_date,
-            'end_date' =>  $request->end_date
+            'end_date' => $request->end_date,
         ];
 
         $products = $this->productRepository->query($filter)->get();
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 
-        $columns = array('Title', 'Price', 'Sales', 'Type', 'Status');
+        $columns = ['Title', 'Price', 'Sales', 'Type', 'Status'];
 
         $data = [];
 
@@ -328,36 +326,36 @@ class ProductController extends Controller
         $fileName = "products_$now.csv";
 
         foreach ($products as $product) {
-            $row['Title']  = $product->title;
-            $row['Price']  = $product->price;
-            $row['Sales']  = 30;
-            $row['Type']   = $product->product_type;
+            $row['Title'] = $product->title;
+            $row['Price'] = $product->price;
+            $row['Sales'] = 30;
+            $row['Type'] = $product->product_type;
             $row['Status'] = $product->status;
 
-            $data[] = array($row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']);
+            $data[] = [$row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']];
         }
 
         $csvContent = '';
         foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
+            $csvContent .= implode(',', $csvRow)."\n";
         }
 
-        $filePath = 'csv/' . $fileName;
+        $filePath = 'csv/'.$fileName;
 
         // Store the CSV content in the storage/app/csv directory
         Storage::disk('local')->put($filePath, $csvContent);
 
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
+        $headers = [
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$fileName",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
 
         // Return the response with the file from storage
         return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
+            readfile(storage_path('app/'.$filePath));
         }, 200, $headers);
     }
 
@@ -371,8 +369,7 @@ class ProductController extends Controller
      * If the product is currently in 'Published' status, it will be set to 'Draft'.
      * If the product has been deleted (soft-deleted), an exception will be thrown.
      *
-     * @param Product $product The product whose status is to be toggled.
-     *
+     * @param  Product  $product  The product whose status is to be toggled.
      * @return ProductResource A resource containing the updated product.
      *
      * @throws BadRequestException If the product is deleted (trashed).
@@ -405,8 +402,7 @@ class ProductController extends Controller
      * This method changes the status of a product to 'draft' and then soft deletes it.
      * Soft deleting means the product is not permanently removed from the database but is marked as deleted.
      *
-     * @param Product $product The product to be soft deleted.
-     *
+     * @param  Product  $product  The product to be soft deleted.
      * @return ProductResource A resource containing the soft-deleted product.
      */
     public function delete(Product $product)
@@ -426,8 +422,7 @@ class ProductController extends Controller
      * This method restores a product that was previously soft deleted. It uses route model binding
      * to inject the soft-deleted model into the controller function.
      *
-     * @param Product $product The soft-deleted product to be restored.
-     *
+     * @param  Product  $product  The soft-deleted product to be restored.
      * @return ProductResource A resource containing the restored product.
      *
      * @see \App\Providers\RouteServiceProvider
@@ -450,8 +445,7 @@ class ProductController extends Controller
      * This method forcefully deletes a product from the database, removing it permanently.
      * Once deleted, the product cannot be restored.
      *
-     * @param Product $product The product to be permanently deleted.
-     *
+     * @param  Product  $product  The product to be permanently deleted.
      * @return \Illuminate\Http\Response A response indicating the product has been permanently deleted.
      */
     public function forceDelete(Product $product)
@@ -478,7 +472,7 @@ class ProductController extends Controller
         $downloads = $user->purchases()->get();
 
         $products = $downloads->map(function ($download) {
-            $product =  $download->product;
+            $product = $download->product;
 
             return [
                 'id' => $product->id,
@@ -559,22 +553,22 @@ class ProductController extends Controller
 
         $revForThisWeek = $this->orderRepository->queryRelation($relation, [
             'start_date' => $today->startOfWeek(),
-            'end_date' => $today->endOfWeek()
+            'end_date' => $today->endOfWeek(),
         ])->sum('total_amount');
 
         $revForLastWeek = $this->orderRepository->queryRelation($relation, [
             'start_date' => $lastWeekStart,
-            'end_date' => $lastWeekEnd
+            'end_date' => $lastWeekEnd,
         ])->sum('total_amount');
 
         $revForTwoWeeksAgo = $this->orderRepository->queryRelation($relation, [
             'start_date' => $twoWeeksAgoStart,
-            'end_date' => $twoWeeksAgoEnd
+            'end_date' => $twoWeeksAgoEnd,
         ])->sum('total_amount');
 
-        $revForThreeWeeksAgo =  $this->orderRepository->queryRelation($relation, [
+        $revForThreeWeeksAgo = $this->orderRepository->queryRelation($relation, [
             'start_date' => $threeWeeksAgoStart,
-            'end_date' => $threeWeeksAgoEnd
+            'end_date' => $threeWeeksAgoEnd,
         ])->sum('total_amount');
 
         return new JsonResponse([
@@ -582,8 +576,8 @@ class ProductController extends Controller
                 'revForThisWeek' => $revForThisWeek,
                 'revForLastWeek' => $revForLastWeek,
                 'revForTwoWeeksAgo' => $revForTwoWeeksAgo,
-                'revForThreeWeeksAgo' => $revForThreeWeeksAgo
-            ]
+                'revForThreeWeeksAgo' => $revForThreeWeeksAgo,
+            ],
         ]);
     }
 
@@ -618,10 +612,9 @@ class ProductController extends Controller
      * Results are returned in a collection of products, and the search results are stored
      * in a cookie.
      *
-     * @param SearchRequest $request The incoming search request.
-     *
+     * @param  SearchRequest  $request  The incoming search request.
      * @return ProductCollection The JSON response containing the collection of products matching the search criteria,
-     * with a search results cookie.
+     *                           with a search results cookie.
      *
      * @see \App\Repositories\ProductRepository::search() The repository method used for querying the products.
      * @see \App\Models\Product scope methods for search query defined.
@@ -629,7 +622,7 @@ class ProductController extends Controller
     public function search(SearchRequest $request)
     {
         // Get the search string, defaulting to an empty string if null.
-        $text = $request->input('text') ?? "";
+        $text = $request->input('text') ?? '';
 
         // Query the database.
         $products = $this->productRepository->search($text)->get();
@@ -649,8 +642,7 @@ class ProductController extends Controller
      * then fetches the last 10 products they have searched for using the
      * product repository. It returns these products as a collection.
      *
-     * @param Request $request The incoming request instance.
-     *
+     * @param  Request  $request  The incoming request instance.
      * @return ProductCollection A collection of products based on the user's previous searches.
      */
     public function basedOnSearch(Request $request)

@@ -10,10 +10,10 @@ Route::controller(EarningController::class)
     ->middleware([
         'auth:sanctum',
         'can:allowed,App\Models\Earning',
-        'can:subscribed,App\Models\Earning'
+        'can:subscribed,App\Models\Earning',
     ])
     ->group(function () {
         Route::get('/', 'index')->name('index');
-        
+
         Route::post('/withdraw', 'withdraw')->name('withdraw');
     });

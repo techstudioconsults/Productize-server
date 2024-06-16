@@ -25,7 +25,7 @@ class Account extends Model
         'name',
         'bank_code',
         'bank_name',
-        'active'
+        'active',
     ];
 
     protected $casts = [

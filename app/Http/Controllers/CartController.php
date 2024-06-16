@@ -21,10 +21,9 @@ use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
-use Arr;
 use Auth;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Mail;
+use Mail;
 
 /**
  * Route handler methods for Cart resource
@@ -132,6 +131,22 @@ class CartController extends Controller
         ]);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Clear the cart and initialize a purchase transaction.
+     *
+     * This method handles the process of clearing the user's cart, validating the request,
+     * checking for gift user details, and initializing a purchase transaction using Paystack.
+     *
+     * @param ClearCartRequest $request The request object containing validated cart data.
+     *
+     * @return JsonResponse The response containing the Paystack transaction initialization data.
+     *
+     * @throws BadRequestException If the product is not found or not published,
+     *                             or if the total amount does not match the quantity.
+     * @throws ApiException If an error occurs during the Paystack transaction initialization.
+     */
     public function clear(ClearCartRequest $request)
     {
         // Retrieve authenticated users
@@ -179,6 +194,7 @@ class CartController extends Controller
         ];
 
         try {
+            // Initialize payment
             $response = $this->paystackRepository->initializePurchaseTransaction($payload);
             return new JsonResponse(['data' => $response]);
         } catch (\Throwable $th) {

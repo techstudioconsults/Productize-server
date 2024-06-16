@@ -16,7 +16,17 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * The Repository class provides a template for repository classes.
+ *
+ * This abstract class extends the ValidationService, providing common validation
+ * functionalities to all repository classes that extend it. It serves as a base
+ * class for repositories, enabling them to inherit and utilize validation methods
+ * and other shared behaviors.
+ *
+ * Key Features:
+ * - Inherits validation capabilities from ValidationService.
+ * - Serves as a common ancestor for all repository classes.
  */
+
 abstract class Repository extends ValidationService
 {
     /**

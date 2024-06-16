@@ -1,21 +1,41 @@
 <?php
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ * @version 1.0
+ * @since 08-06-2024
+ */
+
 namespace App\Http\Controllers;
 
+use App\Helpers\Services\FileGenerator;
 use App\Http\Resources\PayoutResource;
 use App\Repositories\PayoutRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Storage;
 
+/**
+ * Route handler methods for Payout resource
+ */
 class PayoutController extends Controller
 {
+    use FileGenerator;
+
     public function __construct(
-        protected PayoutRepository $payoutRepository
+        protected PayoutRepository $payoutRepository,
     ) {
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Display a paginated list of payouts for the authenticated user,
+     * filtered by the given start and end dates.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -34,6 +54,14 @@ class PayoutController extends Controller
         return PayoutResource::collection($payouts);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Download a CSV file of the user's payouts filtered by the given start and end dates.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function download(Request $request)
     {
         $user = Auth::user();
@@ -50,46 +78,23 @@ class PayoutController extends Controller
         $payouts = $this->payoutRepository->queryRelation($user->payouts(), $filter)->get();
 
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
-
-        $columns = array('Price', 'BankName', 'BankAccountNumber', 'Period', 'Status');
-
-        $data = [];
-
-        $data[] = $columns;
-
         $fileName = "payouts_$now.csv";
 
+        $columns = array('Price', 'BankName', 'BankAccountNumber', 'Period', 'Status');
+        $data = [$columns];
+
         foreach ($payouts as $payout) {
-            $row['Price']  = $payout->amount;
-            $row['BankName']  = $payout->account->bank_name;
-            $row['BankAccountNumber']  = $payout->account->account_number;
-            $row['Period']  = $payout->created_at;
-            $row['Status']  = $payout->status;
-
-            $data[] = array($row['Price'], $row['BankName'], $row['BankAccountNumber'], $row['Period'], $row['Status']);
+            $data[] = [
+                $payout->amount,
+                $payout->account->bank_name,
+                $payout->account->account_number,
+                $payout->created_at,
+                $payout->status
+            ];
         }
 
-        $csvContent = '';
-        foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
-        }
+        $filePath = $this->generateCsv($fileName, $data);
 
-        $filePath = 'csv/' . $fileName;
-
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
-
-        $headers = array(
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        );
-
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
-        }, 200, $headers);
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 }

@@ -24,7 +24,13 @@ class Order extends Model
         'user_id',
         'product_id',
         'quantity',
-        'total_amount'
+        'total_amount',
+        'seen'
+    ];
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'total_amount' => 'float',
     ];
 
     // user who made the order

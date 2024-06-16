@@ -105,7 +105,7 @@ class OrderRepositoryTest extends TestCase
 
     public function test_findbyid(): void
     {
-        $expected_result =   Order::factory()->create([
+        $expected_result =  Order::factory()->create([
             'product_id' => Product::factory()->create(['user_id' => User::factory()->create()->id])->id,
         ]);
 

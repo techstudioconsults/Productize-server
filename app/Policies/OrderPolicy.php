@@ -31,19 +31,4 @@ class OrderPolicy
             ? Response::allow()
             : throw new ForbiddenException($user->full_name . ' is not permitted to request this resource');
     }
-
-    public function viewByProduct(User $user, Product $product)
-    {
-        return $user->id === $product->user->id
-            ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' is not permitted to request this resource');
-    }
-
-    public function viewByCustomer(User $user, Customer $customer)
-    {
-        return Response::allow();
-        // return $user->id === $customer->merchant_id
-        //     ? Response::allow()
-        //     : throw new ForbiddenException($user->full_name . ' is not permitted to request this resource');
-    }
 }

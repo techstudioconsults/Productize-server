@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ * @version 1.0
+ * @since 09-06-2024
+ */
+
 namespace App\Http\Controllers;
 
 use App\Enums\PayoutStatusEnum;
@@ -15,6 +21,9 @@ use Auth;
 use Illuminate\Http\JsonResponse;
 use Str;
 
+/**
+ * Route handler methods for Earning resource
+ */
 class EarningController extends Controller
 {
     public function __construct(
@@ -24,6 +33,14 @@ class EarningController extends Controller
         protected PayoutRepository $payoutRepository
     ) {
     }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Display the authenticated user's earnings.
+     *
+     * @return EarningResource
+     */
     public function index()
     {
         $user = Auth::user();
@@ -33,6 +50,16 @@ class EarningController extends Controller
         return new EarningResource($earning);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     * 
+     * Initiate a withdrawal for the authenticated user.
+     *
+     * @param InitiateWithdrawalRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\BadRequestException
+     * @throws \App\Exceptions\ApiException
+     */
     public function withdraw(InitiateWithdrawalRequest $request)
     {
         // Retrieve Auth user

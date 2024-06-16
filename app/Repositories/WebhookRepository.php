@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Enums\PayoutStatusEnum;
+use App\Events\OrderCreated;
 use Log;
 
 class WebhookRepository
@@ -101,10 +102,10 @@ class WebhookRepository
         $metadata = $data['metadata'];
 
         // Retrieve the buyer's ID - The paying user's id.
-        $buyer_id = $metadata['buyer_id'];
+        $buyer_id = $metadata['buyer_id'] ?? null;
 
         // Retrieve the products info from the cart metadata
-        $products = $metadata['products'];
+        $products = $metadata['products'] ?? [];
 
         // If it is a gift, retrieve the user id of the recipient
         $recipient_id = $metadata['recipient_id'];
@@ -135,6 +136,9 @@ class WebhookRepository
                 ];
 
                 $order = $this->orderRepository->create($buildOrder);
+
+                // Trigger Order created Event
+                OrderCreated::dispatch($user, $order);
 
                 $this->customerRepository->create([
                     'user_id' => $order->user->id,
@@ -274,10 +278,5 @@ class WebhookRepository
         } catch (\Throwable $th) {
             Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
         }
-    }
-
-    private function isGiftPurchase(array $gift): bool
-    {
-        return isset($gift['email']) && isset($gift['full_name']);
     }
 }

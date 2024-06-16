@@ -12,7 +12,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
-
+use App\Mail\GiftAlert;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * @author @Intuneteq Tobi Olanitori

@@ -146,4 +146,12 @@ class User extends Authenticatable implements CanResetPassword
     {
         return $this->hasMany(Review::class);
     }
+
+     /**
+     * The channels the user receives notification broadcasts on.
+     */
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'users.'.$this->id;
+    }
 }

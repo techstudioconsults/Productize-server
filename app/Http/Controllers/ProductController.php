@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq Tobi Olanitori
  * @version 1.0
  * @since 08-05-2024
  */
@@ -27,8 +27,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
-// use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * Route handler methods for Product resource

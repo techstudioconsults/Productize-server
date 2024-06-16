@@ -1,11 +1,11 @@
-name: Main Branch Integration Test
+name: Development Branch Integration Test
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["development"]
 
 jobs:
-  main-branch-integration-test:
+  dev_integration_test:
     runs-on: ubuntu-latest
 
     services:

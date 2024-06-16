@@ -7,7 +7,6 @@
  */
 
 namespace App\Http\Controllers;
-
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
@@ -156,7 +155,7 @@ class UserController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Send a request for help.
      *
      * This method sends an email to the designated help email address with the subject and message provided

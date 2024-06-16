@@ -138,24 +138,24 @@ class CartController extends Controller
 
         $validated = $request->validated();
 
-        $gift_email = $validated['gift_email'] ?? null;
-        $gift_name = $validated['gift_name'] ?? null;
+        $recipient_email = $validated['recipient_email'] ?? null;
+        $recipient_name = $validated['recipient_name'] ?? null;
 
-        $gift_user = null;
+        $recipient = null;
 
-        if ($gift_email) {
-            $query = $this->userRepository->query(['email' => $gift_email]);
+        if ($recipient_email) {
+            $query = $this->userRepository->query(['email' => $recipient_email]);
 
             if ($query->exists()) {
-                $gift_user = $query->first();
+                $recipient = $query->first();
             } else {
-                $gift_user = $this->userRepository->create([
-                    'email' => $gift_email,
-                    'full_name' => $gift_name
+                $recipient = $this->userRepository->create([
+                    'email' => $recipient_email,
+                    'full_name' => $recipient_name
                 ]);
 
                 // send login email
-                Mail::to($gift_user)->send(new GiftAlert($gift_user));
+                Mail::to($recipient)->send(new GiftAlert($recipient));
             }
         }
 
@@ -212,7 +212,7 @@ class CartController extends Controller
                 'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
                 'buyer_id' => $user->id,
                 'products' => $products,
-                'gift_user_id' => $gift_user ? $gift_user->id : null
+                'recipient_id' => $recipient ? $recipient->id : null
             ]
         ];
 

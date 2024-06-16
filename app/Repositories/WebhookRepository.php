@@ -106,8 +106,8 @@ class WebhookRepository
         // Retrieve the products info from the cart metadata
         $products = $metadata['products'];
 
-        // Retrieve gift user id
-        $gift_user_id = $metadata['gift_user_id'];
+        // If it is a gift, retrieve the user id of the recipient
+        $recipient_id = $metadata['recipient_id'];
 
         // Find Cart
         $cart = $this->cartRepository->findOne(['user_id' => $buyer_id]);
@@ -128,7 +128,7 @@ class WebhookRepository
 
                 $buildOrder = [
                     'reference_no' => $data['reference'],
-                    'user_id' => $gift_user_id ?? $buyer_id,
+                    'user_id' => $recipient_id ?? $buyer_id,
                     'total_amount' => $product_saved->price * $product['quantity'],
                     'quantity' => $product['quantity'],
                     'product_id' => $product_saved->id
@@ -209,7 +209,7 @@ class WebhookRepository
             // update payout history status
             $payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
-                        $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatusEnum::Completed->value]);
+            $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatusEnum::Completed->value]);
 
             $user_id = $payout->account->user->id;
 

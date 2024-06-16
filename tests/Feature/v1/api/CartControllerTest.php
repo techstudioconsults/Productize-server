@@ -490,21 +490,24 @@ class CartControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        User::factory()->create(['email' => 'gift@example.com']);
-        $product = Product::factory()->create(['slug' => 'test-product', 'price' => 1000, 'status' => 'published']);
+        $recipient_email = 'gift@example.com';
+        $recipient_name = 'Gift User';
+
+        User::factory()->create(['email' => $recipient_email]);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
 
         $userRepository = $this->partialMock(UserRepository::class);
 
         $userRepository->shouldReceive('query')
             ->once()
-            ->with(['email' => 'gift@example.com'])
-            ->andReturn(User::query()->where('email', 'gift@example.com'));
+            ->with(['email' => $recipient_email])
+            ->andReturn(User::query()->where('email', $recipient_email));
 
         $productRepository = $this->partialMock(ProductRepository::class);
 
         $productRepository->shouldReceive('findOne')
             ->once()
-            ->with(['slug' => 'test-product'])
+            ->with(['slug' => $product->slug])
             ->andReturn($product);
 
         $paystackRepository = $this->partialMock(PaystackRepository::class);
@@ -514,10 +517,10 @@ class CartControllerTest extends TestCase
             ->andReturn(['status' => 'success', 'data' => []]);
 
         $response = $this->post(route('cart.clear'), [
-            'gift_email' => 'gift@example.com',
-            'gift_name' => 'Gift User',
+            'recipient_email' => $recipient_email,
+            'recipient_name' => $recipient_name,
             'products' => [
-                ['product_slug' => 'test-product', 'quantity' => 1]
+                ['product_slug' => $product->slug, 'quantity' => 1]
             ],
             'amount' => 1000
         ]);
@@ -532,10 +535,10 @@ class CartControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $gift_email = 'gift@example.com';
-        $gift_name = 'Gift User';
+        $recipient_email = 'gift@example.com';
+        $recipient_name = 'Gift User';
 
-        $gift_user = User::factory()->make(['email' => $gift_email, 'full_name' => $gift_name]);
+        $gift_user = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
 
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
 
@@ -543,12 +546,12 @@ class CartControllerTest extends TestCase
 
         $userRepository->shouldReceive('query')
             ->once()
-            ->with(['email' => $gift_email])
-            ->andReturn(User::query()->where('email', $gift_email));
+            ->with(['email' => $recipient_email])
+            ->andReturn(User::query()->where('email', $recipient_email));
 
         $userRepository->shouldReceive('create')
             ->once()
-            ->with(['email' => $gift_email, 'full_name' => $gift_name])
+            ->with(['email' => $recipient_email, 'full_name' => $recipient_name])
             ->andReturn($gift_user);
 
         $productRepository = $this->partialMock(ProductRepository::class);
@@ -565,8 +568,8 @@ class CartControllerTest extends TestCase
             ->andReturn(['status' => 'success', 'data' => []]);
 
         $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
-            'gift_email' => $gift_email,
-            'gift_name' => $gift_name,
+            'recipient_email' => $recipient_email,
+            'recipient_name' => $recipient_name,
             'products' => [
                 ['product_slug' => $product->slug, 'quantity' => 1]
             ],
@@ -576,8 +579,8 @@ class CartControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['data' => ['status' => 'success']]);
 
-        Mail::assertSent(GiftAlert::class, function ($mail) use ($gift_email) {
-            return $mail->hasTo($gift_email);
+        Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {
+            return $mail->hasTo($recipient_email);
         });
     }
 

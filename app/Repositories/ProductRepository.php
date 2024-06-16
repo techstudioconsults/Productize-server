@@ -12,11 +12,13 @@ use App\Enums\ProductStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\ProductSearch;
 use App\Models\User;
+use Arr;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -556,5 +558,47 @@ class ProductRepository extends Repository
             }
         }
         return $meta_data_array;
+    }
+
+    /**
+     * Prepare products for the cart.
+     *
+     * @param array $cart
+     * @return array
+     */
+    public function prepareProducts(array $cart): array
+    {
+        $rules = [
+            '*.product_slug' => 'required|string',
+            '*.quantity' => 'required|integer|min:1',
+        ];
+
+        if (!$this->isValidated($cart, $rules))
+            throw new ServerErrorException("Invalid parameter called with prepareProducts ");
+
+        return Arr::map($cart, function ($item) {
+            $slug = $item['product_slug'];
+
+            $product = $this->query(['slug' => $slug])->first();
+
+            if (!$product) {
+                throw new BadRequestException('Product with slug ' . $slug . ' not found');
+            }
+
+            if ($product->status !== 'published') {
+                throw new BadRequestException('Product with slug ' . $slug . ' not published');
+            }
+
+            $amount = $product->price * $item['quantity'];
+
+            $share = $amount - ($amount * 0.05);
+
+            return [
+                "product_id" => $product->id,
+                "amount" => $amount,
+                "quantity" => $item['quantity'],
+                "share" => $share
+            ];
+        });
     }
 }

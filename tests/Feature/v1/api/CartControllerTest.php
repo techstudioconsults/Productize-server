@@ -462,18 +462,15 @@ class CartControllerTest extends TestCase
 
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
 
-        $productRepository = $this->partialMock(ProductRepository::class);
-
-        $productRepository->shouldReceive('findOne')
-            ->once()
-            ->with(['slug' => $product->slug])
-            ->andReturn($product);
-
         $paystackRepository = $this->partialMock(PaystackRepository::class);
 
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
             ->andReturn(['status' => 'success', 'data' => []]);
+
+        // Mock UserRepository and ensure firstOrCreate is never called
+        $userRepository = $this->partialMock(UserRepository::class);
+        $userRepository->shouldNotReceive('firstOrCreate');
 
         $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
             'products' => [
@@ -487,35 +484,36 @@ class CartControllerTest extends TestCase
 
     public function test_clear_cart_with_existing_gift_user()
     {
+        Mail::fake();
+
+        // Create a user and authenticate
         $user = User::factory()->create();
         $this->actingAs($user);
 
+        // Define recipient's email and name
         $recipient_email = 'gift@example.com';
         $recipient_name = 'Gift User';
 
-        User::factory()->create(['email' => $recipient_email]);
+        // Create a recipient user with the specified email and name
+        $recipient = User::factory()->create(['email' => $recipient_email, 'full_name' => $recipient_name]);
+
+        // Create a product with specified attributes
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
 
+        // Mock UserRepository and set expectation for firstOrCreate method
         $userRepository = $this->partialMock(UserRepository::class);
-
-        $userRepository->shouldReceive('query')
+        $userRepository->shouldReceive('firstOrCreate')
             ->once()
-            ->with(['email' => $recipient_email])
-            ->andReturn(User::query()->where('email', $recipient_email));
+            ->with($recipient_email, $recipient_name)
+            ->andReturn($recipient);
 
-        $productRepository = $this->partialMock(ProductRepository::class);
-
-        $productRepository->shouldReceive('findOne')
-            ->once()
-            ->with(['slug' => $product->slug])
-            ->andReturn($product);
-
+        // Mock PaystackRepository and set expectation for initializePurchaseTransaction method
         $paystackRepository = $this->partialMock(PaystackRepository::class);
-
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
             ->andReturn(['status' => 'success', 'data' => []]);
 
+        // Perform the request to clear the cart with recipient information
         $response = $this->post(route('cart.clear'), [
             'recipient_email' => $recipient_email,
             'recipient_name' => $recipient_name,
@@ -525,7 +523,13 @@ class CartControllerTest extends TestCase
             'amount' => 1000
         ]);
 
+        // Assert the response status
         $response->assertStatus(200);
+
+        // Assert that the GiftAlert mail was sent to the recipient email
+        Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {
+            return $mail->hasTo($recipient_email);
+        });
     }
 
     public function test_clear_cart_creates_new_gift_user_and_sends_email()
@@ -538,28 +542,16 @@ class CartControllerTest extends TestCase
         $recipient_email = 'gift@example.com';
         $recipient_name = 'Gift User';
 
-        $gift_user = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
+        $recipient = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
 
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
 
         $userRepository = $this->partialMock(UserRepository::class);
 
-        $userRepository->shouldReceive('query')
+        $userRepository->shouldReceive('firstOrCreate')
             ->once()
-            ->with(['email' => $recipient_email])
-            ->andReturn(User::query()->where('email', $recipient_email));
-
-        $userRepository->shouldReceive('create')
-            ->once()
-            ->with(['email' => $recipient_email, 'full_name' => $recipient_name])
-            ->andReturn($gift_user);
-
-        $productRepository = $this->partialMock(ProductRepository::class);
-
-        $productRepository->shouldReceive('findOne')
-            ->once()
-            ->with(['slug' => $product->slug])
-            ->andReturn($product);
+            ->with($recipient_email, $recipient_name)
+            ->andReturn($recipient);
 
         $paystackRepository = $this->partialMock(PaystackRepository::class);
 
@@ -591,13 +583,6 @@ class CartControllerTest extends TestCase
 
         $slug = 'non-existent-product';
 
-        $productRepository = $this->partialMock(ProductRepository::class);
-
-        $productRepository->shouldReceive('findOne')
-            ->once()
-            ->with(['slug' => $slug])
-            ->andReturn(null);
-
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('Product with slug non-existent-product not found');
 
@@ -615,14 +600,7 @@ class CartControllerTest extends TestCase
         $this->actingAs($user);
 
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
-
-        $productRepository = $this->partialMock(ProductRepository::class);
-
-        $productRepository->shouldReceive('findOne')
-            ->once()
-            ->with(['slug' => $product->slug])
-            ->andReturn($product);
-
+        
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('Total amount does not match quantity');
 

@@ -321,4 +321,16 @@ class UserRepository extends Repository
             $user->save();
         }
     }
+
+    /**
+     * Get or create a user by email and name.
+     *
+     * @param string $email
+     * @param string|null $name
+     * @return User
+     */
+    public function firstOrCreate(string $email, ?string $name): User
+    {
+        return User::firstOrCreate(['email' => $email], ['full_name' => $name]);
+    }
 }

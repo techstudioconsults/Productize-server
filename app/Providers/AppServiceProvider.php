@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Helpers\Services\FileGenerator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,10 +11,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind the FileGenerator class in the service container so that it can be injected into the app controllers
-        $this->app->singleton(FileGenerator::class, function ($app) {
-            return new FileGenerator();
-        });
+        //
     }
 
     /**

@@ -20,9 +20,10 @@ use Illuminate\Http\Request;
  */
 class PayoutController extends Controller
 {
+    use FileGenerator;
+
     public function __construct(
         protected PayoutRepository $payoutRepository,
-        protected FileGenerator $fileGenerator
     ) {
     }
 
@@ -91,9 +92,9 @@ class PayoutController extends Controller
                 $payout->status
             ];
         }
-        
-        $filePath = $this->fileGenerator->generateCsv($fileName, $data);
 
-        return $this->fileGenerator->streamFile($filePath, $fileName, 'text/csv');
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 }

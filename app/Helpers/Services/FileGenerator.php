@@ -1,17 +1,28 @@
 <?php
 
-/**
- * @author @Intuneteq Tobi Olanitori
- * @version 1.0
- * @since 09-06-2024
- */
-
 namespace App\Helpers\Services;
 
 use Illuminate\Support\Facades\Storage;
 use Mpdf\Mpdf;
 
-class FileGenerator
+/**
+ * @author @Intuneteq Tobi Olanitori
+ * @version 1.0
+ * @since 09-06-2024
+ *
+ * The FileGenerator trait provides methods for generating and handling files.
+ *
+ * This trait includes methods for generating CSV and PDF files, as well as streaming files to clients for download.
+ * It leverages Laravel's Storage facade for file storage operations and mPDF for PDF generation.
+ *
+ * Key Features:
+ * - Generate CSV files from an array of data.
+ * - Generate PDF files from HTML content.
+ * - Stream files to clients for download with the option to delete the file after streaming.
+ *
+ */
+
+trait FileGenerator
 {
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -58,7 +69,7 @@ class FileGenerator
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Stream a file to the client for download.
      *
      * @param string $filePath

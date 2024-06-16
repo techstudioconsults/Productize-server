@@ -23,9 +23,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class OrderController extends Controller
 {
+    use FileGenerator;
+
     public function __construct(
         protected OrderRepository $orderRepository,
-        protected FileGenerator $fileGenerator
     ) {
     }
 
@@ -157,9 +158,9 @@ class OrderController extends Controller
             ];
         }
 
-        $filePath = $this->fileGenerator->generateCsv($fileName, $data);
+        $filePath = $this->generateCsv($fileName, $data);
 
-        return $this->fileGenerator->streamFile($filePath, $fileName, 'text/csv');
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 
     /**

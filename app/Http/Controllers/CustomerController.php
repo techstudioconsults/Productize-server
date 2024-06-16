@@ -21,9 +21,10 @@ use Illuminate\Support\Facades\Auth;
  */
 class CustomerController extends Controller
 {
+    use FileGenerator;
+
     public function __construct(
         protected CustomerRepository $customerRepository,
-        protected FileGenerator $fileGenerator
     ) {
     }
 
@@ -117,8 +118,8 @@ class CustomerController extends Controller
             ];
         }
 
-        $filePath = $this->fileGenerator->generateCsv($fileName, $data);
+        $filePath = $this->generateCsv($fileName, $data);
 
-        return $this->fileGenerator->streamFile($filePath, $fileName, 'text/csv');
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 }

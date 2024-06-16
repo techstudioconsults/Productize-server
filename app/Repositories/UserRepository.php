@@ -323,6 +323,8 @@ class UserRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Get or create a user by email and name.
      *
      * @param string $email
@@ -331,6 +333,10 @@ class UserRepository extends Repository
      */
     public function firstOrCreate(string $email, ?string $name): User
     {
-        return User::firstOrCreate(['email' => $email], ['full_name' => $name]);
+        $user = $this->findOne(['email' => $email]);
+
+        if (!$user) return $this->create(['email' => $email, 'full_name' => $name]);
+
+        return $user;
     }
 }

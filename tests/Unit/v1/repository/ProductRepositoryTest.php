@@ -5,6 +5,7 @@ namespace Tests\Unit\v1\repository;
 use App\Enums\ProductStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Order;
 use App\Models\Product;
@@ -864,5 +865,76 @@ class ProductRepositoryTest extends TestCase
         $result = $this->productRepository->isPublished($product);
 
         $this->assertFalse($result);
+    }
+
+    public function test_prepareProducts_valid_data()
+    {
+        // Arrange
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        $cart = [
+            ['product_slug' => $product->slug, 'quantity' => 2]
+        ];
+
+        // Act
+        $result = $this->productRepository->prepareProducts($cart);
+
+        // Assert
+        $expected = [
+            [
+                'product_id' => $product->id,
+                'amount' => 2000,
+                'quantity' => 2,
+                'share' => 1900
+            ]
+        ];
+
+        $this->assertEquals($expected, $result);
+    }
+
+    public function test_prepareProducts_invalid_data()
+    {
+        // Arrange
+        $cart = [
+            ['product_slug' => '', 'quantity' => 2]
+        ];
+
+        // Expect
+        $this->expectException(ServerErrorException::class);
+
+        // Act
+        $this->productRepository->prepareProducts($cart);
+    }
+
+    public function test_prepareProducts_product_not_found()
+    {
+        // Arrange
+        $cart = [
+            ['product_slug' => 'non-existent-slug', 'quantity' => 2]
+        ];
+
+        // Expect
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Product with slug non-existent-slug not found');
+
+        // Act
+        $this->productRepository->prepareProducts($cart);
+    }
+
+    public function test_prepareProducts_product_not_published()
+    {
+        // Arrange
+       $product = Product::factory()->create(['price' => 1000, 'status' => 'draft']);
+
+        $cart = [
+            ['product_slug' => $product->slug, 'quantity' => 2]
+        ];
+
+        // Expect
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage("Product with slug $product->slug not published");
+
+        // Act
+        $this->productRepository->prepareProducts($cart);
     }
 }

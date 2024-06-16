@@ -561,6 +561,8 @@ class ProductRepository extends Repository
     }
 
     /**
+     * @author @Intuneteq Tobi Olanitori
+     *
      * Prepare products for the cart.
      *
      * @param array $cart

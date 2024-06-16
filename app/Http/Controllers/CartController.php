@@ -132,98 +132,6 @@ class CartController extends Controller
         ]);
     }
 
-    // public function clear(ClearCartRequest $request)
-    // {
-    //     $user = Auth::user();
-
-    //     $validated = $request->validated();
-
-    //     $recipient_email = $validated['recipient_email'] ?? null;
-    //     $recipient_name = $validated['recipient_name'] ?? null;
-
-    //     $recipient = null;
-
-    //     if ($recipient_email) {
-    //         $query = $this->userRepository->query(['email' => $recipient_email]);
-
-    //         if ($query->exists()) {
-    //             $recipient = $query->first();
-    //         } else {
-    //             $recipient = $this->userRepository->create([
-    //                 'email' => $recipient_email,
-    //                 'full_name' => $recipient_name
-    //             ]);
-
-    //             // send login email
-    //             Mail::to($recipient)->send(new GiftAlert($recipient));
-    //         }
-    //     }
-
-    //     // Extract the cart from the request
-    //     $cart = $validated['products'];
-
-    //     $products = Arr::map($cart, function ($item) {
-    //         // Get Slug
-    //         $slug = $item['product_slug'];
-
-    //         // Find the product by slug
-    //         $product = $this->productRepository->findOne(['slug' => $slug]);
-
-    //         // Product Not Found, Cannot continue with payment.
-    //         if (!$product) {
-    //             throw new BadRequestException('Product with slug ' . $slug . ' not found');
-    //         }
-
-    //         if ($product->status !== 'published') {
-    //             throw new BadRequestException('Product with slug ' . $slug . ' not published');
-    //         }
-
-    //         // Total Product Amount
-    //         $amount = $product->price * $item['quantity'];
-
-    //         // Productize's %
-    //         $deduction = $amount * 0.05;
-
-    //         // This is what the product owner will earn from this sale.
-    //         $share = $amount - $deduction;
-
-    //         return [
-    //             "product_id" => $product->id,
-    //             "amount" => $amount,
-    //             "quantity" => $item['quantity'],
-    //             "share" => $share
-    //         ];
-    //     });
-
-    //     // Calculate Total Amount
-    //     $total_amount = array_reduce($products, function ($carry, $item) {
-    //         return $carry + ($item['amount']);
-    //     }, 0);
-
-    //     // Validate Total amount match that stated in request.
-    //     if ($total_amount !== $validated['amount']) {
-    //         throw new BadRequestException('Total amount does not match quantity');
-    //     }
-
-    //     $payload = [
-    //         'email' => $user->email,
-    //         'amount' => $total_amount * 100,
-    //         'metadata' => [
-    //             'isPurchase' => true, // Use this to filter the type of charge when handling the webhook
-    //             'buyer_id' => $user->id,
-    //             'products' => $products,
-    //             'recipient_id' => $recipient ? $recipient->id : null
-    //         ]
-    //     ];
-
-    //     try {
-    //         $response = $this->paystackRepository->initializePurchaseTransaction($payload);
-    //         return new JsonResponse(['data' => $response]);
-    //     } catch (\Throwable $th) {
-    //         throw new ApiException($th->getMessage(), $th->getCode());
-    //     }
-    // }
-
     public function clear(ClearCartRequest $request)
     {
         // Retrieve authenticated users
@@ -241,8 +149,6 @@ class CartController extends Controller
         $recipient = null;
 
         if ($recipient_email) {
-
-            var_dump($recipient_email);
             $recipient = $this->userRepository->firstOrCreate($recipient_email, $recipient_name);
 
             // Send the Gift alert

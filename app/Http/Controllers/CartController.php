@@ -37,8 +37,7 @@ class CartController extends Controller
         protected ProductRepository $productRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori

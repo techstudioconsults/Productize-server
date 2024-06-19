@@ -18,9 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EarningRepository extends Repository
 {
-    public function seed(): void
-    {
-    }
+    public function seed(): void {}
 
     public function create(array $entity): Earning
     {

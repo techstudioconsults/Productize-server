@@ -25,5 +25,5 @@ Route::controller(OrderController::class)
 
         Route::get('/customers/{customer}', 'showByCustomer');
 
-        Route::patch('/mark-as-seen', 'markseen')->name('seen.mark');
+        Route::patch('/seen', 'markseen')->name('seen.mark');
     });

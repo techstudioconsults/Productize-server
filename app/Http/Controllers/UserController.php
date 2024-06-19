@@ -38,8 +38,7 @@ class UserController extends Controller
     public function __construct(
         protected UserRepository $userRepository,
         protected ProductRepository $productRepository
-    ) {
-    }
+    ) {}
 
     /**
      *  @author @Intuneteq Tobi Olanitori

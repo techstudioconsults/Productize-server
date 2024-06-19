@@ -34,8 +34,7 @@ class AccountController extends Controller
         protected AccountRepository $accountRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori

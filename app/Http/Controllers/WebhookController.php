@@ -26,8 +26,7 @@ class WebhookController extends Controller
     public function __construct(
         protected WebhookRepository $webhookRepository,
         protected PaystackRepository $paystackRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Handle paystack webhook events

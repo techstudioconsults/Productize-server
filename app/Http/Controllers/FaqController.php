@@ -20,8 +20,7 @@ class FaqController extends Controller
 {
     public function __construct(
         protected FaqRepository $faqRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @obajide028 Odesanya Babajide

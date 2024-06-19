@@ -12,9 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AccountRepository extends Repository
 {
-    public function seed(): void
-    {
-    }
+    public function seed(): void {}
 
     public function create(array $entity): Account
     {

@@ -129,7 +129,7 @@ class WebhookRepository
 
                 $buildOrder = [
                     'reference_no' => $data['reference'],
-                    'user_id' => $recipient_id ?? $buyer_id,
+                    'user_id' => $recipient_id ? $recipient_id : $buyer_id,
                     'total_amount' => $product_saved->price * $product['quantity'],
                     'quantity' => $product['quantity'],
                     'product_id' => $product_saved->id,

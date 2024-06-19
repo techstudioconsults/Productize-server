@@ -31,8 +31,7 @@ class SubscriptionController extends Controller
     public function __construct(
         protected SubscriptionRepository $subscriptionRepository,
         protected PaystackRepository $paystackRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori

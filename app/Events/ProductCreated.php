@@ -17,8 +17,7 @@ class ProductCreated
      */
     public function __construct(
         public Product $product,
-    ) {
-    }
+    ) {}
 
     /**
      * Get the channels the event should broadcast on.

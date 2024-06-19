@@ -17,8 +17,7 @@ class WebhookRepository
         protected CustomerRepository $customerRepository,
         protected EarningRepository $earningRepository,
         protected PayoutRepository $payoutRepository
-    ) {
-    }
+    ) {}
 
     public function paystack(string $type, $data)
     {

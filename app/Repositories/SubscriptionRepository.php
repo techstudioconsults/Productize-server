@@ -17,12 +17,9 @@ class SubscriptionRepository extends Repository
     public function __construct(
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
-    public function seed(): void
-    {
-    }
+    public function seed(): void {}
 
     public function start(array $entity): array
     {

@@ -39,8 +39,7 @@ class ProductController extends Controller
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository,
         protected OrderRepository $orderRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori

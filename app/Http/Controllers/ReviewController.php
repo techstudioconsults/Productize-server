@@ -24,9 +24,7 @@ class ReviewController extends Controller
         protected ReviewRepository $reviewRepository,
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository
-    ) {
-
-    }
+    ) {}
 
     /**
      * @author @obajide028 Odesanya Babajide

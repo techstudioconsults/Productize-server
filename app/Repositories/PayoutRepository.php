@@ -10,9 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PayoutRepository extends Repository
 {
-    public function seed(): void
-    {
-    }
+    public function seed(): void {}
 
     public function create(array $credentials): Payout
     {

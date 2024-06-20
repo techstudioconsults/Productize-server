@@ -86,7 +86,7 @@ class ReviewController extends Controller
      *
      * It returns the first 2 in the collection.
      *
-     * @param Product $product The product for which to retrieve orders.
+     * @param Product $product The product for which to retrieve review.
      * @return \App\Http\Resources\ReviewResource A collection of review resources.
      */
     public function findByProduct(Product $product)
@@ -98,5 +98,5 @@ class ReviewController extends Controller
         return ReviewResource::collection($reviews);
 
     }
-    
+ 
 }

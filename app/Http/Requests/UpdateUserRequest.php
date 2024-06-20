@@ -42,6 +42,9 @@ class UpdateUserRequest extends FormRequest
             'purchase_notification' => 'boolean',
             'news_and_update_notification' => 'boolean',
             'payout_notification' => 'boolean',
+            'country' => 'required|string',
+            'document_type' => 'required|string',
+            'document' => 'required|file',
         ];
     }
 

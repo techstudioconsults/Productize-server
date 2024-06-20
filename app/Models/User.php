@@ -51,7 +51,10 @@ class User extends Authenticatable implements CanResetPassword
         'product_creation_notification',
         'purchase_notification',
         'news_and_update_notification',
-        'payout_notification'
+        'payout_notification',
+        'country',
+        'document_type',
+        'document',
     ];
 
     /**

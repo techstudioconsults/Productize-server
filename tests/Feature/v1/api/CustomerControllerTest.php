@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
-use App\Models\User;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Support\Carbon;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Storage;
 use Tests\TestCase;
 
@@ -48,13 +48,13 @@ class CustomerControllerTest extends TestCase
         Customer::factory()->create([
             'merchant_id' => $merchant->id,
             'created_at' => $start_date,
-            'user_id' => $customer_one->id
+            'user_id' => $customer_one->id,
         ]);
 
         Customer::factory()->create([
             'merchant_id' => $merchant->id,
             'created_at' => $start_date,
-            'user_id' => $customer_two->id
+            'user_id' => $customer_two->id,
         ]);
 
         // Mock the authenticated user
@@ -99,7 +99,7 @@ class CustomerControllerTest extends TestCase
         $user = User::factory()->create();
 
         $merchant = User::factory()->create();
-        $orders  = Order::factory()
+        $orders = Order::factory()
             ->count(2)
             ->create([
                 'user_id' => $user->id,
@@ -110,7 +110,7 @@ class CustomerControllerTest extends TestCase
         $customer = Customer::factory()->create([
             'user_id' => $user->id,
             'merchant_id' => $merchant->id,
-            'order_id' => $orders->first()
+            'order_id' => $orders->first(),
         ]);
 
         // Mock authentication
@@ -129,7 +129,7 @@ class CustomerControllerTest extends TestCase
     {
         $this->expectException(UnAuthorizedException::class);
 
-        $this->withoutExceptionHandling()->get(route('customer.show', ['customer' => "12345"]));
+        $this->withoutExceptionHandling()->get(route('customer.show', ['customer' => '12345']));
     }
 
     public function test_download()
@@ -162,13 +162,13 @@ class CustomerControllerTest extends TestCase
         Customer::factory()->create([
             'merchant_id' => $merchant->id,
             'created_at' => $start_date,
-            'user_id' => $customer_one->id
+            'user_id' => $customer_one->id,
         ]);
 
         Customer::factory()->create([
             'merchant_id' => $merchant->id,
             'created_at' => $start_date,
-            'user_id' => $customer_two->id
+            'user_id' => $customer_two->id,
         ]);
 
         // Mock the authenticated user
@@ -189,7 +189,7 @@ class CustomerControllerTest extends TestCase
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 
         $fileName = "customers_$now.csv";
-        $filePath = 'csv/' . $fileName;
+        $filePath = 'csv/'.$fileName;
 
         // Assert the file was created
         Storage::disk('local')->assertExists($filePath);
@@ -206,7 +206,7 @@ class CustomerControllerTest extends TestCase
 
         // Assert the response headers
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=' . $fileName);
+        $response->assertHeader('Content-Disposition', 'attachment; filename='.$fileName);
     }
 
     public function test_download_with_date_range(): void
@@ -240,13 +240,13 @@ class CustomerControllerTest extends TestCase
         Customer::factory()->create([
             'merchant_id' => $merchant->id,
             'created_at' => $start_date,
-            'user_id' => $customer_one->id
+            'user_id' => $customer_one->id,
         ]);
 
         Customer::factory()->create([
             'merchant_id' => $merchant->id,
             'created_at' => $start_date,
-            'user_id' => $customer_two->id
+            'user_id' => $customer_two->id,
         ]);
 
         // Mock the authenticated user
@@ -272,7 +272,7 @@ class CustomerControllerTest extends TestCase
         $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
 
         $fileName = "customers_$now.csv";
-        $filePath = 'csv/' . $fileName;
+        $filePath = 'csv/'.$fileName;
 
         // Assert the file was created
         Storage::disk('local')->assertExists($filePath);
@@ -289,6 +289,6 @@ class CustomerControllerTest extends TestCase
 
         // Assert the response headers
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=' . $fileName);
+        $response->assertHeader('Content-Disposition', 'attachment; filename='.$fileName);
     }
 }

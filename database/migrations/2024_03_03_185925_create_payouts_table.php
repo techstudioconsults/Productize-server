@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PayoutStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,9 +14,9 @@ return new class extends Migration
     {
         Schema::create('payouts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignIdFor(\App\Models\PayOutAccount::class, 'pay_out_account_id')->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Account::class, 'account_id')->cascadeOnDelete();
             $table->text('reference');
-            $table->text('status');
+            $table->enum('status', array_column(PayoutStatusEnum::cases(), 'value'));
             $table->text('paystack_transfer_code');
             $table->integer('amount');
             $table->timestamps();

@@ -2,14 +2,8 @@
 
 namespace App\Listeners;
 
-use App\Mail\WelcomeMail;
-use App\Models\User;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\InteractsWithQueue;
-use Mail;
 use Notification;
 
 class SendWelcomeEmail

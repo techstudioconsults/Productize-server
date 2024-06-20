@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
-    use TruncateTable, DisableForeignKeys;
+    use DisableForeignKeys, TruncateTable;
 
     public function run(): void
     {

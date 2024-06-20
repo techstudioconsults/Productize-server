@@ -40,7 +40,7 @@ class CartRepositoryTest extends TestCase
         $expected_result = [
             'user_id' => $user->id,
             'product_slug' => $product->slug,
-            'quantity' => 3
+            'quantity' => 3,
         ];
 
         $result = $this->cartRepository->create($expected_result);
@@ -69,19 +69,19 @@ class CartRepositoryTest extends TestCase
 
         Cart::factory()->create([
             'created_at' => '2024-03-01',
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         Cart::factory()->create([
             'created_at' => '2024-02-01',
-            'user_id' => User::factory()->create()->id
+            'user_id' => User::factory()->create()->id,
         ]);
 
         // Test with date filter
         $filter = [
             'start_date' => $start_date,
             'end_date' => $end_date,
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ];
 
         $query = $this->cartRepository->query($filter);
@@ -109,12 +109,12 @@ class CartRepositoryTest extends TestCase
 
         Cart::factory()->create([
             'created_at' => '2024-03-01',
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         Cart::factory()->create([
             'created_at' => '2024-02-01',
-            'user_id' => User::factory()->create()->id
+            'user_id' => User::factory()->create()->id,
         ]);
 
         // Test without date filter
@@ -216,19 +216,19 @@ class CartRepositoryTest extends TestCase
 
         Cart::factory()->create([
             'created_at' => '2024-03-01',
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         Cart::factory()->create([
             'created_at' => '2024-02-01',
-            'user_id' => User::factory()->create()->id
+            'user_id' => User::factory()->create()->id,
         ]);
 
         // Test with date filter
         $filter = [
             'start_date' => $start_date,
             'end_date' => $end_date,
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ];
 
         $results = $this->cartRepository->find($filter);
@@ -278,11 +278,10 @@ class CartRepositoryTest extends TestCase
         $this->assertEmpty($result, 'Expected no carts to be found for the given user ID');
     }
 
-
     public function test_findbyid(): void
     {
         $cart = Cart::factory()->create([
-            'user_id' => User::factory()->create()
+            'user_id' => User::factory()->create(),
         ]);
 
         $result = $this->cartRepository->findById($cart->id);
@@ -293,7 +292,7 @@ class CartRepositoryTest extends TestCase
 
     public function test_findbyid_wrong_id_return_null(): void
     {
-        $cart_id = "invalid_cart_id";
+        $cart_id = 'invalid_cart_id';
 
         $result = $this->cartRepository->findById($cart_id);
 
@@ -305,7 +304,7 @@ class CartRepositoryTest extends TestCase
         $product = Product::factory()->create(['user_id' => User::factory()->create()->id]);
 
         Cart::factory()->count(3)->create([
-            'product_slug' => $product->slug
+            'product_slug' => $product->slug,
         ]);
 
         $result = $this->cartRepository->findOne(['product_slug' => $product->slug]);
@@ -319,10 +318,10 @@ class CartRepositoryTest extends TestCase
         $product = Product::factory()->create(['user_id' => User::factory()->create()->id]);
 
         Cart::factory()->count(3)->create([
-            'product_slug' => $product->slug
+            'product_slug' => $product->slug,
         ]);
 
-        $result = $this->cartRepository->findOne(['product_slug' => "wrong_slug"]);
+        $result = $this->cartRepository->findOne(['product_slug' => 'wrong_slug']);
 
         assertEquals(null, $result);
     }
@@ -335,7 +334,7 @@ class CartRepositoryTest extends TestCase
         // Define updates for the cart
         $updates = [
             'quantity' => 5,
-            'product_slug' => 'updated-product-slug'
+            'product_slug' => 'updated-product-slug',
         ];
 
         // Update the cart
@@ -356,7 +355,7 @@ class CartRepositoryTest extends TestCase
         // Define updates for the user (not relevant to Cart model)
         $updates = [
             'name' => 'Updated Name',
-            'email' => 'updated@example.com'
+            'email' => 'updated@example.com',
         ];
 
         // Expect ModelCastException when trying to update a non-Cart model

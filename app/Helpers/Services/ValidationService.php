@@ -2,22 +2,30 @@
 
 /**
  * @author Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 21-05-2024
  */
 
 namespace App\Helpers\Services;
 
 use App\Exceptions\UnprocessableException;
-use Illuminate\Validation\Validator;
-use Illuminate\Support\Facades\Validator as Validation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Validator as Validation;
+use Illuminate\Validation\Validator;
 
+/**
+ * The ValidationService class provides methods for validating data and applying date filters to queries.
+ *
+ * This service is used to ensure data integrity by validating input data against specified rules
+ * and to handle date range filtering on database queries.
+ */
 class ValidationService
 {
     /**
-     * @var Validator|null $validator The validator instance used for validation.
+     * @var Validator|null The validator instance used for validation.
      */
     private ?Validator $validator = null;
 
@@ -38,8 +46,7 @@ class ValidationService
      *
      * This method sets the validator instance that will be used for validating data.
      *
-     * @param Validator $validator The validator instance to set.
-     * @return void
+     * @param  Validator  $validator  The validator instance to set.
      */
     public function setValidator(Validator $validator): void
     {
@@ -49,10 +56,6 @@ class ValidationService
     /**
      * It validates a date range is invalid.
      * Returns true if date range is invalid, returns false otherwise.
-     *
-     * @param  string $start_date
-     * @param  string $end_date
-     * @return bool
      */
     protected function isInValidDateRange(string $start_date, string $end_date): bool
     {
@@ -61,10 +64,10 @@ class ValidationService
          */
         $validator = Validation::make([
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ], [
             'start_date' => 'date',
-            'end_date' => 'date'
+            'end_date' => 'date',
         ]);
 
         if ($validator->fails()) {
@@ -85,8 +88,8 @@ class ValidationService
      * validator instance for later retrieval and returns false. If validation
      * passes, it returns true.
      *
-     * @param array $data The data to be validated.
-     * @param array $rules The validation rules to apply.
+     * @param  array  $data  The data to be validated.
+     * @param  array  $rules  The validation rules to apply.
      * @return bool Returns true if validation passes, false otherwise.
      */
     protected function isValidated(array $data, array $rules): bool
@@ -99,7 +102,7 @@ class ValidationService
             $this->setValidator($validator);
 
             return false;
-        };
+        }
 
         return true;
     }
@@ -113,22 +116,23 @@ class ValidationService
      * 'start_date' and 'end_date' from the filter array after applying the filter.
      * If the date range is invalid, it throws an UnprocessableException.
      *
-     * @param Builder|Relation $query The query to which the date filters will be applied.
-     * @param array $filter The filter array containing 'start_date' and 'end_date'.
+     * @param  Builder|Relation  $query  The query to which the date filters will be applied.
+     * @param  array  $filter  The filter array containing 'start_date' and 'end_date'.
+     *
      * @throws UnprocessableException If the date range is invalid.
      */
-    protected function applyDateFilters(Builder | Relation $query, array &$filter): void
+    protected function applyDateFilters(Builder|Relation $query, array &$filter): void
     {
         // Check for start_date and end_date in the array
         if (array_key_exists('start_date', $filter) && array_key_exists('end_date', $filter)) {
-            $start_date = $filter['start_date'] ?? ""; // Possibly null
-            $end_date = $filter['end_date'] ?? ""; // Possibly null
+            $start_date = $filter['start_date'] ?? ''; // Possibly null
+            $end_date = $filter['end_date'] ?? ''; // Possibly null
 
             // Remove them from the array
             unset($filter['start_date'], $filter['end_date']);
 
             // Exit
-            if (!$start_date || !$end_date) {
+            if (! $start_date || ! $end_date) {
                 return;
             }
 

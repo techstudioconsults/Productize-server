@@ -3,15 +3,14 @@
 namespace Tests\Unit\v1\repository;
 
 use App\Exceptions\UnprocessableException;
-use App\Models\User;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use App\Repositories\OrderRepository;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
-
 
 class OrderRepositoryTest extends TestCase
 {
@@ -37,7 +36,7 @@ class OrderRepositoryTest extends TestCase
             'reference_no' => 'ABC123', // Set a sample reference number
             'product_id' => $product->id,
             'quantity' => 1, // Set a sample quantity
-            'total_amount' => 100.00 // Set a sample total amount
+            'total_amount' => 100.00, // Set a sample total amount
         ];
 
         $result = $this->orderRepository->create($expected_result);
@@ -92,7 +91,7 @@ class OrderRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         // Act
@@ -105,7 +104,7 @@ class OrderRepositoryTest extends TestCase
 
     public function test_findbyid(): void
     {
-        $expected_result =   Order::factory()->create([
+        $expected_result = Order::factory()->create([
             'product_id' => Product::factory()->create(['user_id' => User::factory()->create()->id])->id,
         ]);
 
@@ -116,14 +115,14 @@ class OrderRepositoryTest extends TestCase
 
     public function test_findbyid_return_null_for_when_not_found(): void
     {
-        $result = $this->orderRepository->findById("id_does_not_exist");
+        $result = $this->orderRepository->findById('id_does_not_exist');
 
         $this->assertNull($result);
     }
 
     public function test_findone(): void
     {
-        $expected_result =   Order::factory()->create([
+        $expected_result = Order::factory()->create([
             'product_id' => Product::factory()->create(['user_id' => User::factory()->create()->id])->id,
         ]);
 
@@ -134,7 +133,7 @@ class OrderRepositoryTest extends TestCase
 
     public function test_findone_return_null_when_not_found(): void
     {
-        $result = $this->orderRepository->findOne(['reference_no' => "12345"]);
+        $result = $this->orderRepository->findOne(['reference_no' => '12345']);
 
         $this->assertNull($result);
     }
@@ -284,10 +283,10 @@ class OrderRepositoryTest extends TestCase
 
         $user = User::factory()->create();
 
-        $expected_result =   Order::factory()->create([
+        $expected_result = Order::factory()->create([
             'product_id' => Product::factory()->create([
                 'user_id' => $user->id,
-                'title' => $product_title
+                'title' => $product_title,
             ])->id,
         ]);
 
@@ -313,8 +312,8 @@ class OrderRepositoryTest extends TestCase
         $actualResult = $result->get()->first()->toArray();
 
         // Cast the values to match the types in the expected array
-        $actualResult['quantity'] = (int)$actualResult['quantity'];
-        $actualResult['total_amount'] = (float)$actualResult['total_amount'];
+        $actualResult['quantity'] = (int) $actualResult['quantity'];
+        $actualResult['total_amount'] = (float) $actualResult['total_amount'];
 
         unset($actualResult['laravel_through_key']);
 

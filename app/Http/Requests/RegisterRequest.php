@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Exceptions\UnprocessableException;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
@@ -27,7 +27,7 @@ class RegisterRequest extends FormRequest
         return [
             'full_name' => 'required|string',
             'email' => 'required|email|string|unique:users,email',
-            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()]
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
         ];
     }
 

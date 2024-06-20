@@ -17,9 +17,13 @@ Route::controller(OrderController::class)
 
         Route::get('/download', 'downloadList');
 
+        Route::get('/unseen', 'unseen')->name('unseen');
+
         Route::get('/{order}', 'show')->middleware('can:view,order');
 
         Route::get('/products/{product}', 'showByProduct');
 
         Route::get('/customers/{customer}', 'showByCustomer');
+
+        Route::patch('/seen', 'markseen')->name('seen.mark');
     });

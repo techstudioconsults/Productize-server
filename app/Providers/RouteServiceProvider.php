@@ -18,7 +18,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/home';
+    public const HOME = '/';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.
@@ -39,7 +39,7 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         /**
-         * @see restore method in \App\Http\Controllers\ProductController
+         * @see \App\Http\Controllers\ProductController - restore method
          */
         Route::bind('product', function ($product) {
             return Product::withTrashed()->findOr($product, function () use ($product) {

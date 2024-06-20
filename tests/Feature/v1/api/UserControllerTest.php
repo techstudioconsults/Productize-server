@@ -63,11 +63,11 @@ class UserControllerTest extends TestCase
                 'logo' => $logo,
                 'bio' => 'this is a bio',
                 'username' => 'updated',
-                "phone_number" => "12345678",
-                "bio" => "bio",
-                "twitter_account" => "https://twitter.com",
-                "facebook_account" => "https://facebook.com",
-                "youtube_account" => "https://youtube.com",
+                'phone_number' => '12345678',
+                'bio' => 'bio',
+                'twitter_account' => 'https://twitter.com',
+                'facebook_account' => 'https://facebook.com',
+                'youtube_account' => 'https://youtube.com',
             ]);
 
         Storage::disk('spaces')->assertExists('avatars/avatar.jpg');
@@ -135,7 +135,7 @@ class UserControllerTest extends TestCase
 
         $user = User::factory()->create([
             'password' => 'password',
-            'email_verified_at' => null
+            'email_verified_at' => null,
         ]);
 
         $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
@@ -197,8 +197,8 @@ class UserControllerTest extends TestCase
 
         $user = User::factory()->create();
 
-        $subject = "My Subject";
-        $message = "message";
+        $subject = 'My Subject';
+        $message = 'message';
 
         $user->markEmailAsVerified();
 
@@ -227,8 +227,8 @@ class UserControllerTest extends TestCase
 
         $user = User::factory()->create();
 
-        $subject = "My Subject";
-        $message = "message";
+        $subject = 'My Subject';
+        $message = 'message';
 
         $user->markEmailAsVerified();
 

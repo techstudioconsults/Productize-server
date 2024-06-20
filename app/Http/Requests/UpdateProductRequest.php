@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ProductEnum;
 use App\Exceptions\UnprocessableException;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Validation\Rules\Enum;
+use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateProductRequest extends FormRequest
 {

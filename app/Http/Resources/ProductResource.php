@@ -29,14 +29,14 @@ class ProductResource extends JsonResource
             'stock_count' => (bool) $this->stock_count,
             'choose_quantity' => (bool) $this->choose_quantity,
             'show_sales_count' => (bool) $this->show_sales_count,
-            'link' => config('app.client_url') . "/products/$this->slug",
+            'link' => config('app.client_url')."/products/$this->slug",
             'status' => $this->status ?? 'draft',
             'slug' => $this->slug,
             'total_order' => $this->totalOrder(),
             'total_sales' => (int) $this->totalSales(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'deleted_at' => $this->deleted_at
+            'deleted_at' => $this->deleted_at,
         ];
     }
 }

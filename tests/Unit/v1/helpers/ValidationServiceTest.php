@@ -6,10 +6,10 @@ use App\Exceptions\UnprocessableException;
 use App\Helpers\Services\ValidationService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Tests\TestCase;
-use ReflectionClass;
 use Illuminate\Validation\Validator;
 use Mockery;
+use ReflectionClass;
+use Tests\TestCase;
 
 class ValidationServiceTest extends TestCase
 {
@@ -76,8 +76,8 @@ class ValidationServiceTest extends TestCase
         // Mock the query builder
         $queryMock = Mockery::mock(Builder::class);
         $queryMock->shouldReceive('whereBetween')
-                  ->once()
-                  ->with('created_at', ['2024-01-01', '2024-03-20']);
+            ->once()
+            ->with('created_at', ['2024-01-01', '2024-03-20']);
 
         // Create the filter array with valid dates
         $filter = [

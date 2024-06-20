@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Paystack extends Model
 {
@@ -22,6 +22,4 @@ class Paystack extends Model
         'subscription_code',
         'user_id',
     ];
-
-
 }

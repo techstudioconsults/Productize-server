@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('total_amount');
             $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete(); // This is the buyer who made the order
             $table->foreignIdFor(\App\Models\Product::class, 'product_id');
+            $table->boolean('seen')->default(false); // filter if the user has seen the latest orders on the UI
             $table->timestamps();
         });
     }

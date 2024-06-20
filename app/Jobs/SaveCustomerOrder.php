@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -54,7 +53,6 @@ class SaveCustomerOrder implements ShouldQueue
                 // Log::channel('webhook')->critical('what is product', ['product' => $product]);
 
                 // $customer = $customerRepository->createOrUpdate($this->email, $product['product_slug']);
-
 
                 $buildOrder = [
                     'reference_no' => $this->reference_no,

@@ -78,7 +78,7 @@ class FaqRepositoryTest extends TestCase
         $faq = Faq::factory()->create();
 
         $updates = [
-            'title' => "General question",
+            'title' => 'General question',
             'question' => 'What is my name?',
             'answer' => 'My name is Oba.',
         ];
@@ -108,13 +108,12 @@ class FaqRepositoryTest extends TestCase
         // Attempt to create faq without a title
         $data = [
             'question' => 'How are you?',
-            'answer' => 'I am fine'
+            'answer' => 'I am fine',
         ];
 
         $this->expectException(BadRequestException::class);
         $this->faqRepository->create($data);
     }
-
 
     public function test_update_faq_successfully(): void
     {
@@ -124,7 +123,7 @@ class FaqRepositoryTest extends TestCase
         // Define updates for the review
         $updates = [
             'title' => 'General Question',
-            'answer' => 'Helloo'
+            'answer' => 'Helloo',
         ];
 
         // Update the review
@@ -138,7 +137,7 @@ class FaqRepositoryTest extends TestCase
 
     public function test_findbyid_return_null_for_when_not_found(): void
     {
-        $result = $this->faqRepository->findById("id_does_not_exist");
+        $result = $this->faqRepository->findById('id_does_not_exist');
 
         $this->assertNull($result);
     }

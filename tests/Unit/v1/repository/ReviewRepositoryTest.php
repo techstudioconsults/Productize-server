@@ -17,7 +17,6 @@ class ReviewRepositoryTest extends TestCase
 
     private ReviewRepository $reviewRepository;
 
-
     protected function setUp(): void
     {
 
@@ -28,7 +27,6 @@ class ReviewRepositoryTest extends TestCase
     /**
      *  Test the create method
      */
-
     public function testCreateReview()
     {
         $user = User::factory()->create();
@@ -65,7 +63,6 @@ class ReviewRepositoryTest extends TestCase
         $this->assertCount(10, $reviews);
     }
 
-
     public function testQueryReviewsByProductTitle()
     {
         $product1 = Product::factory()->create(['title' => 'Product 1']);
@@ -96,7 +93,7 @@ class ReviewRepositoryTest extends TestCase
         // Define updates for the review
         $updates = [
             'rating' => 5,
-            'comment' => 'Review Updated'
+            'comment' => 'Review Updated',
         ];
 
         // Update the review
@@ -141,7 +138,7 @@ class ReviewRepositoryTest extends TestCase
 
     public function test_findbyid_return_null_for_when_not_found(): void
     {
-        $result = $this->reviewRepository->findById("id_does_not_exist");
+        $result = $this->reviewRepository->findById('id_does_not_exist');
 
         $this->assertNull($result);
     }

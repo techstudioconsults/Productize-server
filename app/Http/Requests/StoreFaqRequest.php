@@ -2,15 +2,17 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreFaqRequest extends FormRequest
 {
@@ -32,7 +34,7 @@ class StoreFaqRequest extends FormRequest
         return [
             'title' => 'required|string',
             'question' => 'required|string',
-            'answer' => 'required|string'
+            'answer' => 'required|string',
         ];
     }
 

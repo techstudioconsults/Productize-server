@@ -29,6 +29,18 @@ class PayoutController extends Controller
     ) {
     }
 
+    public function index(Request $request)
+    {
+        $filter = [
+            'start_date' =>  $request->start_date,
+            'end_date' => $request->end_date
+        ];
+
+        $payouts = $this->payoutRepository->find($filter);
+
+        return PayoutResource::collection($payouts);
+    }
+
     /**
      * @author @Intuneteq Tobi Olanitori
      *
@@ -37,7 +49,7 @@ class PayoutController extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index(Request $request)
+    public function user(Request $request)
     {
         $user = Auth::user();
 

@@ -21,6 +21,7 @@ use App\Repositories\SubscriptionRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
 
@@ -42,9 +43,14 @@ class SubscriptionController extends Controller
      *
      * @return SubscriptionResource Returns a collection of all subscriptions.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $subscriptions = $this->subscriptionRepository->find();
+        $filter = [
+            'start_date' =>  $request->start_date,
+            'end_date' => $request->end_date
+        ];
+
+        $subscriptions = $this->subscriptionRepository->find($filter);
 
         return SubscriptionResource::collection($subscriptions);
     }

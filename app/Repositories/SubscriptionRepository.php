@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Log;
 
 class SubscriptionRepository extends Repository
 {
+    // Productize's subscription price
+    public const PRICE = "5000";
+
     public function __construct(
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
@@ -41,7 +44,7 @@ class SubscriptionRepository extends Repository
         $user = $this->userRepository->findById($user_id);
 
         try {
-            if (! $customer) {
+            if (!$customer) {
                 $customer = $this->paystackRepository->createCustomer($user);
             }
 
@@ -102,7 +105,7 @@ class SubscriptionRepository extends Repository
     public function update(Model $entity, array $updates): Subscription
     {
         // Ensure that the provided entity is an instance of Order
-        if (! $entity instanceof Subscription) {
+        if (!$entity instanceof Subscription) {
             throw new ModelCastException('Subscription', get_class($entity));
         }
 

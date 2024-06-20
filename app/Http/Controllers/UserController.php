@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PayoutStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
@@ -19,6 +20,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
 use App\Repositories\OrderRepository;
+use App\Repositories\PayoutRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
@@ -41,6 +43,7 @@ class UserController extends Controller
         protected UserRepository $userRepository,
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
+        protected PayoutRepository $payoutRepository
     ) {
     }
 
@@ -192,17 +195,31 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve statistical data for products, sales, payouts, and users.
+     *
+     * This method calculates and returns the total number of products,
+     * total sales quantity, total completed payouts amount, and total number
+     * of users in the system. The data is returned as a JSON resource.
+     *
+     * @return JsonResource A JSON resource containing the statistical data.
+     */
     public function stats()
     {
         $total_products = $this->productRepository->query([])->count();
 
         $total_sales = $this->orderRepository->query([])->sum('quantity');
 
+        $total_payouts = $this->payoutRepository->query(['status' => PayoutStatusEnum::Completed->value])->sum('amount');
+
         $total_users = $this->userRepository->query([])->count();
 
         return new JsonResource([
             'total_products' => $total_products,
             'total_sales' => $total_sales,
+            'total_payouts' => $total_payouts,
             'total_users' => $total_users
         ]);
     }

@@ -2,12 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PayoutStatusEnum;
+use App\Enums\Roles;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
+use App\Models\Account;
+use App\Models\Order;
+use App\Models\Payout;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -249,4 +255,36 @@ class UserControllerTest extends TestCase
 
         Mail::assertSent(RequestHelp::class);
     }
+
+    // public function test_stat(): void
+    // {
+    //     $admin = User::factory()->create([
+    //         'role' => Roles::USER->value
+    //     ]);
+
+    //     $users = User::factory()->count(10)->create();
+    //     $products = Product::factory()->count(10)->create();
+    //     $payouts = Payout::factory()->count(10)->create([
+    //         'status' => PayoutStatusEnum::Completed->value,
+    //         'account_id' => Account::factory()->create()->id
+    //     ]);
+    //     $orders = Order::factory()->count(10)->create();
+
+    //     // $admin->createToken('TestToken', ['role:super_admin'])->plainTextToken;
+
+    //     $this->actingAs($admin);
+
+    //     $response = $this->withoutExceptionHandling()->get(route('user.stats.admin'));
+
+    //     $response->assertOk();
+
+    //     $response->assertJsonStructure([
+    //         'data' => [
+    //             'total_products',
+    //             'total_sales',
+    //             'total_payouts',
+    //             'total_users'
+    //         ]
+    //     ]);
+    // }
 }

@@ -125,8 +125,12 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        $role = strtolower($user->role);
+
         // Check the user role and add to sanctum's token ability in lower case
-        $ability = ["role:strtolower($user->role)"];
+        $ability = ["role:$role"];
+
+        var_dump($ability);
 
         $token = $user->createToken('access-token', $ability)->plainTextToken;
 

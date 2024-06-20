@@ -12,9 +12,11 @@ Route::controller(SubscriptionController::class)
         'can:allowed,App\Models\Subscription',
     ])
     ->group(function () {
+        Route::get('/', 'index')->middleware('abilities:role:super_admin')->name('index');
+
         Route::post('/', 'store')->name('store');
 
-        Route::get('/', 'billing')->name('billing');
+        Route::get('/billing', 'billing')->name('billing');
 
         Route::get('/{subscription}/manage', 'manage')->middleware('can:manage,subscription')->name('manage');
 

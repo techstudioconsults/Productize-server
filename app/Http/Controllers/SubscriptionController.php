@@ -14,6 +14,7 @@ use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Http\Requests\StoreSubscriptionRequest;
+use App\Http\Resources\SubscriptionResource;
 use App\Models\Subscription;
 use App\Repositories\PaystackRepository;
 use App\Repositories\SubscriptionRepository;
@@ -32,6 +33,20 @@ class SubscriptionController extends Controller
         protected SubscriptionRepository $subscriptionRepository,
         protected PaystackRepository $paystackRepository
     ) {
+    }
+
+    /**
+     *  @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieves a paginated list of all subscriptions.
+     *
+     * @return SubscriptionResource Returns a collection of all subscriptions.
+     */
+    public function index()
+    {
+        $subscriptions = $this->subscriptionRepository->find();
+
+        return SubscriptionResource::collection($subscriptions);
     }
 
     /**

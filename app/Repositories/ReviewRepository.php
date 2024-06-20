@@ -12,6 +12,7 @@ namespace App\Repositories;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
+use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -143,4 +144,19 @@ class ReviewRepository extends Repository
         // Return the updated Review model
         return $entity;
     }
+
+       /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Retrieve the average rating of a product
+     *
+     * 
+     * @param Product $product The product for which to retrieve ratings.
+     * @return \App\Http\Resources\ReviewResource A collection of review resources.
+     */
+
+     public function getAverageRatingForProduct(Product $product): float
+     {
+         return $product->reviews()->avg('rating') ?? 0;
+     }
 }

@@ -2,13 +2,14 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 22-05-2024
  */
 
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
-
 
     Route::middleware('auth:sanctum')->group(function () {
         // route to create a new review

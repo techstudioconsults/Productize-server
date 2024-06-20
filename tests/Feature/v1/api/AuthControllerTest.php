@@ -28,17 +28,20 @@ class AuthControllerTest extends TestCase
     use WithFaker;
 
     protected $full_name;
+
     protected $email;
+
     protected $password;
-    private $base_url = "/api/auth";
+
+    private $base_url = '/api/auth';
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->full_name = "Tobi Olanitori";
-        $this->email = "tobiolanitori@gmail.com";
-        $this->password = "Password1231.";
+        $this->full_name = 'Tobi Olanitori';
+        $this->email = 'tobiolanitori@gmail.com';
+        $this->password = 'Password1231.';
     }
 
     public function test_register_with_bad_credentials(): void
@@ -46,13 +49,14 @@ class AuthControllerTest extends TestCase
         $this->expectException(UnprocessableException::class);
 
         $this->withoutExceptionHandling()
-            ->postJson($this->base_url . '/register', [
-                'name' => 'Sally'
+            ->postJson($this->base_url.'/register', [
+                'name' => 'Sally',
             ]);
     }
 
     /**
      * Feature test for create user is implemented in the User test.
+     *
      * @see /Tests/UserTest
      */
     public function test_register(): void
@@ -66,16 +70,14 @@ class AuthControllerTest extends TestCase
             'password_confirmation' => $this->password,
         ];
 
-        $response = $this->postJson($this->base_url . '/register', $credentials);
+        $response = $this->postJson($this->base_url.'/register', $credentials);
 
         $response
             ->assertCreated()
             ->assertJson(
-                fn (AssertableJson $json) =>
-                $json->has(
+                fn (AssertableJson $json) => $json->has(
                     'user',
-                    fn (AssertableJson $json) =>
-                    $json->whereType('id', 'string')
+                    fn (AssertableJson $json) => $json->whereType('id', 'string')
                         ->where('name', $this->full_name)
                         ->where('email', fn (string $email) => str($email)->is($this->email))
                         ->where('account_type', 'free_trial')
@@ -93,9 +95,9 @@ class AuthControllerTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response = $this->postJson($this->base_url . '/login', [
+        $response = $this->postJson($this->base_url.'/login', [
             'email' => $user->email,
-            'password' => 'password'
+            'password' => 'password',
         ]);
 
         // Create an instance of UserResource
@@ -119,9 +121,9 @@ class AuthControllerTest extends TestCase
             'password' => 'password',
         ]);
 
-        $this->withoutExceptionHandling()->postJson($this->base_url . '/login', [
+        $this->withoutExceptionHandling()->postJson($this->base_url.'/login', [
             'email' => $user->email,
-            'password' => 'badpassword'
+            'password' => 'badpassword',
         ]);
     }
 
@@ -145,7 +147,7 @@ class AuthControllerTest extends TestCase
             ->andReturn('https://example.com/oauth/redirect-url');
 
         // Make a request to the oAuthRedirect endpoint
-        $response = $this->get($this->base_url . '/oauth/redirect?provider=' . $provider);
+        $response = $this->get($this->base_url.'/oauth/redirect?provider='.$provider);
 
         // Assert the response
         $response->assertStatus(200)
@@ -171,26 +173,23 @@ class AuthControllerTest extends TestCase
             ->andReturnSelf();
         Socialite::shouldReceive('user')
             ->once()
-            ->andReturn((object)[
+            ->andReturn((object) [
                 'name' => $this->full_name,
                 'email' => $this->email,
             ]);
 
-
         $response = $this->postJson('/api/auth/oauth/callback', [
             'provider' => $provider,
-            'code' => '123'
+            'code' => '123',
         ]);
 
         // Assert the response
         $response
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) =>
-                $json->has(
+                fn (AssertableJson $json) => $json->has(
                     'user',
-                    fn (AssertableJson $json) =>
-                    $json->whereType('id', 'string')
+                    fn (AssertableJson $json) => $json->whereType('id', 'string')
                         ->where('name', $this->full_name)
                         ->where('email', fn (string $email) => str($email)->is($this->email))
                         ->where('account_type', 'free_trial')
@@ -210,7 +209,7 @@ class AuthControllerTest extends TestCase
         $user = User::factory()->create([
             'email' => $this->email,
             'full_name' => $this->full_name,
-            'account_type' => "free_trial"
+            'account_type' => 'free_trial',
         ]);
 
         // Mock the Socialite driver's behavior
@@ -225,15 +224,14 @@ class AuthControllerTest extends TestCase
             ->andReturnSelf();
         Socialite::shouldReceive('user')
             ->once()
-            ->andReturn((object)[
+            ->andReturn((object) [
                 'name' => $this->full_name,
                 'email' => $this->email,
             ]);
 
-
         $response = $this->postJson('/api/auth/oauth/callback', [
             'provider' => $provider,
-            'code' => '123'
+            'code' => '123',
         ]);
 
         // Create an instance of UserResource
@@ -431,7 +429,7 @@ class AuthControllerTest extends TestCase
             'email' => $user->email,
             'password' => 'New_password1-',
             'password_confirmation' => 'New_password1-',
-            'token' => 'd0823a454761c349b9b81234f0a2869f1270237444f5b8e3890876105fab7af6'
+            'token' => 'd0823a454761c349b9b81234f0a2869f1270237444f5b8e3890876105fab7af6',
         ];
 
         $response = $this->withoutExceptionHandling()
@@ -454,10 +452,10 @@ class AuthControllerTest extends TestCase
         Password::shouldReceive('reset')->andReturn(Password::INVALID_TOKEN);
 
         $credentials = [
-            'email' =>  $user->email,
+            'email' => $user->email,
             'password' => 'New_password1-',
             'password_confirmation' => 'New_password1-',
-            'token' => 'invalid_token'
+            'token' => 'invalid_token',
         ];
 
         $this->withoutExceptionHandling()
@@ -477,10 +475,10 @@ class AuthControllerTest extends TestCase
         Password::shouldReceive('reset')->andReturn('generic_failure');
 
         $credentials = [
-            'email' =>  $user->email,
+            'email' => $user->email,
             'password' => 'New_password1-',
             'password_confirmation' => 'New_password1-',
-            'token' => 'invalid_token'
+            'token' => 'invalid_token',
         ];
 
         $this->withoutExceptionHandling()

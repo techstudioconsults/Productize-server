@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Order extends Model
 {
@@ -24,7 +22,13 @@ class Order extends Model
         'user_id',
         'product_id',
         'quantity',
-        'total_amount'
+        'total_amount',
+        'seen',
+    ];
+
+    protected $casts = [
+        'quantity' => 'integer',
+        'total_amount' => 'float',
     ];
 
     // user who made the order

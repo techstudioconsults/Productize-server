@@ -23,7 +23,7 @@ class CartFactory extends Factory
             'product_slug' => Product::factory()->create(
                 ['user_id' => User::factory()->create()->id]
             )->id,
-            'quantity' => 1
+            'quantity' => 1,
         ];
     }
 }

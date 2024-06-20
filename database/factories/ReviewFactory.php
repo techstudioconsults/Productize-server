@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 22-05-2024
  */
 
@@ -35,8 +37,8 @@ class ReviewFactory extends Factory
         return [
             'rating' => $this->faker->numberBetween(1, 5),
             'comment' => $this->faker->sentence(),
-            'user_id' => $user->id, 
-            'product_id' => $product->id, 
+            'user_id' => $user->id,
+            'product_id' => $product->id,
         ];
     }
 }

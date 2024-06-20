@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -53,7 +52,6 @@ class EmailVerification extends Mailable
      */
     public $backoff = 3;
 
-
     /**
      * Get the message envelope.
      */
@@ -69,6 +67,7 @@ class EmailVerification extends Mailable
      */
     public function content(): Content
     {
+
         $url = URL::temporarySignedRoute(
             'auth.verification.verify',
             now()->addMinutes(15),
@@ -81,7 +80,7 @@ class EmailVerification extends Mailable
             markdown: 'mail.email-verification',
             with: [
                 'url' => $url,
-                'name' => $name
+                'name' => $name,
             ],
         );
     }

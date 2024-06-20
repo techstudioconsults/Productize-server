@@ -2,14 +2,14 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
 use App\Http\Controllers\FaqController;
-use FontLib\Table\Type\name;
 use Illuminate\Support\Facades\Route;
-
 
 Route::controller(FaqController::class)
     ->prefix('faqs')

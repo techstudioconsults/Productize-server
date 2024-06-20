@@ -2,7 +2,9 @@
 
 /**
  * @author Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 08-05-2024
  */
 
@@ -12,6 +14,7 @@ use App\Enums\ProductStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
@@ -22,6 +25,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
@@ -34,12 +38,16 @@ use Str;
  */
 class ProductRepository extends Repository
 {
-    const PRODUCT_DATA_PATH = "digital-products";
-    const COVER_PHOTOS_PATH = "products-cover-photos";
-    const THUMBNAIL_PATH = "products-thumbnail";
+    const PRODUCT_DATA_PATH = 'digital-products';
+
+    const COVER_PHOTOS_PATH = 'products-cover-photos';
+
+    const THUMBNAIL_PATH = 'products-thumbnail';
 
     const PUBLISHED = 'published';
+
     const DRAFT = 'draft';
+
     const DELETED = 'deleted';
 
     public function seed(): void
@@ -63,9 +71,8 @@ class ProductRepository extends Repository
      *
      * Create a new product with the provided credentials.
      *
-     * @param array $credentials An array containing all product properties required in the StoreProductRequest,
-     *                           along with the user_id.
-     *
+     * @param  array  $credentials  An array containing all product properties required in the StoreProductRequest,
+     *                              along with the user_id.
      * @return \App\Models\Product The newly created product instance.
      *
      * @throws \App\Exceptions\BadRequestException If validation of the provided credentials fails.
@@ -78,7 +85,7 @@ class ProductRepository extends Repository
         // Add the 'user_id' rule to the validation rules
         $rules['user_id'] = 'required';
 
-        if (!$this->isValidated($credentials, $rules)) {
+        if (! $this->isValidated($credentials, $rules)) {
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
@@ -110,8 +117,7 @@ class ProductRepository extends Repository
      *
      * Create a query builder for products based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
-     *
+     * @param  array  $filter  The filter criteria to apply.
      * @return \Illuminate\Database\Eloquent\Builder The query builder for products.
      */
     public function query(array $filter): Builder
@@ -134,8 +140,7 @@ class ProductRepository extends Repository
      *
      * Find products based on the provided filter.
      *
-     * @param array|null $filter The filter criteria to apply.
-     *
+     * @param  array|null  $filter  The filter criteria to apply.
      * @return Collection|null A collection of found products, or null if none are found.
      */
     public function find(?array $filter = []): ?Collection
@@ -148,8 +153,7 @@ class ProductRepository extends Repository
      *
      * Find a product by its ID.
      *
-     * @param string $id The ID of the product to find.
-     *
+     * @param  string  $id  The ID of the product to find.
      * @return \App\Models\Product|null The found product, or null if not found.
      */
     public function findById(string $id): ?Product
@@ -162,8 +166,7 @@ class ProductRepository extends Repository
      *
      * Find a single product based on the provided filter criteria.
      *
-     * @param array $filter The filter criteria to search for the product.
-     *
+     * @param  array  $filter  The filter criteria to search for the product.
      * @return \App\Models\Product|null The found product, or null if not found.
      *
      * @throws \App\Exceptions\ApiException If an unexpected error occurs during the search.
@@ -194,7 +197,7 @@ class ProductRepository extends Repository
             'cover_photos' => $product->cover_photos,
             'tags' => $product->tags,
             'description' => $product->description,
-            'total_orders' => $product->totalOrder()
+            'total_orders' => $product->totalOrder(),
         ];
     }
 
@@ -203,8 +206,7 @@ class ProductRepository extends Repository
      *
      * Retrieve top products based on sales within a specified date range.
      *
-     * @param array|null $filter An optional array of filters including 'start_date' and 'end_date'.
-     *
+     * @param  array|null  $filter  An optional array of filters including 'start_date' and 'end_date'.
      * @return Builder The query builder instance.
      */
     public function topProducts(?array $filter = []): Builder
@@ -217,14 +219,13 @@ class ProductRepository extends Repository
             ->orderByDesc('total_sales');
 
         // Apply date filter specifically to the products table
-        if (!empty($filter['start_date']) && !empty($filter['end_date'])) {
+        if (! empty($filter['start_date']) && ! empty($filter['end_date'])) {
             $query->whereBetween('products.created_at', [$filter['start_date'], $filter['end_date']]);
 
             unset($filter['start_date'], $filter['end_date']);
         }
 
         $this->applyStatusFilter($query, $filter);
-
 
         $query->where($filter);
 
@@ -236,9 +237,8 @@ class ProductRepository extends Repository
      *
      * Updates a product model with the provided updatable attributes.
      *
-     * @param \Illuminate\Database\Eloquent\Model $product The product model to update.
-     * @param array $updatables An array of updatable attributes for the product.
-     *
+     * @param  \Illuminate\Database\Eloquent\Model  $product  The product model to update.
+     * @param  array  $updatables  An array of updatable attributes for the product.
      * @return \App\Models\Product The updated product model.
      *
      * @throws \App\Exceptions\ModelCastException If the provided model is not an instance of Product.
@@ -246,13 +246,13 @@ class ProductRepository extends Repository
      */
     public function update(Model $product, array $updatables): Product
     {
-        if (!$product instanceof Product) {
-            throw new ModelCastException("Product", get_class($product));
+        if (! $product instanceof Product) {
+            throw new ModelCastException('Product', get_class($product));
         }
         // Get the validation rules from the StoreProductRequest
         $rules = (new UpdateProductRequest())->rules();
 
-        if (!$this->isValidated($updatables, $rules)) {
+        if (! $this->isValidated($updatables, $rules)) {
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
@@ -297,8 +297,7 @@ class ProductRepository extends Repository
      * 3. Tag matches
      * 4. User full name matches
      *
-     * @param string $text The text to search for.
-     *
+     * @param  string  $text  The text to search for.
      * @return Builder The query builder instance with the applied search conditions.
      *
      * @see \App\Models\Product scope methods for search query defined.
@@ -313,16 +312,14 @@ class ProductRepository extends Repository
      *
      * Store the user's searched product IDs.
      *
-     * @param Product $product The product searched by the user.
-     * @param User $user The user whose searches are being tracked.
-     *
-     * @return void
+     * @param  Product  $product  The product searched by the user.
+     * @param  User  $user  The user whose searches are being tracked.
      */
     public function trackSearch(Product $product, User $user): void
     {
         $upserts = [
             'user_id' => $user->id,
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ];
 
         ProductSearch::upsert(
@@ -341,8 +338,7 @@ class ProductRepository extends Repository
      * the recent searches, then retrieves the corresponding products from the
      * Product model.
      *
-     * @param User $user The logged-in user whose search history is being retrieved.
-     *
+     * @param  User  $user  The logged-in user whose search history is being retrieved.
      * @return Collection|null A collection of found products, or null if none are found.
      */
     public function findSearches(User $user): ?Collection
@@ -367,8 +363,7 @@ class ProductRepository extends Repository
      *
      * The data is the actual resource being sold.
      *
-     * @param array $data An array of data files to upload.
-     *
+     * @param  array  $data  An array of data files to upload.
      * @return array An array containing the storage paths of the uploaded data files.
      *
      * @throws BadRequestException If any of the provided data files fail validation.
@@ -376,7 +371,7 @@ class ProductRepository extends Repository
     public function uploadData(array $data): array
     {
         // Each item in the 'data' array must be a file
-        if (!$this->isValidated($data, ['required|file'])) {
+        if (! $this->isValidated($data, ['required|file'])) {
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
@@ -385,7 +380,7 @@ class ProductRepository extends Repository
 
             $path = Storage::putFileAs(self::PRODUCT_DATA_PATH, $file, $originalName);
 
-            return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+            return config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
         })->all();
     }
 
@@ -394,8 +389,7 @@ class ProductRepository extends Repository
      *
      * Uploads an array of cover photos and returns their storage paths.
      *
-     * @param array $cover_photos An array of cover photo image files to upload.
-     *
+     * @param  array  $cover_photos  An array of cover photo image files to upload.
      * @return array An array containing the storage paths of the uploaded cover photos.
      *
      * @throws BadRequestException If any of the provided cover photos fail validation.
@@ -403,7 +397,7 @@ class ProductRepository extends Repository
     public function uploadCoverPhoto(array $cover_photos): array
     {
         // Each item in the 'data' array must be an image
-        if (!$this->isValidated($cover_photos, ['required|image'])) {
+        if (! $this->isValidated($cover_photos, ['required|image'])) {
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
@@ -412,7 +406,7 @@ class ProductRepository extends Repository
 
             $path = Storage::putFileAs(self::COVER_PHOTOS_PATH, $file, $original_name);
 
-            return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+            return config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
         })->all();
     }
 
@@ -421,8 +415,7 @@ class ProductRepository extends Repository
      *
      * Uploads a product's thumbnail image and returns its storage path.
      *
-     * @param object $thumbnail The thumbnail image file to upload.
-     *
+     * @param  object  $thumbnail  The thumbnail image file to upload.
      * @return string The storage path of the uploaded thumbnail.
      *
      * @throws BadRequestException If the provided thumbnail fails validation.
@@ -430,7 +423,7 @@ class ProductRepository extends Repository
     public function uploadThumbnail(object $thumbnail): string
     {
         // Each item in the 'data' array must be a file
-        if (!$this->isValidated([$thumbnail], ['required|image'])) {
+        if (! $this->isValidated([$thumbnail], ['required|image'])) {
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
@@ -440,7 +433,7 @@ class ProductRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     /**
@@ -448,8 +441,7 @@ class ProductRepository extends Repository
      *
      * Retrieve file metadata for a given file path.
      *
-     * @param string $filePath The path of the file.
-     *
+     * @param  string  $filePath  The path of the file.
      * @return array|null An array containing file metadata including size and MIME type, or null if the file doesn't exist.
      */
     public function getFileMetaData(string $filePath)
@@ -459,8 +451,8 @@ class ProductRepository extends Repository
             $mime_Type = Storage::mimeType($filePath);
 
             return [
-                'size' =>  round($size / 1048576, 2) . 'MB', // Convert byte to MB
-                'mime_type' => $mime_Type
+                'size' => round($size / 1048576, 2).'MB', // Convert byte to MB
+                'mime_type' => $mime_Type,
             ];
         } else {
             return null;
@@ -473,25 +465,25 @@ class ProductRepository extends Repository
      * Apply a status filter to the query based on the provided status value.
      * It removes the status key and value from the array.
      *
-     * @param Builder|Relation $query The query builder or relation instance.
-     * @param array &$filter The filter array containing the status key.
+     * @param  Builder|Relation  $query  The query builder or relation instance.
+     * @param  array  &$filter  The filter array containing the status key.
      *
      * @throws BadRequestException If the status value fails validation.
      */
-    private function applyStatusFilter(Builder | Relation $query, array &$filter)
+    private function applyStatusFilter(Builder|Relation $query, array &$filter)
     {
         if (isset($filter['status'])) {
             $status = $filter['status'];
 
             if ($status === 'deleted') {
                 $query->onlyTrashed();
-            } else if ($status && $status !== null && $status !== 'deleted') {
+            } elseif ($status && $status !== null && $status !== 'deleted') {
                 // Validate status
                 $rules = [
-                    'status' => ['required', new Enum(ProductStatusEnum::class)]
+                    'status' => ['required', new Enum(ProductStatusEnum::class)],
                 ];
 
-                if (!$this->isValidated(['status' => $status], $rules)) {
+                if (! $this->isValidated(['status' => $status], $rules)) {
                     throw new BadRequestException($this->getValidator()->errors()->first());
                 }
 
@@ -506,14 +498,14 @@ class ProductRepository extends Repository
      *
      * Check if the product is part of the user's recent searches.
      *
-     * @param  Product  $product The product to check.
-     * @param  array|string|null  $cookie The cookie from the incoming request instance.
-     *
+     * @param  Product  $product  The product to check.
+     * @param  array|string|null  $cookie  The cookie from the incoming request instance.
      * @return bool Returns true if the product is in the search history, false otherwise.
      */
     public function isSearchedProduct(Product $product, array|string|null $cookie): bool
     {
         $product_ids = json_decode($cookie, true) ?? [];
+
         return in_array($product->id, $product_ids);
     }
 
@@ -522,8 +514,7 @@ class ProductRepository extends Repository
      *
      * Ensure the product status is published.
      *
-     * @param  Product  $product The product to check.
-     *
+     * @param  Product  $product  The product to check.
      * @return bool It returns true if the product status is published, false otherwise.
      */
     public function isPublished(Product $product): bool
@@ -540,8 +531,7 @@ class ProductRepository extends Repository
      *
      * Get metadata for the product's associated resources.
      *
-     * @param  Product  $product The product to get metadata for.
-     *
+     * @param  Product  $product  The product to get metadata for.
      * @return array An array of metadata for the product's resources.
      */
     public function getProductMetaData(Product $product): array
@@ -555,6 +545,49 @@ class ProductRepository extends Repository
                 $meta_data_array[] = $meta_data;
             }
         }
+
         return $meta_data_array;
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Prepare products for the cart.
+     */
+    public function prepareProducts(array $cart): array
+    {
+        $rules = [
+            '*.product_slug' => 'required|string',
+            '*.quantity' => 'required|integer|min:1',
+        ];
+
+        if (! $this->isValidated($cart, $rules)) {
+            throw new ServerErrorException('Invalid parameter called with prepareProducts ');
+        }
+
+        return Arr::map($cart, function ($item) {
+            $slug = $item['product_slug'];
+
+            $product = $this->query(['slug' => $slug])->first();
+
+            if (! $product) {
+                throw new BadRequestException('Product with slug '.$slug.' not found');
+            }
+
+            if ($product->status !== 'published') {
+                throw new BadRequestException('Product with slug '.$slug.' not published');
+            }
+
+            $amount = $product->price * $item['quantity'];
+
+            $share = $amount - ($amount * 0.05);
+
+            return [
+                'product_id' => $product->id,
+                'amount' => $amount,
+                'quantity' => $item['quantity'],
+                'share' => $share,
+            ];
+        });
     }
 }

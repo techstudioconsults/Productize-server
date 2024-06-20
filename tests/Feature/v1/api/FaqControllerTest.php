@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -12,10 +14,8 @@ use App\Models\Faq;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-
 class FaqControllerTest extends TestCase
 {
-
     use RefreshDatabase;
 
     public function test_getAllFaq(): void
@@ -52,7 +52,7 @@ class FaqControllerTest extends TestCase
         $this->assertDatabaseHas('faqs', [
             'title' => $faqData['title'],
             'question' => $faqData['question'],
-            'answer' => $faqData['answer']
+            'answer' => $faqData['answer'],
         ]);
     }
 
@@ -69,11 +69,11 @@ class FaqControllerTest extends TestCase
         $newFaqData = [
             'title' => 'General',
             'question' => 'What is productize?',
-            'answer' => 'Productize is an ecommerce application'
+            'answer' => 'Productize is an ecommerce application',
         ];
 
         // send a PUT request to update the user
-        $response = $this->put('api/faqs/' . $faqData->id, $newFaqData);
+        $response = $this->put('api/faqs/'.$faqData->id, $newFaqData);
 
         // Assert that the request was successful (status code 200)
         $response->assertStatus(200);
@@ -97,7 +97,7 @@ class FaqControllerTest extends TestCase
         ]);
 
         // Send a DELETE request to delete the faq
-        $response = $this->delete('api/faqs/' . $faq->id);
+        $response = $this->delete('api/faqs/'.$faq->id);
 
         // Assert that the request was successful (status code 200)
         $response->assertStatus(200);
@@ -115,7 +115,7 @@ class FaqControllerTest extends TestCase
         $newFaqData = [
             'title' => '', // Empty title
             'question' => '', // Empty question
-            'answer' => '' // Empty answer
+            'answer' => '', // Empty answer
         ];
 
         $response = $this->putJson("api/faqs/{$faq->id}", $newFaqData);
@@ -131,7 +131,7 @@ class FaqControllerTest extends TestCase
         $response = $this->putJson("api/faqs/{$nonExistentId}", [
             'title' => 'New Title',
             'question' => 'New Question',
-            'answer' => 'New Answer'
+            'answer' => 'New Answer',
         ]);
 
         $response->assertStatus(404);

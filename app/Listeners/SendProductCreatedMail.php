@@ -28,7 +28,7 @@ class SendProductCreatedMail
         /**
          * If Product creation settings is set to false, don't send an email.
          */
-        if (!$user->product_creation_notification) {
+        if (! $user->product_creation_notification) {
             return $user->product_creation_notification;
         }
 
@@ -42,6 +42,6 @@ class SendProductCreatedMail
 
             // Send first product created mail
             Mail::to($user)->send(new FirstProductCreated($event->product));
-        };
+        }
     }
 }

@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -23,7 +25,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FaqRepository extends Repository
 {
-
     public function seed(): void
     {
         Faq::factory()->count(10)->create();
@@ -31,24 +32,25 @@ class FaqRepository extends Repository
 
     /**
      * @author @obajide028 Odesanya Babajide
-     * 
+     *
      * create new faq.
-     * 
+     *
      * array with params:
-     * @param array $entity The data for creating a new faq
+     *
+     * @param  array  $entity  The data for creating a new faq
      * @return Faq the newly created cfaq instance
      */
     public function create(array $entity): Faq
     {
-        if (!isset($entity['title'])) {
+        if (! isset($entity['title'])) {
             throw new BadRequestException('No title Provided');
         }
-        
-        if (!isset($entity['answer'])) {
+
+        if (! isset($entity['answer'])) {
             throw new BadRequestException('No answer Provided');
         }
-        
-        if (!isset($entity['question'])) {
+
+        if (! isset($entity['question'])) {
             throw new BadRequestException('No question Provided');
         }
 
@@ -60,7 +62,7 @@ class FaqRepository extends Repository
      *
      * Query faqs based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply
+     * @param  array  $filter  The filter criteria to apply
      * @return Builder The query builder for faqs.
      */
     public function query(array $filter): Builder
@@ -81,7 +83,7 @@ class FaqRepository extends Repository
      *
      * Find faqs based on the provided filter.
      *
-     * @param array|null $filter The filter criteria to apply (optional).
+     * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found faqs.
      */
     public function find(?array $filter = null): ?Collection
@@ -94,7 +96,7 @@ class FaqRepository extends Repository
      *
      * Find a faq by its ID.
      *
-     * @param string $id The ID of the faq to find.
+     * @param  string  $id  The ID of the faq to find.
      * @return Faq|null The found faq instance, or null if not found.
      */
     public function findById(string $id): ?Faq
@@ -102,12 +104,12 @@ class FaqRepository extends Repository
         return Faq::find($id);
     }
 
-      /**
+    /**
      * @author @obajide028 Odesanya Babajide
      *
      * Find a single faq based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
+     * @param  array  $filter  The filter criteria to apply.
      * @return Faq|null The found cart instance, or null if not found.
      */
     public function findOne(array $filter): ?Faq
@@ -115,23 +117,24 @@ class FaqRepository extends Repository
         return $this->query($filter)->first();
     }
 
-     /**
+    /**
      * @author  @obajide028 Odesanya Babajide
-     * 
+     *
      * Update a faq entity with the provided updates.
      *
-     * @param Model $entity The faq entity to update.
-     * @param array $updates The updates to apply to the faq.
+     * @param  Model  $entity  The faq entity to update.
+     * @param  array  $updates  The updates to apply to the faq.
      * @return Faq The updated faq instance.
+     *
      * @throws ModelCastException If the provided entity is not a faq instance.
      */
     public function update(Model $entity, array $updates): Faq
     {
-        if (!$entity instanceof Faq) {
-            throw new ModelCastException("Faq", get_class($entity));
+        if (! $entity instanceof Faq) {
+            throw new ModelCastException('Faq', get_class($entity));
         }
 
-          // Assign the updates to the corresponding fields of the User instance
+        // Assign the updates to the corresponding fields of the User instance
         // It ignores keys passed but not present in model columns
         $entity->fill($updates);
 
@@ -144,8 +147,6 @@ class FaqRepository extends Repository
 
     /**
      *  array with params:
-     * @param FaqResource $faqResource
-     * 
      */
     public function delete(FaqResource $faqResource): void
     {

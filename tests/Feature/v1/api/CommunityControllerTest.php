@@ -2,29 +2,27 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use App\Mail\CommunityWelcomeMail;
-use Illuminate\Support\Facades\Mail;
 use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class CommunityControllerTest extends TestCase
 {
-
     public function test_getAllCommunity(): void
     {
         $response = $this->get('api/community');
 
         $response->assertStatus(200);
     }
-
 
     public function test_storeCommunity(): void
     {

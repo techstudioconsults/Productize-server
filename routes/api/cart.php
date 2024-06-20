@@ -15,6 +15,8 @@ Route::controller(CartController::class)
 
         Route::get('/', 'index')->name('index');
 
+        Route::post('/clear', 'clear')->name('clear');
+
         Route::get('/{cart}', 'show')->middleware('can:view,cart')->name('show');
 
         Route::patch('/{cart}', 'update')->middleware('can:update,cart')->name('update');

@@ -5,6 +5,7 @@ namespace Tests\Unit\v1\repository;
 use App\Enums\ProductStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Order;
 use App\Models\Product;
@@ -23,6 +24,7 @@ class ProductRepositoryTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private ProductRepository $productRepository;
 
     public function setUp(): void
@@ -53,7 +55,7 @@ class ProductRepositoryTest extends TestCase
             'stock_count' => true,
             'choose_quantity' => false,
             'show_sales_count' => true,
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ];
 
         $product = $this->productRepository->create($data);
@@ -93,7 +95,7 @@ class ProductRepositoryTest extends TestCase
     public function test_query_with_empty_filter_returns_all_products(): void
     {
         $products = Product::factory()->count(3)->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $result = $this->productRepository->query([])->get();
@@ -105,7 +107,7 @@ class ProductRepositoryTest extends TestCase
     public function test_query_with_date_filter_applies_date_range(): void
     {
         $products = Product::factory()->count(3)->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $start_date = $products->first()->created_at->subDay()->toDateString();
@@ -138,17 +140,17 @@ class ProductRepositoryTest extends TestCase
     {
         // Create products with different statuses
         Product::factory()->count(5)->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $deletedProduct = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $deletedProduct->delete();
 
         $filter = [
-            'status' => 'deleted'
+            'status' => 'deleted',
         ];
 
         $query = $this->productRepository->query($filter);
@@ -165,7 +167,7 @@ class ProductRepositoryTest extends TestCase
         // Create products with different statuses
         Product::factory()->count(5)->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         // products are draft by default
@@ -174,13 +176,13 @@ class ProductRepositoryTest extends TestCase
         ]);
 
         $deletedProduct = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $deletedProduct->delete();
 
         $filter = [
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ];
 
         $query = $this->productRepository->query($filter);
@@ -206,17 +208,17 @@ class ProductRepositoryTest extends TestCase
         // products are draft by default
         Product::factory()->count($expected_count)->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         $deletedProduct = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $deletedProduct->delete();
 
         $filter = [
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ];
 
         $query = $this->productRepository->query($filter);
@@ -241,7 +243,7 @@ class ProductRepositoryTest extends TestCase
         ]);
 
         $filter = [
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ];
 
         $query = $this->productRepository->query($filter);
@@ -282,7 +284,7 @@ class ProductRepositoryTest extends TestCase
 
     public function test_findbyid_return_null_for_when_not_found(): void
     {
-        $result = $this->productRepository->findById("id_does_not_exist");
+        $result = $this->productRepository->findById('id_does_not_exist');
 
         $this->assertNull($result);
     }
@@ -298,7 +300,7 @@ class ProductRepositoryTest extends TestCase
 
     public function test_findone_return_null_when_not_found(): void
     {
-        $result = $this->productRepository->findOne(['slug' => "12345"]);
+        $result = $this->productRepository->findOne(['slug' => '12345']);
 
         $this->assertNull($result);
     }
@@ -307,7 +309,7 @@ class ProductRepositoryTest extends TestCase
     {
         $this->expectException(ApiException::class);
 
-        $this->productRepository->findOne(['slugs' => "12345"]);
+        $this->productRepository->findOne(['slugs' => '12345']);
     }
 
     public function test_topproducts_returns_products_sorted_by_total_sales()
@@ -315,7 +317,7 @@ class ProductRepositoryTest extends TestCase
         // Create products
         $products = Product::factory()->count(3)->create([
             'user_id' => $this->user->id,
-            'status' => "published"
+            'status' => 'published',
         ]);
 
         // Create orders for products
@@ -456,12 +458,12 @@ class ProductRepositoryTest extends TestCase
         Product::factory()->create([
             'title' => 'Sample Product 3',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'Another Product',
             'description' => 'This is another sample product',
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         // Perform the search
@@ -478,29 +480,29 @@ class ProductRepositoryTest extends TestCase
         Product::factory()->create([
             'title' => 'Sample Product 1',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'Sample Product 2',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'Sample Product 3',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'Another Product',
             'description' => 'This is another sample product',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'full_name',
             'description' => 'Searching with full name',
             'user_id' => User::factory()->create(['full_name' => 'sample name']),
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         // Perform the search
@@ -520,14 +522,14 @@ class ProductRepositoryTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         $this->productRepository->trackSearch($product, $user);
 
         $this->assertDatabaseHas('product_searches', [
             'user_id' => $user->id,
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         $this->assertDatabaseCount('product_searches', 1);
@@ -538,7 +540,7 @@ class ProductRepositoryTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         // Track the search the first time
@@ -549,7 +551,7 @@ class ProductRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('product_searches', [
             'user_id' => $user->id,
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         // The second one should not be added - A pair product_id and user_id cannot be duplicate
@@ -561,13 +563,13 @@ class ProductRepositoryTest extends TestCase
         $user_one = User::factory()->create();
         $product_one = Product::factory()->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         $user_two = User::factory()->create();
         $product_two = Product::factory()->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         // Track the search the first time
@@ -591,7 +593,7 @@ class ProductRepositoryTest extends TestCase
 
         $expected = Product::factory()->count(2)->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         ProductSearch::factory()
@@ -601,7 +603,7 @@ class ProductRepositoryTest extends TestCase
                 ['product_id' => $expected[1]->id],
             ))
             ->create([
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
 
         ProductSearch::factory()
@@ -626,7 +628,7 @@ class ProductRepositoryTest extends TestCase
 
         $expected = Product::factory()->count(2)->create([
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         ProductSearch::factory()
@@ -636,7 +638,7 @@ class ProductRepositoryTest extends TestCase
                 ['product_id' => $expected[1]->id],
             ))
             ->create([
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
 
         // change the status of the first product to draft
@@ -660,22 +662,22 @@ class ProductRepositoryTest extends TestCase
             UploadedFile::fake()->create('data1.pdf'),
             UploadedFile::fake()->create('data2.pdf'),
             UploadedFile::fake()->image('data3.png'),
-            UploadedFile::fake()->image('data4.csv')
+            UploadedFile::fake()->image('data4.csv'),
         ];
 
         $expected_result = [
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data1.pdf',
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data2.pdf',
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data3.png',
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::PRODUCT_DATA_PATH . '/data4.csv'
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data1.pdf',
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data2.pdf',
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data3.png',
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data4.csv',
         ];
 
         $result = $this->productRepository->uploadData($uploads);
 
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data1.pdf');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data2.pdf');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data3.png');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data4.csv');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data1.pdf');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data2.pdf');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data3.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data4.csv');
 
         $this->assertEquals($expected_result[0], $result[0]);
         $this->assertEquals($expected_result[1], $result[1]);
@@ -687,7 +689,7 @@ class ProductRepositoryTest extends TestCase
     {
         $this->expectException(BadRequestException::class);
 
-        $this->productRepository->uploadData(["not a file", "not a file 2"]);
+        $this->productRepository->uploadData(['not a file', 'not a file 2']);
     }
 
     public function test_upload_product_thumbnail(): void
@@ -699,11 +701,11 @@ class ProductRepositoryTest extends TestCase
 
         $thumbnail = UploadedFile::fake()->image($file_name);
 
-        $expected_result = config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::THUMBNAIL_PATH . "/$file_name";
+        $expected_result = config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::THUMBNAIL_PATH."/$file_name";
 
         $result = $this->productRepository->uploadThumbnail($thumbnail);
 
-        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH . "/$file_name");
+        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH."/$file_name");
 
         $this->assertEquals($expected_result, $result);
     }
@@ -724,22 +726,22 @@ class ProductRepositoryTest extends TestCase
             UploadedFile::fake()->create('data1.png'),
             UploadedFile::fake()->create('data2.jpg'),
             UploadedFile::fake()->image('data3.png'),
-            UploadedFile::fake()->image('data4.png')
+            UploadedFile::fake()->image('data4.png'),
         ];
 
         $expected_result = [
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data1.png',
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data2.jpg',
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data3.png',
-            config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::COVER_PHOTOS_PATH . '/data4.png'
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::COVER_PHOTOS_PATH.'/data1.png',
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::COVER_PHOTOS_PATH.'/data2.jpg',
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::COVER_PHOTOS_PATH.'/data3.png',
+            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::COVER_PHOTOS_PATH.'/data4.png',
         ];
 
         $result = $this->productRepository->uploadCoverPhoto($uploads);
 
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data1.png');
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data2.jpg');
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data3.png');
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/data4.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/data1.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/data2.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/data3.png');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/data4.png');
 
         $this->assertEquals($expected_result[0], $result[0]);
         $this->assertEquals($expected_result[1], $result[1]);
@@ -755,7 +757,7 @@ class ProductRepositoryTest extends TestCase
             UploadedFile::fake()->create('data1.pdf'),
             UploadedFile::fake()->create('data2.pdf'),
             UploadedFile::fake()->image('data3.png'),
-            UploadedFile::fake()->image('data4.csv')
+            UploadedFile::fake()->image('data4.csv'),
         ];
 
         $this->productRepository->uploadCoverPhoto($uploads);
@@ -797,7 +799,7 @@ class ProductRepositoryTest extends TestCase
     public function test_isSearchedproduct_with_valid_cookie()
     {
         $product = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
         $cookie = json_encode([$product->id]);
 
@@ -809,7 +811,7 @@ class ProductRepositoryTest extends TestCase
     public function test_isSearchedproduct_with_empty_cookie()
     {
         $product = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
         $cookie = json_encode([]);
 
@@ -821,7 +823,7 @@ class ProductRepositoryTest extends TestCase
     public function test_isSearchedproduct_with_invalid_cookie()
     {
         $product = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
         $cookie = 'invalid_json';
 
@@ -833,7 +835,7 @@ class ProductRepositoryTest extends TestCase
     public function test_isSearchedProduct_with_null_cookie()
     {
         $product = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
         $cookie = null;
 
@@ -846,7 +848,7 @@ class ProductRepositoryTest extends TestCase
     {
         $product = Product::factory()->create([
             'status' => ProductStatusEnum::Published->value,
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $result = $this->productRepository->isPublished($product);
@@ -858,11 +860,82 @@ class ProductRepositoryTest extends TestCase
     {
         $product = Product::factory()->create([
             'status' => ProductStatusEnum::Draft->value,
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $result = $this->productRepository->isPublished($product);
 
         $this->assertFalse($result);
+    }
+
+    public function test_prepareProducts_valid_data()
+    {
+        // Arrange
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+
+        $cart = [
+            ['product_slug' => $product->slug, 'quantity' => 2],
+        ];
+
+        // Act
+        $result = $this->productRepository->prepareProducts($cart);
+
+        // Assert
+        $expected = [
+            [
+                'product_id' => $product->id,
+                'amount' => 2000,
+                'quantity' => 2,
+                'share' => 1900,
+            ],
+        ];
+
+        $this->assertEquals($expected, $result);
+    }
+
+    public function test_prepareProducts_invalid_data()
+    {
+        // Arrange
+        $cart = [
+            ['product_slug' => '', 'quantity' => 2],
+        ];
+
+        // Expect
+        $this->expectException(ServerErrorException::class);
+
+        // Act
+        $this->productRepository->prepareProducts($cart);
+    }
+
+    public function test_prepareProducts_product_not_found()
+    {
+        // Arrange
+        $cart = [
+            ['product_slug' => 'non-existent-slug', 'quantity' => 2],
+        ];
+
+        // Expect
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Product with slug non-existent-slug not found');
+
+        // Act
+        $this->productRepository->prepareProducts($cart);
+    }
+
+    public function test_prepareProducts_product_not_published()
+    {
+        // Arrange
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'draft']);
+
+        $cart = [
+            ['product_slug' => $product->slug, 'quantity' => 2],
+        ];
+
+        // Expect
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage("Product with slug $product->slug not published");
+
+        // Act
+        $this->productRepository->prepareProducts($cart);
     }
 }

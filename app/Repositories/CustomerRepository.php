@@ -2,20 +2,23 @@
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
  * @version 1.0
+ *
  * @since 12-05-2024
  */
 
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
+use App\Exceptions\ServerErrorException;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -37,7 +40,7 @@ class CustomerRepository extends Repository
                 // Create 5 orders for each product
                 $orders = Order::factory(5)->create([
                     'user_id' => $user->id,
-                    'product_id' => $product->id
+                    'product_id' => $product->id,
                 ]);
 
                 foreach ($orders as $order) {
@@ -45,7 +48,7 @@ class CustomerRepository extends Repository
                     Customer::factory()->create([
                         'user_id' => $user->id,
                         'merchant_id' => $product->user_id,
-                        'order_id' => $order->id
+                        'order_id' => $order->id,
                     ]);
                 }
             }
@@ -57,11 +60,21 @@ class CustomerRepository extends Repository
      *
      * Create a new customer.
      *
-     * @param array $entity The data for creating the customer.
+     * @param  array  $entity  The data for creating the customer.
      * @return Customer The newly created customer instance.
      */
     public function create(array $entity): Model
     {
+        $rules = [
+            'user_id' => 'required|string',
+            'merchant_id' => 'required|string',
+            'order_id' => 'required|string',
+        ];
+
+        if (! $this->isValidated($entity, $rules)) {
+            throw new ServerErrorException($this->getValidator()->errors()->first().' when calling customer create');
+        }
+
         return Customer::create($entity);
     }
 
@@ -70,7 +83,7 @@ class CustomerRepository extends Repository
      *
      * Query customers based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
+     * @param  array  $filter  The filter criteria to apply.
      * @return Builder The query builder for customers.
      */
     public function query(array $filter): Builder
@@ -91,7 +104,7 @@ class CustomerRepository extends Repository
      *
      * Find customers based on the provided filter.
      *
-     * @param array|null $filter The filter criteria to apply (optional).
+     * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found customers.
      */
     public function find(?array $filter = null): ?Collection
@@ -104,7 +117,7 @@ class CustomerRepository extends Repository
      *
      * Find a customer by its ID.
      *
-     * @param string $id The ID of the customer to find.
+     * @param  string  $id  The ID of the customer to find.
      * @return Customer|null The found customer instance, or null if not found.
      */
     public function findById(string $id): ?Customer
@@ -117,7 +130,7 @@ class CustomerRepository extends Repository
      *
      * Find a single customer based on the provided filter.
      *
-     * @param array $filter The filter criteria to apply.
+     * @param  array  $filter  The filter criteria to apply.
      * @return Customer|null The found customer instance, or null if not found.
      */
     public function findOne(array $filter): ?Customer
@@ -130,15 +143,15 @@ class CustomerRepository extends Repository
      *
      * Update an entity in the database.
      *
-     * @param  Model $entity The customer to be updated
-     * @param array $updates The array of data containing the fields to be updated.
+     * @param  Model  $entity  The customer to be updated
+     * @param  array  $updates  The array of data containing the fields to be updated.
      * @return Model The updated customer
      */
     public function update(Model $entity, array $updates): Customer
     {
         // Ensure that the provided entity is an instance of Customer
-        if (!$entity instanceof Customer) {
-            throw new ModelCastException("Customer", get_class($entity));
+        if (! $entity instanceof Customer) {
+            throw new ModelCastException('Customer', get_class($entity));
         }
 
         // Assign the updates to the corresponding fields of the Customer instance

@@ -6,9 +6,9 @@ use App\Enums\ProductStatusEnum;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
@@ -16,9 +16,9 @@ use Spatie\Sluggable\SlugOptions;
 class Product extends Model
 {
     use HasFactory;
+    use HasSlug;
     use HasUuids;
     use SoftDeletes;
-    use HasSlug;
 
     protected $primaryKey = 'id';
 
@@ -54,7 +54,7 @@ class Product extends Model
     }
 
     protected $guarded = [
-        'status'
+        'status',
     ];
 
     /**
@@ -85,11 +85,11 @@ class Product extends Model
      *
      * Scope a query to order products by title match first, then description, then by tag match and then the user's full name.
      *
-     * @param Builder $query The query builder instance.
-     * @param string $value The search term
+     * @param  Builder  $query  The query builder instance.
+     * @param  string  $value  The search term
      * @return Builder The query builder instance.
      */
-    public  function scopeSearch(Builder $query, string $value)
+    public function scopeSearch(Builder $query, string $value)
     {
         return $query
             // Join the user table
@@ -153,6 +153,7 @@ class Product extends Model
     {
         return $this->hasMany(Order::class)->sum('quantity');
     }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

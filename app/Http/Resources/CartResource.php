@@ -2,8 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Product;
-use Arr;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

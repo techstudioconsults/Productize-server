@@ -23,7 +23,6 @@ class ReviewControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
-
     public function test_storeReview(): void
     {
         // Create a user
@@ -33,17 +32,16 @@ class ReviewControllerTest extends TestCase
         //create product
         $product = Product::factory()->create();
 
-
         // Generate new data for creating the review
         $reviewData = [
             'product_id' => $product->id,
             'user_id' => $user->id,
             'rating' => 4,
-            'comment' => 'Good Product!'
+            'comment' => 'Good Product!',
         ];
 
         // Send a POST request to store the review
-        $response = $this->post('api/reviews/products/' . $product->id, $reviewData);
+        $response = $this->post('api/reviews/products/'.$product->id, $reviewData);
 
         // Assert that the request was successful (status code 201)
         $response->assertStatus(201);
@@ -53,7 +51,7 @@ class ReviewControllerTest extends TestCase
             'rating' => $reviewData['rating'],
             'comment' => $reviewData['comment'],
             'product_id' => $reviewData['product_id'],
-            'user_id' => $reviewData['user_id']
+            'user_id' => $reviewData['user_id'],
         ]);
     }
 
@@ -71,9 +69,8 @@ class ReviewControllerTest extends TestCase
             'product_id' => $product->id,
         ]);
 
-
         // Send a GET request to the route
-        $response = $this->get('api/reviews/products/' . $product->id);
+        $response = $this->get('api/reviews/products/'.$product->id);
 
         // Assert that the request was successful
         $response->assertStatus(200);
@@ -88,14 +85,14 @@ class ReviewControllerTest extends TestCase
         $this->expectException(UnAuthorizedException::class);
 
         $this->withoutExceptionHandling()
-            ->post('/api/reviews/products/' . $product->id);
+            ->post('/api/reviews/products/'.$product->id);
     }
 
     public function testFindByProductWithNoReviews()
     {
         $product = Product::factory()->create();
 
-        $response = $this->getJson("/api/reviews/products/" . $product->id);
+        $response = $this->getJson('/api/reviews/products/'.$product->id);
 
         $response->assertStatus(200)
             ->assertJsonCount(0, 'data');
@@ -120,20 +117,20 @@ class ReviewControllerTest extends TestCase
         $response = $this->actingAs($user)
             ->postJson("/api/reviews/products/{$product->id}", $reviewData);
 
-        $response->assertStatus(409) 
+        $response->assertStatus(409)
             ->assertJson([
-                'message' => 'You have already reviewed this product.'
+                'message' => 'You have already reviewed this product.',
             ]);
     }
 
     public function testReviewForNonExistentProduct()
     {
         $user = User::factory()->create();
-        $nonExistentProductId =1334; // Assuming this ID doesn't exist
+        $nonExistentProductId = 1334; // Assuming this ID doesn't exist
 
         $reviewData = [
             'rating' => 4,
-            'comment' => 'Great product!'
+            'comment' => 'Great product!',
         ];
 
         $response = $this->actingAs($user)

@@ -15,8 +15,6 @@ use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
-use ReflectionClass;
-use Illuminate\Validation\Validator;
 
 use function PHPUnit\Framework\assertEquals;
 
@@ -27,16 +25,18 @@ class UserRepositoryTest extends TestCase
     private UserRepository $userRepository;
 
     protected $full_name;
+
     protected $email;
+
     protected $password;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->full_name = "Tobi Olanitori";
-        $this->email = "tobiolanitori@gmail.com";
-        $this->password = "password123";
+        $this->full_name = 'Tobi Olanitori';
+        $this->email = 'tobiolanitori@gmail.com';
+        $this->password = 'password123';
 
         $this->userRepository = app(UserRepository::class);
     }
@@ -49,7 +49,7 @@ class UserRepositoryTest extends TestCase
         $credentials = [
             'full_name' => $this->full_name,
             'email' => $this->email,
-            'password' => $this->password
+            'password' => $this->password,
         ];
 
         // Create the user
@@ -73,7 +73,7 @@ class UserRepositoryTest extends TestCase
         $this->assertTrue(Hash::check('password123', $user->password));
 
         // Assert the user gets a free trial
-        $this->assertEquals("free_trial", $user->account_type);
+        $this->assertEquals('free_trial', $user->account_type);
     }
 
     public function test_create_user_with_no_email_throws_BadRequestException()
@@ -83,7 +83,7 @@ class UserRepositoryTest extends TestCase
         // Attempt to create a user without an email
         $this->userRepository->create([
             'full_name' => $this->full_name,
-            'password' => $this->password
+            'password' => $this->password,
         ]);
     }
 
@@ -103,7 +103,7 @@ class UserRepositoryTest extends TestCase
             'product_creation_notification' => true,
             'purchase_notification' => true,
             'news_and_update_notification' => true,
-            'payout_notification' => true
+            'payout_notification' => true,
         ]);
 
         // Assert email is correctly saved
@@ -129,11 +129,11 @@ class UserRepositoryTest extends TestCase
 
         $this->assertEquals($user->alt_email, 'alt@email.com');
 
-        $this->assertTrue((bool)$user->product_creation_notification);
+        $this->assertTrue((bool) $user->product_creation_notification);
 
-        $this->assertTrue((bool)$user->news_and_update_notification);
+        $this->assertTrue((bool) $user->news_and_update_notification);
 
-        $this->assertTrue((bool)$user->payout_notification);
+        $this->assertTrue((bool) $user->payout_notification);
     }
 
     public function test_update_user_email_should_throw_bad_request_exception()
@@ -143,7 +143,7 @@ class UserRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         $this->userRepository->update($user, [
-            'email' => 'updated@email.com'
+            'email' => 'updated@email.com',
         ]);
     }
 
@@ -151,9 +151,9 @@ class UserRepositoryTest extends TestCase
     {
         $expected_user = User::factory()->create();
 
-        $expected_result = "updated";
+        $expected_result = 'updated';
 
-        $user =  $this->userRepository->guardedUpdate($expected_user->email, "full_name", $expected_result);
+        $user = $this->userRepository->guardedUpdate($expected_user->email, 'full_name', $expected_result);
 
         // Assert name has changed
         assertEquals($user->full_name, $expected_result);
@@ -168,7 +168,7 @@ class UserRepositoryTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->userRepository->guardedUpdate($user->email, "email", "updated@email");
+        $this->userRepository->guardedUpdate($user->email, 'email', 'updated@email');
     }
 
     public function test_guarded_update_column_not_found_should_throw_UnprocessableException()
@@ -177,14 +177,14 @@ class UserRepositoryTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->userRepository->guardedUpdate($user->email, "doesnt_exit", "unprocessable");
+        $this->userRepository->guardedUpdate($user->email, 'doesnt_exit', 'unprocessable');
     }
 
     public function test_guarded_update_email_not_found_should_throw_NotFoundException()
     {
         $this->expectException(NotFoundException::class);
 
-        $this->userRepository->guardedUpdate($this->email, "full_name", "not found");
+        $this->userRepository->guardedUpdate($this->email, 'full_name', 'not found');
     }
 
     public function test_get_total_sales_without_date_range()
@@ -234,7 +234,7 @@ class UserRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         // Act
@@ -255,7 +255,7 @@ class UserRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         // Assert that the expected exception is thrown
@@ -319,21 +319,21 @@ class UserRepositoryTest extends TestCase
             )
             ->create([
                 'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
-                'created_at' => Carbon::create(2024, 3, 15, 0)
+                'created_at' => Carbon::create(2024, 3, 15, 0),
             ]);
 
         // Create an order outside the date range
         Order::factory()->create([
             'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
             'created_at' => Carbon::create(2024, 3, 21, 0),
-            'total_amount' => 80000
+            'total_amount' => 80000,
         ]);
 
         $expected_result = $amount1 + $amount2 + $amount3;
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $result = $this->userRepository->getTotalRevenues($user, $filter);
@@ -352,7 +352,7 @@ class UserRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         // Assert that the expected exception is thrown
@@ -389,7 +389,7 @@ class UserRepositoryTest extends TestCase
             },
             'user_id' => function () {
                 return User::factory()->create()->id;
-            }
+            },
         ]);
 
         $result = $this->userRepository->getTotalCustomers($merchant);
@@ -430,12 +430,12 @@ class UserRepositoryTest extends TestCase
             'user_id' => function () {
                 return User::factory()->create()->id;
             },
-            'created_at' => Carbon::create(2024, 3, 15, 0)
+            'created_at' => Carbon::create(2024, 3, 15, 0),
         ]);
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $result = $this->userRepository->getTotalCustomers($merchant, $filter);
@@ -456,9 +456,44 @@ class UserRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $this->userRepository->getTotalCustomers($user, $filter);
+    }
+
+    public function test_firstOrCreate_user_already_exists()
+    {
+        // Arrange: Create a user with the given email
+        $email = 'existing@example.com';
+        $name = 'Existing User';
+
+        $existingUser = User::factory()->create(['email' => $email, 'full_name' => $name]);
+
+        $user = $this->userRepository->firstOrCreate($email, 'Different Name');
+
+        // Assert: The user returned should be the existing user
+        $this->assertEquals($existingUser->id, $user->id);
+        $this->assertEquals($email, $user->email);
+        $this->assertEquals($name, $user->full_name);
+    }
+
+    public function test_firstOrCreate_user_does_not_exist()
+    {
+        // Arrange: Define the email and name for a new user
+        $email = 'new@example.com';
+        $name = 'New User';
+
+        // Act: Call the method
+        $user = $this->userRepository->firstOrCreate($email, $name);
+
+        // Assert: A new user should be created with the given email and name
+        $this->assertNotNull($user);
+        $this->assertEquals($email, $user->email);
+        $this->assertEquals($name, $user->full_name);
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+            'full_name' => $name,
+        ]);
     }
 }

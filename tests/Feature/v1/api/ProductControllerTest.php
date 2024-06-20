@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\v1\api;
 
-use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
@@ -29,14 +28,13 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use Storage;
 use Tests\TestCase;
 
-use function PHPUnit\Framework\assertArrayHasKey;
-
 class ProductControllerTest extends TestCase
 {
     use RefreshDatabase;
     use WithFaker;
 
     private ProductRepository $productRepository;
+
     private User $user;
 
     public function setUp(): void
@@ -55,18 +53,16 @@ class ProductControllerTest extends TestCase
         $response = $this->get(route('product.index'));
 
         $response->assertStatus(200)->assertJson(
-            fn (AssertableJson $json) =>
-            $json->has('meta')
+            fn (AssertableJson $json) => $json->has('meta')
                 ->has('links')
                 ->has('data', 15)
                 ->has(
                     'data.0',
-                    fn (AssertableJson $json) =>
-                    $json
+                    fn (AssertableJson $json) => $json
                         ->hasAll([
                             'title', 'thumbnail', 'price',
                             'publisher', 'slug', 'highlights', 'product_type', 'cover_photos',
-                            'tags', 'description', 'status'
+                            'tags', 'description', 'status',
                         ])
                         ->where('status', 'published')
                         ->missing('id')
@@ -110,7 +106,7 @@ class ProductControllerTest extends TestCase
 
         $response = $this->actingAs($user, 'web')->get(route('product.user', [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ]));
 
         // Convert the products to ProductResource
@@ -129,14 +125,14 @@ class ProductControllerTest extends TestCase
     public function test_show(): void
     {
         $data = [
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
         ];
 
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
-            'data' => $data
+            'data' => $data,
         ]);
 
         // Mock product repository
@@ -146,9 +142,9 @@ class ProductControllerTest extends TestCase
         $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
 
             // Mock metadata based on the file path
-            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
                 return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
                 return ['size' => '5MB', 'mime_type' => 'application/pdf'];
             } else {
                 return null; // Return null for unknown file paths
@@ -157,15 +153,14 @@ class ProductControllerTest extends TestCase
 
         // Invoke the show method
         $response = $this->actingAs($this->user, 'web')->get(route('product.show', [
-            'product' => $product->id
+            'product' => $product->id,
         ]));
 
         // Assert response status
         $response
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) =>
-                $json->where('no_of_resources', 2)
+                fn (AssertableJson $json) => $json->where('no_of_resources', 2)
                     ->where('id', $product->id)
                     ->etc()
             );
@@ -177,12 +172,12 @@ class ProductControllerTest extends TestCase
 
         // Create a product
         $product = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         // Make a request without token
         $this->withoutExceptionHandling()->get(route('product.show', [
-            'product' => $product->id
+            'product' => $product->id,
         ]));
     }
 
@@ -195,7 +190,7 @@ class ProductControllerTest extends TestCase
             ->withoutExceptionHandling()
             ->actingAs($this->user, 'web')
             ->get(route('product.show', [
-                'product' => "12345"
+                'product' => '12345',
             ]));
     }
 
@@ -207,29 +202,29 @@ class ProductControllerTest extends TestCase
 
         // Create a product
         $product = Product::factory()->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $this
             ->withoutExceptionHandling()
             ->actingAs($forbidden_user, 'web')
             ->get(route('product.show', [
-                'product' => $product->id
+                'product' => $product->id,
             ]));
     }
 
     public function test_slug(): void
     {
         $data = [
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
         ];
 
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
             'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
-            'data' => $data
+            'data' => $data,
         ]);
 
         // Mock product repository
@@ -239,9 +234,9 @@ class ProductControllerTest extends TestCase
         $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
 
             // Mock metadata based on the file path
-            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
                 return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
                 return ['size' => '5MB', 'mime_type' => 'application/pdf'];
             } else {
                 return null; // Return null for unknown file paths
@@ -254,15 +249,14 @@ class ProductControllerTest extends TestCase
             ->actingAs($this->user, 'web')
             ->get(route('product.slug', [
                 'product' => $product->slug,
-                'slug' => "1234"
+                'slug' => '1234',
             ]));
 
         // Assert response status
         $response
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) =>
-                $json->where('no_of_resources', 2)
+                fn (AssertableJson $json) => $json->where('no_of_resources', 2)
                     ->where('slug', $product->slug)
                     ->etc()
             );
@@ -271,15 +265,15 @@ class ProductControllerTest extends TestCase
     public function test_slug_unauthenticated_have_access(): void
     {
         $data = [
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
         ];
 
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
             'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
-            'data' => $data
+            'data' => $data,
         ]);
 
         // Mock product repository
@@ -289,9 +283,9 @@ class ProductControllerTest extends TestCase
         $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
 
             // Mock metadata based on the file path
-            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
                 return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
                 return ['size' => '5MB', 'mime_type' => 'application/pdf'];
             } else {
                 return null; // Return null for unknown file paths
@@ -303,15 +297,14 @@ class ProductControllerTest extends TestCase
             ->withoutExceptionHandling()
             ->get(route('product.slug', [
                 'product' => $product->slug,
-                'slug' => "1234"
+                'slug' => '1234',
             ]));
 
         // Assert response status
         $response
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) =>
-                $json->where('no_of_resources', 2)
+                fn (AssertableJson $json) => $json->where('no_of_resources', 2)
                     ->where('slug', $product->slug)
                     ->etc()
             );
@@ -325,8 +318,8 @@ class ProductControllerTest extends TestCase
         $this
             ->withoutExceptionHandling()
             ->get(route('product.slug', [
-                'product' => "12345",
-                'slug' => "1234"
+                'product' => '12345',
+                'slug' => '1234',
             ]));
     }
 
@@ -335,15 +328,14 @@ class ProductControllerTest extends TestCase
         $this->expectException(BadRequestException::class);
 
         $data = [
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
         ];
-
 
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
-            'data' => $data
+            'data' => $data,
         ]);
 
         // Invoke the slug method
@@ -352,15 +344,15 @@ class ProductControllerTest extends TestCase
             ->actingAs($this->user, 'web')
             ->get(route('product.slug', [
                 'product' => $product->slug,
-                'slug' => "1234"
+                'slug' => '1234',
             ]));
     }
 
     public function test_slug_search_product_should_be_tracked(): void
     {
         $data = [
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg",
-            "https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf",
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
+            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
         ];
 
         $user = User::factory()->create();
@@ -369,7 +361,7 @@ class ProductControllerTest extends TestCase
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
             'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
-            'data' => $data
+            'data' => $data,
         ]);
 
         // Mock product repository
@@ -379,9 +371,9 @@ class ProductControllerTest extends TestCase
         $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
 
             // Mock metadata based on the file path
-            if ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.jpg") {
+            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
                 return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === "/products-cover-photos/3d_collection_showcase-20210110-0001.pdf") {
+            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
                 return ['size' => '5MB', 'mime_type' => 'application/pdf'];
             } else {
                 return null; // Return null for unknown file paths
@@ -397,7 +389,7 @@ class ProductControllerTest extends TestCase
             ->actingAs($user, 'web')
             ->get(route('product.slug', [
                 'product' => $product->slug,
-                'slug' => "1234"
+                'slug' => '1234',
             ]));
 
         // Assert response status
@@ -406,7 +398,7 @@ class ProductControllerTest extends TestCase
 
         $this->assertDatabaseHas('product_searches', [
             'user_id' => $user->id,
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
     }
 
@@ -589,22 +581,21 @@ class ProductControllerTest extends TestCase
             ->withoutExceptionHandling()
             ->actingAs($this->user, 'web')
             ->put(route('product.update', [
-                'product' => $product->id
+                'product' => $product->id,
             ]), $payload);
 
         // Asserting that the request was successful
         $response->assertOk()->assertJson(
-            fn (AssertableJson $json) =>
-            $json->where('id', $product->id)
+            fn (AssertableJson $json) => $json->where('id', $product->id)
                 ->where('title', 'title updated')
                 ->where('price', 3)
-                ->where('thumbnail', config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg')
+                ->where('thumbnail', config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::THUMBNAIL_PATH.'/avatar_update.jpg')
                 ->etc()
         );
 
-        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data_update.pdf');
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/cover1_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH.'/avatar_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data_update.pdf');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/cover1_update.jpg');
     }
 
     public function test_update_unauthenticated(): void
@@ -628,7 +619,7 @@ class ProductControllerTest extends TestCase
         $this
             ->withoutExceptionHandling()
             ->put(route('product.update', [
-                'product' => $product->id
+                'product' => $product->id,
             ]), $payload);
     }
 
@@ -647,7 +638,7 @@ class ProductControllerTest extends TestCase
             ->withoutExceptionHandling()
             ->actingAs($this->user, 'web')
             ->put(route('product.update', [
-                'product' => '12345'
+                'product' => '12345',
             ]), $payload);
     }
 
@@ -672,7 +663,7 @@ class ProductControllerTest extends TestCase
             ->withoutExceptionHandling()
             ->actingAs($forbidden_user, 'web')
             ->put(route('product.update', [
-                'product' => $product->id
+                'product' => $product->id,
             ]), $payload);
     }
 
@@ -695,7 +686,7 @@ class ProductControllerTest extends TestCase
             ->withoutExceptionHandling()
             ->actingAs($this->user, 'web')
             ->put(route('product.update', [
-                'product' => $product->id
+                'product' => $product->id,
             ]), $payload);
     }
 
@@ -712,7 +703,7 @@ class ProductControllerTest extends TestCase
 
         // Create a user
         $user = User::factory()->create([
-            'account_type' => 'free_trial'
+            'account_type' => 'free_trial',
         ]);
 
         Product::factory()
@@ -721,10 +712,10 @@ class ProductControllerTest extends TestCase
                 Order::factory()
                     ->count(2)
                     ->state([
-                        'total_amount' => 100
+                        'total_amount' => 100,
                     ])
                     ->has(Customer::factory()->state([
-                        'merchant_id' => $user->id
+                        'merchant_id' => $user->id,
                     ]))
             )
             ->create([
@@ -743,7 +734,7 @@ class ProductControllerTest extends TestCase
             'total_revenues',
             'new_orders',
             'new_orders_revenue',
-            'views'
+            'views',
         ]]);
 
         $response->assertJson(['data' => [
@@ -753,7 +744,7 @@ class ProductControllerTest extends TestCase
             'total_revenues' => $total_revenues,
             'new_orders' => $new_orders,
             'new_orders_revenue' => $new_orders_revenue,
-            'views' => $views
+            'views' => $views,
         ]]);
     }
 
@@ -776,7 +767,7 @@ class ProductControllerTest extends TestCase
 
         // Create a user
         $user = User::factory()->create([
-            'account_type' => 'free_trial'
+            'account_type' => 'free_trial',
         ]);
 
         Product::factory()
@@ -785,7 +776,7 @@ class ProductControllerTest extends TestCase
                 Order::factory()
                     ->count(2)
                     ->state([
-                        'total_amount' => $total_amount
+                        'total_amount' => $total_amount,
                     ])
                     ->sequence(
                         ['created_at' => $within_range_date],
@@ -794,7 +785,7 @@ class ProductControllerTest extends TestCase
                     ->has(
                         Customer::factory()
                             ->state([
-                                'merchant_id' => $user->id
+                                'merchant_id' => $user->id,
                             ])
                             ->sequence(
                                 ['created_at' => $within_range_date],
@@ -812,7 +803,7 @@ class ProductControllerTest extends TestCase
 
         $filter = [
             'start_date' => $start_date->toDateString(),
-            'end_date' => $end_date->toDateString()
+            'end_date' => $end_date->toDateString(),
         ];
 
         // Make a GET request to the analytics endpoint
@@ -827,7 +818,7 @@ class ProductControllerTest extends TestCase
             'total_revenues',
             'new_orders',
             'new_orders_revenue',
-            'views'
+            'views',
         ]]);
 
         $response->assertJson(['data' => [
@@ -837,7 +828,7 @@ class ProductControllerTest extends TestCase
             'total_revenues' => $total_revenues / 2,
             'new_orders' => $new_orders,
             'new_orders_revenue' => $new_orders_revenue,
-            'views' => $views
+            'views' => $views,
         ]]);
     }
 
@@ -852,7 +843,7 @@ class ProductControllerTest extends TestCase
         // When
         $this->withoutExceptionHandling()->getJson(route('product.analytics', [
             'start_date' => $startDate,
-            'end_date' => $endDate
+            'end_date' => $endDate,
         ]));
     }
 
@@ -865,7 +856,7 @@ class ProductControllerTest extends TestCase
         Product::factory(3)->create(['user_id' => $user->id]);
 
         $request = [
-            'status' =>  ProductStatusEnum::Published->value,
+            'status' => ProductStatusEnum::Published->value,
             'start_date' => now()->subDays(7)->format('Y-m-d'),
             'end_date' => now()->format('Y-m-d'),
         ];
@@ -876,7 +867,7 @@ class ProductControllerTest extends TestCase
         // assert
         $response->assertStatus(200);
         $response->assertHeader('Content-type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', "attachment; filename=products_" . now()->format('d_F_Y') . ".csv");
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.now()->format('d_F_Y').'.csv');
     }
 
     public function test_records_unauthenticated(): void
@@ -893,7 +884,7 @@ class ProductControllerTest extends TestCase
             'status' => 'published',
             'start_date' => now()->subDays(7)->format('Y-m-d'),
             'end_date' => now()->format('Y-m-d'),
-            'format' => 'csv'
+            'format' => 'csv',
         ];
 
         // Send a request to the 'product.record' route, expecting an UnAuthorizedException to be thrown
@@ -908,7 +899,7 @@ class ProductControllerTest extends TestCase
 
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         // Act
@@ -931,7 +922,7 @@ class ProductControllerTest extends TestCase
 
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         // Act
@@ -943,7 +934,6 @@ class ProductControllerTest extends TestCase
         $product->refresh();
         $this->assertEquals(ProductStatusEnum::Draft->value, $product->status);
     }
-
 
     public function test_togglepublish_unauthenticated(): void
     {
@@ -971,7 +961,7 @@ class ProductControllerTest extends TestCase
         // Create a product and soft delete it
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
         $product->delete(); // Soft delete the product
 
@@ -981,7 +971,6 @@ class ProductControllerTest extends TestCase
         // Assert
         $response->assertStatus(400);
     }
-
 
     public function test_top_products(): void
     {
@@ -1021,7 +1010,7 @@ class ProductControllerTest extends TestCase
 
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         // Act
@@ -1029,7 +1018,6 @@ class ProductControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(200);
-
 
         // Assert that the product status is 'draft'
         $this->assertEquals('draft', $product->fresh()->status);
@@ -1048,7 +1036,7 @@ class ProductControllerTest extends TestCase
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         // Act
@@ -1073,12 +1061,11 @@ class ProductControllerTest extends TestCase
         // create product
         $product = Product::factory()->create([
             'user_id' => $user2->id, // not found
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         // delete user
         $user->delete();
-
 
         // Act
         $response = $this->withoutExceptionHandling()->delete(route('product.delete', ['product' => $product->id]));
@@ -1100,7 +1087,7 @@ class ProductControllerTest extends TestCase
         // Create Product
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         $product->delete();
@@ -1124,7 +1111,7 @@ class ProductControllerTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         $response = $this->withoutExceptionHandling()->get(route('product.restore', ['product' => $product->id]));
@@ -1164,7 +1151,7 @@ class ProductControllerTest extends TestCase
         // Create a product that belongs to the second user and soft delete it
         $product = Product::factory()->create([
             'user_id' => $user2->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         $product->delete();
@@ -1191,7 +1178,7 @@ class ProductControllerTest extends TestCase
         // Create product
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         // Soft delete the product
@@ -1201,7 +1188,6 @@ class ProductControllerTest extends TestCase
         $this->assertSoftDeleted($product);
 
         $response = $this->delete(route('product.delete.force', [$product->id]));
-
 
         // Assert: Check the response status
         $response->assertStatus(200);
@@ -1217,7 +1203,7 @@ class ProductControllerTest extends TestCase
         $user = User::factory()->create();
         $product = Product::factory()->create([
             'user_id' => $user->id,
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         // Soft delete the product
@@ -1261,7 +1247,7 @@ class ProductControllerTest extends TestCase
         // Create a product that belongs to the second user
         $product = Product::factory()->create([
             'user_id' => $user2->id, // Product does not belong to $user
-            'status' => ProductStatusEnum::Draft->value
+            'status' => ProductStatusEnum::Draft->value,
         ]);
 
         // Act: Attempt to force delete the product as the first user
@@ -1286,7 +1272,7 @@ class ProductControllerTest extends TestCase
         // Create products and associate them with the publisher
         $products = Product::factory()->count(3)->create([
             'user_id' => $publisher->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         // Create orders for the authenticated user
@@ -1352,7 +1338,7 @@ class ProductControllerTest extends TestCase
         // Assert
         $response->assertStatus(200);
         $response->assertJson([
-            'data' => $expectedTags
+            'data' => $expectedTags,
         ]);
     }
 
@@ -1362,33 +1348,33 @@ class ProductControllerTest extends TestCase
         Product::factory()->create([
             'title' => 'Osh Product 1',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'Osh Product 2',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'Osh Product 3',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'Another Product',
             'description' => 'This is another osh product',
             'user_id' => $this->user->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
         Product::factory()->create([
             'title' => 'full_name',
             'description' => 'Searching with full name',
             'user_id' => User::factory()->create(['full_name' => 'osh name']),
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
 
         $response = $this->post(route('product.search'), [
-            'text' => 'osh'
+            'text' => 'osh',
         ]);
 
         $response->assertOk()
@@ -1405,7 +1391,7 @@ class ProductControllerTest extends TestCase
     public function test_search_sets_correct_cookie()
     {
         $products = Product::factory()->count(3)->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         $searchText = $products[0]->title;
@@ -1416,7 +1402,7 @@ class ProductControllerTest extends TestCase
         // Mock product repository
         $mock = $this->partialMock(ProductRepository::class);
 
-        // Mock the getFileMetaData method
+        // Mock the search method
         $mock->shouldReceive('search')
             ->with($searchText)
             ->andReturn($builder);
@@ -1433,11 +1419,11 @@ class ProductControllerTest extends TestCase
 
     public function test_search_handles_empty_search_text()
     {
-        $response = $this->withoutExceptionHandling()->post(route('product.search'), ['text' => ""]);
+        $response = $this->withoutExceptionHandling()->post(route('product.search'), ['text' => '']);
 
         $response->assertStatus(200);
         $response->assertJson([
-            'data' => []
+            'data' => [],
         ]);
     }
 
@@ -1445,7 +1431,7 @@ class ProductControllerTest extends TestCase
     {
         $user = User::factory()->create();
         $products = Product::factory()->count(3)->create([
-            'user_id' => $this->user->id
+            'user_id' => $this->user->id,
         ]);
 
         // Mock product repository

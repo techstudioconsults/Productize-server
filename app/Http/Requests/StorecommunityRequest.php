@@ -2,7 +2,9 @@
 
 /**
  *  @author @obajide028 Odesanya Babajide
+ *
  *  @version 1.0
+ *
  *  @since 09-05-2024
  */
 
@@ -28,7 +30,7 @@ class StorecommunityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'=>'required|email|unique:communities'
+            'email' => 'required|email|unique:communities',
         ];
     }
 }

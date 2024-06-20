@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Product;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +21,7 @@ Route::get('/', function () {
  * @Intuneteq
  *
  * This view is provided by laravel
+ *
  * @see https://laravel.com/docs/10.x/passwords
  */
 Route::get('/reset-password/{token}', function (string $token) {

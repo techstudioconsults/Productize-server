@@ -17,10 +17,12 @@ Route::group([
 ], function () {
     Route::post('/', [ProductController::class, 'store'])->name('store');
 
-    Route::get('/', [ProductController::class, 'index'])->withoutMiddleware([
+    Route::get('/', [ProductController::class, 'index'])->middleware('abilities:role:super_admin')->name('index');
+
+    Route::get('/external', [ProductController::class, 'index'])->withoutMiddleware([
         'auth:sanctum',
         'can:allowed,App\Models\Product',
-    ])->name('index');
+    ])->name('external');
 
     Route::get('/users', [ProductController::class, 'user'])->name('user');
 
@@ -48,6 +50,8 @@ Route::group([
     ])->name('search');
 
     Route::get('/search', [ProductController::class, 'basedOnSearch'])->withoutMiddleware('auth:sanctum')->name('search.get');
+
+    Route::get('/stats/admin', [ProductController::class, 'stats'])->middleware('abilities:role:super_admin')->name('stats');
 
     Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 

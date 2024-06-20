@@ -20,6 +20,7 @@ class SubscriptionResource extends JsonResource
             'id' => $this->id,
             'status' => $this->status,
             'price' => SubscriptionRepository::PRICE,
+            'created_at' => $this->created_at,
             'user' => [
                 'id' => $this->user->id,
                 'email' => $this->user->email,

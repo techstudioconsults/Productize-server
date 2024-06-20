@@ -20,11 +20,13 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -38,8 +40,21 @@ class ProductController extends Controller
     public function __construct(
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository,
-        protected OrderRepository $orderRepository
+        protected OrderRepository $orderRepository,
+        protected CustomerRepository $customerRepository
     ) {
+    }
+
+    public function index(Request $request)
+    {
+        $filter = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ];
+
+        $products = $this->productRepository->query($filter)->paginate(10);
+
+        return ProductResource::collection($products);
     }
 
     /**
@@ -49,7 +64,7 @@ class ProductController extends Controller
      *
      * @return ProductCollection Returns a paginated collection of published products.
      */
-    public function index()
+    public function external()
     {
         $status = ProductStatusEnum::Published->value;
 
@@ -174,7 +189,7 @@ class ProductController extends Controller
             $this->productRepository->trackSearch($product, $user);
         }
 
-        if (! $this->productRepository->isPublished($product)) {
+        if (!$this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
@@ -266,7 +281,7 @@ class ProductController extends Controller
 
         $total_revenues = $order_query->sum('total_amount');
 
-        $total_sales = $order_query->count();
+        $total_sales = $order_query->sum('quantity');
 
         $total_customers = $this->userRepository->getTotalCustomers($user, $filter);
 
@@ -337,10 +352,10 @@ class ProductController extends Controller
 
         $csvContent = '';
         foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow)."\n";
+            $csvContent .= implode(',', $csvRow) . "\n";
         }
 
-        $filePath = 'csv/'.$fileName;
+        $filePath = 'csv/' . $fileName;
 
         // Store the CSV content in the storage/app/csv directory
         Storage::disk('local')->put($filePath, $csvContent);
@@ -355,7 +370,7 @@ class ProductController extends Controller
 
         // Return the response with the file from storage
         return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/'.$filePath));
+            readfile(storage_path('app/' . $filePath));
         }, 200, $headers);
     }
 
@@ -656,5 +671,25 @@ class ProductController extends Controller
         }
 
         return new ProductCollection($products);
+    }
+
+    public function stats()
+    {
+        $order_query = $this->orderRepository->query([]);
+
+        $total_products = $this->productRepository->query([])->count();
+
+        $total_sales = $order_query->sum('quantity');
+
+        $total_customers = $this->customerRepository->query([])->count();
+
+        $total_revenue = $order_query->sum('total_amount');
+
+        return new JsonResource([
+            'total_products' => $total_products,
+            'total_sales' => $total_sales,
+            'total_customers' => $total_customers,
+            'total_revenue' => $total_revenue
+        ]);
     }
 }

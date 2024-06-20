@@ -9,6 +9,8 @@ Route::group([
     'prefix' => 'users',
     'middleware' => ['auth:sanctum', 'can:verified,App\Models\User'],
 ], function () {
+    Route::get('/stats/admin', [UserController::class, 'stats'])->middleware('abilities:role:SUPER ADMIN');
+
     Route::get('/me', [UserController::class, 'show'])->withoutMiddleware('can:verified,App\Models\User');
 
     Route::post('/me', [UserController::class, 'update']);

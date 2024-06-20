@@ -18,11 +18,13 @@ use App\Http\Requests\RequestHelpRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
+use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +39,8 @@ class UserController extends Controller
 {
     public function __construct(
         protected UserRepository $userRepository,
-        protected ProductRepository $productRepository
+        protected ProductRepository $productRepository,
+        protected OrderRepository $orderRepository,
     ) {
     }
 
@@ -91,7 +94,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -145,7 +148,7 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if (! Hash::check($validated['password'], $user->password)) {
+        if (!Hash::check($validated['password'], $user->password)) {
             throw new BadRequestException('Incorrect Password');
         }
 
@@ -187,5 +190,20 @@ class UserController extends Controller
         return new JsonResponse(
             ['message' => 'email sent']
         );
+    }
+
+    public function stats()
+    {
+        $total_products = $this->productRepository->query([])->count();
+
+        $total_sales = $this->orderRepository->query([])->sum('quantity');
+
+        $total_users = $this->userRepository->query([])->count();
+
+        return new JsonResource([
+            'total_products' => $total_products,
+            'total_sales' => $total_sales,
+            'total_users' => $total_users
+        ]);
     }
 }

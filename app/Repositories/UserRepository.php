@@ -74,6 +74,7 @@ class UserRepository extends Repository
             'twitter_account',
             'facebook_account',
             'youtube_account',
+            'role'
         ];
 
         // Remove invalid keys from credentials

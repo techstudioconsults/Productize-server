@@ -16,3 +16,4 @@ use Illuminate\Support\Facades\Route;
     });    
      Route::get('/reviews/products/{product}', [ReviewController::class, 'findByProduct'])->name('findByProduct');
      Route::get('/reviews', [ReviewController::class, 'index'])->name('index');
+     Route::get('/reviews/productsavg/{product}', [ReviewController::class, 'getAverageRatingForProduct'])->name('getAverageRatingForProduct');

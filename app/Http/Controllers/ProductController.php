@@ -14,6 +14,7 @@ use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
+use App\Helpers\Services\FileGenerator;
 use App\Http\Requests\SearchRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -29,7 +30,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -37,6 +37,8 @@ use Illuminate\Support\Str;
  */
 class ProductController extends Controller
 {
+    use FileGenerator;
+
     public function __construct(
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository,
@@ -334,44 +336,55 @@ class ProductController extends Controller
 
         $columns = ['Title', 'Price', 'Sales', 'Type', 'Status'];
 
-        $data = [];
+        $data = [$columns];
 
-        $data[] = $columns;
+        foreach ($products as $product) {
+            $data[] = [
+                $product->title,
+                $product->price,
+                $product->totalSales(),
+                $product->product_type,
+                $product->status
+            ];
+        }
 
         $fileName = "products_$now.csv";
 
-        foreach ($products as $product) {
-            $row['Title'] = $product->title;
-            $row['Price'] = $product->price;
-            $row['Sales'] = 30;
-            $row['Type'] = $product->product_type;
-            $row['Status'] = $product->status;
+        $filePath = $this->generateCsv($fileName, $data);
 
-            $data[] = [$row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']];
-        }
+        return $this->streamFile($filePath, $fileName, 'text/csv');
+    }
 
-        $csvContent = '';
-        foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow) . "\n";
-        }
-
-        $filePath = 'csv/' . $fileName;
-
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
-
-        $headers = [
-            'Content-type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=$fileName",
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
+    public function adminRecords(Request $request)
+    {
+        $filter = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
         ];
 
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/' . $filePath));
-        }, 200, $headers);
+        $products = $this->productRepository->find($filter);
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+
+        $columns = ['Title', 'Price', 'Sales', 'Type', 'Status'];
+
+        $data = [$columns];
+
+        foreach ($products as $product) {
+            $data[] = [
+                $product->title,
+                $product->price,
+                $product->totalSales(),
+                $product->product_type,
+                $product->status
+            ];
+        }
+
+        $fileName = "products_$now.csv";
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 
     /**

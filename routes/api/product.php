@@ -32,7 +32,9 @@ Route::group([
 
     Route::get('/revenues', [ProductController::class, 'productsRevenue'])->name('revenue');
 
-    Route::get('/records', [ProductController::class, 'records'])->name('record');
+    Route::get('/records', [ProductController::class, 'records'])->name('records');
+
+    Route::get('/records/admin', [ProductController::class, 'adminRecords'])->middleware('abilities:role:super_admin')->name('records.admin');
 
     Route::get('/downloads', [ProductController::class, 'downloads'])->name('download');
 

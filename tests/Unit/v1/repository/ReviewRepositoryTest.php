@@ -189,4 +189,34 @@ class ReviewRepositoryTest extends TestCase
         $this->assertCount(1, $results);
         $this->assertEquals($product2->id, $results->first()->product_id);
     }
+
+    public function testGetAverageRatingForProduct()
+    {
+        $product = Product::factory()->create();
+
+        // reviews for the product with different ratings
+        Review::factory()->create([
+            'product_id' => $product->id,
+            'rating' => 4,
+        ]);
+
+        Review::factory()->create([
+            'product_id' => $product->id,
+            'rating' => 3,
+        ]);
+
+        Review::factory()->create([
+            'product_id' => $product->id,
+            'rating' => 5,
+        ]);
+
+        // Calc expected average rating
+        $expectedAverageRating = (4 + 3 + 5) / 3;
+
+        // Get the average rating from the repository
+        $averageRating = $this->reviewRepository->getAverageRatingForProduct($product);
+
+        // Assert that the average rating is correct
+        $this->assertEquals($expectedAverageRating, $averageRating);
+    }
 }

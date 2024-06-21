@@ -208,15 +208,12 @@ class ProductRepository extends Repository
      *
      * @param  array|null  $filter  An optional array of filters including 'start_date' and 'end_date'.
      * @return Builder The query builder instance.
+     *
+     * @see \App\Models\Product scope methods for TopProducts query defined.
      */
     public function topProducts(?array $filter = []): Builder
     {
-        $query = Product::query();
-
-        $query->join('orders', 'products.id', '=', 'orders.product_id')
-            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
-            ->groupBy('products.id')
-            ->orderByDesc('total_sales');
+        $query = Product::TopProducts();
 
         // Apply date filter specifically to the products table
         if (isset($filter['start_date']) && isset($filter['end_date']) ) {

@@ -20,6 +20,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
+use App\Mail\BestSellerCongratulations;
 use App\Models\Product;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
@@ -31,6 +32,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Mail;
 
 /**
  * Route handler methods for Product resource
@@ -716,6 +718,15 @@ class ProductController extends Controller
             'total_sales' => $total_sales,
             'total_customers' => $total_customers,
             'total_revenue' => $total_revenue
+        ]);
+    }
+
+    public function sendCongratulations(Product $product)
+    {
+        Mail::send(new BestSellerCongratulations($product));
+
+        return new JsonResource([
+            'message' => 'Email sent'
         ]);
     }
 }

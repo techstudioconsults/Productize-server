@@ -53,6 +53,8 @@ Route::group([
         'auth:sanctum',
     ])->name('search');
 
+    Route::post('/{product}/send-congratulations-mail', [ProductController::class, 'sendCongratulations'])->middleware('abilities:role:super_admin')->name('congratulations');
+
     Route::get('/search', [ProductController::class, 'basedOnSearch'])->withoutMiddleware('auth:sanctum')->name('search.get');
 
     Route::get('/stats/admin', [ProductController::class, 'stats'])->middleware('abilities:role:super_admin')->name('stats');
@@ -60,6 +62,7 @@ Route::group([
     Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product')->name('restore');
+
 
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'slug'])
         ->name('slug')

@@ -24,12 +24,15 @@ class ReviewResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user' => $this->user_id,
+            'user' => [
+                'id' => $this->user->id,
+                'name' => $this->user->full_name,
+                'logo' => $this->user->logo,
+            ],
             'product' => $this->product_id,
             'rating' => $this->rating,
             'comment' => $this->comment,
-            // 'user_details' => new UserResource($this->whenLoaded('user')),
-            // 'product_details' => new ProductResource($this->whenLoaded('product')),
+            'created_at' => $this->created_at,
         ];
     }
 }

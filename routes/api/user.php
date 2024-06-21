@@ -16,4 +16,6 @@ Route::group([
     Route::post('/change-password', [UserController::class, 'changePassword']);
 
     Route::post('/request-help', [UserController::class, 'requestHelp']);
+
+    Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
 });

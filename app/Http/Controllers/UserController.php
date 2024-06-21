@@ -214,12 +214,16 @@ class UserController extends Controller
         );
     }
 
-    // public function updateKyc(UpdateKycRequest $request, User $user)
-    // {
-    //     $validated = $request->validated();
+    public function updateKyc(UpdateKycRequest $request)
+    {
+        $user = Auth::user();
 
-    //     $updated = $this->userRepository->updateKyc($user, $validated);
+        $validated = $request->validated();
 
-    //     return new UserResource($updated);
-    // }
+        // var_dump($validated);
+
+        $updated = $this->userRepository->update($user, $validated);
+
+        return new UserResource($updated);
+    }
 }

@@ -176,6 +176,7 @@ class UserRepository extends Repository
 
         if (isset($updatables['document_image'])) {
             $documentImage = $this->uploadDocumentImage($updatables['document_image']);
+            var_dump($documentImage);
             $updatables['document_image'] = $documentImage;
         }
 

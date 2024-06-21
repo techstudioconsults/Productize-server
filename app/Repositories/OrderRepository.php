@@ -131,22 +131,23 @@ class OrderRepository extends Repository
         $query = Order::query();
 
         // Apply date filter
-        $this->applyDateFilters($query, $filter);
+        // $this->applyDateFilters($query, $filter);
 
-        // Filter by product title
-        if (isset($filter['product_title'])) {
-            $product_title = $filter['product_title'];
+        // // Filter by product title
+        // if (isset($filter['product_title'])) {
+        //     $product_title = $filter['product_title'];
 
-            // remove product title from the filter array
-            $query->whereHas('product', function (Builder $productQuery) use ($product_title) {
-                $productQuery->where('title', 'like', '%' . $product_title . '%');
-            });
-        }
+        //     // $query->whereHas('product', function (Builder $productQuery) use ($product_title) {
+        //     //     $productQuery->where('title', 'like', '%' . $product_title . '%');
+        //     //     // return $productQuery;
+        //     // });
+        // }
 
-        unset($filter['product_title']);
+        // // remove product title from the filter array
+        // unset($filter['product_title']);
 
-        // Apply other filters
-        $query->where($filter);
+        // // Apply other filters
+        // $query->where($filter);
 
         return $query;
     }

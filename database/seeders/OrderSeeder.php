@@ -15,14 +15,8 @@ class OrderSeeder extends Seeder
 
     public function run(): void
     {
-        $this->disableForeignKeys();
-        $this->truncate('orders');
-
         Order::factory(10)->create([
             'product_id' => Product::factory()->create(['user_id' => User::factory()->create()->id])->id,
         ]);
-
-
-        $this->enableForeignKeys();
     }
 }

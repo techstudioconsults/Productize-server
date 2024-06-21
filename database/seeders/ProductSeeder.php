@@ -6,18 +6,13 @@ use App\Enums\ProductStatusEnum;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
-use Database\Seeders\Traits\DisableForeignKeys;
-use Database\Seeders\Traits\TruncateTable;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
-    use DisableForeignKeys, TruncateTable;
 
     public function run(): void
     {
-        $this->disableForeignKeys();
-        $this->truncate('products');
         Product::factory(10)
             ->sequence(
                 ['status' => ProductStatusEnum::Draft->value],
@@ -29,8 +24,5 @@ class ProductSeeder extends Seeder
             'user_id' => User::where('email', 'tobiolanitori1@gmail.com')->first()->id,
             'status' => ProductStatusEnum::Published->value
         ]);
-
-
-        $this->enableForeignKeys();
     }
 }

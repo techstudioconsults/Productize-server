@@ -18,13 +18,8 @@ class PayoutSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->disableForeignKeys();
-        $this->truncate('payouts');
-
         Payout::factory()->count(10)->create([
             'account_id' => Account::factory()->create(['user_id' => User::factory()->create()->id]),
         ]);
-
-        $this->enableForeignKeys();
     }
 }

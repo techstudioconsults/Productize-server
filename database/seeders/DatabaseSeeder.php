@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(class: TruncateSeeder::class);
         $this->call(class: UserSeeder::class);
         $this->call(class: OrderSeeder::class); // run orders before product because orders table will truncate and undo all from products
         $this->call(class: ProductSeeder::class);

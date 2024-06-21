@@ -219,11 +219,11 @@ class ProductRepository extends Repository
             ->orderByDesc('total_sales');
 
         // Apply date filter specifically to the products table
-        if (! empty($filter['start_date']) && ! empty($filter['end_date'])) {
+        if (isset($filter['start_date']) && isset($filter['end_date']) ) {
             $query->whereBetween('products.created_at', [$filter['start_date'], $filter['end_date']]);
-
-            unset($filter['start_date'], $filter['end_date']);
         }
+
+        unset($filter['start_date'], $filter['end_date']);
 
         $this->applyStatusFilter($query, $filter);
 

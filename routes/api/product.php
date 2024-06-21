@@ -43,6 +43,8 @@ Route::group([
 
     ])->name('top-products');
 
+    Route::get('/top-products/admin', [ProductController::class, 'bestSelling'])->middleware('abilities:role:super_admin')->name('top-product.admin');
+
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',
     ])->name('tags');

@@ -54,7 +54,7 @@ class ProductController extends Controller
             'end_date' => $request->end_date,
         ];
 
-        $products = $this->productRepository->query($filter)->paginate(10);
+        $products = $this->productRepository->query($filter)->paginate(4);
 
         return ProductResource::collection($products);
     }
@@ -532,6 +532,19 @@ class ProductController extends Controller
 
         return new ProductCollection($top_products
             ->limit(5)->paginate(5));
+    }
+
+    // for admin
+    public function bestSelling(Request $request)
+    {
+        $filter = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date
+        ];
+
+        $top_products = $this->productRepository->topProducts($filter)->paginate(5);
+
+        return ProductResource::collection($top_products);
     }
 
     /**

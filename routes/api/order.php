@@ -19,6 +19,8 @@ Route::controller(OrderController::class)
 
         Route::get('/unseen', 'unseen')->name('unseen');
 
+        Route::get('/stats', 'stats')->middleware('abilities:role:super_admin')->name('stats');
+
         Route::get('/{order}', 'show')->middleware('can:view,order');
 
         Route::get('/products/{product}', 'showByProduct');

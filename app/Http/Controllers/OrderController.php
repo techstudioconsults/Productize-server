@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author @Intuneteq Tobi Olanitori
  *
@@ -197,5 +198,22 @@ class OrderController extends Controller
         $query->update(['seen' => true]);
 
         return new JsonResource(['message' => 'orders marked as seen']);
+    }
+
+    public function stats()
+    {
+        $orders_query = $this->orderRepository->query([]);
+
+        $total_orders = $orders_query->count();
+
+        $total_orders_revenue = $orders_query->sum('total_amount');
+
+        $avg_order_value = $total_orders_revenue / $total_orders;
+
+        return new JsonResource([
+            'total_orders' => $total_orders,
+            'total_orders_revenue' => (int)$total_orders_revenue,
+            'avg_order_value' => (int)$avg_order_value
+        ]);
     }
 }

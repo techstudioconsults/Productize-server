@@ -54,7 +54,8 @@ class BestSellerCongratulations extends Mailable
             with: [
                 'thumbnail' => $this->product->thumbnail,
                 'title' => $this->product->title,
-                'position' => $this->getPositionWithSuffix()
+                'position' => $this->getPosition(),
+                'positionWithSuffix' => $this->getPositionWithSuffix()
             ],
 
         );

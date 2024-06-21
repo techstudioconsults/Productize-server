@@ -145,18 +145,16 @@ class ReviewRepository extends Repository
         return $entity;
     }
 
-       /**
+    /**
      * @author @obajide028 Odesanya Babajide
      *
      * Retrieve the average rating of a product
      *
-     * 
-     * @param Product $product The product for which to retrieve ratings.
+     * @param  Product  $product  The product for which to retrieve ratings.
      * @return \App\Http\Resources\ReviewResource A collection of review resources.
      */
-
-     public function getAverageRatingForProduct(Product $product): float
-     {
-         return $product->reviews()->avg('rating') ?? 0;
-     }
+    public function getAverageRatingForProduct(Product $product): float
+    {
+        return $product->reviews()->avg('rating') ?? 0;
+    }
 }

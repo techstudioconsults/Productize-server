@@ -36,7 +36,8 @@ return new class extends Migration
             $table->boolean('payout_notification')->default(0);
             $table->string('country')->nullable();
             $table->string('document_type')->nullable();
-            $table->string('document')->nullable();
+            $table->string('document_image')->nullable();
+            $table->boolean('kyc_complete')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

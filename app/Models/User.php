@@ -54,7 +54,7 @@ class User extends Authenticatable implements CanResetPassword
         'payout_notification',
         'country',
         'document_type',
-        'document',
+        'document_image',
     ];
 
     /**
@@ -155,6 +155,16 @@ class User extends Authenticatable implements CanResetPassword
      */
     public function receivesBroadcastNotificationsOn(): string
     {
-        return 'users.'.$this->id;
+        return 'users.' . $this->id;
+    }
+
+    /**
+     * @author obajide028 Odesanya Babajide
+     *
+     * check if all fields are added and returns a boolean value
+     */
+    public function kycComplete()
+    {
+        return !is_null($this->country) && !is_null($this->document_type) && !is_null($this->document_image);
     }
 }

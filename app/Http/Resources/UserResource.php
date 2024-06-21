@@ -36,10 +36,7 @@ class UserResource extends JsonResource
             'purchase_notification' => (bool) $this->purchase_notification,
             'news_and_update_notification' => (bool) $this->news_and_update_notification,
             'payout_notification' => (bool) $this->payout_notification,
-            'country' => $this->country,
-            'document_type' => $this->document_type,
-            'document' => $this->document,
-            'kyc_complete' => (bool) ($this->country && $this->document_type && $this->document),
+            'kyc_complete' => (bool) ($this->country && $this->document_type && $this->document_image),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

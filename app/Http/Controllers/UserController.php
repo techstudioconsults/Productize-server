@@ -15,9 +15,11 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Requests\RequestHelpRequest;
+use App\Http\Requests\UpdateKycRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
+use App\Models\User;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
@@ -28,6 +30,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Log;
 use Throwable;
 
 /**
@@ -96,6 +99,29 @@ class UserController extends Controller
             }
 
             $validated['logo'] = $logoUrl;
+        }
+
+        if (isset($validated['document_image'])) {
+            $documentImage = $validated['document_image'];
+
+            unset($validated['document_image']);
+
+            $originalName = $documentImage->getClientOriginalName();
+
+            $documentImageUrl = null;
+
+            Log::critical('message', ['error' => '']);
+
+            try {
+                $path = Storage::putFileAs('documentImage', $documentImage, $originalName);
+
+                $documentImageUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
+            } catch (\Throwable $th) {
+                Log::critical('message', ['error' => $th]);
+                throw new ServerErrorException($th->getMessage());
+            }
+
+            $validated['document_image'] = $documentImageUrl;
         }
 
         try {
@@ -187,4 +213,13 @@ class UserController extends Controller
             ['message' => 'email sent']
         );
     }
+
+    // public function updateKyc(UpdateKycRequest $request, User $user)
+    // {
+    //     $validated = $request->validated();
+
+    //     $updated = $this->userRepository->updateKyc($user, $validated);
+
+    //     return new UserResource($updated);
+    // }
 }

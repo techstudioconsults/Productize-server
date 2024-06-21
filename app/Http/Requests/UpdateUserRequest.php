@@ -44,9 +44,9 @@ class UpdateUserRequest extends FormRequest
             'purchase_notification' => 'boolean',
             'news_and_update_notification' => 'boolean',
             'payout_notification' => 'boolean',
-            'country' => 'required|string',
-            'document_type' => 'required|string',
-            'document' => 'required|file',
+            'country' => 'string|nullable',
+            'document_type' => 'string|nullable|in:Driver\'s license,National Id card,National Passport',
+            'document_image' => 'image|nullable|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB',
         ];
     }
 

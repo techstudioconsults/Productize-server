@@ -14,6 +14,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Requests\UpdateKycRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,6 +23,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Storage;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -30,6 +32,9 @@ use Illuminate\Support\Facades\Schema;
  */
 class UserRepository extends Repository
 {
+
+    const DOCUMENTIMAGE_PATH = 'user-document-image';
+
     public function __construct(
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository
@@ -167,6 +172,11 @@ class UserRepository extends Repository
         // Ensure the user is not attempting to update the user's email
         if (array_key_exists('email', $updatables)) {
             throw new BadRequestException("Column 'email' cannot be updated");
+        }
+
+        if (isset($updatables['document_image'])) {
+            $documentImage = $this->uploadDocumentImage($updatables['document_image']);
+            $updatables['document_image'] = $documentImage;
         }
 
         // Assign the updates to the corresponding fields of the User instance
@@ -337,5 +347,31 @@ class UserRepository extends Repository
         }
 
         return $user;
+    }
+
+      /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Uploads a user's document image and returns its storage path.
+     *
+     * @param  object  $documentImage  The document image file to upload.
+     * @return string The storage path of the uploaded document image.
+     *
+     * @throws BadRequestException If the provided document image fails validation.
+     */
+    public function uploadDocumentImage(object $documentImage): string
+    {
+        // Each item in the 'data' array must be a file
+        if (! $this->isValidated([$documentImage], ['required|image'])) {
+            throw new BadRequestException($this->getValidator()->errors()->first());
+        }
+
+        $documentImagePath = Storage::putFileAs(
+            self::DOCUMENTIMAGE_PATH,
+            $documentImage,
+            str_replace(' ', '_', $documentImage->getClientOriginalName())
+        );
+
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$documentImagePath;
     }
 }

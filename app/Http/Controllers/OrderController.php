@@ -33,6 +33,28 @@ class OrderController extends Controller
     ) {
     }
 
+    public function index(Request $request)
+    {
+        $start_date = $request->start_date;
+
+        $end_date = $request->end_date;
+
+        // Get the search query from the request
+        $product_title = $request->product_title;
+
+        $filter = [
+            'product_title' => $product_title,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ];
+
+        $orders = $this->orderRepository->query($filter);
+
+        $orders = $orders->paginate(10);
+
+        return OrderResource::collection($orders);
+    }
+
     /**
      * @author @Intuneteq Tobi Olanitori
      *
@@ -40,7 +62,7 @@ class OrderController extends Controller
      *
      * @return \App\Http\Resources\OrderResource Returns a paginated collection of all orders on a user's products.
      */
-    public function index(Request $request)
+    public function user(Request $request)
     {
         $user = Auth::user();
 

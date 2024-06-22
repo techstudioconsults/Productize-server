@@ -120,7 +120,7 @@ class UserRepository extends Repository
      * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found users.
      */
-    public function find(?array $filter): ?Collection
+    public function find(?array $filter = []): ?Collection
     {
         return $this->query($filter ?? [])->get();
     }

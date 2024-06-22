@@ -36,7 +36,7 @@ Route::group([
 
     Route::get('/records/admin', [ProductController::class, 'adminRecords'])->middleware('abilities:role:super_admin')->name('records.admin');
 
-    Route::get('/downloads', [ProductController::class, 'downloads'])->name('download');
+    Route::get('/purchased', [ProductController::class, 'purchased'])->name('purchased');
 
     Route::get('/top-products', [ProductController::class, 'topProducts'])->withoutMiddleware([
         'auth:sanctum',

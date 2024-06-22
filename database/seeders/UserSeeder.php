@@ -35,6 +35,6 @@ class UserSeeder extends Seeder
             'password' => '12345'
         ]);
 
-        User::factory(2)->create();
+        User::factory(5)->create();
     }
 }

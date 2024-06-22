@@ -2,19 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Enums\PayoutStatusEnum;
-use App\Enums\Roles;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
 use App\Mail\RequestHelp;
-use App\Models\Account;
 use App\Models\Order;
-use App\Models\Payout;
-use App\Models\Product;
 use App\Models\User;
+use Database\Seeders\PayoutSeeder;
+use Database\Seeders\ProductSeeder;
+use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
@@ -22,11 +20,44 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Tests\Traits\SanctumAuthentication;
 
 class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
     use WithFaker;
+    use SanctumAuthentication;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    public function test_index_with_super_admin()
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->actingAsSuperAdmin();
+
+        $expected_count = 10; // 9 from the seeder + 1 sanctum generated super admin - Ensure it is 10 cause of pagination
+
+        $expected_json = UserResource::collection(User::all())->response()->getData(true);
+
+        $response = $this->withoutExceptionHandling()->get(route('users.index'));
+
+        $response->assertOk()->assertJson($expected_json, true);
+        $response->assertJsonStructure(['data', 'links', 'meta']);
+        $this->assertCount($expected_count, $response->json('data')); // Default pagination count
+    }
+
+    public function test_index_with_user_not_super_admin()
+    {
+        $this->actingAsAdmin();
+
+        $this->expectException(ForbiddenException::class);
+
+        $this->withoutExceptionHandling()->get(route('users.index'));
+    }
 
     public function test_show()
     {
@@ -120,7 +151,7 @@ class UserControllerTest extends TestCase
         // Generate a valid new password
         $newPassword = $this->faker->regexify('^(?=.*[0-9])[A-Za-z0-9]{8,16}$');
 
-        $response = $this->actingAs($user, 'web')
+        $response = $this->withoutExceptionHandling()->actingAs($user, 'web')
             ->postJson('/api/users/change-password', [
                 'password' => 'password',
                 'new_password' => $newPassword,
@@ -256,35 +287,57 @@ class UserControllerTest extends TestCase
         Mail::assertSent(RequestHelp::class);
     }
 
-    // public function test_stat(): void
-    // {
-    //     $admin = User::factory()->create([
-    //         'role' => Roles::USER->value
-    //     ]);
+    public function test_stat_with_super_admin(): void
+    {
+        $this->actingAsSuperAdmin();
 
-    //     $users = User::factory()->count(10)->create();
-    //     $products = Product::factory()->count(10)->create();
-    //     $payouts = Payout::factory()->count(10)->create([
-    //         'status' => PayoutStatusEnum::Completed->value,
-    //         'account_id' => Account::factory()->create()->id
-    //     ]);
-    //     $orders = Order::factory()->count(10)->create();
+        $this->seed([
+            UserSeeder::class,
+            ProductSeeder::class,
+            PayoutSeeder::class,
+        ]);
 
-    //     // $admin->createToken('TestToken', ['role:super_admin'])->plainTextToken;
+        $orders = Order::factory()->count(10)->create();
 
-    //     $this->actingAs($admin);
+        $response = $this->withoutExceptionHandling()->get(route('users.stats.admin'));
 
-    //     $response = $this->withoutExceptionHandling()->get(route('user.stats.admin'));
+        $response->assertOk();
 
-    //     $response->assertOk();
+        $response->assertJsonStructure([
+            'data' => [
+                'total_products',
+                'total_sales',
+                'total_payouts',
+                'total_users',
+                'total_subscribed_users',
+                'total_trial_users',
+                'conversion_rate'
+            ]
+        ]);
+    }
 
-    //     $response->assertJsonStructure([
-    //         'data' => [
-    //             'total_products',
-    //             'total_sales',
-    //             'total_payouts',
-    //             'total_users'
-    //         ]
-    //     ]);
-    // }
+    public function test_stat_without_super_admin()
+    {
+        $this->actingAsAdmin();
+
+        $this->expectException(ForbiddenException::class);
+
+        $this->withoutExceptionHandling()->get(route('users.stats.admin'));
+    }
+
+    public function test_can_download_users_csv_as_super_admin()
+    {
+        $this->actingAsSuperAdmin();
+
+        // Create some users
+        $this->seed(UserSeeder::class);
+
+        // Call the download endpoint
+        $response = $this->withoutExceptionHandling()->get(route('users.download'));
+
+        // Assert response is successful and CSV headers are correct
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=users_' . now()->format('d_F_Y') . '.csv');
+    }
 }

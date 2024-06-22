@@ -121,6 +121,7 @@ class OrderController extends Controller
     }
 
     /**
+     * BUGGY
      * @author @Intuneteq Tobi Olanitori
      *
      * Retrieve a collection of orders associated with a specific user customer.
@@ -133,7 +134,7 @@ class OrderController extends Controller
         $user = Auth::user();
 
         $filter = [
-            'user_id' => $customer->user->id,
+            'order.user_id' => $customer->user->id,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();

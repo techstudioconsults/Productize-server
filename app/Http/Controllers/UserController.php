@@ -10,11 +10,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AccountEnum;
 use App\Enums\PayoutStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
+use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\RequestHelpRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
@@ -24,6 +26,7 @@ use App\Repositories\PayoutRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -39,12 +42,28 @@ use Throwable;
  */
 class UserController extends Controller
 {
+    use HasFileGenerator;
+
     public function __construct(
         protected UserRepository $userRepository,
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
         protected PayoutRepository $payoutRepository
     ) {
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve a listing of all registed users.
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function index()
+    {
+        $users = $this->userRepository->query([])->paginate(10);
+
+        return UserResource::collection($users);
     }
 
     /**
@@ -216,11 +235,52 @@ class UserController extends Controller
 
         $total_users = $this->userRepository->query([])->count();
 
+        $total_subscribed_users = $this->userRepository->query(['account_type' => AccountEnum::Premium->value])->count();
+
+        $total_trial_users = $this->userRepository->query(['account_type' => AccountEnum::Free_Trial->value])->count();
+
         return new JsonResource([
             'total_products' => $total_products,
             'total_sales' => $total_sales,
             'total_payouts' => $total_payouts,
-            'total_users' => $total_users
+            'total_users' => $total_users,
+            'total_subscribed_users' => $total_subscribed_users,
+            'total_trial_users' => $total_trial_users,
+            'conversion_rate' => '35%'
         ]);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     * 
+     * Generate and download a CSV file containing user information.
+     *
+     * Retrieves all users from the repository, formats their data into CSV format,
+     * and initiates a file download for the generated CSV file.
+     *
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse The streamed response containing the CSV file.
+     */
+    public function download()
+    {
+        $users = $this->userRepository->find();
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+        $fileName = "users_$now.csv";
+
+        $columns = ['Name', 'Email', 'Status', 'Last Activity Date'];
+        $data = [$columns];
+
+        foreach ($users as $user) {
+            $data[] = [
+                $user->full_name,
+                $user->email,
+                $user->status,
+                $user->updated_at,
+            ];
+        }
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 }

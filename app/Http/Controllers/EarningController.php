@@ -74,7 +74,7 @@ class EarningController extends Controller
         $exists = $this->accountRepository->query(['user_id' => $user->id])->exists();
 
         // if yes, throw error
-        if (! $exists) {
+        if (!$exists) {
             throw new BadRequestException('You need to set up your Payout account before requesting a payout.');
         }
 
@@ -125,13 +125,14 @@ class EarningController extends Controller
             throw new ApiException($th->getMessage(), 500);
         }
     }
-
-    public function productize()
-    {
-        $total_revenue = 12;
-        $total_sales_revenue = 12;
-        $total_subscription_revenue = 12;
-        $total_commisson = 12;
-        
-    }
 }
+
+/**
+ * Tags
+ * product types endpoint - with categories
+ * Based on search
+ * orders by customer
+ * retrieve payouts - filter
+ * top products for users
+ * billing 
+ */

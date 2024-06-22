@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\Services\FileGenerator;
+use App\Helpers\Services\HasFileGenerator;
 use App\Http\Resources\PayoutResource;
 use App\Repositories\PayoutRepository;
 use Auth;
@@ -22,7 +22,7 @@ use Illuminate\Http\Request;
  */
 class PayoutController extends Controller
 {
-    use FileGenerator;
+    use HasFileGenerator;
 
     public function __construct(
         protected PayoutRepository $payoutRepository,

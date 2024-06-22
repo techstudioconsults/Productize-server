@@ -12,7 +12,7 @@ use Mpdf\Mpdf;
  *
  * @since 09-06-2024
  *
- * The FileGenerator trait provides methods for generating and handling files.
+ * The HasFileGenerator trait provides methods for generating and handling files.
  *
  * This trait includes methods for generating CSV and PDF files, as well as streaming files to clients for download.
  * It leverages Laravel's Storage facade for file storage operations and mPDF for PDF generation.
@@ -22,7 +22,7 @@ use Mpdf\Mpdf;
  * - Generate PDF files from HTML content.
  * - Stream files to clients for download with the option to delete the file after streaming.
  */
-trait FileGenerator
+trait HasFileGenerator
 {
     /**
      * @author @Intuneteq Tobi Olanitori

@@ -11,5 +11,5 @@ class Revenue extends Model
     use HasFactory;
     use HasUuids;
 
-    protected $fillable = ['activity', 'product', 'amount', 'user_id'];
+    protected $fillable = ['activity', 'product', 'amount', 'user_id', 'commission'];
 }

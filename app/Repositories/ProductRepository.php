@@ -576,7 +576,7 @@ class ProductRepository extends Repository
 
             $amount = $product->price * $item['quantity'];
 
-            $share = $amount - ($amount * 0.05);
+            $share = $amount - ($amount * RevenueRepository::SALE_COMMISSION);
 
             return [
                 'product_id' => $product->id,

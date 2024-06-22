@@ -14,7 +14,7 @@ use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
-use App\Helpers\Services\FileGenerator;
+use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\SearchRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -39,7 +39,7 @@ use Mail;
  */
 class ProductController extends Controller
 {
-    use FileGenerator;
+    use HasFileGenerator;
 
     public function __construct(
         protected ProductRepository $productRepository,

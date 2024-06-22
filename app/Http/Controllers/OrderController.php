@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\Services\FileGenerator;
+use App\Helpers\Services\HasFileGenerator;
 use App\Http\Resources\OrderResource;
 use App\Models\Customer;
 use App\Models\Order;
@@ -26,7 +26,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class OrderController extends Controller
 {
-    use FileGenerator;
+    use HasFileGenerator;
 
     public function __construct(
         protected OrderRepository $orderRepository,

@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * @author @Intuneteq Tobi Olanitori
  *
- * Repository for Order resource
+ * Repository for User resource
  */
 class UserRepository extends Repository
 {
@@ -94,10 +94,10 @@ class UserRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Query orders based on the provided filter.
+     * Query users based on the provided filter.
      *
      * @param  array  $filter  The filter criteria to apply.
-     * @return Builder The query builder for orders.
+     * @return Builder The query builder for users.
      */
     public function query(array $filter): Builder
     {

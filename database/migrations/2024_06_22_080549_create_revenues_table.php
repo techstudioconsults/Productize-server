@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('activity', array_column(RevenueActivity::cases(), 'value'));
             $table->text('product');
             $table->integer('amount')->default(0);
+            $table->decimal('commission')->default(0);
             $table->timestamps();
         });
     }

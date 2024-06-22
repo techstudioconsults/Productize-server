@@ -10,11 +10,11 @@ use Database\Seeders\RevenueSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Tests\Traits\ActingAs;
+use Tests\Traits\SanctumAuthentication;
 
 class RevenueControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker, ActingAs;
+    use RefreshDatabase, WithFaker, SanctumAuthentication;
 
     protected function setUp(): void
     {

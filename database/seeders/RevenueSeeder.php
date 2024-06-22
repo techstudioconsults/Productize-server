@@ -4,8 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\RevenueActivity;
 use App\Models\Revenue;
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class RevenueSeeder extends Seeder

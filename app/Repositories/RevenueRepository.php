@@ -100,7 +100,9 @@ class RevenueRepository extends Repository
      */
     public function findOne(array $filter): ?Revenue
     {
-        return Revenue::where($filter)->first();
+        return Revenue::where($filter)->firstOr(function () {
+            return null;
+        });
     }
 
     /**

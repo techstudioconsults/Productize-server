@@ -95,7 +95,13 @@ class SubscriptionController extends Controller
         }
 
         // Check if the user has any subscription in the database
-        $subscription = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
+        $subscription = $this->subscriptionRepository->findOne([
+            'user_id' => $user->id,
+            'status' => SubscriptionStatusEnum::ACTIVE->value,
+            'status' => SubscriptionStatusEnum::NON_RENEWING->value,
+            'status' => SubscriptionStatusEnum::PENDING->value,
+            'status' => SubscriptionStatusEnum::ATTENTION->value,
+        ]);
 
         // If the user has a subscription, return an error with the subscription status
         if ($subscription) {

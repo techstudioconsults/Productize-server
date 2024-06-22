@@ -125,4 +125,13 @@ class EarningController extends Controller
             throw new ApiException($th->getMessage(), 500);
         }
     }
+
+    public function productize()
+    {
+        $total_revenue = 12;
+        $total_sales_revenue = 12;
+        $total_subscription_revenue = 12;
+        $total_commisson = 12;
+        
+    }
 }

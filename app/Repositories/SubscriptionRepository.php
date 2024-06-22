@@ -40,7 +40,7 @@ class SubscriptionRepository extends Repository
             $this->handleCustomerHasSubscriptionNotOnDb($customer, $user_id);
         }
 
-        // No subscription
+        // No active subscription
         $user = $this->userRepository->findById($user_id);
 
         try {

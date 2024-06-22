@@ -61,9 +61,9 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json',
-        ])->post($this->baseUrl.'/customer', $payload)->throw()->json();
+        ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
         return $response['data'];
     }
@@ -73,11 +73,11 @@ class PaystackRepository
      */
     public function fetchCustomer(string $email)
     {
-        $url = $this->baseUrl."/customer/$email";
+        $url = $this->baseUrl . "/customer/$email";
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$this->secret_key,
+                'Authorization' => 'Bearer ' . $this->secret_key,
             ])->get($url)->throw()->json();
 
             return $response['data'];
@@ -101,7 +101,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            'callback_url' => $this->client_url.'/dashboard/home',
+            'callback_url' => $this->client_url . '/dashboard/home',
         ];
 
         if ($isSubscription) {
@@ -109,7 +109,7 @@ class PaystackRepository
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
@@ -121,11 +121,11 @@ class PaystackRepository
     {
 
         $payload = array_merge($payload, [
-            'callback_url' => $this->client_url.'/dashboard/downloads#all-downloads',
+            'callback_url' => $this->client_url . '/dashboard/downloads#all-downloads',
         ]);
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
@@ -145,7 +145,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json',
         ])->post($this->subscriptionEndpoint, $payload)->throw()->json();
 
@@ -157,7 +157,7 @@ class PaystackRepository
         $url = "{$this->baseUrl}/subscription/{$subscriptionId}/manage/link";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get($url);
 
         $data = json_decode($response->body(), true);
@@ -173,7 +173,7 @@ class PaystackRepository
     public function fetchSubscription(string $subscriptionId)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
 
         if ($response->successful()) {
@@ -195,7 +195,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
@@ -213,7 +213,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/disable", $payload)->throw()->json();
@@ -231,7 +231,7 @@ class PaystackRepository
     public function createSubAcount(array $payload)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subaccount", $payload)->throw()->json();
@@ -242,7 +242,7 @@ class PaystackRepository
     public function getBankList()
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/bank?country=nigeria");
 
         return $response['data'];
@@ -251,8 +251,8 @@ class PaystackRepository
     public function validateAccountNumber(string $account_number, string $bank_code)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
-        ])->get("{$this->baseUrl}/bank/resolve?account_number=".$account_number.'&bank_code='.$bank_code);
+            'Authorization' => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . '&bank_code=' . $bank_code);
 
         return $response['status'];
     }
@@ -268,7 +268,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transferrecipient", $payload)->throw()->json();
@@ -287,7 +287,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transfer", $payload)->throw()->json();
@@ -306,34 +306,52 @@ class PaystackRepository
         return false;
     }
 
-    public function getSubscriptionStatus(array $customer)
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     * 
+     * Get the subscription status of a customer.
+     *
+     * @param array $customer The customer data.
+     * @return string|null The status of the latest subscription, or null if no subscriptions exist.
+     */
+    public function getSubscriptionStatus(array $customer): ?string
     {
-        // Check subscription count, if zero, return false
-        if (! count($customer['subscriptions'])) {
+        $subscriptions = $customer['subscriptions'] ?? [];
+
+        if (empty($subscriptions)) {
             return null;
         }
 
-        $subscriptions = $customer['subscriptions'];
-
-        // The first item in the array is the latest one, return the status.
-        return $subscriptions[0]['status'];
+        // The first item in the array is the latest one, return its status.
+        return $subscriptions[0]['status'] ?? null;
     }
 
-    public function hasSubscription(?array $customer)
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Determine if the customer has an active subscription.
+     *
+     * @param array|null $customer The customer data.
+     * @return bool True if the customer has an active subscription, false otherwise.
+     */
+    public function hasSubscription(?array $customer): bool
     {
-        if (! $customer) {
+        if (empty($customer)) {
             return false;
         }
 
         $status = $this->getSubscriptionStatus($customer);
-        if (! $status) {
+
+        if (empty($status)) {
             return false;
         }
 
-        if ($status === SubscriptionStatusEnum::ACTIVE->value) {
-            return true;
-        }
-
-        return false;
+        return in_array($status, [
+            SubscriptionStatusEnum::ACTIVE->value,
+            SubscriptionStatusEnum::NON_RENEWING->value,
+            SubscriptionStatusEnum::ATTENTION->value,
+            SubscriptionStatusEnum::PENDING->value,
+        ], true);
     }
 }

@@ -563,7 +563,7 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $top_products = $this->productRepository->topProducts(['user_id' => $user->id]);
+        $top_products = $this->productRepository->topProducts(['products.user_id' => $user->id]);
 
         return ProductResource::collection($top_products
             ->limit(5)->paginate(5));

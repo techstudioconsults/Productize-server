@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
  * Key Features:
  * - Inherits validation capabilities from ValidationService.
  * - Serves as a common ancestor for all repository classes.
+ *
+ * @see \App\Console\Commands\MakeRepository on how to auto generate repository classes with predefined template
  */
 abstract class Repository extends ValidationService
 {

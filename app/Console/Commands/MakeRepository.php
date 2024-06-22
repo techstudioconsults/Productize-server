@@ -86,7 +86,7 @@ class MakeRepository extends Command
 
         // Create the class file with predefined methods
         $stub = $this->getStub();
-        
+
         $stub = str_replace('DummyRepository', $name, $stub);
         $stub = str_replace('DummyModel', $model, $stub);
 
@@ -103,54 +103,54 @@ class MakeRepository extends Command
     protected function getStub()
     {
         return <<<'STUB'
-<?php
+            <?php
 
-namespace App\Repositories;
+            namespace App\Repositories;
 
-use App\Models\DummyModel;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
+            use App\Models\DummyModel;
+            use Illuminate\Database\Eloquent\Builder;
+            use Illuminate\Database\Eloquent\Collection;
+            use Illuminate\Database\Eloquent\Model;
 
-class DummyRepository extends Repository
-{
-    public function seed(): void
-    {
-        // Implementation of seed method
-    }
+            class DummyRepository extends Repository
+            {
+                public function seed(): void
+                {
+                    // Implementation of seed method
+                }
 
-    public function create(array $entity): DummyModel
-    {
-        return DummyModel::create($entity);
-    }
+                public function create(array $entity): DummyModel
+                {
+                    return DummyModel::create($entity);
+                }
 
-    public function query(array $filter): Builder
-    {
-        return DummyModel::query()->where($filter);
-    }
+                public function query(array $filter): Builder
+                {
+                    return DummyModel::query()->where($filter);
+                }
 
-    public function find(?array $filter): ?Collection
-    {
-        return DummyModel::where($filter)->get();
-    }
+                public function find(?array $filter): ?Collection
+                {
+                    return DummyModel::where($filter)->get();
+                }
 
-    public function findById(string $id): ?DummyModel
-    {
-        return DummyModel::find($id);
-    }
+                public function findById(string $id): ?DummyModel
+                {
+                    return DummyModel::find($id);
+                }
 
-    public function findOne(array $filter): ?DummyModel
-    {
-        return DummyModel::where($filter)->first();
-    }
+                public function findOne(array $filter): ?DummyModel
+                {
+                    return DummyModel::where($filter)->first();
+                }
 
-    public function update(Model $entity, array $updates): DummyModel
-    {
-        $entity->update($updates);
-        return $entity;
-    }
-}
-STUB;
+                public function update(Model $entity, array $updates): DummyModel
+                {
+                    $entity->update($updates);
+                    return $entity;
+                }
+            }
+            STUB;
     }
 
     /**

@@ -16,7 +16,8 @@ class WebhookRepository
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository,
         protected EarningRepository $earningRepository,
-        protected PayoutRepository $payoutRepository
+        protected PayoutRepository $payoutRepository,
+        protected RevenueRepository $revenueRepository,
     ) {
     }
 

@@ -31,7 +31,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use Mail;
 use Storage;
 use Tests\TestCase;
-use Tests\Traits\SanctumAuthentication;
+use App\Traits\SanctumAuthentication;
 
 class ProductControllerTest extends TestCase
 {

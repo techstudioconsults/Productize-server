@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Storage;
 use Tests\TestCase;
-use Tests\Traits\SanctumAuthentication;
+use App\Traits\SanctumAuthentication;
 
 class PayoutControllerTest extends TestCase
 {

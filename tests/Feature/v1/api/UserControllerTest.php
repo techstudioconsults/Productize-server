@@ -18,7 +18,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
-use Tests\Traits\SanctumAuthentication;
+use App\Traits\SanctumAuthentication;
 
 class UserControllerTest extends TestCase
 {

@@ -10,7 +10,7 @@ use Database\Seeders\RevenueSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use Tests\Traits\SanctumAuthentication;
+use App\Traits\SanctumAuthentication;
 
 class RevenueControllerTest extends TestCase
 {

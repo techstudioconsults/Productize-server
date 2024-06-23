@@ -9,7 +9,7 @@ use Database\Seeders\ComplaintSeeder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mail;
-use Tests\Traits\SanctumAuthentication;
+use App\Traits\SanctumAuthentication;
 
 class ComplaintControllerTest extends TestCase
 {

@@ -8,7 +8,7 @@ use Laravel\Sanctum\Sanctum;
 
 /**
  * @author @Intuneteq Tobi Olanitori
- * 
+ *
  * Trait for setting up authenticated users with specific roles using Sanctum.
  *
  * This trait provides helper methods to authenticate as users with specific roles
@@ -38,6 +38,14 @@ trait SanctumAuthentication
     {
         $user = User::factory()->create(['role' => Roles::ADMIN->value]);
         $role = strtolower(Roles::ADMIN->value);
+        Sanctum::actingAs($user, ["role:$role"]);
+        return $user;
+    }
+
+    public function actingAsRegularUser(): User
+    {
+        $user = User::factory()->create(['role' => Roles::USER->value]);
+        $role = strtolower(Roles::USER->value);
         Sanctum::actingAs($user, ["role:$role"]);
         return $user;
     }

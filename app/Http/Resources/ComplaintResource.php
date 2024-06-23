@@ -16,12 +16,13 @@ class ComplaintResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'email' => $this->email,
             'subject' => $this->subject,
             'message' => $this->message,
             'user' => [
-                'name' => $this->full_name,
-                'email' => $this->email,
-                'avatar' => $this->logo
+                'name' => $this->user->full_name,
+                'email' => $this->user->email,
+                'avatar' => $this->user->logo
             ],
             'created_at' => $this->created_at
         ];

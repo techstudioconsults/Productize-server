@@ -8,6 +8,7 @@ use App\Mail\LodgeComplaint;
 use App\Models\Complaint;
 use App\Repositories\ComplaintRepository;
 use Auth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Mail;
 
@@ -64,7 +65,7 @@ class ComplaintController extends Controller
 
         Mail::send(new LodgeComplaint($complaint));
 
-        return new JsonResource(['message' => 'email sent']);
+        return new JsonResponse(['message' => 'email sent'], 201);
     }
 
      /**

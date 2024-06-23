@@ -3,10 +3,12 @@
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
+use App\Exceptions\UnprocessableException;
 use App\Models\Payout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -65,6 +67,53 @@ class PayoutRepository extends Repository
         $query->where($filter);
 
         return $query;
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Applies filters to an Eloquent relation.
+     *
+     * This method accepts an Eloquent relation and an array of filters. It applies the filters
+     * to the relation, including date filters if they are present in the filter array.
+     * If the filter array is empty, the original relation is returned.
+     *
+     * @param  Relation  $relation  The Eloquent relation to which the filters will be applied.
+     * @param  array  $filter  An associative array of filters to apply to the relation.
+     *                         Supported filters include:
+     *                         - 'start_date' and 'end_date': Apply a date range filter on the 'created_at' column of the order table.
+     *                         - Other key-value pairs will be used as where conditions on the relation.
+     * @return Relation The filtered Eloquent relation.
+     *
+     * @throws UnprocessableException If the date range filter is invalid.
+     */
+    public function queryRelation(Relation $relation, array $filter): Relation
+    {
+        if (empty($filter)) {
+            return $relation;
+        }
+
+        // Check for start_date and end_date in the array
+        if (array_key_exists('start_date', $filter) && array_key_exists('end_date', $filter)) {
+            $start_date = $filter['start_date'] ?? ''; // Possibly null
+            $end_date = $filter['end_date'] ?? ''; // Possibly null
+
+            // Remove them from the array
+            unset($filter['start_date'], $filter['end_date']);
+            $isInvalid = $this->isInValidDateRange($start_date, $end_date);
+
+            if ($isInvalid) {
+                throw new UnprocessableException($this->getValidator()->errors()->first());
+            }
+
+            if ($start_date && $end_date) {
+                $relation->whereBetween('payouts.created_at', [$start_date, $end_date]);
+            }
+        }
+
+        $relation->where($filter);
+
+        return $relation;
     }
 
     /**

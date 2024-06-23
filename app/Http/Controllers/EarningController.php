@@ -132,8 +132,8 @@ class EarningController extends Controller
  * product types endpoint - with categories
  * Based on search
  * orders by customer
- * retrieve payouts - filter
- * top products for users
+ * retrieve payouts - filter - fixed
+ * top products for users - it works
  * billing - fixed
  * remove auth from featured and top products - done
  */

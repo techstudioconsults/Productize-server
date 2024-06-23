@@ -33,6 +33,17 @@ class OrderController extends Controller
     ) {
     }
 
+    /**
+     * @author @Intuneteq
+     *
+     * Retrieve a paginated listing of orders filtered by date range and product title.
+     *
+     * This method retrieves orders based on optional date range and product title filters.
+     * The results are paginated, and only accessible to super admins.
+     *
+     * @param  \Illuminate\Http\Request  $request  The incoming request instance containing filter parameters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection A collection of paginated order resources.
+     */
     public function index(Request $request)
     {
         $start_date = $request->start_date;
@@ -121,7 +132,6 @@ class OrderController extends Controller
     }
 
     /**
-     * BUGGY
      * @author @Intuneteq Tobi Olanitori
      *
      * Retrieve a collection of orders associated with a specific user customer.
@@ -133,8 +143,9 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
+        // find where the user that made the order (the customer) is the same as the user in the customer table
         $filter = [
-            'order.user_id' => $customer->user->id,
+            'orders.user_id' => $customer->user->id,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
@@ -223,6 +234,17 @@ class OrderController extends Controller
         return new JsonResource(['message' => 'orders marked as seen']);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     * 
+     * Retrieve statistics about the orders.
+     *
+     * This method returns the total number of orders, the total revenue from orders,
+     * and the average order value. These statistics are calculated from the data
+     * retrieved by the OrderRepository.
+     *
+     * @return \Illuminate\Http\Resources\Json\JsonResource Returns a JSON resource containing order statistics.
+     */
     public function stats()
     {
         $orders_query = $this->orderRepository->query([]);
@@ -231,7 +253,7 @@ class OrderController extends Controller
 
         $total_orders_revenue = $orders_query->sum('total_amount');
 
-        $avg_order_value = $total_orders_revenue / $total_orders;
+        $avg_order_value = $total_orders ? $total_orders_revenue / $total_orders : 0;
 
         return new JsonResource([
             'total_orders' => $total_orders,

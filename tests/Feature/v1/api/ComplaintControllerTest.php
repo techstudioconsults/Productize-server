@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Http\Resources\ComplaintResource;
+use App\Mail\LodgeComplaint;
 use App\Models\Complaint;
 use Database\Seeders\ComplaintSeeder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mail;
 use Tests\Traits\SanctumAuthentication;
 
 class ComplaintControllerTest extends TestCase
@@ -57,7 +59,9 @@ class ComplaintControllerTest extends TestCase
 
     public function test_authenticated_user_can_lodge_complaint()
     {
-        $this->actingAsRegularUser();
+        Mail::fake();
+
+        $user = $this->actingAsRegularUser();
 
         $data = [
             'subject' => 'Test Subject',
@@ -68,8 +72,12 @@ class ComplaintControllerTest extends TestCase
 
         $response->assertCreated();
         $response->assertJson(['message' => 'email sent']);
-        $this->assertDatabaseHas('complaints', $data);
+
+        $this->assertDatabaseHas('complaints', array_merge($data, ['user_id' => $user->id]));
+
+        Mail::assertSent(LodgeComplaint::class);
     }
+
 
     public function test_complaint_email_defaults_to_authenticated_user_email()
     {

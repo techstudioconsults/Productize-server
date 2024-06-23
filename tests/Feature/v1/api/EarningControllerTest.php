@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
 use App\Exceptions\BadRequestException;
 use App\Http\Resources\EarningResource;
 use App\Models\Account;
@@ -13,8 +13,8 @@ use App\Repositories\AccountRepository;
 use App\Repositories\EarningRepository;
 use App\Repositories\PayoutRepository;
 use App\Repositories\PaystackRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class EarningControllerTest extends TestCase
@@ -99,7 +99,7 @@ class EarningControllerTest extends TestCase
         $this->payoutRepository->shouldReceive('create')
             ->once()
             ->with(Mockery::on(function ($payout) use ($account) {
-                return $payout['status'] === PayoutStatusEnum::Pending->value &&
+                return $payout['status'] === PayoutStatus::Pending->value &&
                     isset($payout['reference']) &&
                     $payout['paystack_transfer_code'] === 'test_transfer_code' &&
                     $payout['account_id'] === $account->id &&

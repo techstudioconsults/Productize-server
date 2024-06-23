@@ -228,65 +228,6 @@ class UserControllerTest extends TestCase
             ]);
     }
 
-    public function test_requestHelp()
-    {
-        Mail::fake();
-
-        $user = User::factory()->create();
-
-        $subject = 'My Subject';
-        $message = 'message';
-
-        $user->markEmailAsVerified();
-
-        $response = $this->actingAs($user, 'web')
-            ->withoutExceptionHandling()
-            ->postJson('/api/users/request-help', [
-                'email' => $user->email,
-                'subject' => $subject,
-                'message' => $message,
-            ]);
-
-        $mailable = new RequestHelp($user->email, $subject, $message);
-
-        $response->assertStatus(200);
-
-        $mailable->assertSeeInHtml($message);
-
-        $mailable->assertSeeInHtml($subject);
-
-        Mail::assertSent(RequestHelp::class);
-    }
-
-    public function test_requestHelp_without_email()
-    {
-        Mail::fake();
-
-        $user = User::factory()->create();
-
-        $subject = 'My Subject';
-        $message = 'message';
-
-        $user->markEmailAsVerified();
-
-        $response = $this->actingAs($user, 'web')
-            ->withoutExceptionHandling()
-            ->postJson('/api/users/request-help', [
-                'subject' => $subject,
-                'message' => $message,
-            ]);
-
-        $mailable = new RequestHelp($user->email, $subject, $message);
-
-        $response->assertStatus(200);
-
-        $mailable->assertSeeInHtml($message);
-
-        $mailable->assertSeeInHtml($subject);
-
-        Mail::assertSent(RequestHelp::class);
-    }
-
     public function test_stat_with_super_admin(): void
     {
         $this->actingAsSuperAdmin();
@@ -297,7 +238,7 @@ class UserControllerTest extends TestCase
             PayoutSeeder::class,
         ]);
 
-        $orders = Order::factory()->count(10)->create();
+        Order::factory()->count(10)->create();
 
         $response = $this->withoutExceptionHandling()->get(route('users.stats.admin'));
 

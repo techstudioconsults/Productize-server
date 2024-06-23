@@ -4,24 +4,90 @@ namespace Tests\Feature;
 
 use App\Exceptions\UnAuthorizedException;
 use App\Http\Resources\OrderResource;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Traits\SanctumAuthentication;
 use Carbon\Carbon;
+use Database\Seeders\OrderSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
 {
-    use RefreshDatabase;
-    use WithFaker;
+    use RefreshDatabase, SanctumAuthentication;
 
-    private $base_url = '/api/orders';
+    public function test_super_admin_can_access_index()
+    {
+        $this->actingAsSuperAdmin();
 
-    public function test_index(): void
+        // Create orders for testing
+        $this->seed(OrderSeeder::class);
+
+        $expected_json = OrderResource::collection(Order::all())->response()->getData(true);
+
+        // Call the index endpoint
+        $response = $this->withoutExceptionHandling()->get(route('order.index'));
+
+        // Assert response is successful
+        $response->assertOk()->assertJson($expected_json, true);
+
+        // Assert response structure
+        $response->assertJsonStructure([
+            'data' => [
+                '*' => ['id', 'reference_no', 'quantity', 'total_amount', 'product', 'customer', 'created_at'],
+            ],
+            'links',
+            'meta',
+        ]);
+    }
+
+    public function test_non_super_admin_cannot_access_index()
+    {
+        $this->actingAsRegularUser();
+
+        // Call the index endpoint
+        $response = $this->get(route('order.index'));
+
+        // Assert forbidden response
+        $response->assertForbidden();
+    }
+
+    public function test_index_with_filters()
+    {
+        $this->actingAsSuperAdmin();
+
+        // Create orders for testing
+        $orders = Order::factory()->count(2)->create([
+            'product_id' => Product::factory()->create(['title' => 'Product A']),
+            'created_at' => now()->subDays(5),
+        ]);
+
+        Order::factory()->create([
+            'product_id' => Product::factory()->create(['title' => 'Product B']),
+            'created_at' => now()->subDays(10),
+        ]);
+
+        $expected_json = OrderResource::collection($orders)->response()->getData(true);
+
+        // Call the index endpoint with filters
+        $response = $this->get(route('order.index', [
+            'product_title' => 'Product A',
+            'start_date' => now()->subDays(6)->toDateString(),
+            'end_date' => now()->subDays(4)->toDateString(),
+        ]));
+
+        // Assert response is successful
+        $response->assertOk()->assertJson($expected_json, true);
+
+        // Assert the filtered orders are returned
+        $response->assertJsonCount(2, 'data');
+    }
+
+    public function test_user(): void
     {
         $user = User::factory()->create();
 
@@ -32,7 +98,7 @@ class OrderControllerTest extends TestCase
             'created_at' => Carbon::create(2024, 3, 21, 0),
         ]);
 
-        $response = $this->actingAs($user, 'web')->get($this->base_url);
+        $response = $this->actingAs($user, 'web')->get(route('order.user'));
 
         // Convert the orders to OrderResource
         $expected_json = OrderResource::collection($orders)->response()->getData(true);
@@ -47,21 +113,19 @@ class OrderControllerTest extends TestCase
                     ->has(
                         'data.0',
                         fn (AssertableJson $json) => $json->hasAll([
-                            'id', 'reference_no', 'product_thumbnail',
-                            'product_title', 'product_price', 'customer_name', 'customer_email', 'total_orders',
-                            'total_sales', 'total_amount', 'quantity', 'product_publish_date', 'link',
+                            'id', 'reference_no', 'quantity', 'total_amount', 'product', 'customer', 'created_at',
                         ])
                             ->etc()
                     )
             );
     }
 
-    public function test_index_unauthenticated()
+    public function test_user_unauthenticated()
     {
         $this->expectException(UnAuthorizedException::class);
 
         $this->withoutExceptionHandling()
-            ->get($this->base_url);
+            ->get(route('order.user'));
     }
 
     public function test_show()
@@ -73,7 +137,7 @@ class OrderControllerTest extends TestCase
             'created_at' => Carbon::create(2024, 3, 21, 0),
         ]);
 
-        $response = $this->actingAs($user, 'web')->get($this->base_url.'/'.$order->id);
+        $response = $this->actingAs($user, 'web')->get(route('order.show', ['order' => $order->id]));
 
         // Convert the orders to OrderResource
         $expected_json = OrderResource::make($order)->response()->getData(true);
@@ -93,7 +157,7 @@ class OrderControllerTest extends TestCase
         ]);
 
         $this->withoutExceptionHandling()
-            ->get($this->base_url.'/'.$order->id);
+            ->get(route('order.show', ['order' => $order->id]));
     }
 
     public function test_show_not_found()
@@ -102,7 +166,7 @@ class OrderControllerTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'web')->withoutExceptionHandling()->get($this->base_url.'/1234');
+        $this->actingAs($user, 'web')->withoutExceptionHandling()->get(route('order.show', ['order' => '1234']));
     }
 
     public function test_show_by_product()
@@ -118,7 +182,7 @@ class OrderControllerTest extends TestCase
             'created_at' => Carbon::create(2024, 3, 21, 0),
         ]);
 
-        $response = $this->actingAs($user, 'web')->get($this->base_url.'/products/'.$product->id);
+        $response = $this->actingAs($user, 'web')->get(route('order.show.product', ['product' => $product->id]));
 
         // Convert the orders to OrderResource
         $expected_json = OrderResource::collection($orders)->response()->getData(true);
@@ -135,7 +199,53 @@ class OrderControllerTest extends TestCase
         $product = Product::factory()->create(['user_id' => $user->id]);
 
         $this->withoutExceptionHandling()
-            ->get($this->base_url.'/products/'.$product->id);
+            ->get(route('order.show.product', ['product' => $product->id]));
+    }
+
+    public function test_show_by_customer()
+    {
+        $user = User::factory()->create();
+
+        $merchant = User::factory()->create();
+
+        $this->actingAs($merchant);
+
+        // Create customer and orders for testing
+        $customer = Customer::factory()->create([
+            'user_id' => $user->id,
+            'order_id' => Order::factory()->create([
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $merchant->id]),
+            ])->id,
+            'merchant_id' => $merchant->id,
+        ]);
+
+        $customer = Customer::factory()->create([
+            'user_id' => $user->id,
+            'order_id' => Order::factory()->create([
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $merchant->id]),
+            ])->id,
+            'merchant_id' => $merchant->id,
+        ]);
+
+        $customer = Customer::factory()->create([
+            'user_id' => $user->id,
+            'order_id' => Order::factory()->create([
+                'user_id' => $user->id,
+                'product_id' => Product::factory()->create(['user_id' => $merchant->id]),
+            ])->id,
+            'merchant_id' => $merchant->id,
+        ]);
+
+        // Call the showByCustomer endpoint
+        $response = $this->withoutExceptionHandling()->get(route('order.show.customer', ['customer' => $customer->first()->id]));
+
+        // Assert response is successful
+        $response->assertOk();
+
+        // Assert the correct orders are returned
+        $response->assertJsonCount(3, 'data');
     }
 
     public function test_unseen(): void
@@ -242,6 +352,59 @@ class OrderControllerTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'product_id' => $product->id,
             'seen' => 1,
+        ]);
+    }
+
+    public function test_super_admin_can_view_order_stats()
+    {
+        $this->actingAsSuperAdmin();
+
+        // Create orders for testing
+        Order::factory()->create(['total_amount' => 100]);
+        Order::factory()->create(['total_amount' => 200]);
+
+        // Call the stats endpoint
+        $response = $this->get(route('order.stats'));
+
+        // Assert response is successful
+        $response->assertOk();
+
+        // Assert response structure and values
+        $response->assertJson([
+            'data' => [
+                'total_orders' => 2,
+                'total_orders_revenue' => 300,
+                'avg_order_value' => 150,
+            ],
+        ]);
+    }
+
+    public function test_non_super_admin_cannot_view_order_stats()
+    {
+        $this->actingAsRegularUser();
+
+        // Call the stats endpoint
+        $response = $this->get(route('order.stats'));
+
+        // Assert forbidden response
+        $response->assertForbidden();
+    }
+
+    public function test_order_stats_with_no_orders()
+    {
+        $this->actingAsSuperAdmin();
+
+        // Call the stats endpoint
+        $response = $this->get(route('order.stats'));
+
+        // Assert response is successful and values are zero
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'total_orders' => 0,
+                'total_orders_revenue' => 0,
+                'avg_order_value' => 0,
+            ],
         ]);
     }
 }

@@ -11,6 +11,7 @@
 namespace App\Helpers\Services;
 
 use App\Exceptions\UnprocessableException;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Validator as Validation;
@@ -142,7 +143,10 @@ class ValidationService
                 throw new UnprocessableException($this->getValidator()->errors()->first());
             }
 
-            $query->whereBetween('created_at', [$start_date, $end_date]);
+            $query->whereBetween('created_at', [
+                Carbon::parse($start_date)->startOfDay(),
+                Carbon::parse($end_date)->endOfDay(),
+            ]);
         }
     }
 }

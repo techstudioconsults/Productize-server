@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Log;
 
 class SubscriptionRepository extends Repository
 {
+    // Productize's subscription price
+    public const PRICE = '5000';
+
     public function __construct(
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
@@ -34,7 +37,7 @@ class SubscriptionRepository extends Repository
             $this->handleCustomerHasSubscriptionNotOnDb($customer, $user_id);
         }
 
-        // No subscription
+        // No active subscription
         $user = $this->userRepository->findById($user_id);
 
         try {

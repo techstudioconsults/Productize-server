@@ -71,7 +71,8 @@ class AuthController extends Controller
 
             $user = $this->userRepository->create($validatedData);
 
-            $token = $user->createToken('access-token')->plainTextToken;
+            // Create a toke with role "user"
+            $token = $user->createToken('access-token', ['role:user'])->plainTextToken;
 
             return ['user' => $user, 'token' => $token];
         });
@@ -118,7 +119,13 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $token = $user->createToken('access-token')->plainTextToken;
+
+        $role = strtolower($user->role);
+
+        // Check the user role and add to sanctum's token ability in lower case
+        $ability = ["role:$role"];
+
+        $token = $user->createToken('access-token', $ability)->plainTextToken;
 
         $result = ['user' => new UserResource($user), 'token' => $token];
 
@@ -206,7 +213,12 @@ class AuthController extends Controller
             $user = Auth::user();
         }
 
-        $token = $user->createToken('access-token')->plainTextToken;
+        $role = strtolower($user->role);
+
+        // Check the user role and add to sanctum's token ability in lower case
+        $ability = ["role:$role"];
+
+        $token = $user->createToken('access-token', $ability)->plainTextToken;
 
         $result = ['user' => new UserResource($user), 'token' => $token];
 

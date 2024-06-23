@@ -182,7 +182,7 @@ class AccountRepositoryTest extends TestCase
         // Arrange
 
         // Act
-        $result = $this->accountRepository->findActive();
+        $result = $this->accountRepository->findActive(['user_id' => $user->id]);
 
         // Assert
         $this->assertInstanceOf(Account::class, $result);

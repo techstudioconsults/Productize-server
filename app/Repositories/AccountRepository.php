@@ -114,9 +114,9 @@ class AccountRepository extends Repository
      *
      * @return Account|null The first active Account instance, or null if none found.
      */
-    public function findActive(): ?Account
+    public function findActive(array $filter): ?Account
     {
-        return $this->findOne(['active' => true]);
+        return $this->findOne(['active' => true, ...$filter]);
     }
 
     /**

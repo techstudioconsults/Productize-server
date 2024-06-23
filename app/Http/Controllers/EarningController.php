@@ -21,6 +21,7 @@ use App\Repositories\PayoutRepository;
 use App\Repositories\PaystackRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Str;
 
 /**
@@ -47,6 +48,17 @@ class EarningController extends Controller
         $user = Auth::user();
 
         $earning = $this->earningRepository->findOne(['user_id' => $user->id]);
+
+        if (! $earning) {
+            return new JsonResource([
+                'id' => '',
+                'user_id' => $user->id,
+                'total_earnings' => '',
+                'withdrawn_earnings' => '',
+                'available_earnings' => '',
+                'pending' => '',
+            ]);
+        }
 
         return new EarningResource($earning);
     }
@@ -89,7 +101,7 @@ class EarningController extends Controller
         }
 
         // Retrieve active payout account.
-        $account = $this->accountRepository->findActive();
+        $account = $this->accountRepository->findActive(['user_id' => $user->id]);
 
         // Generate the reference id.
         $reference = Str::uuid()->toString();

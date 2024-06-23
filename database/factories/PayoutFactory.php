@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Str;
 
@@ -20,7 +20,7 @@ class PayoutFactory extends Factory
     {
         return [
             'reference' => Str::random(10),
-            'status' => PayoutStatusEnum::Completed->value,
+            'status' => PayoutStatus::Completed->value,
             'paystack_transfer_code' => 'TRF_1ptvuv321ahaa7q',
             'amount' => '20000',
         ];

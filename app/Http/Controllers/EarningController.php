@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Http\Requests\InitiateWithdrawalRequest;
@@ -105,7 +105,7 @@ class EarningController extends Controller
 
             // Build payout entity
             $payout_entity = [
-                'status' => PayoutStatusEnum::Pending->value,
+                'status' => PayoutStatus::Pending->value,
                 'reference' => $reference,
                 'paystack_transfer_code' => $response['transfer_code'],
                 'account_id' => $account->id,

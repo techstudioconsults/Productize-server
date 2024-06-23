@@ -11,27 +11,27 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AccountEnum;
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
+use App\Enums\Roles;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Helpers\Services\HasFileGenerator;
-use App\Http\Requests\RequestHelpRequest;
+use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
-use App\Mail\RequestHelp;
+use App\Models\User;
 use App\Repositories\OrderRepository;
 use App\Repositories\PayoutRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
 use Carbon\Carbon;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -59,9 +59,13 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->userRepository->query([])->paginate(10);
+        $filter = [
+            'role' => $request->role
+        ];
+
+        $users = $this->userRepository->query($filter)->paginate(10);
 
         return UserResource::collection($users);
     }
@@ -79,6 +83,17 @@ class UserController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
+
+        return new UserResource($user);
+    }
+
+    public function store(StoreUserRequest $request)
+    {
+        $data = $request->validated();
+
+        $user = $this->userRepository->create($data);
+
+        event(new Registered($user));
 
         return new UserResource($user);
     }
@@ -196,7 +211,7 @@ class UserController extends Controller
 
         $total_sales = $this->orderRepository->query([])->sum('quantity');
 
-        $total_payouts = $this->payoutRepository->query(['status' => PayoutStatusEnum::Completed->value])->sum('amount');
+        $total_payouts = $this->payoutRepository->query(['status' => PayoutStatus::Completed->value])->sum('amount');
 
         $total_users = $this->userRepository->query([])->count();
 
@@ -247,5 +262,25 @@ class UserController extends Controller
         $filePath = $this->generateCsv($fileName, $data);
 
         return $this->streamFile($filePath, $fileName, 'text/csv');
+    }
+
+    /**
+     * @author @Intuneteq
+     *
+     * Revoke admin privileges from a user and update their role to a regular user.
+     *
+     * This method changes the specified user's role from admin to user by updating
+     * their role in the user repository.
+     *
+     * @param  \App\Models\User  $user  The user whose admin privileges will be revoked.
+     * @return \Illuminate\Http\Resources\Json\JsonResource Returns a JSON resource containing a success message.
+     */
+    public function revokeAdminRole(User $user)
+    {
+        $this->userRepository->guardedUpdate($user->email, 'role', Roles::USER->value);
+
+        return new JsonResource([
+            'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.'
+        ]);
     }
 }

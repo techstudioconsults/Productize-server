@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
 use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
 use Log;
@@ -163,7 +163,7 @@ class WebhookRepository
                 'amount' => $data['amount'],
                 'commission' => RevenueRepository::SALE_COMMISSION
             ]);
-            
+
         } catch (\Throwable $th) {
             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
         }
@@ -241,7 +241,7 @@ class WebhookRepository
             // update payout history status
             $payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
-            $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatusEnum::Completed->value]);
+            $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatus::Completed->value]);
 
             $user_id = $payout->account->user->id;
 

@@ -71,14 +71,10 @@ class AuthController extends Controller
 
         $result = DB::transaction(function () use ($validatedData) {
 
-            $role = isset($validatedData['role']) ? strtolower($validatedData['role']) : strtolower(Roles::USER->value);
-
             $user = $this->userRepository->create($validatedData);
 
-            // Check the user role and add to sanctum's token ability
-            $ability = ["role:$role"];
-
-            $token = $user->createToken('access-token', $ability)->plainTextToken;
+            // Create a toke with role "user"
+            $token = $user->createToken('access-token', ["role:user"])->plainTextToken;
 
             return ['user' => $user, 'token' => $token];
         });
@@ -219,8 +215,10 @@ class AuthController extends Controller
             $user = Auth::user();
         }
 
+        $role = strtolower($user->role);
+
         // Check the user role and add to sanctum's token ability in lower case
-        $ability = ["role:strtolower($user->role)"];
+        $ability = ["role:$role"];
 
         $token = $user->createToken('access-token', $ability)->plainTextToken;
 

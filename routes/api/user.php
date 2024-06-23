@@ -17,9 +17,13 @@ Route::group([
 
     Route::get('/download', [UserController::class, 'download'])->middleware('abilities:role:super_admin')->name('download');
 
+    Route::post('/', [UserController::class, 'store'])->middleware('abilities:role:super_admin')->name('store');
+
     Route::post('/me', [UserController::class, 'update']);
 
     Route::post('/change-password', [UserController::class, 'changePassword']);
 
-    Route::post('/request-help', [UserController::class, 'requestHelp']);
+    Route::patch('/{user}/revoke-admin-role', [UserController::class, 'revokeAdminRole'])
+        ->middleware('abilities:role:super_admin')
+        ->name('users.revoke-admin-role');
 });

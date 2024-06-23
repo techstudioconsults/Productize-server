@@ -26,8 +26,7 @@ class PayoutController extends Controller
 
     public function __construct(
         protected PayoutRepository $payoutRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori

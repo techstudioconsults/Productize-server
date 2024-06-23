@@ -24,9 +24,7 @@ class ReviewController extends Controller
         protected ReviewRepository $reviewRepository,
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository
-    ) {
-
-    }
+    ) {}
 
     /**
      * @author @obajide028 Odesanya Babajide
@@ -96,9 +94,30 @@ class ReviewController extends Controller
     {
         $filter = ['product_id' => $product->id];
 
-        $reviews = $this->reviewRepository->query($filter)->take(2)->get();
+        $reviews = $this->reviewRepository->query($filter)
+            ->with('user:id,full_name,logo')
+            ->take(2)->get();
 
         return ReviewResource::collection($reviews);
 
+    }
+
+    /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Retrieve the average Rating of a product.
+     *
+     * =
+     *
+     * @param  Product  $product  The product for which to retrieve the average rating.
+     * @return the response in json format
+     */
+    public function getAverageRatingForProduct(Product $product)
+    {
+        $averageRating = $this->reviewRepository->getAverageRatingForProduct($product);
+
+        return response()->json([
+            'averageRating' => $averageRating,
+        ]);
     }
 }

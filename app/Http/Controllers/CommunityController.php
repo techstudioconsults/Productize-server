@@ -20,8 +20,7 @@ class CommunityController extends Controller
 {
     public function __construct(
         protected CommunityRepository $communityRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @obajide028 Odesanya Babajide

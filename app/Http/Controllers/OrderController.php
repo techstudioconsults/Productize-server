@@ -30,8 +30,7 @@ class OrderController extends Controller
 
     public function __construct(
         protected OrderRepository $orderRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq

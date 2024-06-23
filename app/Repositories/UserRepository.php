@@ -33,8 +33,7 @@ class UserRepository extends Repository
     public function __construct(
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository
-    ) {
-    }
+    ) {}
 
     public function seed(): void
     {

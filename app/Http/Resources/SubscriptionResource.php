@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Repositories\SubscriptionRepository;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,8 +23,8 @@ class SubscriptionResource extends JsonResource
             'user' => [
                 'id' => $this->user->id,
                 'email' => $this->user->email,
-                'full_name' => $this->user->full_name
-            ]
+                'full_name' => $this->user->full_name,
+            ],
         ];
     }
 }

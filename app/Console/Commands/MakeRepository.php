@@ -43,7 +43,6 @@ class MakeRepository extends Command
     /**
      * Create a new command instance.
      *
-     * @param \Illuminate\Filesystem\Filesystem $files
      * @return void
      */
     public function __construct(Filesystem $files)
@@ -67,19 +66,20 @@ class MakeRepository extends Command
         $model = $this->option('model');
 
         // Define the path to store the repository
-        $path = app_path('Repositories/' . $name . '.php');
+        $path = app_path('Repositories/'.$name.'.php');
 
         // Check if file already exists
         if ($this->files->exists($path)) {
             $this->error('Repository class already exists!');
+
             return;
         }
 
-        if (!$model) {
+        if (! $model) {
             $this->error('Model for repository not passed. Example usage: php artisan make:repository ExampleRepository --model=ExampleModel');
+
             return;
         }
-
 
         // Create the directory if it doesn't exist
         $this->makeDirectory($path);
@@ -151,12 +151,12 @@ class MakeRepository extends Command
     /**
      * Create the directory for the class if it doesn't exist.
      *
-     * @param string $path
+     * @param  string  $path
      * @return void
      */
     protected function makeDirectory($path)
     {
-        if (!$this->files->isDirectory(dirname($path))) {
+        if (! $this->files->isDirectory(dirname($path))) {
             $this->files->makeDirectory(dirname($path), 0755, true, true);
         }
     }

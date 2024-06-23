@@ -22,7 +22,7 @@ class RevenueFactory extends Factory
             'activity' => RevenueActivity::PURCHASE->value,
             'product' => 'Purchase',
             'amount' => fake()->randomNumber(5),
-            'user_id' => User::factory()->create()->id
+            'user_id' => User::factory()->create()->id,
         ];
     }
 }

@@ -55,7 +55,7 @@ class ComplaintController extends Controller
 
         $user = Auth::user();
 
-        if (!$request->exists('email')) {
+        if (! $request->exists('email')) {
             $validated['email'] = $user->email;
         }
 
@@ -68,7 +68,7 @@ class ComplaintController extends Controller
         return new JsonResponse(['message' => 'email sent'], 201);
     }
 
-     /**
+    /**
      * @author @Intuneteq Tobi Olanitori
      *
      * Retrieve the specified complaint.

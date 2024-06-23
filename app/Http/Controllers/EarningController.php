@@ -73,7 +73,7 @@ class EarningController extends Controller
         $exists = $this->accountRepository->query(['user_id' => $user->id])->exists();
 
         // if yes, throw error
-        if (!$exists) {
+        if (! $exists) {
             throw new BadRequestException('You need to set up your Payout account before requesting a payout.');
         }
 

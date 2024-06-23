@@ -41,7 +41,7 @@ class ComplaintRepositoryTest extends TestCase
     public function test_query_complaints_with_filters()
     {
         Complaint::factory()->count(5)->create([
-            'created_at' => now()->subDays(2)->endOfDay()
+            'created_at' => now()->subDays(2)->endOfDay(),
         ]);
 
         $start_date = now()->subMonth()->startOfDay();
@@ -49,7 +49,7 @@ class ComplaintRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => $start_date,
-            'end_date' => $end_date
+            'end_date' => $end_date,
         ];
 
         $query = $this->repository->query($filter);
@@ -65,7 +65,7 @@ class ComplaintRepositoryTest extends TestCase
         $user = User::factory()->create();
 
         $complaints = Complaint::factory()->count(5)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $filter = ['user_id' => $user->id];

@@ -35,7 +35,6 @@ class Handler extends ExceptionHandler
      * Render an exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Throwable  $exception
      * @return \Illuminate\Http\Response
      */
     public function render($request, Throwable $exception)
@@ -53,7 +52,6 @@ class Handler extends ExceptionHandler
      * Handle a 404 Not Found exception.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Symfony\Component\HttpKernel\Exception\NotFoundHttpException  $exception
      * @return \Illuminate\Http\Response
      */
     protected function handleNotFound($request, NotFoundHttpException $exception)

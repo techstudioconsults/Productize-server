@@ -32,12 +32,12 @@ class EarningRepository extends Repository
      *
      * Create or update the total earnings for a specific user.
      *
-     * @param array $entity The array containing the entity data.
-     *                      Example:
-     *                      [
-     *                          'user_id' => 1,
-     *                          'amount' => 100.00
-     *                      ]
+     * @param  array  $entity  The array containing the entity data.
+     *                         Example:
+     *                         [
+     *                         'user_id' => 1,
+     *                         'amount' => 100.00
+     *                         ]
      * @return Earning The updated or newly created Earning entity.
      */
     public function create(array $entity): Earning
@@ -123,19 +123,20 @@ class EarningRepository extends Repository
      *
      * Update the fields of an existing Earning entity.
      *
-     * @param Model $entity The Earning entity to update.
-     * @param array $updates The associative array of fields to update.
-     *                       Example:
-     *                       [
-     *                           'total_earnings' => 500,
-     *                           'withdrawn_earnings' => 100,
-     *                       ]
+     * @param  Model  $entity  The Earning entity to update.
+     * @param  array  $updates  The associative array of fields to update.
+     *                          Example:
+     *                          [
+     *                          'total_earnings' => 500,
+     *                          'withdrawn_earnings' => 100,
+     *                          ]
      * @return Earning The updated Earning entity.
+     *
      * @throws ModelCastException If $entity is not an instance of Earning.
      */
     public function update(Model $entity, array $updates): Earning
     {
-        if (!$entity instanceof Earning) {
+        if (! $entity instanceof Earning) {
             throw new ModelCastException('Earning', get_class($entity));
         }
 
@@ -157,7 +158,7 @@ class EarningRepository extends Repository
      *
      * Calculate the balance (total earnings minus withdrawn earnings) for a given Earning entity.
      *
-     * @param Earning $earning The Earning entity for which to calculate the balance.
+     * @param  Earning  $earning  The Earning entity for which to calculate the balance.
      * @return int The calculated balance.
      */
     public function getBalance(Earning $earning): int

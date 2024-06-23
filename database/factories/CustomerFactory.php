@@ -26,7 +26,7 @@ class CustomerFactory extends Factory
             'user_id' => $user->id,
             'order_id' => Order::factory()->create([
                 'user_id' => $user->id,
-                'product_id' => Product::factory()->create(['user_id' => $merchant->id])
+                'product_id' => Product::factory()->create(['user_id' => $merchant->id]),
             ])->id,
             'merchant_id' => $merchant->id,
         ];

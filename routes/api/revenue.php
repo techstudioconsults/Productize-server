@@ -9,7 +9,7 @@ Route::controller(RevenueController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
-        'abilities:role:super_admin'
+        'abilities:role:super_admin',
     ])
     ->group(function () {
         Route::get('/', 'index')->name('index');

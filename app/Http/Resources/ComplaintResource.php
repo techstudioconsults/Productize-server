@@ -22,9 +22,9 @@ class ComplaintResource extends JsonResource
             'user' => [
                 'name' => $this->user->full_name,
                 'email' => $this->user->email,
-                'avatar' => $this->user->logo
+                'avatar' => $this->user->logo,
             ],
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
         ];
     }
 }

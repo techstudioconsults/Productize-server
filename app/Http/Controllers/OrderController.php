@@ -235,7 +235,7 @@ class OrderController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Retrieve statistics about the orders.
      *
      * This method returns the total number of orders, the total revenue from orders,
@@ -256,8 +256,8 @@ class OrderController extends Controller
 
         return new JsonResource([
             'total_orders' => $total_orders,
-            'total_orders_revenue' => (int)$total_orders_revenue,
-            'avg_order_value' => (int)$avg_order_value
+            'total_orders_revenue' => (int) $total_orders_revenue,
+            'avg_order_value' => (int) $avg_order_value,
         ]);
     }
 }

@@ -19,8 +19,7 @@ class WebhookRepository
         protected EarningRepository $earningRepository,
         protected PayoutRepository $payoutRepository,
         protected RevenueRepository $revenueRepository,
-    ) {
-    }
+    ) {}
 
     public function paystack(string $type, $data)
     {
@@ -161,7 +160,7 @@ class WebhookRepository
                 'activity' => RevenueActivity::PURCHASE->value,
                 'product' => 'Purchase',
                 'amount' => $data['amount'],
-                'commission' => RevenueRepository::SALE_COMMISSION
+                'commission' => RevenueRepository::SALE_COMMISSION,
             ]);
 
         } catch (\Throwable $th) {
@@ -191,7 +190,7 @@ class WebhookRepository
             'user_id' => $user->id,
             'activity' => RevenueActivity::SUBSCRIPTION->value,
             'product' => 'Subscription',
-            'amount' => SubscriptionRepository::PRICE
+            'amount' => SubscriptionRepository::PRICE,
         ]);
     }
 
@@ -213,7 +212,7 @@ class WebhookRepository
             'user_id' => $user->id,
             'activity' => RevenueActivity::SUBSCRIPTION_RENEW->value,
             'product' => 'Subscription',
-            'amount' => SubscriptionRepository::PRICE
+            'amount' => SubscriptionRepository::PRICE,
         ]);
     }
 

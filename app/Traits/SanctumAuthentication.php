@@ -26,6 +26,7 @@ trait SanctumAuthentication
         $user = User::factory()->create(['role' => Roles::SUPER_ADMIN->value]);
         $role = strtolower(Roles::SUPER_ADMIN->value);
         Sanctum::actingAs($user, ["role:$role"]);
+
         return $user;
     }
 
@@ -39,6 +40,7 @@ trait SanctumAuthentication
         $user = User::factory()->create(['role' => Roles::ADMIN->value]);
         $role = strtolower(Roles::ADMIN->value);
         Sanctum::actingAs($user, ["role:$role"]);
+
         return $user;
     }
 
@@ -47,6 +49,7 @@ trait SanctumAuthentication
         $user = User::factory()->create(['role' => Roles::USER->value]);
         $role = strtolower(Roles::USER->value);
         Sanctum::actingAs($user, ["role:$role"]);
+
         return $user;
     }
 }

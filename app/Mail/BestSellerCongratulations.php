@@ -16,8 +16,6 @@ class BestSellerCongratulations extends Mailable
 
     /**
      * The product's current ranking among best selling products.
-     *
-     * @var integer
      */
     private int $position;
 
@@ -54,7 +52,7 @@ class BestSellerCongratulations extends Mailable
                 'thumbnail' => $this->product->thumbnail,
                 'title' => $this->product->title,
                 'position' => $this->getPosition(),
-                'positionWithSuffix' => $this->getPositionWithSuffix()
+                'positionWithSuffix' => $this->getPositionWithSuffix(),
             ],
 
         );
@@ -65,7 +63,7 @@ class BestSellerCongratulations extends Mailable
      *
      * Getter method for position
      *
-     * @return integer The product position in best selling ranking
+     * @return int The product position in best selling ranking
      */
     public function getPosition(): int
     {
@@ -78,6 +76,7 @@ class BestSellerCongratulations extends Mailable
      * Setter method for position.
      *
      * @return void
+     *
      * @see \App\Models\Product scope methods for TopProducts query defined.
      */
     public function setPosition()
@@ -105,7 +104,7 @@ class BestSellerCongratulations extends Mailable
     {
         $position = $this->getPosition() ?? ''; // Ensure $position is set or default to empty string
 
-        return $position . $this->getPositionSuffix((int) $position);
+        return $position.$this->getPositionSuffix((int) $position);
     }
 
     /**
@@ -113,7 +112,7 @@ class BestSellerCongratulations extends Mailable
      *
      * Get the suffix for a numeric position (e.g., st, nd, rd, th).
      *
-     * @param int $position The numeric position.
+     * @param  int  $position  The numeric position.
      * @return string The suffix for the position.
      */
     private function getPositionSuffix(int $position): string

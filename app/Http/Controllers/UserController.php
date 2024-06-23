@@ -49,8 +49,7 @@ class UserController extends Controller
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
         protected PayoutRepository $payoutRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -62,7 +61,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $filter = [
-            'role' => $request->role
+            'role' => $request->role,
         ];
 
         $users = $this->userRepository->query($filter)->paginate(10);
@@ -131,7 +130,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -185,7 +184,7 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if (!Hash::check($validated['password'], $user->password)) {
+        if (! Hash::check($validated['password'], $user->password)) {
             throw new BadRequestException('Incorrect Password');
         }
 
@@ -226,7 +225,7 @@ class UserController extends Controller
             'total_users' => $total_users,
             'total_subscribed_users' => $total_subscribed_users,
             'total_trial_users' => $total_trial_users,
-            'conversion_rate' => '35%'
+            'conversion_rate' => '35%',
         ]);
     }
 
@@ -280,7 +279,7 @@ class UserController extends Controller
         $this->userRepository->guardedUpdate($user->email, 'role', Roles::USER->value);
 
         return new JsonResource([
-            'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.'
+            'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.',
         ]);
     }
 }

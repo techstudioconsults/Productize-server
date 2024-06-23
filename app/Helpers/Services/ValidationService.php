@@ -133,7 +133,7 @@ class ValidationService
             unset($filter['start_date'], $filter['end_date']);
 
             // Exit
-            if (!$start_date || !$end_date) {
+            if (! $start_date || ! $end_date) {
                 return;
             }
 
@@ -145,7 +145,7 @@ class ValidationService
 
             $query->whereBetween('created_at', [
                 Carbon::parse($start_date)->startOfDay(),
-                Carbon::parse($end_date)->endOfDay()
+                Carbon::parse($end_date)->endOfDay(),
             ]);
         }
     }

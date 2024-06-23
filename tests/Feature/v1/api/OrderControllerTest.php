@@ -8,14 +8,13 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Traits\SanctumAuthentication;
 use Carbon\Carbon;
 use Database\Seeders\OrderSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
-use App\Traits\SanctumAuthentication;
 
 class OrderControllerTest extends TestCase
 {
@@ -216,7 +215,7 @@ class OrderControllerTest extends TestCase
             'user_id' => $user->id,
             'order_id' => Order::factory()->create([
                 'user_id' => $user->id,
-                'product_id' => Product::factory()->create(['user_id' => $merchant->id])
+                'product_id' => Product::factory()->create(['user_id' => $merchant->id]),
             ])->id,
             'merchant_id' => $merchant->id,
         ]);
@@ -225,7 +224,7 @@ class OrderControllerTest extends TestCase
             'user_id' => $user->id,
             'order_id' => Order::factory()->create([
                 'user_id' => $user->id,
-                'product_id' => Product::factory()->create(['user_id' => $merchant->id])
+                'product_id' => Product::factory()->create(['user_id' => $merchant->id]),
             ])->id,
             'merchant_id' => $merchant->id,
         ]);
@@ -234,7 +233,7 @@ class OrderControllerTest extends TestCase
             'user_id' => $user->id,
             'order_id' => Order::factory()->create([
                 'user_id' => $user->id,
-                'product_id' => Product::factory()->create(['user_id' => $merchant->id])
+                'product_id' => Product::factory()->create(['user_id' => $merchant->id]),
             ])->id,
             'merchant_id' => $merchant->id,
         ]);
@@ -376,7 +375,7 @@ class OrderControllerTest extends TestCase
                 'total_orders' => 2,
                 'total_orders_revenue' => 300,
                 'avg_order_value' => 150,
-            ]
+            ],
         ]);
     }
 
@@ -405,7 +404,7 @@ class OrderControllerTest extends TestCase
                 'total_orders' => 0,
                 'total_orders_revenue' => 0,
                 'avg_order_value' => 0,
-            ]
+            ],
         ]);
     }
 }

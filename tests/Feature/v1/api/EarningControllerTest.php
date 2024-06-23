@@ -13,8 +13,8 @@ use App\Repositories\AccountRepository;
 use App\Repositories\EarningRepository;
 use App\Repositories\PayoutRepository;
 use App\Repositories\PaystackRepository;
-use Mockery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Tests\TestCase;
 
 class EarningControllerTest extends TestCase

@@ -7,12 +7,12 @@ use App\Http\Resources\PayoutResource;
 use App\Models\Account;
 use App\Models\Payout;
 use App\Models\User;
+use App\Traits\SanctumAuthentication;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Storage;
 use Tests\TestCase;
-use App\Traits\SanctumAuthentication;
 
 class PayoutControllerTest extends TestCase
 {
@@ -80,7 +80,6 @@ class PayoutControllerTest extends TestCase
         $response->assertForbidden();
     }
 
-
     /**
      * Test user works correctly.
      */
@@ -140,10 +139,10 @@ class PayoutControllerTest extends TestCase
         // Assert response is successful and CSV headers are correct
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=payouts_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=payouts_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
 
         // Clean up: Delete the CSV file from storage after testing
-        Storage::disk('local')->delete('csv/payouts_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        Storage::disk('local')->delete('csv/payouts_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     public function test_download_unauthenticated()

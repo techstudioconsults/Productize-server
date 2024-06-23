@@ -66,7 +66,6 @@ Route::group([
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product')->name('restore');
 
-
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'slug'])
         ->name('slug')
         ->withoutMiddleware([

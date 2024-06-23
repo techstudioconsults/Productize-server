@@ -6,15 +6,15 @@ use App\Enums\RevenueActivity;
 use App\Exceptions\ForbiddenException;
 use App\Http\Resources\RevenueResource;
 use App\Models\Revenue;
+use App\Traits\SanctumAuthentication;
 use Database\Seeders\RevenueSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use App\Traits\SanctumAuthentication;
 
 class RevenueControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker, SanctumAuthentication;
+    use RefreshDatabase, SanctumAuthentication, WithFaker;
 
     protected function setUp(): void
     {
@@ -37,7 +37,6 @@ class RevenueControllerTest extends TestCase
             'start_date' => now()->subMonth()->toDateString(),
             'end_date' => now()->toDateString(),
         ]));
-
 
         $response->assertOk()->assertJson($expected_json, true);
         $response->assertJsonStructure(['data', 'links', 'meta']);
@@ -79,8 +78,8 @@ class RevenueControllerTest extends TestCase
                 'total_revenues',
                 'total_sale_revenue',
                 'total_subscription_revenue',
-                'total_commission'
-            ]
+                'total_commission',
+            ],
         ]);
 
         $this->assertEquals(100, $response->json('data.total_revenues'));
@@ -120,7 +119,7 @@ class RevenueControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_' . now()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_'.now()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     /** @test */
@@ -156,7 +155,6 @@ class RevenueControllerTest extends TestCase
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertEquals('', $response->getContent()); // Assert that response content is empty
     }
-
 
     /** @test */
     public function non_super_admin_handles_no_revenues_for_given_filter_in_download()

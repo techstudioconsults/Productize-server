@@ -103,7 +103,6 @@ class ValidationServiceTest extends TestCase
         $this->assertArrayNotHasKey('end_date', $filter);
     }
 
-
     public function test_apply_date_filters_invalid_range(): void
     {
         // Mock the query builder

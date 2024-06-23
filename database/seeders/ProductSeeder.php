@@ -10,7 +10,6 @@ use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
-
     public function run(): void
     {
         Product::factory(5)
@@ -22,7 +21,7 @@ class ProductSeeder extends Seeder
 
         Product::factory()->count(5)->has(Order::factory()->count(5), 'orders')->create([
             'user_id' => User::where('email', 'tobiolanitori1@gmail.com')->first()->id ?? User::factory()->create()->id,
-            'status' => ProductStatusEnum::Published->value
+            'status' => ProductStatusEnum::Published->value,
         ]);
     }
 }

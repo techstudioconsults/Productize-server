@@ -5,11 +5,11 @@ namespace Tests\Feature\v1\api;
 use App\Http\Resources\ComplaintResource;
 use App\Mail\LodgeComplaint;
 use App\Models\Complaint;
+use App\Traits\SanctumAuthentication;
 use Database\Seeders\ComplaintSeeder;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mail;
-use App\Traits\SanctumAuthentication;
+use Tests\TestCase;
 
 class ComplaintControllerTest extends TestCase
 {
@@ -33,11 +33,11 @@ class ComplaintControllerTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 '*' => [
-                    'id', 'subject', 'message', 'email', 'created_at', 'user'
-                ]
+                    'id', 'subject', 'message', 'email', 'created_at', 'user',
+                ],
             ],
             'links',
-            'meta'
+            'meta',
         ]);
     }
 
@@ -65,7 +65,7 @@ class ComplaintControllerTest extends TestCase
 
         $data = [
             'subject' => 'Test Subject',
-            'message' => 'Test Message'
+            'message' => 'Test Message',
         ];
 
         $response = $this->withoutExceptionHandling()->post(route('complaints.store'), $data);
@@ -78,14 +78,13 @@ class ComplaintControllerTest extends TestCase
         Mail::assertSent(LodgeComplaint::class);
     }
 
-
     public function test_complaint_email_defaults_to_authenticated_user_email()
     {
         $user = $this->actingAsRegularUser();
 
         $data = [
             'subject' => 'Test Subject',
-            'message' => 'Test Message'
+            'message' => 'Test Message',
         ];
 
         $response = $this->withoutExceptionHandling()->post(route('complaints.store'), $data);
@@ -94,7 +93,7 @@ class ComplaintControllerTest extends TestCase
         $this->assertDatabaseHas('complaints', [
             'subject' => 'Test Subject',
             'message' => 'Test Message',
-            'email' => $user->email
+            'email' => $user->email,
         ]);
     }
 
@@ -102,7 +101,7 @@ class ComplaintControllerTest extends TestCase
     {
         $data = [
             'subject' => 'Test Subject',
-            'message' => 'Test Message'
+            'message' => 'Test Message',
         ];
 
         $response = $this->post(route('complaints.store'), $data);
@@ -123,8 +122,8 @@ class ComplaintControllerTest extends TestCase
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                'id', 'subject', 'message', 'email', 'user', 'created_at'
-            ]
+                'id', 'subject', 'message', 'email', 'user', 'created_at',
+            ],
         ]);
 
         $response->assertJson($expected_json, true);

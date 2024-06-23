@@ -48,22 +48,6 @@ class ProductRepository extends Repository
 
     const DELETED = 'deleted';
 
-    // public function seed(): void
-    // {
-    //     $users = User::factory(5)->create();
-
-    //     foreach ($users as $user) {
-    //         // Create 5 products for each user
-    //         Product::factory()
-    //             ->count(5)
-    //             ->state(new Sequence(
-    //                 ['status' => 'published'],
-    //                 ['status' => 'draft'],
-    //             ))
-    //             ->create(['user_id' => $user->id, 'price' => '100000']);
-    //     }
-    // }
-
     /**
      *  @author @Intuneteq Tobi Olanitori
      *

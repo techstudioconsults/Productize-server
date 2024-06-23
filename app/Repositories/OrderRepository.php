@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @author @Intuneteq Tobi Olanitori
- *
- * @version 1.0
- *
- * @since 26-05-2024
- */
-
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
@@ -24,6 +16,10 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 26-05-2024
  *
  * Repository for Order resource
  */

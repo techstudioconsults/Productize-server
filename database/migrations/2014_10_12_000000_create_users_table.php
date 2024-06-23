@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Roles;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -30,6 +31,7 @@ return new class extends Migration
             $table->string('facebook_account')->nullable();
             $table->string('youtube_account')->nullable();
             $table->enum('account_type', ['free', 'free_trial', 'premium'])->default('free_trial');
+            $table->enum('role', array_column(Roles::cases(), 'value'))->default(Roles::USER->value);
             $table->boolean('product_creation_notification')->default(0);
             $table->boolean('purchase_notification')->default(0);
             $table->boolean('news_and_update_notification')->default(0);

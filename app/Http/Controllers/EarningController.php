@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Http\Requests\InitiateWithdrawalRequest;
@@ -73,7 +73,7 @@ class EarningController extends Controller
         $exists = $this->accountRepository->query(['user_id' => $user->id])->exists();
 
         // if yes, throw error
-        if (! $exists) {
+        if (!$exists) {
             throw new BadRequestException('You need to set up your Payout account before requesting a payout.');
         }
 
@@ -104,7 +104,7 @@ class EarningController extends Controller
 
             // Build payout entity
             $payout_entity = [
-                'status' => PayoutStatusEnum::Pending->value,
+                'status' => PayoutStatus::Pending->value,
                 'reference' => $reference,
                 'paystack_transfer_code' => $response['transfer_code'],
                 'account_id' => $account->id,
@@ -125,3 +125,14 @@ class EarningController extends Controller
         }
     }
 }
+
+/**
+ * Tags
+ * product types endpoint - with categories
+ * Based on search
+ * orders by customer - fixed
+ * retrieve payouts - filter - fixed
+ * top products for users - it works
+ * billing - fixed
+ * remove auth from featured and top products - done
+ */

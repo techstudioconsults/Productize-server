@@ -13,17 +13,21 @@ Route::controller(OrderController::class)
         'can:premium,App\Models\Order',
     ])
     ->group(function () {
-        Route::get('/', 'index');
+        Route::get('/', 'index')->middleware('abilities:role:super_admin')->name('index');
+
+        Route::get('/user', 'user')->name('user');
 
         Route::get('/download', 'downloadList');
 
         Route::get('/unseen', 'unseen')->name('unseen');
 
-        Route::get('/{order}', 'show')->middleware('can:view,order');
+        Route::get('/stats', 'stats')->middleware('abilities:role:super_admin')->name('stats');
 
-        Route::get('/products/{product}', 'showByProduct');
+        Route::get('/{order}', 'show')->middleware('can:view,order')->name('show');
 
-        Route::get('/customers/{customer}', 'showByCustomer');
+        Route::get('/products/{product}', 'showByProduct')->name('show.product');
+
+        Route::get('/customers/{customer}', 'showByCustomer')->name('show.customer');
 
         Route::patch('/seen', 'markseen')->name('seen.mark');
     });

@@ -13,22 +13,16 @@ namespace Database\Seeders;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
-use Database\Seeders\Traits\DisableForeignKeys;
-use Database\Seeders\Traits\TruncateTable;
 use Illuminate\Database\Seeder;
 
 class ReviewSeeder extends Seeder
 {
-    use DisableForeignKeys, TruncateTable;
 
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $this->disableForeignKeys();
-        $this->truncate('reviews');
-
         // Fetch some products and users
         $user = User::factory()->create();
         $products = Product::factory()->count(10)->create([
@@ -51,7 +45,5 @@ class ReviewSeeder extends Seeder
                 ]);
             }
         }
-
-        $this->enableForeignKeys();
     }
 }

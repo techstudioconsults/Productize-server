@@ -17,10 +17,12 @@ Route::group([
 ], function () {
     Route::post('/', [ProductController::class, 'store'])->name('store');
 
-    Route::get('/', [ProductController::class, 'index'])->withoutMiddleware([
+    Route::get('/', [ProductController::class, 'index'])->middleware('abilities:role:super_admin')->name('index');
+
+    Route::get('/external', [ProductController::class, 'external'])->withoutMiddleware([
         'auth:sanctum',
         'can:allowed,App\Models\Product',
-    ])->name('index');
+    ])->name('external');
 
     Route::get('/users', [ProductController::class, 'user'])->name('user');
 
@@ -30,14 +32,21 @@ Route::group([
 
     Route::get('/revenues', [ProductController::class, 'productsRevenue'])->name('revenue');
 
-    Route::get('/records', [ProductController::class, 'records'])->name('record');
+    Route::get('/records', [ProductController::class, 'records'])->name('records');
 
-    Route::get('/downloads', [ProductController::class, 'downloads'])->name('download');
+    Route::get('/records/admin', [ProductController::class, 'adminRecords'])
+        ->middleware('abilities:role:super_admin')
+        ->name('records.admin');
+
+    Route::get('/purchased', [ProductController::class, 'purchased'])->name('purchased');
 
     Route::get('/top-products', [ProductController::class, 'topProducts'])->withoutMiddleware([
         'auth:sanctum',
-
     ])->name('top-products');
+
+    Route::get('/top-products/admin', [ProductController::class, 'bestSelling'])
+        ->middleware('abilities:role:super_admin')
+        ->name('top-product.admin');
 
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',
@@ -47,11 +56,16 @@ Route::group([
         'auth:sanctum',
     ])->name('search');
 
+    Route::post('/{product}/send-congratulations-mail', [ProductController::class, 'sendCongratulations'])->middleware('abilities:role:super_admin')->name('congratulations');
+
     Route::get('/search', [ProductController::class, 'basedOnSearch'])->withoutMiddleware('auth:sanctum')->name('search.get');
+
+    Route::get('/stats/admin', [ProductController::class, 'stats'])->middleware('abilities:role:super_admin')->name('stats');
 
     Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product')->name('restore');
+
 
     Route::get('/{product:slug}/{slug}', [ProductController::class, 'slug'])
         ->name('slug')

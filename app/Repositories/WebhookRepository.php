@@ -2,7 +2,8 @@
 
 namespace App\Repositories;
 
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
+use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
 use Log;
 
@@ -16,8 +17,10 @@ class WebhookRepository
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository,
         protected EarningRepository $earningRepository,
-        protected PayoutRepository $payoutRepository
-    ) {}
+        protected PayoutRepository $payoutRepository,
+        protected RevenueRepository $revenueRepository,
+    ) {
+    }
 
     public function paystack(string $type, $data)
     {
@@ -151,6 +154,16 @@ class WebhookRepository
                     'amount' => $product['amount'],
                 ]);
             }
+
+            // Update productize's revenue
+            $this->revenueRepository->create([
+                'user_id' => $recipient_id ? $recipient_id : $buyer_id,
+                'activity' => RevenueActivity::PURCHASE->value,
+                'product' => 'Purchase',
+                'amount' => $data['amount'],
+                'commission' => RevenueRepository::SALE_COMMISSION
+            ]);
+
         } catch (\Throwable $th) {
             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
         }
@@ -171,7 +184,15 @@ class WebhookRepository
         ]);
 
         // update user to premium
-        $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
+        $user = $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
+
+        // Update productize's revenue
+        $this->revenueRepository->create([
+            'user_id' => $user->id,
+            'activity' => RevenueActivity::SUBSCRIPTION->value,
+            'product' => 'Subscription',
+            'amount' => SubscriptionRepository::PRICE
+        ]);
     }
 
     private function handleSubscriptionRenewEvent(array $data): void
@@ -183,8 +204,16 @@ class WebhookRepository
         ]);
 
         // update the status
-        $this->subscriptionRepository->update($subscription, [
+        $user = $this->subscriptionRepository->update($subscription, [
             'status' => $data['status'],
+        ]);
+
+        // Update productize's revenue
+        $this->revenueRepository->create([
+            'user_id' => $user->id,
+            'activity' => RevenueActivity::SUBSCRIPTION_RENEW->value,
+            'product' => 'Subscription',
+            'amount' => SubscriptionRepository::PRICE
         ]);
     }
 
@@ -212,7 +241,7 @@ class WebhookRepository
             // update payout history status
             $payout = $this->payoutRepository->findOne(['reference' => $reference]);
 
-            $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatusEnum::Completed->value]);
+            $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatus::Completed->value]);
 
             $user_id = $payout->account->user->id;
 

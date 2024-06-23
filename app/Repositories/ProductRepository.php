@@ -22,11 +22,9 @@ use App\Models\ProductSearch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
 use Str;
@@ -49,22 +47,6 @@ class ProductRepository extends Repository
     const DRAFT = 'draft';
 
     const DELETED = 'deleted';
-
-    public function seed(): void
-    {
-        $users = User::factory(5)->create();
-
-        foreach ($users as $user) {
-            // Create 5 products for each user
-            Product::factory()
-                ->count(5)
-                ->state(new Sequence(
-                    ['status' => 'published'],
-                    ['status' => 'draft'],
-                ))
-                ->create(['user_id' => $user->id, 'price' => '100000']);
-        }
-    }
 
     /**
      *  @author @Intuneteq Tobi Olanitori
@@ -208,22 +190,19 @@ class ProductRepository extends Repository
      *
      * @param  array|null  $filter  An optional array of filters including 'start_date' and 'end_date'.
      * @return Builder The query builder instance.
+     *
+     * @see \App\Models\Product scope methods for TopProducts query defined.
      */
     public function topProducts(?array $filter = []): Builder
     {
-        $query = Product::query();
-
-        $query->join('orders', 'products.id', '=', 'orders.product_id')
-            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
-            ->groupBy('products.id')
-            ->orderByDesc('total_sales');
+        $query = Product::TopProducts();
 
         // Apply date filter specifically to the products table
-        if (! empty($filter['start_date']) && ! empty($filter['end_date'])) {
+        if (isset($filter['start_date']) && isset($filter['end_date']) ) {
             $query->whereBetween('products.created_at', [$filter['start_date'], $filter['end_date']]);
-
-            unset($filter['start_date'], $filter['end_date']);
         }
+
+        unset($filter['start_date'], $filter['end_date']);
 
         $this->applyStatusFilter($query, $filter);
 
@@ -580,7 +559,7 @@ class ProductRepository extends Repository
 
             $amount = $product->price * $item['quantity'];
 
-            $share = $amount - ($amount * 0.05);
+            $share = $amount - ($amount * RevenueRepository::SALE_COMMISSION);
 
             return [
                 'product_id' => $product->id,

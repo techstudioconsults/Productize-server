@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OAuthTypeEnum;
+use App\Enums\Roles;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
@@ -71,7 +72,8 @@ class AuthController extends Controller
 
             $user = $this->userRepository->create($validatedData);
 
-            $token = $user->createToken('access-token')->plainTextToken;
+            // Create a toke with role "user"
+            $token = $user->createToken('access-token', ["role:user"])->plainTextToken;
 
             return ['user' => $user, 'token' => $token];
         });
@@ -113,12 +115,18 @@ class AuthController extends Controller
         $remember = $credentials['remember'] ?? false;
         unset($credentials['remember']);
 
-        if (! Auth::attempt($credentials, $remember)) {
+        if (!Auth::attempt($credentials, $remember)) {
             throw new UnprocessableException('The Provided credentials are not correct');
         }
 
         $user = Auth::user();
-        $token = $user->createToken('access-token')->plainTextToken;
+
+        $role = strtolower($user->role);
+
+        // Check the user role and add to sanctum's token ability in lower case
+        $ability = ["role:$role"];
+
+        $token = $user->createToken('access-token', $ability)->plainTextToken;
 
         $result = ['user' => new UserResource($user), 'token' => $token];
 
@@ -189,7 +197,7 @@ class AuthController extends Controller
 
         $user = User::firstWhere('email', $oauthUser->email);
 
-        if (! $user) {
+        if (!$user) {
             $credentials = [
                 'full_name' => $oauthUser->name,
                 'email' => $oauthUser->email,
@@ -206,7 +214,12 @@ class AuthController extends Controller
             $user = Auth::user();
         }
 
-        $token = $user->createToken('access-token')->plainTextToken;
+        $role = strtolower($user->role);
+
+        // Check the user role and add to sanctum's token ability in lower case
+        $ability = ["role:$role"];
+
+        $token = $user->createToken('access-token', $ability)->plainTextToken;
 
         $result = ['user' => new UserResource($user), 'token' => $token];
 
@@ -235,21 +248,21 @@ class AuthController extends Controller
         /**
          * Dont throw an error, render error page instead.
          */
-        if (! $request->hasValidSignature()) {
+        if (!$request->hasValidSignature()) {
             throw new UnAuthorizedException('Invalid/Expired url provided');
         }
 
         $user = User::find($user_id);
 
-        if (! $user) {
+        if (!$user) {
             throw new NotFoundException('User Does Not Exist');
         }
 
-        if (! $user->hasVerifiedEmail()) {
+        if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url').'/dashboard/home';
+        $redirectUrl = config('app.client_url') . '/dashboard/home';
 
         return redirect($redirectUrl);
     }

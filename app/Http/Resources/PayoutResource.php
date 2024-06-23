@@ -17,12 +17,14 @@ class PayoutResource extends JsonResource
         return [
             'id' => $this->id,
             'bank_name' => $this->account->bank_name,
-            'account_number' => $this->account->account_number,
-            'account_name' => $this->account->name,
             'amount' => $this->amount,
             'status' => $this->status,
             'reference' => $this->reference,
             'created_at' => $this->created_at,
+            'account' => [
+                'name' => $this->account->name,
+                'number' => $this->account->account_number,
+            ],
         ];
     }
 }

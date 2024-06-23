@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * @author @Intuneteq Tobi Olanitori
  *
- * Repository for Order resource
+ * Repository for User resource
  */
 class UserRepository extends Repository
 {
@@ -57,7 +57,7 @@ class UserRepository extends Repository
     {
         $user = new User();
 
-        if (! isset($credentials['email'])) {
+        if (!isset($credentials['email'])) {
             throw new BadRequestException('No Email Provided');
         }
 
@@ -73,6 +73,7 @@ class UserRepository extends Repository
             'twitter_account',
             'facebook_account',
             'youtube_account',
+            'role'
         ];
 
         // Remove invalid keys from credentials
@@ -92,13 +93,18 @@ class UserRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Query orders based on the provided filter.
+     * Query users based on the provided filter.
      *
      * @param  array  $filter  The filter criteria to apply.
-     * @return Builder The query builder for orders.
+     * @return Builder The query builder for users.
      */
     public function query(array $filter): Builder
     {
+        // Remove keys with null values from the filter array
+        $filter = array_filter($filter, function ($value) {
+            return !is_null($value);
+        });
+
         $query = User::query();
 
         // Apply date filter
@@ -118,7 +124,7 @@ class UserRepository extends Repository
      * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found users.
      */
-    public function find(?array $filter): ?Collection
+    public function find(?array $filter = []): ?Collection
     {
         return $this->query($filter ?? [])->get();
     }
@@ -160,7 +166,7 @@ class UserRepository extends Repository
      */
     public function update(Model $entity, array $updatables): User
     {
-        if (! $entity instanceof User) {
+        if (!$entity instanceof User) {
             throw new ModelCastException('User', get_class($entity));
         }
 
@@ -203,7 +209,7 @@ class UserRepository extends Repository
             throw new BadRequestException("Column 'email' cannot be updated");
         }
 
-        if (! Schema::hasColumn((new User)->getTable(), $column)) {
+        if (!Schema::hasColumn((new User)->getTable(), $column)) {
             throw new UnprocessableException("Column '$column' does not exist in the User table.");
         }
 
@@ -317,7 +323,7 @@ class UserRepository extends Repository
 
         $un_filled = $collection->whereNull();
 
-        if ($un_filled->isEmpty() && ! $user->profile_completed_at) {
+        if ($un_filled->isEmpty() && !$user->profile_completed_at) {
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
@@ -332,7 +338,7 @@ class UserRepository extends Repository
     {
         $user = $this->findOne(['email' => $email]);
 
-        if (! $user) {
+        if (!$user) {
             return $this->create(['email' => $email, 'full_name' => $name]);
         }
 

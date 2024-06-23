@@ -14,32 +14,63 @@ use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
+use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\SearchRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
+use App\Mail\BestSellerCongratulations;
 use App\Models\Product;
+use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Mail;
 
 /**
  * Route handler methods for Product resource
  */
 class ProductController extends Controller
 {
+    use HasFileGenerator;
+
     public function __construct(
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository,
-        protected OrderRepository $orderRepository
-    ) {}
+        protected OrderRepository $orderRepository,
+        protected CustomerRepository $customerRepository
+    ) {
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve a paginated listing of products based on optional date filters.
+     *
+     * This method fetches products from the ProductRepository based on the provided
+     * start and end dates. If no dates are provided, all products are retrieved.
+     *
+     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of ProductResource instances representing the retrieved products.
+     */
+    public function index(Request $request)
+    {
+        $filter = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ];
+
+        $products = $this->productRepository->query($filter)->paginate(4);
+
+        return ProductResource::collection($products);
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -48,7 +79,7 @@ class ProductController extends Controller
      *
      * @return ProductCollection Returns a paginated collection of published products.
      */
-    public function index()
+    public function external()
     {
         $status = ProductStatusEnum::Published->value;
 
@@ -173,7 +204,7 @@ class ProductController extends Controller
             $this->productRepository->trackSearch($product, $user);
         }
 
-        if (! $this->productRepository->isPublished($product)) {
+        if (!$this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
@@ -265,7 +296,7 @@ class ProductController extends Controller
 
         $total_revenues = $order_query->sum('total_amount');
 
-        $total_sales = $order_query->count();
+        $total_sales = $order_query->sum('quantity');
 
         $total_customers = $this->userRepository->getTotalCustomers($user, $filter);
 
@@ -318,44 +349,67 @@ class ProductController extends Controller
 
         $columns = ['Title', 'Price', 'Sales', 'Type', 'Status'];
 
-        $data = [];
+        $data = [$columns];
 
-        $data[] = $columns;
+        foreach ($products as $product) {
+            $data[] = [
+                $product->title,
+                $product->price,
+                $product->totalSales(),
+                $product->product_type,
+                $product->status
+            ];
+        }
 
         $fileName = "products_$now.csv";
 
-        foreach ($products as $product) {
-            $row['Title'] = $product->title;
-            $row['Price'] = $product->price;
-            $row['Sales'] = 30;
-            $row['Type'] = $product->product_type;
-            $row['Status'] = $product->status;
+        $filePath = $this->generateCsv($fileName, $data);
 
-            $data[] = [$row['Title'], $row['Price'], $row['Sales'], $row['Type'], $row['Status']];
-        }
+        return $this->streamFile($filePath, $fileName, 'text/csv');
+    }
 
-        $csvContent = '';
-        foreach ($data as $csvRow) {
-            $csvContent .= implode(',', $csvRow)."\n";
-        }
-
-        $filePath = 'csv/'.$fileName;
-
-        // Store the CSV content in the storage/app/csv directory
-        Storage::disk('local')->put($filePath, $csvContent);
-
-        $headers = [
-            'Content-type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=$fileName",
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve and export a list of products based on optional date filters.
+     *
+     * This method fetches products from the ProductRepository based on the provided
+     * start and end dates, generates a CSV file with product details, and streams
+     * the file as a response.
+     *
+     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse Returns a streamed response with the CSV file.
+     */
+    public function adminRecords(Request $request)
+    {
+        $filter = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
         ];
 
-        // Return the response with the file from storage
-        return response()->stream(function () use ($filePath) {
-            readfile(storage_path('app/'.$filePath));
-        }, 200, $headers);
+        $products = $this->productRepository->find($filter);
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+
+        $columns = ['Title', 'Price', 'Sales', 'Type', 'Status'];
+
+        $data = [$columns];
+
+        foreach ($products as $product) {
+            $data[] = [
+                $product->title,
+                $product->price,
+                $product->totalSales(),
+                $product->product_type,
+                $product->status
+            ];
+        }
+
+        $fileName = "products_$now.csv";
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 
     /**
@@ -464,7 +518,7 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse A JSON response containing the list of downloaded products.
      */
-    public function downloads()
+    public function purchased()
     {
         $user = Auth::user();
 
@@ -506,6 +560,28 @@ class ProductController extends Controller
     }
 
     /**
+     * Retrieve the best selling products based on optional date filters.
+     *
+     * This method fetches the top-selling products from the ProductRepository
+     * based on the provided start and end dates, paginates the results, and
+     * returns them as a collection of ProductResources.
+     *
+     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of ProductResource.
+     */
+    public function bestSelling(Request $request)
+    {
+        $filter = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date
+        ];
+
+        $top_products = $this->productRepository->topProducts($filter)->paginate(5);
+
+        return ProductResource::collection($top_products);
+    }
+
+    /**
      * @author @Intuneteq Tobi Olanitori
      *
      * Get the top 5 products asscoiated with a user.
@@ -519,7 +595,7 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $top_products = $this->productRepository->topProducts(['user_id' => $user->id]);
+        $top_products = $this->productRepository->topProducts(['products.user_id' => $user->id]);
 
         return ProductResource::collection($top_products
             ->limit(5)->paginate(5));
@@ -655,5 +731,49 @@ class ProductController extends Controller
         }
 
         return new ProductCollection($products);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get statistical data about products, orders, and customers.
+     *
+     * @return JsonResource
+     */
+    public function stats()
+    {
+        $order_query = $this->orderRepository->query([]);
+
+        $total_products = $this->productRepository->query([])->count();
+
+        $total_sales = $order_query->sum('quantity');
+
+        $total_customers = $this->customerRepository->query([])->count();
+
+        $total_revenue = $order_query->sum('total_amount');
+
+        return new JsonResource([
+            'total_products' => $total_products,
+            'total_sales' => $total_sales,
+            'total_customers' => $total_customers,
+            'total_revenue' => $total_revenue
+        ]);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Send a congratulations email for the best-selling product to product owner.
+     *
+     * @param Product $product The best selling product
+     * @return JsonResource
+     */
+    public function sendCongratulations(Product $product)
+    {
+        Mail::send(new BestSellerCongratulations($product));
+
+        return new JsonResource([
+            'message' => 'Email sent'
+        ]);
     }
 }

@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @author @Intuneteq Tobi Olanitori
- *
- * @version 1.0
- *
- * @since 26-05-2024
- */
-
 namespace App\Repositories;
 
 use App\Exceptions\ModelCastException;
@@ -24,6 +16,10 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 26-05-2024
  *
  * Repository for Order resource
  */
@@ -70,8 +66,8 @@ class OrderRepository extends Repository
             'product_id' => 'required|string',
         ];
 
-        if (! $this->isValidated($array, $rules)) {
-            throw new ServerErrorException($this->getValidator()->errors()->first().' when calling order create');
+        if (!$this->isValidated($array, $rules)) {
+            throw new ServerErrorException($this->getValidator()->errors()->first() . ' when calling order create');
         }
 
         $order = Order::create($array);
@@ -137,13 +133,13 @@ class OrderRepository extends Repository
         if (isset($filter['product_title'])) {
             $product_title = $filter['product_title'];
 
-            // remove product title from the filter array
-            unset($filter['product_title']);
-
             $query->whereHas('product', function (Builder $productQuery) use ($product_title) {
-                $productQuery->where('title', 'like', '%'.$product_title.'%');
+                $productQuery->where('title', 'like', '%' . $product_title . '%');
             });
         }
+
+        // remove product title from the filter array
+        unset($filter['product_title']);
 
         // Apply other filters
         $query->where($filter);
@@ -197,7 +193,7 @@ class OrderRepository extends Repository
             $product_title = $filter['product_title'];
 
             $relation->whereHas('product', function (Builder $query) use ($product_title) {
-                $query->where('title', 'like', '%'.$product_title.'%');
+                $query->where('title', 'like', '%' . $product_title . '%');
             });
         }
 
@@ -220,7 +216,7 @@ class OrderRepository extends Repository
     public function update(Model $entity, array $updates): Order
     {
         // Ensure that the provided entity is an instance of Order
-        if (! $entity instanceof Order) {
+        if (!$entity instanceof Order) {
             throw new ModelCastException('Order', get_class($entity));
         }
 

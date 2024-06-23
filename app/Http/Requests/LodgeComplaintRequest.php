@@ -6,7 +6,7 @@ use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
-class RequestHelpRequest extends FormRequest
+class LodgeComplaintRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

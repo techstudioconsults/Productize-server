@@ -182,41 +182,6 @@ class UserController extends Controller
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Send a request for help.
-     *
-     * This method sends an email to the designated help email address with the subject and message provided
-     * in the request. If the request includes an email address, it will use the authenticated user's email
-     * address by default unless otherwise specified.
-     *
-     * @param  \App\Http\Requests\RequestHelpRequest  $request  The validated request containing the subject and message.
-     * @return JsonResponse
-     */
-    public function requestHelp(RequestHelpRequest $request)
-    {
-        $validated = $request->validated();
-
-        $email = Auth::user()->email;
-
-        if ($request->exists('email')) {
-            $validated['email'] = $email;
-        }
-
-        Mail::to(['tsa.projecttesting@gmail.com'])->send(
-            new RequestHelp(
-                $email,
-                $validated['subject'],
-                $validated['message']
-            )
-        );
-
-        return new JsonResponse(
-            ['message' => 'email sent']
-        );
-    }
-
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
      * Retrieve statistical data for products, sales, payouts, and users.
      *
      * This method calculates and returns the total number of products,
@@ -252,7 +217,7 @@ class UserController extends Controller
 
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Generate and download a CSV file containing user information.
      *
      * Retrieves all users from the repository, formats their data into CSV format,

@@ -33,12 +33,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 abstract class Repository extends ValidationService
 {
     /**
-     * Seeds the repository with initial data.
-     * It is suitable for unit and feature testing.
-     */
-    abstract public function seed(): void;
-
-    /**
      * Creates a new entity in the database.
      *
      * @param array array of data for The entity to create.

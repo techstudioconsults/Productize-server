@@ -134,5 +134,6 @@ class EarningController extends Controller
  * orders by customer
  * retrieve payouts - filter
  * top products for users
- * billing 
+ * billing
+ * remove auth from featured and top products
  */

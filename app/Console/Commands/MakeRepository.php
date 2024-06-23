@@ -114,11 +114,6 @@ class MakeRepository extends Command
 
             class DummyRepository extends Repository
             {
-                public function seed(): void
-                {
-                    // Implementation of seed method
-                }
-
                 public function create(array $entity): DummyModel
                 {
                     return DummyModel::create($entity);

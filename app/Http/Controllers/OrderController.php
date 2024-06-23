@@ -89,7 +89,7 @@ class OrderController extends Controller
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Retrive the specified order.
+     * Retrieve the specified order.
      *
      * @param  \App\Models\Order  $order  The order to display.
      * @return \App\Http\Resources\OrderResource Returns a resource representing the queried order.

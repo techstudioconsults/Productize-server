@@ -49,14 +49,16 @@ class EarningController extends Controller
 
         $earning = $this->earningRepository->findOne(['user_id' => $user->id]);
 
-        if(!$earning) return new JsonResource([
-            'id' => "",
-            'user_id' => $user->id,
-            'total_earnings' => "",
-            'withdrawn_earnings' => "",
-            'available_earnings' => "",
-            'pending' => "",
-        ]);
+        if (! $earning) {
+            return new JsonResource([
+                'id' => '',
+                'user_id' => $user->id,
+                'total_earnings' => '',
+                'withdrawn_earnings' => '',
+                'available_earnings' => '',
+                'pending' => '',
+            ]);
+        }
 
         return new EarningResource($earning);
     }

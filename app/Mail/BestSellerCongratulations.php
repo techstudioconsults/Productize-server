@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use App\Models\Product;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -11,9 +10,9 @@ use Illuminate\Queue\SerializesModels;
 
 class BestSellerCongratulations extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
-    private Product $product;
+    public Product $product;
 
     /**
      * The product's current ranking among best selling products.

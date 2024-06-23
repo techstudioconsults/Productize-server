@@ -22,7 +22,6 @@ use App\Models\ProductSearch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -49,21 +48,21 @@ class ProductRepository extends Repository
 
     const DELETED = 'deleted';
 
-    public function seed(): void
-    {
-        $users = User::factory(5)->create();
+    // public function seed(): void
+    // {
+    //     $users = User::factory(5)->create();
 
-        foreach ($users as $user) {
-            // Create 5 products for each user
-            Product::factory()
-                ->count(5)
-                ->state(new Sequence(
-                    ['status' => 'published'],
-                    ['status' => 'draft'],
-                ))
-                ->create(['user_id' => $user->id, 'price' => '100000']);
-        }
-    }
+    //     foreach ($users as $user) {
+    //         // Create 5 products for each user
+    //         Product::factory()
+    //             ->count(5)
+    //             ->state(new Sequence(
+    //                 ['status' => 'published'],
+    //                 ['status' => 'draft'],
+    //             ))
+    //             ->create(['user_id' => $user->id, 'price' => '100000']);
+    //     }
+    // }
 
     /**
      *  @author @Intuneteq Tobi Olanitori

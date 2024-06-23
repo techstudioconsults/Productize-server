@@ -19,7 +19,7 @@ Route::group([
 
     Route::get('/', [ProductController::class, 'index'])->middleware('abilities:role:super_admin')->name('index');
 
-    Route::get('/external', [ProductController::class, 'index'])->withoutMiddleware([
+    Route::get('/external', [ProductController::class, 'external'])->withoutMiddleware([
         'auth:sanctum',
         'can:allowed,App\Models\Product',
     ])->name('external');
@@ -34,7 +34,9 @@ Route::group([
 
     Route::get('/records', [ProductController::class, 'records'])->name('records');
 
-    Route::get('/records/admin', [ProductController::class, 'adminRecords'])->middleware('abilities:role:super_admin')->name('records.admin');
+    Route::get('/records/admin', [ProductController::class, 'adminRecords'])
+        ->middleware('abilities:role:super_admin')
+        ->name('records.admin');
 
     Route::get('/purchased', [ProductController::class, 'purchased'])->name('purchased');
 
@@ -42,7 +44,9 @@ Route::group([
         'auth:sanctum',
     ])->name('top-products');
 
-    Route::get('/top-products/admin', [ProductController::class, 'bestSelling'])->middleware('abilities:role:super_admin')->name('top-product.admin');
+    Route::get('/top-products/admin', [ProductController::class, 'bestSelling'])
+        ->middleware('abilities:role:super_admin')
+        ->name('top-product.admin');
 
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
         'auth:sanctum',

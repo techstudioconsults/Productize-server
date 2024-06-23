@@ -49,6 +49,17 @@ class ProductController extends Controller
     ) {
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve a paginated listing of products based on optional date filters.
+     *
+     * This method fetches products from the ProductRepository based on the provided
+     * start and end dates. If no dates are provided, all products are retrieved.
+     *
+     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of ProductResource instances representing the retrieved products.
+     */
     public function index(Request $request)
     {
         $filter = [
@@ -357,6 +368,18 @@ class ProductController extends Controller
         return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve and export a list of products based on optional date filters.
+     *
+     * This method fetches products from the ProductRepository based on the provided
+     * start and end dates, generates a CSV file with product details, and streams
+     * the file as a response.
+     *
+     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse Returns a streamed response with the CSV file.
+     */
     public function adminRecords(Request $request)
     {
         $filter = [
@@ -495,7 +518,7 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse A JSON response containing the list of downloaded products.
      */
-    public function downloads()
+    public function purchased()
     {
         $user = Auth::user();
 
@@ -536,7 +559,16 @@ class ProductController extends Controller
             ->limit(5)->paginate(5));
     }
 
-    // for admin
+    /**
+     * Retrieve the best selling products based on optional date filters.
+     *
+     * This method fetches the top-selling products from the ProductRepository
+     * based on the provided start and end dates, paginates the results, and
+     * returns them as a collection of ProductResources.
+     *
+     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of ProductResource.
+     */
     public function bestSelling(Request $request)
     {
         $filter = [
@@ -701,6 +733,13 @@ class ProductController extends Controller
         return new ProductCollection($products);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get statistical data about products, orders, and customers.
+     *
+     * @return JsonResource
+     */
     public function stats()
     {
         $order_query = $this->orderRepository->query([]);
@@ -721,6 +760,14 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Send a congratulations email for the best-selling product to product owner.
+     *
+     * @param Product $product The best selling product
+     * @return JsonResource
+     */
     public function sendCongratulations(Product $product)
     {
         Mail::send(new BestSellerCongratulations($product));

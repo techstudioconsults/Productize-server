@@ -237,39 +237,46 @@ class SubscriptionController extends Controller
             'plans' => [],
         ];
 
+        // If on free trial
         if ($user->account_type === 'free_trial') {
             $response['renewal_date'] = Carbon::parse($user->created_at)->addDays(30);
 
             return new JsonResponse($response);
         }
 
-        if ($user->isSubscribed()) {
+        // User is on a free account
+        if (!$user->isSubscribed()) return new JsonResponse($response);
 
-            $db = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
-            $subscription_code = $db->subscription_code;
+        // Get subscription table.
+        $db = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
 
-            if ($subscription_code) {
-                $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
+        // Log this issue to slack
+        if (!$db) return new JsonResponse($response);
 
-                $plans = Arr::map($subscription['invoices'], function ($plan) {
-                    return [
-                        'plan' => 'premium',
-                        'price' => $plan['amount'] / 100,
-                        'status' => $plan['status'],
-                        'reference' => $plan['reference'],
-                        'date' => $plan['createdAt'],
-                    ];
-                });
+        $subscription_code = $db->subscription_code;
 
-                $response = [
-                    'id' => $db->id,
-                    'renewal_date' => $subscription['next_payment_date'],
-                    'plan' => $user->account_type,
-                    'billing_total' => $subscription['amount'] / 100,
-                    'plans' => $plans,
-                ];
-            }
-        }
+        // Log this issue to slack
+        if (!$subscription_code) return new JsonResponse($response);
+
+        $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
+
+        $plans = Arr::map($subscription['invoices'], function ($plan) {
+            return [
+                'plan' => 'premium',
+                'price' => $plan['amount'] / 100,
+                'status' => $plan['status'],
+                'reference' => $plan['reference'],
+                'date' => $plan['createdAt'],
+            ];
+        });
+
+        $response = [
+            'id' => $db->id,
+            'renewal_date' => $subscription['next_payment_date'],
+            'plan' => $user->account_type,
+            'billing_total' => $subscription['amount'] / 100,
+            'plans' => $plans,
+        ];
 
         return new JsonResponse($response);
     }

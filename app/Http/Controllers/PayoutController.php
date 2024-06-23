@@ -29,6 +29,17 @@ class PayoutController extends Controller
     ) {
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve a paginated listing of payouts based on optional date filters.
+     *
+     * This method fetches payouts from the PayoutRepository based on the provided
+     * start and end dates. If no dates are provided, all payouts are retrieved.
+     *
+     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of PayoutResource instances representing the retrieved payouts.
+     */
     public function index(Request $request)
     {
         $filter = [
@@ -36,7 +47,7 @@ class PayoutController extends Controller
             'end_date' => $request->end_date
         ];
 
-        $payouts = $this->payoutRepository->find($filter);
+        $payouts = $this->payoutRepository->query($filter)->paginate(10);
 
         return PayoutResource::collection($payouts);
     }

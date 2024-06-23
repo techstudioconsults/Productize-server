@@ -19,7 +19,7 @@ use Tests\Traits\SanctumAuthentication;
 
 class OrderControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker, SanctumAuthentication;
+    use RefreshDatabase, SanctumAuthentication;
 
     public function test_super_admin_can_access_index()
     {

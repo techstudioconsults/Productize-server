@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\v1\api;
 
 use App\Http\Resources\ComplaintResource;
 use App\Mail\LodgeComplaint;

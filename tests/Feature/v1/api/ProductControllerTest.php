@@ -18,6 +18,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Repositories\ProductRepository;
+use App\Traits\SanctumAuthentication;
 use Carbon\Carbon;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Database\Eloquent\Collection;
@@ -31,12 +32,11 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use Mail;
 use Storage;
 use Tests\TestCase;
-use App\Traits\SanctumAuthentication;
 
 class ProductControllerTest extends TestCase
 {
     use RefreshDatabase;
-    use WithFaker, SanctumAuthentication;
+    use SanctumAuthentication, WithFaker;
 
     private ProductRepository $productRepository;
 
@@ -63,16 +63,15 @@ class ProductControllerTest extends TestCase
         $products = Product::factory()->count($expected_count)
             ->create([
                 'user_id' => User::factory()->create()->id,
-                'created_at' => now()->subDays(10)
+                'created_at' => now()->subDays(10),
             ]);
 
         // create products out of date range
         Product::factory()->count($expected_count)
             ->create([
                 'user_id' => User::factory()->create()->id,
-                'created_at' => now()->subDays(20)
+                'created_at' => now()->subDays(20),
             ]);
-
 
         // Convert the products to ProductResource
         $expected_json = ProductResource::collection($products)->response()->getData(true);
@@ -676,13 +675,13 @@ class ProductControllerTest extends TestCase
             fn (AssertableJson $json) => $json->where('id', $product->id)
                 ->where('title', 'title updated')
                 ->where('price', 3)
-                ->where('thumbnail', config('filesystems.disks.spaces.cdn_endpoint') . '/' . ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg')
+                ->where('thumbnail', config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::THUMBNAIL_PATH.'/avatar_update.jpg')
                 ->etc()
         );
 
-        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH . '/data_update.pdf');
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/cover1_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH.'/avatar_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data_update.pdf');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/cover1_update.jpg');
     }
 
     public function test_update_unauthenticated(): void
@@ -956,7 +955,7 @@ class ProductControllerTest extends TestCase
         // assert
         $response->assertStatus(200);
         $response->assertHeader('Content-type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . now()->format('d_F_Y') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.now()->format('d_F_Y').'.csv');
     }
 
     public function test_records_unauthenticated(): void
@@ -997,7 +996,7 @@ class ProductControllerTest extends TestCase
         // Assert response is successful and file is streamed
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     public function test_super_admin_can_export_all_products_without_filters()
@@ -1013,7 +1012,7 @@ class ProductControllerTest extends TestCase
         // Assert response is successful and file is streamed
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     public function test_non_super_admin_cannot_export_products()
@@ -1145,13 +1144,13 @@ class ProductControllerTest extends TestCase
 
         Product::factory()->count(5)->has(Order::factory()->count(5), 'orders')->create([
             'user_id' => User::factory()->create()->id,
-            'created_at' => now()->subYear(5)
+            'created_at' => now()->subYear(5),
         ]);
 
         // Call the bestSelling endpoint with date filters
         $response = $this->get(route('product.top-product.admin', [
             'start_date' => now()->subYear(6)->format('Y-m-d'),
-            'end_date' => now()->subYear(4)->format('Y-m-d')
+            'end_date' => now()->subYear(4)->format('Y-m-d'),
         ]));
 
         // Assert response is successful and contains the expected products

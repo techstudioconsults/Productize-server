@@ -9,6 +9,7 @@ use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
 use App\Models\Order;
 use App\Models\User;
+use App\Traits\SanctumAuthentication;
 use Database\Seeders\PayoutSeeder;
 use Database\Seeders\ProductSeeder;
 use Database\Seeders\UserSeeder;
@@ -18,13 +19,12 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
-use App\Traits\SanctumAuthentication;
 
 class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
-    use WithFaker;
     use SanctumAuthentication;
+    use WithFaker;
 
     public function setUp(): void
     {
@@ -250,8 +250,8 @@ class UserControllerTest extends TestCase
                 'total_users',
                 'total_subscribed_users',
                 'total_trial_users',
-                'conversion_rate'
-            ]
+                'conversion_rate',
+            ],
         ]);
     }
 
@@ -277,6 +277,6 @@ class UserControllerTest extends TestCase
         // Assert response is successful and CSV headers are correct
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=users_' . now()->format('d_F_Y') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=users_'.now()->format('d_F_Y').'.csv');
     }
 }

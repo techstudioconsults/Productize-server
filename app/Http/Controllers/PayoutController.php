@@ -36,14 +36,14 @@ class PayoutController extends Controller
      * This method fetches payouts from the PayoutRepository based on the provided
      * start and end dates. If no dates are provided, all payouts are retrieved.
      *
-     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @param  \Illuminate\Http\Request  $request  The HTTP request containing optional start_date and end_date filters.
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of PayoutResource instances representing the retrieved payouts.
      */
     public function index(Request $request)
     {
         $filter = [
-            'start_date' =>  $request->start_date,
-            'end_date' => $request->end_date
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
         ];
 
         $payouts = $this->payoutRepository->query($filter)->paginate(10);

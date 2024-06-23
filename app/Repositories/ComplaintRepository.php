@@ -107,11 +107,12 @@ class ComplaintRepository extends Repository
      */
     public function update(Model $entity, array $updates): Complaint
     {
-        if (!$entity instanceof Complaint) {
+        if (! $entity instanceof Complaint) {
             throw new ModelCastException('Complaint', get_class($entity));
         }
 
         $entity->update($updates);
+
         return $entity;
     }
 }

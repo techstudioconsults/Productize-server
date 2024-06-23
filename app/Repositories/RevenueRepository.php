@@ -34,8 +34,8 @@ class RevenueRepository extends Repository
      * Create a new revenue with the provided entity.
      *
      * @param  array  $entity  The revenue data.
-     *                              Required keys: 'user_id', 'activity', 'product'.
-     *                              Optional keys: 'amount', 'commission'.
+     *                         Required keys: 'user_id', 'activity', 'product'.
+     *                         Optional keys: 'amount', 'commission'.
      * @return \App\Models\Revenue The newly created revenue.
      */
     public function create(array $entity): Revenue
@@ -117,6 +117,7 @@ class RevenueRepository extends Repository
     public function update(Model $entity, array $updates): Revenue
     {
         $entity->update($updates);
+
         return $entity;
     }
 }

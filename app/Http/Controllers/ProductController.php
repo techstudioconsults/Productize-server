@@ -46,8 +46,7 @@ class ProductController extends Controller
         protected UserRepository $userRepository,
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -57,7 +56,7 @@ class ProductController extends Controller
      * This method fetches products from the ProductRepository based on the provided
      * start and end dates. If no dates are provided, all products are retrieved.
      *
-     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @param  \Illuminate\Http\Request  $request  The HTTP request containing optional start_date and end_date filters.
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of ProductResource instances representing the retrieved products.
      */
     public function index(Request $request)
@@ -204,7 +203,7 @@ class ProductController extends Controller
             $this->productRepository->trackSearch($product, $user);
         }
 
-        if (!$this->productRepository->isPublished($product)) {
+        if (! $this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
@@ -357,7 +356,7 @@ class ProductController extends Controller
                 $product->price,
                 $product->totalSales(),
                 $product->product_type,
-                $product->status
+                $product->status,
             ];
         }
 
@@ -377,7 +376,7 @@ class ProductController extends Controller
      * start and end dates, generates a CSV file with product details, and streams
      * the file as a response.
      *
-     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @param  \Illuminate\Http\Request  $request  The HTTP request containing optional start_date and end_date filters.
      * @return \Symfony\Component\HttpFoundation\StreamedResponse Returns a streamed response with the CSV file.
      */
     public function adminRecords(Request $request)
@@ -401,7 +400,7 @@ class ProductController extends Controller
                 $product->price,
                 $product->totalSales(),
                 $product->product_type,
-                $product->status
+                $product->status,
             ];
         }
 
@@ -566,14 +565,14 @@ class ProductController extends Controller
      * based on the provided start and end dates, paginates the results, and
      * returns them as a collection of ProductResources.
      *
-     * @param  \Illuminate\Http\Request  $request The HTTP request containing optional start_date and end_date filters.
+     * @param  \Illuminate\Http\Request  $request  The HTTP request containing optional start_date and end_date filters.
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of ProductResource.
      */
     public function bestSelling(Request $request)
     {
         $filter = [
             'start_date' => $request->start_date,
-            'end_date' => $request->end_date
+            'end_date' => $request->end_date,
         ];
 
         $top_products = $this->productRepository->topProducts($filter)->paginate(5);
@@ -756,7 +755,7 @@ class ProductController extends Controller
             'total_products' => $total_products,
             'total_sales' => $total_sales,
             'total_customers' => $total_customers,
-            'total_revenue' => $total_revenue
+            'total_revenue' => $total_revenue,
         ]);
     }
 
@@ -765,7 +764,7 @@ class ProductController extends Controller
      *
      * Send a congratulations email for the best-selling product to product owner.
      *
-     * @param Product $product The best selling product
+     * @param  Product  $product  The best selling product
      * @return JsonResource
      */
     public function sendCongratulations(Product $product)
@@ -773,7 +772,7 @@ class ProductController extends Controller
         Mail::send(new BestSellerCongratulations($product));
 
         return new JsonResource([
-            'message' => 'Email sent'
+            'message' => 'Email sent',
         ]);
     }
 }

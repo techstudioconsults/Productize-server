@@ -24,7 +24,7 @@ class PayoutFactory extends Factory
             'status' => PayoutStatus::Completed->value,
             'paystack_transfer_code' => 'TRF_1ptvuv321ahaa7q',
             'amount' => '20000',
-            'account_id' => Account::factory()->create()->id
+            'account_id' => Account::factory()->create()->id,
         ];
     }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
-use Closure;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -17,7 +16,7 @@ class CustomCheckForAnyAbility
 {
     /**
      * @author @Intuneteq Tobi Olanitori
-     * 
+     *
      * Handle the incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -29,8 +28,8 @@ class CustomCheckForAnyAbility
      */
     public function handle($request, $next, ...$abilities)
     {
-        if (!$request->user() || !$request->user()->currentAccessToken()) {
-            throw new UnAuthorizedException("Unauthorized access: You must be logged in and possess a valid access token to perform this action.");
+        if (! $request->user() || ! $request->user()->currentAccessToken()) {
+            throw new UnAuthorizedException('Unauthorized access: You must be logged in and possess a valid access token to perform this action.');
         }
 
         foreach ($abilities as $ability) {
@@ -39,6 +38,6 @@ class CustomCheckForAnyAbility
             }
         }
 
-        throw new ForbiddenException("Access denied: You do not have the required ability to perform this action. Please contact support if you believe this is an error.");
+        throw new ForbiddenException('Access denied: You do not have the required ability to perform this action. Please contact support if you believe this is an error.');
     }
 }

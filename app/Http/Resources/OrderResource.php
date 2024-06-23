@@ -30,7 +30,7 @@ class OrderResource extends JsonResource
             ],
             'customer' => [
                 'name' => $this->user->full_name,
-                'email' => $this->user->email
+                'email' => $this->user->email,
             ],
             'created_at' => $this->created_at,
         ];

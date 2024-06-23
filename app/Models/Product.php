@@ -146,7 +146,6 @@ class Product extends Model
      * the sum of the quantity of orders for each product. The result is grouped by the product ID and
      * ordered by the total sales in descending order.
      *
-     * @param Builder $query
      * @return Builder
      */
     public function scopeTopProducts(Builder $query)

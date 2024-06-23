@@ -57,7 +57,7 @@ class UserRepository extends Repository
     {
         $user = new User();
 
-        if (!isset($credentials['email'])) {
+        if (! isset($credentials['email'])) {
             throw new BadRequestException('No Email Provided');
         }
 
@@ -73,7 +73,7 @@ class UserRepository extends Repository
             'twitter_account',
             'facebook_account',
             'youtube_account',
-            'role'
+            'role',
         ];
 
         // Remove invalid keys from credentials
@@ -102,7 +102,7 @@ class UserRepository extends Repository
     {
         // Remove keys with null values from the filter array
         $filter = array_filter($filter, function ($value) {
-            return !is_null($value);
+            return ! is_null($value);
         });
 
         $query = User::query();
@@ -166,7 +166,7 @@ class UserRepository extends Repository
      */
     public function update(Model $entity, array $updatables): User
     {
-        if (!$entity instanceof User) {
+        if (! $entity instanceof User) {
             throw new ModelCastException('User', get_class($entity));
         }
 
@@ -209,7 +209,7 @@ class UserRepository extends Repository
             throw new BadRequestException("Column 'email' cannot be updated");
         }
 
-        if (!Schema::hasColumn((new User)->getTable(), $column)) {
+        if (! Schema::hasColumn((new User)->getTable(), $column)) {
             throw new UnprocessableException("Column '$column' does not exist in the User table.");
         }
 
@@ -323,7 +323,7 @@ class UserRepository extends Repository
 
         $un_filled = $collection->whereNull();
 
-        if ($un_filled->isEmpty() && !$user->profile_completed_at) {
+        if ($un_filled->isEmpty() && ! $user->profile_completed_at) {
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
@@ -338,7 +338,7 @@ class UserRepository extends Repository
     {
         $user = $this->findOne(['email' => $email]);
 
-        if (!$user) {
+        if (! $user) {
             return $this->create(['email' => $email, 'full_name' => $name]);
         }
 

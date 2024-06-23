@@ -23,23 +23,20 @@ class RevenueController extends Controller
 {
     use HasFileGenerator;
 
-    public function __construct(protected RevenueRepository $revenueRepository)
-    {
-    }
+    public function __construct(protected RevenueRepository $revenueRepository) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
      *
      * Retrieve a listing of the revenues.
      *
-     * @param Request $request
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
     {
         $filter = [
             'start_date' => $request->start_date,
-            'end_date' => $request->end_date
+            'end_date' => $request->end_date,
         ];
 
         $revenues = $this->revenueRepository->query($filter)->paginate(10);
@@ -68,7 +65,7 @@ class RevenueController extends Controller
             'total_revenues' => $total_revenues,
             'total_sale_revenue' => $total_sale_revenue,
             'total_subscription_revenue' => $total_subscription_revenue,
-            'total_commission' => $total_commission
+            'total_commission' => $total_commission,
         ]);
     }
 
@@ -77,14 +74,13 @@ class RevenueController extends Controller
      *
      * Download the revenue data as a CSV file.
      *
-     * @param Request $request
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function download(Request $request)
     {
         $filter = [
             'start_date' => $request->start_date,
-            'end_date' => $request->end_date
+            'end_date' => $request->end_date,
         ];
 
         $revenues = $this->revenueRepository->find($filter);

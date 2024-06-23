@@ -198,7 +198,7 @@ class ProductRepository extends Repository
         $query = Product::TopProducts();
 
         // Apply date filter specifically to the products table
-        if (isset($filter['start_date']) && isset($filter['end_date']) ) {
+        if (isset($filter['start_date']) && isset($filter['end_date'])) {
             $query->whereBetween('products.created_at', [$filter['start_date'], $filter['end_date']]);
         }
 

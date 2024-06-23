@@ -26,9 +26,9 @@ class AccountRepository extends Repository
      *
      * Create a new Account entity based on the provided data.
      *
-     * @param array $entity The associative array containing data to create the Account.
-     *
+     * @param  array  $entity  The associative array containing data to create the Account.
      * @return Account The created Account entity.
+     *
      * @throws ServerErrorException If validation fails based on specified rules.
      */
     public function create(array $entity): Account
@@ -38,7 +38,7 @@ class AccountRepository extends Repository
         // Add the 'user_id' rule to the validation rules
         $rules['user_id'] = 'required';
 
-        if (!$this->isValidated($entity, $rules)) {
+        if (! $this->isValidated($entity, $rules)) {
             throw new ServerErrorException($this->getValidator()->errors()->first());
         }
 
@@ -114,9 +114,9 @@ class AccountRepository extends Repository
      *
      * @return Account|null The first active Account instance, or null if none found.
      */
-    public function findActive(): ?Account
+    public function findActive(array $filter): ?Account
     {
-        return $this->findOne(['active' => true]);
+        return $this->findOne(['active' => true, ...$filter]);
     }
 
     /**
@@ -124,17 +124,16 @@ class AccountRepository extends Repository
      *
      * Update an existing Account entity with the provided updates.
      *
-     * @param Model $entity The Account entity to update.
-     * @param array $updates The associative array containing fields to update on the Account entity.
-     *
+     * @param  Model  $entity  The Account entity to update.
+     * @param  array  $updates  The associative array containing fields to update on the Account entity.
      * @return Account The updated Account entity.
+     *
      * @throws ModelCastException If the provided entity is not an instance of Account.
      */
-
     public function update(Model $entity, array $updates): Account
     {
         // Ensure that the provided entity is an instance of Order
-        if (!$entity instanceof Account) {
+        if (! $entity instanceof Account) {
             throw new ModelCastException('Account', get_class($entity));
         }
 

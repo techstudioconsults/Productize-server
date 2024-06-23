@@ -45,8 +45,8 @@ class SubscriptionController extends Controller
     public function index(Request $request)
     {
         $filter = [
-            'start_date' =>  $request->start_date,
-            'end_date' => $request->end_date
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
         ];
 
         $subscriptions = $this->subscriptionRepository->find($filter);
@@ -244,18 +244,24 @@ class SubscriptionController extends Controller
         }
 
         // User is on a free account
-        if (!$user->isSubscribed()) return new JsonResponse($response);
+        if (! $user->isSubscribed()) {
+            return new JsonResponse($response);
+        }
 
         // Get subscription table.
         $db = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
 
         // Log this issue to slack
-        if (!$db) return new JsonResponse($response);
+        if (! $db) {
+            return new JsonResponse($response);
+        }
 
         $subscription_code = $db->subscription_code;
 
         // Log this issue to slack
-        if (!$subscription_code) return new JsonResponse($response);
+        if (! $subscription_code) {
+            return new JsonResponse($response);
+        }
 
         $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
 

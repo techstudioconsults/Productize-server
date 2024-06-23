@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
             'full_name' => 'Tobi Olanitori',
             'email' => 'tobi.olanitori.binaryartinc@gmail.com',
             'role' => Roles::SUPER_ADMIN->value,
-            'password' => '12345'
+            'password' => '12345',
         ]);
 
         User::factory(5)->create();

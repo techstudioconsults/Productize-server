@@ -142,4 +142,3 @@ class RevenueRepositoryTest extends TestCase
         $this->assertCount(5, $foundRevenues);
     }
 }
-

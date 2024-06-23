@@ -7,7 +7,7 @@ use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
 /**
- * @author @Intuneteq Tobi Olanitori
+ * @author @Intuneteq
  *
  * Trait for setting up authenticated users with specific roles using Sanctum.
  *

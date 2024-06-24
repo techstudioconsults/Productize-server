@@ -23,14 +23,6 @@ class DigitalProductController extends Controller
     ) {
     }
 
-    // /**
-    //  * Display a listing of the resource.
-    //  */
-    // public function index()
-    // {
-    //     //
-    // }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -67,28 +59,4 @@ class DigitalProductController extends Controller
             throw new ServerErrorException($th->getMessage(), 500);
         }
     }
-
-    // /**
-    //  * Display the specified resource.
-    //  */
-    // public function show(DigitalProduct $digitalProduct)
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Update the specified resource in storage.
-    //  */
-    // public function update(Request $request, DigitalProduct $digitalProduct)
-    // {
-    //     //
-    // }
-
-    // /**
-    //  * Remove the specified resource from storage.
-    //  */
-    // public function destroy(DigitalProduct $digitalProduct)
-    // {
-    //     //
-    // }
 }

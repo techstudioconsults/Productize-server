@@ -182,7 +182,6 @@ class UserRepository extends Repository
 
         if (isset($updatables['document_image'])) {
             $documentImage = $this->uploadDocumentImage($updatables['document_image']);
-            var_dump($documentImage);
             $updatables['document_image'] = $documentImage;
         }
 
@@ -373,7 +372,7 @@ class UserRepository extends Repository
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
-        $documentImagePath = Storage::putFileAs(
+        $documentImagePath = Storage::disk('spaces')->putFileAs(
             self::KYCDOCUMENT_PATH,
             $documentImage,
             str_replace(' ', '_', $documentImage->getClientOriginalName())

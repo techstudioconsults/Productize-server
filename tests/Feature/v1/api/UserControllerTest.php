@@ -297,7 +297,7 @@ class UserControllerTest extends TestCase
 
 
         // Send a POST request to the updateKyc endpoint
-        $response = $this->postJson(route('user.kyc'), $data);
+        $response = $this->postJson(route('users.kyc'), $data);
 
         // Assert the response status is 200 (OK)
         $response->assertStatus(200);
@@ -315,7 +315,7 @@ class UserControllerTest extends TestCase
 
     public function test_validation_errors()
     {
-        $response = $this->postJson(route('user.kyc'), [
+        $response = $this->postJson(route('users.kyc'), [
             'document_type' => 'Invalid Type',
         ]);
 
@@ -336,7 +336,7 @@ class UserControllerTest extends TestCase
         //create a file that's exactly 2048 KB
         $validFile = UploadedFile::fake()->create('avatar.jpg', 2048);
 
-        $response = $this->postJson(route('user.kyc'), [
+        $response = $this->postJson(route('users.kyc'), [
             'document_image' => $validFile,
         ]);
 
@@ -345,7 +345,7 @@ class UserControllerTest extends TestCase
         // file with a size over 2048 KB
         $invalidFile = UploadedFile::fake()->create('avatar.jpg', 2900);
 
-        $response = $this->postJson(route('user.kyc'), [
+        $response = $this->postJson(route('users.kyc'), [
             'document_image' => $invalidFile,
         ]);
 
@@ -369,7 +369,7 @@ class UserControllerTest extends TestCase
 
             $data = ['document_type' => $type];
 
-            $response = $this->postJson(route('user.kyc'), $data);
+            $response = $this->postJson(route('users.kyc'), $data);
 
             $response->assertStatus(200);
             $this->assertDatabaseHas('users', [

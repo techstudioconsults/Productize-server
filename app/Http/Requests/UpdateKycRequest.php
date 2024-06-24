@@ -1,6 +1,16 @@
 <?php
 
-namespace App\Http\Requests;
+
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *
+ *  @version 1.0
+ *
+ *  @since 21-06-2024
+ */
+
+
+ namespace App\Http\Requests;
 
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnprocessableException;
@@ -28,6 +38,13 @@ class UpdateKycRequest extends FormRequest
             'country' => 'string|nullable',
             'document_type' => 'string|nullable|in:Driver\'s license,National Id card,National Passport',
             'document_image' => 'image|nullable|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB',
+        ];
+    }
+
+    public function messages()
+    {
+        return[
+            'document_image.max' => 'The document image must not be greater than 2mb'
         ];
     }
 

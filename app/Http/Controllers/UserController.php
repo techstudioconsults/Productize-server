@@ -220,8 +220,6 @@ class UserController extends Controller
 
         $validated = $request->validated();
 
-        // var_dump($validated);
-
         $updated = $this->userRepository->update($user, $validated);
 
         return new UserResource($updated);

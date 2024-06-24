@@ -249,4 +249,102 @@ class UserControllerTest extends TestCase
 
         Mail::assertSent(RequestHelp::class);
     }
+
+    public function test_update_user_kyc_information()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        Storage::fake('spaces');
+        $image = UploadedFile::fake()->image('avatar.jpg');
+
+        $data = [
+            'country' => $this->faker->country,
+            'document_type' => 'National Id card',
+            'document_image' => $image,
+        ];
+
+
+        // Send a POST request to the updateKyc endpoint
+        $response = $this->postJson(route('user.kyc'), $data);
+
+        // Assert the response status is 200 (OK)
+        $response->assertStatus(200);
+
+        // Assert the user's information was updated in the database
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'country' => $data['country'],
+            'document_type' => $data['document_type'],
+        ]);
+
+        // Assert the image was stored
+        Storage::disk('spaces')->assertExists('kyc-document/avatar.jpg');
+    }
+
+    public function test_validation_errors()
+    {
+        $response = $this->postJson(route('user.kyc'), [
+            'document_type' => 'Invalid Type',
+        ]);
+
+
+        $response->assertStatus(401);
+    }
+
+    public function test_file_upload_size_limit()
+    {
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+
+        Storage::fake('spaces');
+
+        //create a file that's exactly 2048 KB
+        $validFile = UploadedFile::fake()->create('avatar.jpg', 2048);
+
+        $response = $this->postJson(route('user.kyc'), [
+            'document_image' => $validFile,
+        ]);
+
+        $response->assertStatus(200);
+
+        // file with a size over 2048 KB
+        $invalidFile = UploadedFile::fake()->create('avatar.jpg', 2900);
+
+        $response = $this->postJson(route('user.kyc'), [
+            'document_image' => $invalidFile,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'message' => 'The document image must not be greater than 2mb'
+        ]);
+    }
+
+    public function test_update_with_different_document_types()
+    {
+
+        $documentTypes = ["Driver's license", "National Id card", "National Passport"];
+
+        foreach ($documentTypes as $type) {
+
+
+            $user = User::factory()->create();
+
+            $this->actingAs($user);
+
+            $data = ['document_type' => $type];
+
+            $response = $this->postJson(route('user.kyc'), $data);
+
+            $response->assertStatus(200);
+            $this->assertDatabaseHas('users', [
+                'document_type' => $type,
+            ]);
+        }
+    }
 }

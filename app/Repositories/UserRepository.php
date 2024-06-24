@@ -33,7 +33,7 @@ use Storage;
 class UserRepository extends Repository
 {
 
-    const DOCUMENTIMAGE_PATH = 'user-document-image';
+    const KYCDOCUMENT_PATH = 'kyc-document';
 
     public function __construct(
         protected OrderRepository $orderRepository,
@@ -368,7 +368,7 @@ class UserRepository extends Repository
         }
 
         $documentImagePath = Storage::putFileAs(
-            self::DOCUMENTIMAGE_PATH,
+            self::KYCDOCUMENT_PATH,
             $documentImage,
             str_replace(' ', '_', $documentImage->getClientOriginalName())
         );

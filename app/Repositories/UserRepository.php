@@ -28,7 +28,7 @@ use Storage;
 /**
  * @author @Intuneteq Tobi Olanitori
  *
- * Repository for Order resource
+ * Repository for User resource
  */
 class UserRepository extends Repository
 {
@@ -78,6 +78,7 @@ class UserRepository extends Repository
             'twitter_account',
             'facebook_account',
             'youtube_account',
+            'role',
         ];
 
         // Remove invalid keys from credentials
@@ -97,13 +98,18 @@ class UserRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Query orders based on the provided filter.
+     * Query users based on the provided filter.
      *
      * @param  array  $filter  The filter criteria to apply.
-     * @return Builder The query builder for orders.
+     * @return Builder The query builder for users.
      */
     public function query(array $filter): Builder
     {
+        // Remove keys with null values from the filter array
+        $filter = array_filter($filter, function ($value) {
+            return ! is_null($value);
+        });
+
         $query = User::query();
 
         // Apply date filter
@@ -123,7 +129,7 @@ class UserRepository extends Repository
      * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found users.
      */
-    public function find(?array $filter): ?Collection
+    public function find(?array $filter = []): ?Collection
     {
         return $this->query($filter ?? [])->get();
     }

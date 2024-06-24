@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\Services\FileGenerator;
+use App\Helpers\Services\HasFileGenerator;
 use App\Http\Resources\PayoutResource;
 use App\Repositories\PayoutRepository;
 use Auth;
@@ -22,11 +22,34 @@ use Illuminate\Http\Request;
  */
 class PayoutController extends Controller
 {
-    use FileGenerator;
+    use HasFileGenerator;
 
     public function __construct(
         protected PayoutRepository $payoutRepository,
     ) {}
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve a paginated listing of payouts based on optional date filters.
+     *
+     * This method fetches payouts from the PayoutRepository based on the provided
+     * start and end dates. If no dates are provided, all payouts are retrieved.
+     *
+     * @param  \Illuminate\Http\Request  $request  The HTTP request containing optional start_date and end_date filters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection Returns a collection of PayoutResource instances representing the retrieved payouts.
+     */
+    public function index(Request $request)
+    {
+        $filter = [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ];
+
+        $payouts = $this->payoutRepository->query($filter)->paginate(10);
+
+        return PayoutResource::collection($payouts);
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -36,7 +59,7 @@ class PayoutController extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index(Request $request)
+    public function user(Request $request)
     {
         $user = Auth::user();
 

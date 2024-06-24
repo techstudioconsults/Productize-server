@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -134,12 +136,32 @@ class Product extends Model
             ->orderBy('products.created_at', 'desc');
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Scope a query to include the top-selling products.
+     *
+     * This scope joins the products with the orders table to calculate the total sales for each product.
+     * It selects all columns from the products table and adds a new column `total_sales` which represents
+     * the sum of the quantity of orders for each product. The result is grouped by the product ID and
+     * ordered by the total sales in descending order.
+     *
+     * @return Builder
+     */
+    public function scopeTopProducts(Builder $query)
+    {
+        $query->join('orders', 'products.id', '=', 'orders.product_id')
+            ->select('products.*', DB::raw('SUM(orders.quantity) as total_sales'))
+            ->groupBy('products.id')
+            ->orderByDesc('total_sales');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }

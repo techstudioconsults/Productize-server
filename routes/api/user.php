@@ -4,18 +4,26 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
-    'as' => 'user.',
+    'as' => 'users.',
     'namespace' => "\App\Http\Controllers",
     'prefix' => 'users',
     'middleware' => ['auth:sanctum', 'can:verified,App\Models\User'],
 ], function () {
+    Route::get('/', [UserController::class, 'index'])->middleware('abilities:role:super_admin')->name('index');
+
+    Route::get('/stats/admin', [UserController::class, 'stats'])->middleware('abilities:role:super_admin')->name('stats.admin');
+
     Route::get('/me', [UserController::class, 'show'])->withoutMiddleware('can:verified,App\Models\User');
+
+    Route::get('/download', [UserController::class, 'download'])->middleware('abilities:role:super_admin')->name('download');
+
+    Route::post('/', [UserController::class, 'store'])->middleware('abilities:role:super_admin')->name('store');
 
     Route::post('/me', [UserController::class, 'update']);
 
     Route::post('/change-password', [UserController::class, 'changePassword']);
 
-    Route::post('/request-help', [UserController::class, 'requestHelp']);
-
-    Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
+    Route::patch('/{user}/revoke-admin-role', [UserController::class, 'revokeAdminRole'])
+        ->middleware('abilities:role:super_admin')
+        ->name('users.revoke-admin-role');
 });

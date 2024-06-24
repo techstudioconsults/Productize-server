@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author @Intuneteq Tobi Olanitori
  *
@@ -9,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\Services\FileGenerator;
+use App\Helpers\Services\HasFileGenerator;
 use App\Http\Resources\OrderResource;
 use App\Models\Customer;
 use App\Models\Order;
@@ -25,11 +26,44 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class OrderController extends Controller
 {
-    use FileGenerator;
+    use HasFileGenerator;
 
     public function __construct(
         protected OrderRepository $orderRepository,
     ) {}
+
+    /**
+     * @author @Intuneteq
+     *
+     * Retrieve a paginated listing of orders filtered by date range and product title.
+     *
+     * This method retrieves orders based on optional date range and product title filters.
+     * The results are paginated, and only accessible to super admins.
+     *
+     * @param  \Illuminate\Http\Request  $request  The incoming request instance containing filter parameters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection A collection of paginated order resources.
+     */
+    public function index(Request $request)
+    {
+        $start_date = $request->start_date;
+
+        $end_date = $request->end_date;
+
+        // Get the search query from the request
+        $product_title = $request->product_title;
+
+        $filter = [
+            'product_title' => $product_title,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ];
+
+        $orders = $this->orderRepository->query($filter);
+
+        $orders = $orders->paginate(10);
+
+        return OrderResource::collection($orders);
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -38,7 +72,7 @@ class OrderController extends Controller
      *
      * @return \App\Http\Resources\OrderResource Returns a paginated collection of all orders on a user's products.
      */
-    public function index(Request $request)
+    public function user(Request $request)
     {
         $user = Auth::user();
 
@@ -65,7 +99,7 @@ class OrderController extends Controller
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Retrive the specified order.
+     * Retrieve the specified order.
      *
      * @param  \App\Models\Order  $order  The order to display.
      * @return \App\Http\Resources\OrderResource Returns a resource representing the queried order.
@@ -108,8 +142,9 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
+        // find where the user that made the order (the customer) is the same as the user in the customer table
         $filter = [
-            'user_id' => $customer->user->id,
+            'orders.user_id' => $customer->user->id,
         ];
 
         $orders = $this->orderRepository->queryRelation($user->orders(), $filter)->get();
@@ -196,5 +231,33 @@ class OrderController extends Controller
         $query->update(['seen' => true]);
 
         return new JsonResource(['message' => 'orders marked as seen']);
+    }
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve statistics about the orders.
+     *
+     * This method returns the total number of orders, the total revenue from orders,
+     * and the average order value. These statistics are calculated from the data
+     * retrieved by the OrderRepository.
+     *
+     * @return \Illuminate\Http\Resources\Json\JsonResource Returns a JSON resource containing order statistics.
+     */
+    public function stats()
+    {
+        $orders_query = $this->orderRepository->query([]);
+
+        $total_orders = $orders_query->count();
+
+        $total_orders_revenue = $orders_query->sum('total_amount');
+
+        $avg_order_value = $total_orders ? $total_orders_revenue / $total_orders : 0;
+
+        return new JsonResource([
+            'total_orders' => $total_orders,
+            'total_orders_revenue' => (int) $total_orders_revenue,
+            'avg_order_value' => (int) $avg_order_value,
+        ]);
     }
 }

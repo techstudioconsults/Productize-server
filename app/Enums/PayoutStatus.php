@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum PayoutStatusEnum: string
+enum PayoutStatus: string
 {
     case Completed = 'completed';
     case Pending = 'pending';

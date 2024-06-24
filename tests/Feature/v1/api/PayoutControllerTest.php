@@ -7,6 +7,7 @@ use App\Http\Resources\PayoutResource;
 use App\Models\Account;
 use App\Models\Payout;
 use App\Models\User;
+use App\Traits\SanctumAuthentication;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -15,13 +16,38 @@ use Tests\TestCase;
 
 class PayoutControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SanctumAuthentication;
 
-    /**
-     * Test index works correctly.
-     */
-    public function test_index(): void
+    public function test_super_admin_can_view_payouts_with_date_filters()
     {
+        $this->actingAsSuperAdmin();
+
+        $expected_count = 1;
+
+        // Create payouts for testing
+        Payout::factory()->count($expected_count)->create(['created_at' => now()->subDays(10)]);
+
+        Payout::factory()->create(['amount' => 200, 'created_at' => now()->subDays(5)]);
+
+        // Call the index endpoint with date filters
+        $response = $this->get(route('payout.index', [
+            'start_date' => now()->subDays(7)->format('Y-m-d'),
+            'end_date' => now()->format('Y-m-d'),
+        ]));
+
+        $response->assertOk();
+        $response
+            ->assertJson(
+                fn (AssertableJson $json) => $json->has('meta')
+                    ->has('links')
+                    ->has('data', $expected_count)
+            );
+    }
+
+    public function test_super_admin_can_view_all_payouts_without_filters()
+    {
+        $this->actingAsSuperAdmin();
+
         $expected_count = 5; // set to 5 because pagination is 5
         $user = User::factory()->create();
 
@@ -29,7 +55,8 @@ class PayoutControllerTest extends TestCase
             'account_id' => Account::factory()->create(['user_id' => $user->id]),
         ]);
 
-        $response = $this->actingAs($user, 'web')->get(route('payout.index'));
+        // Call the index endpoint without filters
+        $response = $this->get(route('payout.index'));
 
         // Convert the payouts to PayoutResource
         $expected_json = PayoutResource::collection($payouts)->response()->getData(true);
@@ -42,11 +69,47 @@ class PayoutControllerTest extends TestCase
             );
     }
 
-    public function test_index_unauthenticated()
+    public function test_non_super_admin_cannot_view_payouts()
+    {
+        $this->actingAsRegularUser();
+
+        // Call the index endpoint
+        $response = $this->get(route('payout.index'));
+
+        // Assert forbidden response
+        $response->assertForbidden();
+    }
+
+    /**
+     * Test user works correctly.
+     */
+    public function test_user(): void
+    {
+        $expected_count = 5; // set to 5 because pagination is 5
+        $user = User::factory()->create();
+
+        $payouts = Payout::factory()->count($expected_count)->create([
+            'account_id' => Account::factory()->create(['user_id' => $user->id]),
+        ]);
+
+        $response = $this->actingAs($user, 'web')->get(route('payout.user'));
+
+        // Convert the payouts to PayoutResource
+        $expected_json = PayoutResource::collection($payouts)->response()->getData(true);
+        $response->assertOk()->assertJson($expected_json, true);
+        $response
+            ->assertJson(
+                fn (AssertableJson $json) => $json->has('meta')
+                    ->has('links')
+                    ->has('data', $expected_count)
+            );
+    }
+
+    public function test_user_unauthenticated()
     {
         $this->expectException(UnAuthorizedException::class);
 
-        $this->withoutExceptionHandling()->get(route('payout.index'));
+        $this->withoutExceptionHandling()->get(route('payout.user'));
     }
 
     public function test_download()

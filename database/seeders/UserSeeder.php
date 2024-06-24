@@ -2,21 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Roles;
 use App\Models\User;
 use Carbon\Carbon;
-use Database\Seeders\Traits\DisableForeignKeys;
-use Database\Seeders\Traits\TruncateTable;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
-    use DisableForeignKeys, TruncateTable;
-
     public function run(): void
     {
-        $this->disableForeignKeys();
-        $this->truncate('users');
-
         User::factory()->create([
             'full_name' => 'Kingsley Solomon',
             'email' => 'kinxly@gmail.com',
@@ -34,9 +28,13 @@ class UserSeeder extends Seeder
             'email' => 'tobiolanitori1@gmail.com',
             'first_product_created_at' => Carbon::now(),
         ]);
+        User::factory()->create([
+            'full_name' => 'Tobi Olanitori',
+            'email' => 'tobi.olanitori.binaryartinc@gmail.com',
+            'role' => Roles::SUPER_ADMIN->value,
+            'password' => '12345',
+        ]);
 
-        User::factory(2)->create();
-
-        $this->enableForeignKeys();
+        User::factory(5)->create();
     }
 }

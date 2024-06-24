@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Repositories;
 
-use App\Enums\PayoutStatusEnum;
+use App\Enums\PayoutStatus;
 use App\Exceptions\ModelCastException;
 use App\Models\Account;
 use App\Models\Payout;
@@ -56,11 +56,11 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value,
+            'status' => PayoutStatus::Pending->value,
         ]);
 
         $filter = [
-            'status' => PayoutStatusEnum::Completed->value,
+            'status' => PayoutStatus::Completed->value,
         ];
 
         $query = $this->payoutRepository->query($filter);
@@ -87,11 +87,11 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value,
+            'status' => PayoutStatus::Pending->value,
         ]);
 
         $filter = [
-            'status' => PayoutStatusEnum::Completed->value,
+            'status' => PayoutStatus::Completed->value,
         ];
 
         $result = $this->payoutRepository->find($filter);
@@ -109,7 +109,7 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value,
+            'status' => PayoutStatus::Pending->value,
         ]);
 
         $result = $this->payoutRepository->findById($payout->id);
@@ -135,7 +135,7 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value,
+            'status' => PayoutStatus::Pending->value,
         ]);
 
         $filter = [
@@ -162,18 +162,18 @@ class PayoutRepositoryTest extends TestCase
             'account_id' => Account::factory()->create([
                 'user_id' => User::factory()->create()->id,
             ])->id,
-            'status' => PayoutStatusEnum::Pending->value,
+            'status' => PayoutStatus::Pending->value,
         ]);
 
         $updates = [
-            'status' => PayoutStatusEnum::Failed->value,
+            'status' => PayoutStatus::Failed->value,
         ];
 
         $result = $this->payoutRepository->update($payout, $updates);
 
         $this->assertInstanceOf(Payout::class, $result);
 
-        $this->assertEquals(PayoutStatusEnum::Failed->value, $result->status);
+        $this->assertEquals(PayoutStatus::Failed->value, $result->status);
     }
 
     public function test_Update_Throws_ModelCastException()

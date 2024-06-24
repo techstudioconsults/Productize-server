@@ -22,17 +22,17 @@ class ReviewResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-       return [
-        'id' => $this->id,
-        'user' => [
-          'id' =>  $this->user->id,
-          'name' => $this->user->full_name,
-          'logo' => $this->user->logo,
-        ],
-        'product'=>$this->product_id,
-        'rating' => $this->rating,
-        'comment' => $this->comment,
-        'created_at' => $this->created_at,
-       ];
+        return [
+            'id' => $this->id,
+            'user' => [
+                'id' => $this->user->id,
+                'name' => $this->user->full_name,
+                'logo' => $this->user->logo,
+            ],
+            'product' => $this->product_id,
+            'rating' => $this->rating,
+            'comment' => $this->comment,
+            'created_at' => $this->created_at,
+        ];
     }
 }

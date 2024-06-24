@@ -10,23 +10,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AccountEnum;
+use App\Enums\PayoutStatus;
+use App\Enums\Roles;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
-use App\Http\Requests\RequestHelpRequest;
-use App\Http\Requests\UpdateKycRequest;
+use App\Helpers\Services\HasFileGenerator;
+use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
-use App\Mail\RequestHelp;
 use App\Models\User;
+use App\Repositories\OrderRepository;
+use App\Repositories\PayoutRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
-use Illuminate\Http\JsonResponse;
+use Carbon\Carbon;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -38,10 +43,32 @@ use Throwable;
  */
 class UserController extends Controller
 {
+    use HasFileGenerator;
+
     public function __construct(
         protected UserRepository $userRepository,
-        protected ProductRepository $productRepository
+        protected ProductRepository $productRepository,
+        protected OrderRepository $orderRepository,
+        protected PayoutRepository $payoutRepository
     ) {}
+
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Retrieve a listing of all registed users.
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function index(Request $request)
+    {
+        $filter = [
+            'role' => $request->role,
+        ];
+
+        $users = $this->userRepository->query($filter)->paginate(10);
+
+        return UserResource::collection($users);
+    }
 
     /**
      *  @author @Intuneteq Tobi Olanitori
@@ -56,6 +83,17 @@ class UserController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
+
+        return new UserResource($user);
+    }
+
+    public function store(StoreUserRequest $request)
+    {
+        $data = $request->validated();
+
+        $user = $this->userRepository->create($data);
+
+        event(new Registered($user));
 
         return new UserResource($user);
     }
@@ -182,46 +220,90 @@ class UserController extends Controller
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Send a request for help.
+     * Retrieve statistical data for products, sales, payouts, and users.
      *
-     * This method sends an email to the designated help email address with the subject and message provided
-     * in the request. If the request includes an email address, it will use the authenticated user's email
-     * address by default unless otherwise specified.
+     * This method calculates and returns the total number of products,
+     * total sales quantity, total completed payouts amount, and total number
+     * of users in the system. The data is returned as a JSON resource.
      *
-     * @param  \App\Http\Requests\RequestHelpRequest  $request  The validated request containing the subject and message.
-     * @return JsonResponse
+     * @return JsonResource A JSON resource containing the statistical data.
      */
-    public function requestHelp(RequestHelpRequest $request)
+    public function stats()
     {
-        $validated = $request->validated();
+        $total_products = $this->productRepository->query([])->count();
 
-        $email = Auth::user()->email;
+        $total_sales = $this->orderRepository->query([])->sum('quantity');
 
-        if ($request->exists('email')) {
-            $validated['email'] = $email;
-        }
+        $total_payouts = $this->payoutRepository->query(['status' => PayoutStatus::Completed->value])->sum('amount');
 
-        Mail::to(['tsa.projecttesting@gmail.com'])->send(
-            new RequestHelp(
-                $email,
-                $validated['subject'],
-                $validated['message']
-            )
-        );
+        $total_users = $this->userRepository->query([])->count();
 
-        return new JsonResponse(
-            ['message' => 'email sent']
-        );
+        $total_subscribed_users = $this->userRepository->query(['account_type' => AccountEnum::Premium->value])->count();
+
+        $total_trial_users = $this->userRepository->query(['account_type' => AccountEnum::Free_Trial->value])->count();
+
+        return new JsonResource([
+            'total_products' => $total_products,
+            'total_sales' => $total_sales,
+            'total_payouts' => $total_payouts,
+            'total_users' => $total_users,
+            'total_subscribed_users' => $total_subscribed_users,
+            'total_trial_users' => $total_trial_users,
+            'conversion_rate' => '35%',
+        ]);
     }
 
-    public function updateKyc(UpdateKycRequest $request)
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Generate and download a CSV file containing user information.
+     *
+     * Retrieves all users from the repository, formats their data into CSV format,
+     * and initiates a file download for the generated CSV file.
+     *
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse The streamed response containing the CSV file.
+     */
+    public function download()
     {
-        $user = Auth::user();
+        $users = $this->userRepository->find();
 
-        $validated = $request->validated();
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+        $fileName = "users_$now.csv";
 
-        $updated = $this->userRepository->update($user, $validated);
+        $columns = ['Name', 'Email', 'Status', 'Last Activity Date'];
+        $data = [$columns];
 
-        return new UserResource($updated);
+        foreach ($users as $user) {
+            $data[] = [
+                $user->full_name,
+                $user->email,
+                $user->status,
+                $user->updated_at,
+            ];
+        }
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
+    }
+
+    /**
+     * @author @Intuneteq
+     *
+     * Revoke admin privileges from a user and update their role to a regular user.
+     *
+     * This method changes the specified user's role from admin to user by updating
+     * their role in the user repository.
+     *
+     * @param  \App\Models\User  $user  The user whose admin privileges will be revoked.
+     * @return \Illuminate\Http\Resources\Json\JsonResource Returns a JSON resource containing a success message.
+     */
+    public function revokeAdminRole(User $user)
+    {
+        $this->userRepository->guardedUpdate($user->email, 'role', Roles::USER->value);
+
+        return new JsonResource([
+            'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.',
+        ]);
     }
 }

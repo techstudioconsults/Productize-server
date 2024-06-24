@@ -306,34 +306,51 @@ class PaystackRepository
         return false;
     }
 
-    public function getSubscriptionStatus(array $customer)
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Get the subscription status of a customer.
+     *
+     * @param  array  $customer  The customer data.
+     * @return string|null The status of the latest subscription, or null if no subscriptions exist.
+     */
+    public function getSubscriptionStatus(array $customer): ?string
     {
-        // Check subscription count, if zero, return false
-        if (! count($customer['subscriptions'])) {
+        $subscriptions = $customer['subscriptions'] ?? [];
+
+        if (empty($subscriptions)) {
             return null;
         }
 
-        $subscriptions = $customer['subscriptions'];
-
-        // The first item in the array is the latest one, return the status.
-        return $subscriptions[0]['status'];
+        // The first item in the array is the latest one, return its status.
+        return $subscriptions[0]['status'] ?? null;
     }
 
-    public function hasSubscription(?array $customer)
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Determine if the customer has an active subscription.
+     *
+     * @param  array|null  $customer  The customer data.
+     * @return bool True if the customer has an active subscription, false otherwise.
+     */
+    public function hasSubscription(?array $customer): bool
     {
-        if (! $customer) {
+        if (empty($customer)) {
             return false;
         }
 
         $status = $this->getSubscriptionStatus($customer);
-        if (! $status) {
+
+        if (empty($status)) {
             return false;
         }
 
-        if ($status === SubscriptionStatusEnum::ACTIVE->value) {
-            return true;
-        }
-
-        return false;
+        return in_array($status, [
+            SubscriptionStatusEnum::ACTIVE->value,
+            SubscriptionStatusEnum::NON_RENEWING->value,
+            SubscriptionStatusEnum::ATTENTION->value,
+            SubscriptionStatusEnum::PENDING->value,
+        ], true);
     }
 }

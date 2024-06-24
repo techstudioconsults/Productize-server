@@ -77,7 +77,10 @@ class ValidationServiceTest extends TestCase
         $queryMock = Mockery::mock(Builder::class);
         $queryMock->shouldReceive('whereBetween')
             ->once()
-            ->with('created_at', ['2024-01-01', '2024-03-20']);
+            ->with('created_at', Mockery::on(function ($argument) {
+                return $argument[0]->eq(Carbon::parse('2024-01-01')->startOfDay()) &&
+                    $argument[1]->eq(Carbon::parse('2024-03-20')->endOfDay());
+            }));
 
         // Create the filter array with valid dates
         $filter = [

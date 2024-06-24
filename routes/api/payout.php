@@ -13,7 +13,9 @@ Route::controller(PayoutController::class)
         'can:subscribed,App\Models\Payout',
     ])
     ->group(function () {
-        Route::get('/', 'index')->name('index');
+        Route::get('/', 'index')->name('index')->middleware('abilities:role:super_admin');
+
+        Route::get('/user', 'user')->name('user');
 
         Route::get('/download', 'download')->name('download');
     });

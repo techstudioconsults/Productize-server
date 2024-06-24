@@ -10,8 +10,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DigitalProductCategory;
+use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
+use App\Enums\SkillSellingCategory;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
 use App\Helpers\Services\HasFileGenerator;
@@ -724,5 +727,21 @@ class ProductController extends Controller
         return new JsonResource([
             'message' => 'Email sent',
         ]);
+    }
+
+    public function types()
+    {
+        $types = [
+            [
+                'name' => ProductEnum::DIGITAL_PRODUCT->value,
+                'categories' => DigitalProductCategory::cases()
+            ],
+            [
+                'name' => ProductEnum::SKILL_SELLING->value,
+                'categories' => SkillSellingCategory::cases()
+            ],
+        ];
+
+        return new JsonResource($types);
     }
 }

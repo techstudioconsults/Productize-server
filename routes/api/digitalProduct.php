@@ -14,4 +14,10 @@ Route::controller(DigitalProductController::class)
     ])
     ->group(function () {
         Route::post('/', 'store')->name('store');
+
+        Route::get('/categories', 'categories')->withoutMiddleware([
+            'auth:sanctum',
+            'can:allowed,App\Models\DigitalProduct',
+            'can:premium,App\Models\DigitalProduct',
+        ])->name('categories');
     });

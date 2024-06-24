@@ -9,6 +9,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Resources\ExternalProductResource;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Listeners\SendProductCreatedMail;
@@ -139,8 +140,7 @@ class ProductControllerTest extends TestCase
         $response = $this->get(route('product.external'));
 
         $response->assertStatus(200)->assertJson(
-            fn (AssertableJson $json) => $json->has('meta')
-                ->has('links')
+            fn (AssertableJson $json) => $json
                 ->has('data', 15)
                 ->has(
                     'data.0',
@@ -210,46 +210,19 @@ class ProductControllerTest extends TestCase
 
     public function test_show(): void
     {
-        $data = [
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
-        ];
-
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
-            'data' => $data,
         ]);
 
-        // Mock product repository
-        $mock = $this->partialMock(ProductRepository::class);
-
-        // Mock the getFileMetaData method
-        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
-
-            // Mock metadata based on the file path
-            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
-                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
-                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
-            } else {
-                return null; // Return null for unknown file paths
-            }
-        });
+        $expected_json = ProductResource::make($product)->response()->getData(true);
 
         // Invoke the show method
         $response = $this->actingAs($this->user, 'web')->get(route('product.show', [
             'product' => $product->id,
         ]));
 
-        // Assert response status
-        $response
-            ->assertOk()
-            ->assertJson(
-                fn (AssertableJson $json) => $json->where('no_of_resources', 2)
-                    ->where('id', $product->id)
-                    ->etc()
-            );
+        $response->assertOk()->assertJson($expected_json, true);
     }
 
     public function test_show_unauthenticated(): void
@@ -301,33 +274,13 @@ class ProductControllerTest extends TestCase
 
     public function test_slug(): void
     {
-        $data = [
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
-        ];
-
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
             'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
-            'data' => $data,
         ]);
 
-        // Mock product repository
-        $mock = $this->partialMock(ProductRepository::class);
-
-        // Mock the getFileMetaData method
-        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
-
-            // Mock metadata based on the file path
-            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
-                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
-                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
-            } else {
-                return null; // Return null for unknown file paths
-            }
-        });
+        $expected_json = ExternalProductResource::make($product)->response()->getData(true);
 
         // Invoke the slug method
         $response = $this
@@ -339,44 +292,18 @@ class ProductControllerTest extends TestCase
             ]));
 
         // Assert response status
-        $response
-            ->assertOk()
-            ->assertJson(
-                fn (AssertableJson $json) => $json->where('no_of_resources', 2)
-                    ->where('slug', $product->slug)
-                    ->etc()
-            );
+        $response->assertOk()->assertJson($expected_json, true);
     }
 
     public function test_slug_unauthenticated_have_access(): void
     {
-        $data = [
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
-        ];
-
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
             'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
-            'data' => $data,
         ]);
 
-        // Mock product repository
-        $mock = $this->partialMock(ProductRepository::class);
-
-        // Mock the getFileMetaData method
-        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
-
-            // Mock metadata based on the file path
-            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
-                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
-                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
-            } else {
-                return null; // Return null for unknown file paths
-            }
-        });
+        $expected_json = ExternalProductResource::make($product)->response()->getData(true);
 
         // Invoke the slug method
         $response = $this
@@ -387,13 +314,7 @@ class ProductControllerTest extends TestCase
             ]));
 
         // Assert response status
-        $response
-            ->assertOk()
-            ->assertJson(
-                fn (AssertableJson $json) => $json->where('no_of_resources', 2)
-                    ->where('slug', $product->slug)
-                    ->etc()
-            );
+        $response->assertOk()->assertJson($expected_json, true);
     }
 
     public function test_slug_not_found_should_return_404(): void
@@ -409,19 +330,13 @@ class ProductControllerTest extends TestCase
             ]));
     }
 
-    public function test_slug_published_product_should_return_400_bad_request(): void
+    public function test_slug_unpublished_product_should_return_400_bad_request(): void
     {
         $this->expectException(BadRequestException::class);
-
-        $data = [
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
-        ];
 
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
-            'data' => $data,
         ]);
 
         // Invoke the slug method
@@ -436,35 +351,16 @@ class ProductControllerTest extends TestCase
 
     public function test_slug_search_product_should_be_tracked(): void
     {
-        $data = [
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.jpg',
-            'https://productize.nyc3.cdn.digitaloceanspaces.com/products-cover-photos/3d_collection_showcase-20210110-0001.pdf',
-        ];
-
         $user = User::factory()->create();
 
         // Create a product
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
             'status' => ProductStatusEnum::Published->value, // only published products can be retrieved by their slugs
-            'data' => $data,
         ]);
 
         // Mock product repository
         $mock = $this->partialMock(ProductRepository::class);
-
-        // Mock the getFileMetaData method
-        $mock->shouldReceive('getFileMetaData')->andReturnUsing(function ($file_path) {
-
-            // Mock metadata based on the file path
-            if ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.jpg') {
-                return ['size' => '10MB', 'mime_type' => 'image/jpeg'];
-            } elseif ($file_path === '/products-cover-photos/3d_collection_showcase-20210110-0001.pdf') {
-                return ['size' => '5MB', 'mime_type' => 'application/pdf'];
-            } else {
-                return null; // Return null for unknown file paths
-            }
-        });
 
         // mock the isSeachedProductMethod
         $mock->shouldReceive('isSearchedProduct')->andReturn(true);
@@ -503,7 +399,6 @@ class ProductControllerTest extends TestCase
             'product_type' => 'digital_product',
             'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
             'description' => 'description',
-            'data' => [UploadedFile::fake()->create('data1.pdf')],
             'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
             'highlights' => ['highlight1', 'highlight2'],
             'tags' => ['tag1', 'tag2'],
@@ -525,7 +420,6 @@ class ProductControllerTest extends TestCase
 
         // Assert files are saved in the disk storage
         Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
-        Storage::disk('spaces')->assertExists('digital-products/data1.pdf');
 
         // Assert the event was dispatched
         Event::assertDispatched(ProductCreated::class);
@@ -564,7 +458,6 @@ class ProductControllerTest extends TestCase
             'product_type' => 'digital_product',
             'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
             'description' => 'description',
-            'data' => [UploadedFile::fake()->create('data1.pdf')],
             'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
             'highlights' => ['highlight1', 'highlight2'],
             'tags' => ['tag1', 'tag2'],
@@ -585,7 +478,6 @@ class ProductControllerTest extends TestCase
         $response->assertStatus(201);
 
         Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
-        Storage::disk('spaces')->assertExists('digital-products/data1.pdf');
         Event::assertDispatched(ProductCreated::class);
         Event::assertListening(ProductCreated::class, SendProductCreatedMail::class);
 
@@ -605,7 +497,6 @@ class ProductControllerTest extends TestCase
             'product_type' => 'digital_product',
             'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
             'description' => 'description',
-            'data' => [UploadedFile::fake()->create('data1.pdf')],
             'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
             'highlights' => ['highlight1', 'highlight2'],
             'tags' => ['tag1', 'tag2'],
@@ -659,7 +550,6 @@ class ProductControllerTest extends TestCase
             'price' => 3,
             'thumbnail' => UploadedFile::fake()->image('avatar_update.jpg'),
             'description' => 'description',
-            'data' => [UploadedFile::fake()->create('data_update.pdf')],
             'cover_photos' => [UploadedFile::fake()->image('cover1_update.jpg')],
         ];
 
@@ -670,18 +560,14 @@ class ProductControllerTest extends TestCase
                 'product' => $product->id,
             ]), $payload);
 
-        // Asserting that the request was successful
-        $response->assertOk()->assertJson(
-            fn (AssertableJson $json) => $json->where('id', $product->id)
-                ->where('title', 'title updated')
-                ->where('price', 3)
-                ->where('thumbnail', config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::THUMBNAIL_PATH.'/avatar_update.jpg')
-                ->etc()
-        );
+        $product->refresh();
 
-        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH.'/avatar_update.jpg');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data_update.pdf');
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/cover1_update.jpg');
+        $expected_json = ProductResource::make($product)->response()->getData(true);
+
+        $response->assertOk()->assertJson($expected_json, true);
+
+        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/cover1_update.jpg');
     }
 
     public function test_update_unauthenticated(): void
@@ -955,7 +841,7 @@ class ProductControllerTest extends TestCase
         // assert
         $response->assertStatus(200);
         $response->assertHeader('Content-type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.now()->format('d_F_Y').'.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . now()->format('d_F_Y') . '.csv');
     }
 
     public function test_records_unauthenticated(): void
@@ -996,7 +882,7 @@ class ProductControllerTest extends TestCase
         // Assert response is successful and file is streamed
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
     }
 
     public function test_super_admin_can_export_all_products_without_filters()
@@ -1012,7 +898,7 @@ class ProductControllerTest extends TestCase
         // Assert response is successful and file is streamed
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
     }
 
     public function test_non_super_admin_cannot_export_products()
@@ -1122,7 +1008,7 @@ class ProductControllerTest extends TestCase
 
         $response = $this->get(route('product.top-products'));
 
-        $expected_json = ProductCollection::make($products)->response()->getData(true);
+        $expected_json = ExternalProductResource::collection($products)->response()->getData(true);
 
         $response->assertStatus(200)->assertJson($expected_json, true);
     }
@@ -1131,7 +1017,7 @@ class ProductControllerTest extends TestCase
     {
         $response = $this->get(route('product.top-products'));
 
-        $expected_json = ProductCollection::make([])->response()->getData(true);
+        $expected_json = ExternalProductResource::collection([])->response()->getData(true);
 
         $response->assertStatus(200)->assertJson($expected_json, true);
     }
@@ -1560,6 +1446,8 @@ class ProductControllerTest extends TestCase
             'text' => 'osh',
         ]);
 
+        // $response->dd();
+
         $response->assertOk()
             ->assertJsonPath('data', fn (array $data) => count($data) === 5) // Check count of returned data
             ->assertJsonPath('data.*.status', [
@@ -1631,7 +1519,7 @@ class ProductControllerTest extends TestCase
 
         $response = $this->withoutExceptionHandling()->get(route('product.search.get'));
 
-        $expected_json = ProductCollection::make($products)->response()->getData(true);
+        $expected_json = ExternalProductResource::collection($products)->response()->getData(true);
 
         $response->assertStatus(200);
         $response->assertJson($expected_json);

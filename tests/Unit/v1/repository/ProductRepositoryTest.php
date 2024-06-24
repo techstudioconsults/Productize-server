@@ -417,7 +417,6 @@ class ProductRepositoryTest extends TestCase
             'price' => 3,
             'thumbnail' => UploadedFile::fake()->image('avatar_update.jpg'),
             'description' => 'description',
-            'data' => [UploadedFile::fake()->create('data_update.pdf')],
             'cover_photos' => [UploadedFile::fake()->image('cover1_update.jpg')],
         ];
 
@@ -443,7 +442,6 @@ class ProductRepositoryTest extends TestCase
             'price' => 3,
             'thumbnail' => UploadedFile::fake()->image('avatar_update.jpg'),
             'description' => 'description',
-            'data' => [UploadedFile::fake()->create('data_update.pdf')],
             'cover_photos' => [UploadedFile::fake()->image('cover1_update.jpg')],
         ];
 
@@ -653,45 +651,6 @@ class ProductRepositoryTest extends TestCase
         $this->assertEquals($expected[1]->id, $results[0]->id);
     }
 
-    public function test_upload_product_data(): void
-    {
-        // Fake spaces storage
-        Storage::fake('spaces');
-
-        $uploads = [
-            UploadedFile::fake()->create('data1.pdf'),
-            UploadedFile::fake()->create('data2.pdf'),
-            UploadedFile::fake()->image('data3.png'),
-            UploadedFile::fake()->image('data4.csv'),
-        ];
-
-        $expected_result = [
-            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data1.pdf',
-            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data2.pdf',
-            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data3.png',
-            config('filesystems.disks.spaces.cdn_endpoint').'/'.ProductRepository::PRODUCT_DATA_PATH.'/data4.csv',
-        ];
-
-        $result = $this->productRepository->uploadData($uploads);
-
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data1.pdf');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data2.pdf');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data3.png');
-        Storage::disk('spaces')->assertExists(ProductRepository::PRODUCT_DATA_PATH.'/data4.csv');
-
-        $this->assertEquals($expected_result[0], $result[0]);
-        $this->assertEquals($expected_result[1], $result[1]);
-        $this->assertEquals($expected_result[2], $result[2]);
-        $this->assertEquals($expected_result[3], $result[3]);
-    }
-
-    public function test_upload_product_data_invalid_data_throws_400()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $this->productRepository->uploadData(['not a file', 'not a file 2']);
-    }
-
     public function test_upload_product_thumbnail(): void
     {
         // Fake spaces storage
@@ -761,39 +720,6 @@ class ProductRepositoryTest extends TestCase
         ];
 
         $this->productRepository->uploadCoverPhoto($uploads);
-    }
-
-    public function test_getfilemetadata_existingFileMetaData(): void
-    {
-        // Assume the file exists on the disk
-        Storage::fake('spaces');
-
-        $filePath = 'path/to/existing/file.txt';
-
-        // Mocking the file existence
-        Storage::disk('spaces')->put($filePath, 'file contents');
-
-        // Call the method
-        $metaData = $this->productRepository->getFileMetaData($filePath);
-
-        // Assertions
-        $this->assertNotNull($metaData);
-        $this->assertArrayHasKey('size', $metaData);
-        $this->assertArrayHasKey('mime_type', $metaData);
-        $this->assertStringContainsString('MB', $metaData['size']);
-    }
-
-    public function test_getfilemetadata_NonExistingFileMetaData(): void
-    {
-        // Assume the file does not exist on the disk
-        Storage::fake('spaces');
-        $filePath = 'path/to/non_existing/file.txt';
-
-        // Call the method
-        $metaData = $this->productRepository->getFileMetaData($filePath);
-
-        // Assertion
-        $this->assertNull($metaData);
     }
 
     public function test_isSearchedproduct_with_valid_cookie()

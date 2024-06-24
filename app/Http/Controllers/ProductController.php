@@ -27,6 +27,7 @@ use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
+use Cookie;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -47,7 +48,8 @@ class ProductController extends Controller
         protected UserRepository $userRepository,
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -162,7 +164,7 @@ class ProductController extends Controller
             $this->productRepository->trackSearch($product, $user);
         }
 
-        if (! $this->productRepository->isPublished($product)) {
+        if (!$this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
@@ -654,7 +656,7 @@ class ProductController extends Controller
         // Save the search results in cookie
         $cookie = cookie('search_term', json_encode($products->pluck('id')->toArray()), 60);
 
-        return response()->json(ExternalProductResource::collection($products))->cookie($cookie);
+        return (ExternalProductResource::collection($products))->response()->cookie($cookie);
     }
 
     /**

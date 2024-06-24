@@ -36,6 +36,7 @@ class ProductResource extends JsonResource
             'resources' => $this->resources->map(function ($resource) {
                 return [
                     'id' => $resource->id,
+                    'name' => $resource->name,
                     'mime_type' => $resource->mime_type,
                     'size' => round($resource->size / 1048576, 3) . 'MB', // Convert byte to MB
                     'extension' => $resource->extension,

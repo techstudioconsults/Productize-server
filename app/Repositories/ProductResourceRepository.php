@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Storage;
+use Str;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
@@ -140,11 +141,12 @@ class ProductResourceRepository extends Repository
         }
 
         return collect($data)->map(function ($file) use ($product_type) {
-            $originalName = str_replace(' ', '', $file->getClientOriginalName());
+            $name = Str::uuid().'.'.$file->extension(); // geneate a uuid
 
-            $path = Storage::putFileAs("$product_type/" . self::PRODUCT_DATA_PATH, $file, $originalName);
+            $path = Storage::putFileAs("$product_type/" . self::PRODUCT_DATA_PATH, $file, $name);
 
             return [
+                'name' => str_replace(' ', '', $file->getClientOriginalName()),
                 'url' => config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path,
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),

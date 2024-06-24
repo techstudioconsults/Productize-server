@@ -36,6 +36,7 @@ class ProductResource extends Model
         'resource',
         'size',
         'extension',
-        'url'
+        'url',
+        'name'
     ];
 }

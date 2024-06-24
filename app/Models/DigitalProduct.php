@@ -21,7 +21,7 @@ class DigitalProduct extends Model
 
     protected $fillable = [
         'product_id',
-        'category'
+        'category',
     ];
 
     public function product()
@@ -33,5 +33,4 @@ class DigitalProduct extends Model
     {
         return $this->hasManyThrough(ProductResource::class, Product::class, 'id', 'product_id', 'product_id', 'id');
     }
-
 }

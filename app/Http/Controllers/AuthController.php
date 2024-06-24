@@ -76,13 +76,12 @@ class AuthController extends Controller
 
             // Trigger register event
             event(new Registered($user));
-            
+
             return ['user' => $user, 'token' => $token];
         });
 
         $user = $result['user'];
         $token = $result['token'];
-
 
         $response = ['user' => new UserResource($user), 'token' => $token];
 

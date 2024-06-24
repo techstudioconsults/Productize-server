@@ -20,8 +20,7 @@ class DigitalProductController extends Controller
         protected DigitalProductRepository $digitalProductRepository,
         protected ProductResourceRepository $productResourceRepository,
         protected ProductRepository $productRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Store a newly created resource in storage.
@@ -32,7 +31,9 @@ class DigitalProductController extends Controller
 
         $product = $this->productRepository->findById($entity['product_id']);
 
-        if (!$product) throw new NotFoundException("Product Not Found");
+        if (! $product) {
+            throw new NotFoundException('Product Not Found');
+        }
 
         $resources = $entity['resources'];
         unset($entity['resources']);
@@ -53,7 +54,7 @@ class DigitalProductController extends Controller
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [
                 'endpoint' => '/api/digital-products',
-                'method' => 'POST'
+                'method' => 'POST',
             ]);
 
             throw new ServerErrorException($th->getMessage(), 500);

@@ -10,9 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class SkillSellingController extends Controller
 {
-    public function __construct(protected SkillSellingRepository $skillSellingRepository)
-    {
-    }
+    public function __construct(protected SkillSellingRepository $skillSellingRepository) {}
 
     public function store(StoreSkillSellingRequest $request)
     {

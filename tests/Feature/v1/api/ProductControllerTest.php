@@ -10,7 +10,6 @@ use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\ExternalProductResource;
-use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Listeners\SendProductCreatedMail;
 use App\Mail\BestSellerCongratulations;
@@ -566,8 +565,8 @@ class ProductControllerTest extends TestCase
 
         $response->assertOk()->assertJson($expected_json, true);
 
-        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH . '/avatar_update.jpg');
-        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH . '/cover1_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::THUMBNAIL_PATH.'/avatar_update.jpg');
+        Storage::disk('spaces')->assertExists(ProductRepository::COVER_PHOTOS_PATH.'/cover1_update.jpg');
     }
 
     public function test_update_unauthenticated(): void
@@ -841,7 +840,7 @@ class ProductControllerTest extends TestCase
         // assert
         $response->assertStatus(200);
         $response->assertHeader('Content-type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . now()->format('d_F_Y') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.now()->format('d_F_Y').'.csv');
     }
 
     public function test_records_unauthenticated(): void
@@ -882,7 +881,7 @@ class ProductControllerTest extends TestCase
         // Assert response is successful and file is streamed
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     public function test_super_admin_can_export_all_products_without_filters()
@@ -898,7 +897,7 @@ class ProductControllerTest extends TestCase
         // Assert response is successful and file is streamed
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=products_' . Carbon::today()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     public function test_non_super_admin_cannot_export_products()

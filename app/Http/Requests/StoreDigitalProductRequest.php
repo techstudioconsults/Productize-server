@@ -29,7 +29,7 @@ class StoreDigitalProductRequest extends FormRequest
             'category' => ['required', new Enum(DigitalProductCategory::class)],
             'resources' => 'required',
             'resources.*' => 'required|file',
-            'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id'
+            'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }
 

@@ -24,12 +24,11 @@ class SkillSelling extends Model
         'category',
         'level',
         'availability',
-        'link'
+        'link',
     ];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
-
 }

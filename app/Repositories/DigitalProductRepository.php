@@ -25,7 +25,6 @@ class DigitalProductRepository extends Repository
      * Create a new digitalProduct with the provided entity.
      *
      * @param  array  $entity  The digitalProduct data.
-     *
      * @return DigitalProduct The newly created digitalProduct.
      */
     public function create(array $entity): DigitalProduct
@@ -107,11 +106,12 @@ class DigitalProductRepository extends Repository
     public function update(Model $entity, array $updates): DigitalProduct
     {
         // Ensure that the provided entity is an instance of DigitalProduct
-        if (!$entity instanceof DigitalProduct) {
+        if (! $entity instanceof DigitalProduct) {
             throw new ModelCastException('DigitalProduct', get_class($entity));
         }
 
         $entity->update($updates);
+
         return $entity;
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\Product::class, 'product_id')->cascadeOnDelete();
             $table->string('url'); // The product url - upload to cloud first.
-            $table->string('name'); 
+            $table->string('name');
             $table->integer('size');
             $table->string('mime_type');
             $table->string('extension');

@@ -49,8 +49,7 @@ class ProductController extends Controller
         protected UserRepository $userRepository,
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -165,7 +164,7 @@ class ProductController extends Controller
             $this->productRepository->trackSearch($product, $user);
         }
 
-        if (!$this->productRepository->isPublished($product)) {
+        if (! $this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
@@ -657,7 +656,7 @@ class ProductController extends Controller
         // Save the search results in cookie
         $cookie = cookie('search_term', json_encode($products->pluck('id')->toArray()), 60);
 
-        return (ExternalProductResource::collection($products))->response()->cookie($cookie);
+        return ExternalProductResource::collection($products)->response()->cookie($cookie);
     }
 
     /**
@@ -734,11 +733,11 @@ class ProductController extends Controller
         $types = [
             [
                 'name' => ProductEnum::DIGITAL_PRODUCT->value,
-                'categories' => DigitalProductCategory::cases()
+                'categories' => DigitalProductCategory::cases(),
             ],
             [
                 'name' => ProductEnum::SKILL_SELLING->value,
-                'categories' => SkillSellingCategory::cases()
+                'categories' => SkillSellingCategory::cases(),
             ],
         ];
 

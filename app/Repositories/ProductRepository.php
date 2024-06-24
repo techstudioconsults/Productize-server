@@ -27,7 +27,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum;
-use Str;
 
 /**
  * @author @Intuneteq Tobi Olanitori

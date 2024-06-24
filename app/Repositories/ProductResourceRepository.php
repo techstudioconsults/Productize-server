@@ -30,7 +30,6 @@ class ProductResourceRepository extends Repository
      * Create a new productResource with the provided entity.
      *
      * @param  array  $entity  An array of productResource data to be uploaded to cloud storage and stored.
-     *
      * @return ProductResource The newly created productResource.
      */
     public function create(array $entity): ProductResource
@@ -112,11 +111,12 @@ class ProductResourceRepository extends Repository
     public function update(Model $entity, array $updates): ProductResource
     {
         // Ensure that the provided entity is an instance of ProductResource
-        if (!$entity instanceof ProductResource) {
+        if (! $entity instanceof ProductResource) {
             throw new ModelCastException('ProductResource', get_class($entity));
         }
 
         $entity->update($updates);
+
         return $entity;
     }
 
@@ -135,21 +135,21 @@ class ProductResourceRepository extends Repository
     public function uploadResources(array $data, string $product_type): array
     {
         // Each item in the 'data' array must be a file
-        if (!$this->isValidated($data, ['required|file'])) {
+        if (! $this->isValidated($data, ['required|file'])) {
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
         return collect($data)->map(function ($file) use ($product_type) {
             $name = Str::uuid().'.'.$file->extension(); // geneate a uuid
 
-            $path = Storage::putFileAs("$product_type/" . self::PRODUCT_DATA_PATH, $file, $name);
+            $path = Storage::putFileAs("$product_type/".self::PRODUCT_DATA_PATH, $file, $name);
 
             return [
                 'name' => str_replace(' ', '', $file->getClientOriginalName()),
-                'url' => config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path,
+                'url' => config('filesystems.disks.spaces.cdn_endpoint').'/'.$path,
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
-                'extension' => $file->extension()
+                'extension' => $file->extension(),
             ];
         })->all();
     }
@@ -169,7 +169,7 @@ class ProductResourceRepository extends Repository
             $mime_Type = Storage::mimeType($filePath);
 
             return [
-                'size' => round($size / 1048576, 2) . 'MB', // Convert byte to MB
+                'size' => round($size / 1048576, 2).'MB', // Convert byte to MB
                 'mime_type' => $mime_Type,
             ];
         } else {

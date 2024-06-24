@@ -25,7 +25,6 @@ class SkillSellingRepository extends Repository
      * Create a new skill Selling with the provided entity.
      *
      * @param  array  $entity  The skill Selling data.
-     *
      * @return SkillSelling The newly created skillSelling.
      */
     public function create(array $entity): SkillSelling
@@ -107,11 +106,12 @@ class SkillSellingRepository extends Repository
     public function update(Model $entity, array $updates): SkillSelling
     {
         // Ensure that the provided entity is an instance of SkillSelling
-        if (!$entity instanceof SkillSelling) {
+        if (! $entity instanceof SkillSelling) {
             throw new ModelCastException('SkillSelling', get_class($entity));
         }
 
         $entity->update($updates);
+
         return $entity;
     }
 }

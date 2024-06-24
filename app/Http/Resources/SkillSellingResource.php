@@ -21,9 +21,9 @@ class SkillSellingResource extends JsonResource
             'category' => $this->category,
             'link' => $this->link,
             'product' => [
-                'id' => $this->product->id
+                'id' => $this->product->id,
             ],
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
         ];
     }
 }

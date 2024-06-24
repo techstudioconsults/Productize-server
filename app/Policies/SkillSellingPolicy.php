@@ -19,6 +19,6 @@ class SkillSellingPolicy
     {
         return $user->isPremium()
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' is not a subscribed user');
+            : throw new ForbiddenException($user->full_name.' is not a subscribed user');
     }
 }

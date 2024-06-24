@@ -36,8 +36,6 @@ use Str;
  */
 class ProductRepository extends Repository
 {
-    const PRODUCT_DATA_PATH = 'digital-products';
-
     const COVER_PHOTOS_PATH = 'products-cover-photos';
 
     const THUMBNAIL_PATH = 'products-thumbnail';
@@ -71,12 +69,9 @@ class ProductRepository extends Repository
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
-        $data = $credentials['data'];
+        // $data = $credentials['data'];
         $cover_photos = $credentials['cover_photos'];
         $thumbnail = $credentials['thumbnail'];
-
-        // Upload the product's data to digital ocean's space
-        $data = $this->uploadData($data);
 
         // Upload the product's thumbnail to digital ocean's space
         $thumbnail = $this->uploadThumbnail($thumbnail);
@@ -85,7 +80,7 @@ class ProductRepository extends Repository
         $cover_photos = $this->uploadCoverPhoto($cover_photos);
 
         // Update the credentials array
-        $credentials['data'] = $data;
+        // $credentials['data'] = $data;
         $credentials['cover_photos'] = $cover_photos;
         $credentials['thumbnail'] = $thumbnail;
 
@@ -163,27 +158,6 @@ class ProductRepository extends Repository
     }
 
     /**
-     * @deprecated This method will be deleted when product data table is implemented
-     */
-    public function getProductExternal(Product $product)
-    {
-        return [
-            'title' => $product->title,
-            'thumbnail' => $product->thumbnail,
-            'price' => $product->price,
-            'publisher' => $product->user->full_name,
-            'publisher_logo' => $product->user->logo,
-            'slug' => $product->slug,
-            'highlights' => $product->highlights,
-            'product_type' => $product->product_type,
-            'cover_photos' => $product->cover_photos,
-            'tags' => $product->tags,
-            'description' => $product->description,
-            'total_orders' => $product->totalOrder(),
-        ];
-    }
-
-    /**
      * @author @Intuneteq Tobi Olanitori
      *
      * Retrieve top products based on sales within a specified date range.
@@ -233,11 +207,6 @@ class ProductRepository extends Repository
 
         if (! $this->isValidated($updatables, $rules)) {
             throw new BadRequestException($this->getValidator()->errors()->first());
-        }
-
-        if (isset($updatables['data'])) {
-            $data = $this->uploadData($updatables['data']);
-            $updatables['data'] = $data;
         }
 
         if (isset($updatables['cover_photos'])) {
@@ -338,34 +307,6 @@ class ProductRepository extends Repository
     /**
      * @author @Intuneteq Tobi Olanitori
      *
-     * Uploads an array of the product's data files and returns their storage paths.
-     *
-     * The data is the actual resource being sold.
-     *
-     * @param  array  $data  An array of data files to upload.
-     * @return array An array containing the storage paths of the uploaded data files.
-     *
-     * @throws BadRequestException If any of the provided data files fail validation.
-     */
-    public function uploadData(array $data): array
-    {
-        // Each item in the 'data' array must be a file
-        if (! $this->isValidated($data, ['required|file'])) {
-            throw new BadRequestException($this->getValidator()->errors()->first());
-        }
-
-        return collect($data)->map(function ($file) {
-            $originalName = str_replace(' ', '', $file->getClientOriginalName());
-
-            $path = Storage::putFileAs(self::PRODUCT_DATA_PATH, $file, $originalName);
-
-            return config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
-        })->all();
-    }
-
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
      * Uploads an array of cover photos and returns their storage paths.
      *
      * @param  array  $cover_photos  An array of cover photo image files to upload.
@@ -413,29 +354,6 @@ class ProductRepository extends Repository
         );
 
         return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
-    }
-
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
-     * Retrieve file metadata for a given file path.
-     *
-     * @param  string  $filePath  The path of the file.
-     * @return array|null An array containing file metadata including size and MIME type, or null if the file doesn't exist.
-     */
-    public function getFileMetaData(string $filePath)
-    {
-        if (Storage::disk('spaces')->exists($filePath)) {
-            $size = Storage::size($filePath);
-            $mime_Type = Storage::mimeType($filePath);
-
-            return [
-                'size' => round($size / 1048576, 2).'MB', // Convert byte to MB
-                'mime_type' => $mime_Type,
-            ];
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -503,29 +421,6 @@ class ProductRepository extends Repository
         }
 
         return true;
-    }
-
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
-     * Get metadata for the product's associated resources.
-     *
-     * @param  Product  $product  The product to get metadata for.
-     * @return array An array of metadata for the product's resources.
-     */
-    public function getProductMetaData(Product $product): array
-    {
-        $meta_data_array = [];
-        foreach ($product->data as $value) {
-            $filePath = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
-            $meta_data = $this->getFileMetaData($filePath);
-
-            if ($meta_data) {
-                $meta_data_array[] = $meta_data;
-            }
-        }
-
-        return $meta_data_array;
     }
 
     /**

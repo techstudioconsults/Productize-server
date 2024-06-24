@@ -10,14 +10,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DigitalProductCategory;
+use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
+use App\Enums\SkillSellingCategory;
 use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
 use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\SearchRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Http\Resources\ExternalProductResource;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Mail\BestSellerCongratulations;
@@ -31,7 +35,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Mail;
 
 /**
@@ -46,7 +49,8 @@ class ProductController extends Controller
         protected UserRepository $userRepository,
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -82,9 +86,9 @@ class ProductController extends Controller
     {
         $status = ProductStatusEnum::Published->value;
 
-        $products = $this->productRepository->query(['status' => $status])->paginate();
+        $products = $this->productRepository->find(['status' => $status]);
 
-        return new ProductCollection($products);
+        return ExternalProductResource::collection($products);
     }
 
     /**
@@ -133,49 +137,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        // Retrieve product data array
-        $data = $product->data;
-
-        // Declare an array to hold product meta data
-        $meta_data_array = [];
-
-        // For each digital product, retrieve its file metadata from DigitalOcean.
-        foreach ($data as $value) {
-
-            /**
-             * Remove the domain from the file path.
-             *
-             * This step is necessary to extract the relative file path from the absolute URL.
-             * The CDN endpoint is configured in the filesystems.php configuration file.
-             *
-             * Example:
-             * If the data URL is "https://productize.nyc3.cdn.digitaloceanspaces.com/avatars/avatar.png",
-             * after removing the CDN endpoint, the file path becomes "avatars/avatar.png".
-             *
-             * @see \config\filesystems.php
-             *
-             * @param  string  $value  The absolute URL of the digital product.
-             * @return string The relative file path of the digital product.
-             */
-            $file_path = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
-
-            // Retrieve metadata for the file from the product repository.
-            $meta_data = $this->productRepository->getFileMetaData($file_path);
-
-            // If metadata is available, add it to the array.
-            if ($meta_data) {
-                $meta_data_array[] = $meta_data; // Simplified array pushing
-            }
-        }
-
-        $productData = (new ProductResource($product))->toArray(request());
-
-        $response = array_merge($productData, [
-            'no_of_resources' => count($meta_data_array),
-            'resources_info' => $meta_data_array,
-        ]);
-
-        return $response;
+        return new ProductResource($product);
     }
 
     /**
@@ -203,19 +165,11 @@ class ProductController extends Controller
             $this->productRepository->trackSearch($product, $user);
         }
 
-        if (! $this->productRepository->isPublished($product)) {
+        if (!$this->productRepository->isPublished($product)) {
             throw new BadRequestException();
         }
 
-        $meta_data_array = $this->productRepository->getProductMetaData($product);
-
-        $product_info = $this->productRepository->getProductExternal($product);
-
-        return new JsonResponse([
-            ...$product_info,
-            'no_of_resources' => count($meta_data_array),
-            'resources_info' => $meta_data_array,
-        ]);
+        return new ExternalProductResource($product);
     }
 
     /**
@@ -552,10 +506,9 @@ class ProductController extends Controller
      */
     public function topProducts()
     {
-        $top_products = $this->productRepository->topProducts();
+        $top_products = $this->productRepository->topProducts()->paginate(5);
 
-        return new ProductCollection($top_products
-            ->limit(5)->paginate(5));
+        return ExternalProductResource::collection($top_products);
     }
 
     /**
@@ -704,7 +657,7 @@ class ProductController extends Controller
         // Save the search results in cookie
         $cookie = cookie('search_term', json_encode($products->pluck('id')->toArray()), 60);
 
-        return response()->json(new ProductCollection($products))->cookie($cookie);
+        return (ExternalProductResource::collection($products))->response()->cookie($cookie);
     }
 
     /**
@@ -729,7 +682,7 @@ class ProductController extends Controller
             $products = $this->productRepository->findSearches($user);
         }
 
-        return new ProductCollection($products);
+        return ExternalProductResource::collection($products);
     }
 
     /**
@@ -774,5 +727,21 @@ class ProductController extends Controller
         return new JsonResource([
             'message' => 'Email sent',
         ]);
+    }
+
+    public function types()
+    {
+        $types = [
+            [
+                'name' => ProductEnum::DIGITAL_PRODUCT->value,
+                'categories' => DigitalProductCategory::cases()
+            ],
+            [
+                'name' => ProductEnum::SKILL_SELLING->value,
+                'categories' => SkillSellingCategory::cases()
+            ],
+        ];
+
+        return new JsonResource($types);
     }
 }

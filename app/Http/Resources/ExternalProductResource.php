@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProductResource extends JsonResource
+class ExternalProductResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,24 +15,17 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'user_id' => $this->user_id,
             'title' => $this->title,
-            'price' => $this->price,
-            'description' => $this->description,
-            'product_type' => $this->product_type,
-            'highlights' => $this->highlights,
             'thumbnail' => $this->thumbnail,
+            'price' => (int) $this->price,
+            'publisher' => $this->user->full_name,
+            'slug' => $this->slug,
+            'highlights' => $this->highlights,
+            'product_type' => $this->product_type,
             'cover_photos' => $this->cover_photos,
             'tags' => $this->tags,
-            'stock_count' => (bool) $this->stock_count,
-            'choose_quantity' => (bool) $this->choose_quantity,
-            'show_sales_count' => (bool) $this->show_sales_count,
-            'link' => config('app.client_url') . "/products/$this->slug",
-            'status' => $this->status ?? 'draft',
-            'slug' => $this->slug,
-            'total_order' => $this->totalOrder(),
-            'total_sales' => (int) $this->totalSales(),
+            'description' => $this->description,
+            'status' => $this->status,
             'resources' => $this->resources->map(function ($resource) {
                 return [
                     'id' => $resource->id,
@@ -42,9 +35,6 @@ class ProductResource extends JsonResource
                     'extension' => $resource->extension,
                 ];
             }),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-            'deleted_at' => $this->deleted_at,
         ];
     }
 }

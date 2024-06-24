@@ -92,7 +92,7 @@ class DigitalProductRepository extends Repository
     {
         return DigitalProduct::where($filter)->firstOr(function () {
             return null;
-         });
+        });
     }
 
     /**

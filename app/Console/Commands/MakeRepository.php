@@ -66,7 +66,7 @@ class MakeRepository extends Command
         $model = $this->option('model');
 
         // Define the path to store the repository
-        $path = app_path('Repositories/'.$name.'.php');
+        $path = app_path('Repositories/' . $name . '.php');
 
         // Check if file already exists
         if ($this->files->exists($path)) {
@@ -75,7 +75,7 @@ class MakeRepository extends Command
             return;
         }
 
-        if (! $model) {
+        if (!$model) {
             $this->error('Model for repository not passed. Example usage: php artisan make:repository ExampleRepository --model=ExampleModel');
 
             return;
@@ -198,7 +198,7 @@ class MakeRepository extends Command
                 {
                     return DummyModel::where($filter)->firstOr(function () {
                         return null;
-                     });
+                    });
                 }
 
                 /**
@@ -232,7 +232,7 @@ class MakeRepository extends Command
      */
     protected function makeDirectory($path)
     {
-        if (! $this->files->isDirectory(dirname($path))) {
+        if (!$this->files->isDirectory(dirname($path))) {
             $this->files->makeDirectory(dirname($path), 0755, true, true);
         }
     }

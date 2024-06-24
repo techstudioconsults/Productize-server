@@ -2,48 +2,93 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ServerErrorException;
+use App\Http\Requests\StoreDigitalProductRequest;
+use App\Http\Resources\DigitalProductResource;
 use App\Models\DigitalProduct;
+use App\Repositories\DigitalProductRepository;
+use App\Repositories\ProductRepository;
+use App\Repositories\ProductResourceRepository;
+use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DigitalProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function __construct(
+        protected DigitalProductRepository $digitalProductRepository,
+        protected ProductResourceRepository $productResourceRepository,
+        protected ProductRepository $productRepository,
+    ) {
     }
+
+    // /**
+    //  * Display a listing of the resource.
+    //  */
+    // public function index()
+    // {
+    //     //
+    // }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreDigitalProductRequest $request)
     {
-        //
+        $entity = $request->validated();
+
+        $product = $this->productRepository->findById($entity['product_id']);
+
+        if (!$product) throw new NotFoundException("Product Not Found");
+
+        $resources = $entity['resources'];
+        unset($entity['resources']);
+
+        try {
+            $digital_product = DB::transaction(function () use ($resources, $product, $entity) {
+
+                $resources = $this->productResourceRepository->uploadResources($resources, $product->product_type);
+
+                foreach ($resources as $resource) {
+                    $this->productResourceRepository->create(['product_id' => $product->id, ...$resource]);
+                }
+
+                return $this->digitalProductRepository->create($entity);
+            });
+
+            return new DigitalProductResource($digital_product);
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [
+                'endpoint' => '/api/digital-products',
+                'method' => 'POST'
+            ]);
+
+            throw new ServerErrorException($th->getMessage(), 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(DigitalProduct $digitalProduct)
-    {
-        //
-    }
+    // /**
+    //  * Display the specified resource.
+    //  */
+    // public function show(DigitalProduct $digitalProduct)
+    // {
+    //     //
+    // }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, DigitalProduct $digitalProduct)
-    {
-        //
-    }
+    // /**
+    //  * Update the specified resource in storage.
+    //  */
+    // public function update(Request $request, DigitalProduct $digitalProduct)
+    // {
+    //     //
+    // }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(DigitalProduct $digitalProduct)
-    {
-        //
-    }
+    // /**
+    //  * Remove the specified resource from storage.
+    //  */
+    // public function destroy(DigitalProduct $digitalProduct)
+    // {
+    //     //
+    // }
 }

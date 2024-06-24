@@ -160,12 +160,12 @@ class ProductController extends Controller
             $file_path = Str::remove(config('filesystems.disks.spaces.cdn_endpoint'), $value);
 
             // Retrieve metadata for the file from the product repository.
-            $meta_data = $this->productRepository->getFileMetaData($file_path);
+            // $meta_data = $this->productRepository->getFileMetaData($file_path);
 
             // If metadata is available, add it to the array.
-            if ($meta_data) {
-                $meta_data_array[] = $meta_data; // Simplified array pushing
-            }
+            // if ($meta_data) {
+            //     $meta_data_array[] = $meta_data; // Simplified array pushing
+            // }
         }
 
         $productData = (new ProductResource($product))->toArray(request());
@@ -207,15 +207,15 @@ class ProductController extends Controller
             throw new BadRequestException();
         }
 
-        $meta_data_array = $this->productRepository->getProductMetaData($product);
+        // $meta_data_array = $this->productRepository->getProductMetaData($product);
 
-        $product_info = $this->productRepository->getProductExternal($product);
+        // $product_info = $this->productRepository->getProductExternal($product);
 
-        return new JsonResponse([
-            ...$product_info,
-            'no_of_resources' => count($meta_data_array),
-            'resources_info' => $meta_data_array,
-        ]);
+        // return new JsonResponse([
+        //     ...$product_info,
+        //     'no_of_resources' => count($meta_data_array),
+        //     'resources_info' => $meta_data_array,
+        // ]);
     }
 
     /**

@@ -4,5 +4,5 @@ namespace App\Enums;
 
 enum DigitalProductCategory: string
 {
-    case Product = 'product';
+    case Product = 'Product';
 }

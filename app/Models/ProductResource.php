@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DigitalProduct extends Model
+class ProductResource extends Model
 {
     use HasFactory;
     use HasUuids;
@@ -19,19 +20,22 @@ class DigitalProduct extends Model
 
     public $incrementing = false;
 
-    protected $fillable = [
-        'product_id',
-        'category'
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'resource' => AsArrayObject::class,
     ];
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function resources()
-    {
-        return $this->hasManyThrough(ProductResource::class, Product::class, 'id', 'product_id', 'product_id', 'id');
-    }
-
+    protected $fillable = [
+        'product_id',
+        'digital_product_id',
+        'mime_type',
+        'resource',
+        'size',
+        'extension',
+        'url'
+    ];
 }

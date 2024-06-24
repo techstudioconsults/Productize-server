@@ -14,9 +14,11 @@ return new class extends Migration
     {
         Schema::create('digital_products', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            // $table->foreignIdFor(\App\Models\Product::class, 'product_id')->constrained()->cascadeOnDelete();
+
             $table->foreignIdFor(\App\Models\Product::class, 'product_id')->cascadeOnDelete()->unique();
             $table->enum('category', array_column(DigitalProductCategory::cases(), 'value'))->default(DigitalProductCategory::Product->value);
-            $table->json('resource'); // The product
+            $table->softDeletes('deleted_at', 0);
             $table->timestamps();
         });
     }

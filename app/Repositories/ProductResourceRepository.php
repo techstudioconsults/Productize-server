@@ -10,14 +10,13 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Storage;
 use Str;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
- * @author
+ * @author @Intuneteq
  *
  * @version 1.0
  *
- * @since
+ * @since 24-06-2024
  *
  * Repository for ProductResource resource
  */
@@ -26,7 +25,7 @@ class ProductResourceRepository extends Repository
     const PRODUCT_DATA_PATH = 'resources';
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Create a new productResource with the provided entity.
      *
@@ -40,7 +39,7 @@ class ProductResourceRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Query productResource based on the provided filter.
      *
@@ -61,7 +60,7 @@ class ProductResourceRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Find productResources based on the provided filter.
      *
@@ -74,7 +73,7 @@ class ProductResourceRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Find a productResource by their ID.
      *
@@ -87,7 +86,7 @@ class ProductResourceRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Find a single productResource based on the provided filter.
      *
@@ -102,7 +101,7 @@ class ProductResourceRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Update an entity in the database.
      *

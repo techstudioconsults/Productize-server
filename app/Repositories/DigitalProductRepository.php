@@ -9,18 +9,18 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @author
+ * @author @Intuneteq
  *
  * @version 1.0
  *
- * @since
+ * @since 24-06-2024
  *
  * Repository for DigitalProduct resource
  */
 class DigitalProductRepository extends Repository
 {
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Create a new digitalProduct with the provided entity.
      *
@@ -34,7 +34,7 @@ class DigitalProductRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Query digitalProduct based on the provided filter.
      *
@@ -55,7 +55,7 @@ class DigitalProductRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Find digitalProducts based on the provided filter.
      *
@@ -68,7 +68,7 @@ class DigitalProductRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Find a digitalProduct by their ID.
      *
@@ -81,7 +81,7 @@ class DigitalProductRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Find a single digitalProduct based on the provided filter.
      *
@@ -96,7 +96,7 @@ class DigitalProductRepository extends Repository
     }
 
     /**
-     * @author
+     * @author @Intuneteq
      *
      * Update an entity in the database.
      *

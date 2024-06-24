@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\DigitalProductCategory;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
-class UpdateProductRequest extends FormRequest
+class StoreDigitalProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,23 +21,15 @@ class UpdateProductRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'title' => 'string',
-            'price' => 'integer',
-            'description' => 'string',
-            'cover_photos.*' => 'image',
-            'thumbnail' => 'image',
-            'highlights' => 'array',
-            'highlights.*' => 'string',
-            'tags' => 'array',
-            'tags*' => 'string',
-            'stock_count' => 'boolean',
-            'choose_quantity' => 'boolean',
-            'show_sales_count' => 'boolean',
+            'category' => ['required', new Enum(DigitalProductCategory::class)],
+            'resources' => 'required',
+            'resources.*' => 'required|file',
+            'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }
 

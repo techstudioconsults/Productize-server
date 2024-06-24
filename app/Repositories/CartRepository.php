@@ -23,11 +23,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class CartRepository extends Repository
 {
-    public function seed(): void
-    {
-        Cart::factory()->create()->count(10);
-    }
-
     /**
      * @author @Intuneteq Tobi Olanitori
      *

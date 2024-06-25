@@ -10,9 +10,8 @@
 
 namespace Database\Seeders;
 
-// use App\Models\Faq;
+use App\Models\Faq;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class FaqSeeder extends Seeder
 {
@@ -21,24 +20,24 @@ class FaqSeeder extends Seeder
      */
     public function run(): void
     {
-        //
-        DB::table('faqs')->insert([
-            [
-                'id' => \Illuminate\Support\Str::uuid(),
-                'title' => 'General Question',
-                'question' => 'What is Productize?',
-                'answer' => 'We sell digital Products',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => \Illuminate\Support\Str::uuid(),
-                'title' => 'Sellers',
-                'question' => 'Our end goals?',
-                'answer' => 'To sell and buy products',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+       Faq::factory()->create([
+        'title' => "General Question",
+        'question' => 'What is Productize?',
+        'answer' => 'Productize is a platform for buying and selling',
+       ]);
+
+       Faq::factory()->create([
+        'title' => "General Question",
+        'question' => 'Which club is the best?',
+        'answer' => 'Real Madrid football club',
+       ]);
+
+       Faq::factory()->create([
+        'title' => "Product Question",
+        'question' => 'How do we upload products?',
+        'answer' => 'Navigate to your user dashboard and head to the create product section.',
+       ]);
+
+       Faq::factory(3)->create();
     }
 }

@@ -57,7 +57,7 @@ class Handler extends ExceptionHandler
      */
     protected function handleNotFound($request, NotFoundHttpException $exception)
     {
-        $message = "The route " . $request->path() . " could not be found.";
+        $message = 'The route '.$request->path().' could not be found.';
         $ipAddress = $request->ip();
         $userAgent = $request->header('User-Agent');
 
@@ -66,7 +66,7 @@ class Handler extends ExceptionHandler
             'ip' => $ipAddress,
             'user_agent' => $userAgent,
             'url' => $request->fullUrl(),
-            'exception_message' => $exception->getMessage()
+            'exception_message' => $exception->getMessage(),
         ]);
 
         if ($request->acceptsJson()) {

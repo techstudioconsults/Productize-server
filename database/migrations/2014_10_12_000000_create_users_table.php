@@ -36,6 +36,10 @@ return new class extends Migration
             $table->boolean('purchase_notification')->default(0);
             $table->boolean('news_and_update_notification')->default(0);
             $table->boolean('payout_notification')->default(0);
+            $table->string('country')->nullable();
+            $table->string('document_type')->nullable();
+            $table->string('document_image')->nullable();
+            $table->boolean('kyc_complete')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

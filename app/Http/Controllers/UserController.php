@@ -19,6 +19,7 @@ use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateKycRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Log;
 use Throwable;
 
 /**
@@ -49,7 +51,8 @@ class UserController extends Controller
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
         protected PayoutRepository $payoutRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -130,7 +133,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -184,7 +187,7 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if (! Hash::check($validated['password'], $user->password)) {
+        if (!Hash::check($validated['password'], $user->password)) {
             throw new BadRequestException('Incorrect Password');
         }
 
@@ -281,5 +284,16 @@ class UserController extends Controller
         return new JsonResource([
             'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.',
         ]);
+    }
+
+    public function updateKyc(UpdateKycRequest $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validated();
+
+        $updated = $this->userRepository->update($user, $validated);
+
+        return new UserResource($updated);
     }
 }

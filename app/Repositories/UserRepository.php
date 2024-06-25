@@ -14,6 +14,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
+use App\Http\Requests\UpdateKycRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,6 +23,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Storage;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -30,10 +32,14 @@ use Illuminate\Support\Facades\Schema;
  */
 class UserRepository extends Repository
 {
+
+    const KYCDOCUMENT_PATH = 'kyc-document';
+
     public function __construct(
         protected OrderRepository $orderRepository,
         protected CustomerRepository $customerRepository
-    ) {}
+    ) {
+    }
 
     public function seed(): void
     {
@@ -57,7 +63,7 @@ class UserRepository extends Repository
     {
         $user = new User();
 
-        if (! isset($credentials['email'])) {
+        if (!isset($credentials['email'])) {
             throw new BadRequestException('No Email Provided');
         }
 
@@ -102,7 +108,7 @@ class UserRepository extends Repository
     {
         // Remove keys with null values from the filter array
         $filter = array_filter($filter, function ($value) {
-            return ! is_null($value);
+            return !is_null($value);
         });
 
         $query = User::query();
@@ -166,13 +172,18 @@ class UserRepository extends Repository
      */
     public function update(Model $entity, array $updatables): User
     {
-        if (! $entity instanceof User) {
+        if (!$entity instanceof User) {
             throw new ModelCastException('User', get_class($entity));
         }
 
         // Ensure the user is not attempting to update the user's email
         if (array_key_exists('email', $updatables)) {
             throw new BadRequestException("Column 'email' cannot be updated");
+        }
+
+        if (isset($updatables['document_image'])) {
+            $documentImage = $this->uploadDocumentImage($updatables['document_image']);
+            $updatables['document_image'] = $documentImage;
         }
 
         // Assign the updates to the corresponding fields of the User instance
@@ -209,7 +220,7 @@ class UserRepository extends Repository
             throw new BadRequestException("Column 'email' cannot be updated");
         }
 
-        if (! Schema::hasColumn((new User)->getTable(), $column)) {
+        if (!Schema::hasColumn((new User)->getTable(), $column)) {
             throw new UnprocessableException("Column '$column' does not exist in the User table.");
         }
 
@@ -323,7 +334,7 @@ class UserRepository extends Repository
 
         $un_filled = $collection->whereNull();
 
-        if ($un_filled->isEmpty() && ! $user->profile_completed_at) {
+        if ($un_filled->isEmpty() && !$user->profile_completed_at) {
             $user->profile_completed_at = Carbon::now();
             $user->save();
         }
@@ -338,10 +349,36 @@ class UserRepository extends Repository
     {
         $user = $this->findOne(['email' => $email]);
 
-        if (! $user) {
+        if (!$user) {
             return $this->create(['email' => $email, 'full_name' => $name]);
         }
 
         return $user;
+    }
+
+    /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Uploads a user's document image and returns its storage path.
+     *
+     * @param  object  $documentImage  The document image file to upload.
+     * @return string The storage path of the uploaded document image.
+     *
+     * @throws BadRequestException If the provided document image fails validation.
+     */
+    public function uploadDocumentImage(object $documentImage): string
+    {
+        // Each item in the 'data' array must be a file
+        if (!$this->isValidated([$documentImage], ['required|image'])) {
+            throw new BadRequestException($this->getValidator()->errors()->first());
+        }
+
+        $documentImagePath = Storage::disk('spaces')->putFileAs(
+            self::KYCDOCUMENT_PATH,
+            $documentImage,
+            str_replace(' ', '_', $documentImage->getClientOriginalName())
+        );
+
+        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $documentImagePath;
     }
 }

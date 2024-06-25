@@ -62,6 +62,8 @@ Route::group([
 
     Route::get('/stats/admin', [ProductController::class, 'stats'])->middleware('abilities:role:super_admin')->name('stats');
 
+    Route::get('/types', [ProductController::class, 'types'])->withoutMiddleware('auth:sanctum')->name('types');
+
     Route::get('/{product}', [ProductController::class, 'show'])->name('show')->middleware('can:view,product');
 
     Route::get('/{product}/restore', [ProductController::class, 'restore'])->middleware('can:restore,product')->name('restore');

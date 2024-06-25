@@ -74,14 +74,14 @@ class AuthController extends Controller
             // Create a toke with role "user"
             $token = $user->createToken('access-token', ['role:user'])->plainTextToken;
 
+            // Trigger register event
+            event(new Registered($user));
+
             return ['user' => $user, 'token' => $token];
         });
 
         $user = $result['user'];
         $token = $result['token'];
-
-        // Trigger register event
-        event(new Registered($user));
 
         $response = ['user' => new UserResource($user), 'token' => $token];
 

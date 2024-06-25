@@ -141,29 +141,6 @@ class UserController extends Controller
             $validated['logo'] = $logoUrl;
         }
 
-        if (isset($validated['document_image'])) {
-            $documentImage = $validated['document_image'];
-
-            unset($validated['document_image']);
-
-            $originalName = $documentImage->getClientOriginalName();
-
-            $documentImageUrl = null;
-
-            Log::critical('message', ['error' => '']);
-
-            try {
-                $path = Storage::putFileAs('documentImage', $documentImage, $originalName);
-
-                $documentImageUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
-            } catch (\Throwable $th) {
-                Log::critical('message', ['error' => $th]);
-                throw new ServerErrorException($th->getMessage());
-            }
-
-            $validated['document_image'] = $documentImageUrl;
-        }
-
         try {
             $user = $this->userRepository->update($user, $validated);
 

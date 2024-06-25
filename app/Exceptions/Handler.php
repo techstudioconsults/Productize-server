@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -56,8 +57,20 @@ class Handler extends ExceptionHandler
      */
     protected function handleNotFound($request, NotFoundHttpException $exception)
     {
+        $message = 'The route '.$request->path().' could not be found.';
+        $ipAddress = $request->ip();
+        $userAgent = $request->header('User-Agent');
+
+        // Log additional information
+        Log::error($message, [
+            'ip' => $ipAddress,
+            'user_agent' => $userAgent,
+            'url' => $request->fullUrl(),
+            'exception_message' => $exception->getMessage(),
+        ]);
+
         if ($request->acceptsJson()) {
-            throw new NotFoundException($exception->getMessage());
+            throw new NotFoundException($message);
         }
 
         return response()->view('errors.404', [], 404);

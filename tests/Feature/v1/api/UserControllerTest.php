@@ -295,7 +295,6 @@ class UserControllerTest extends TestCase
             'document_image' => $image,
         ];
 
-
         // Send a POST request to the updateKyc endpoint
         $response = $this->postJson(route('users.kyc'), $data);
 
@@ -319,7 +318,6 @@ class UserControllerTest extends TestCase
             'document_type' => 'Invalid Type',
         ]);
 
-
         $response->assertStatus(401);
     }
 
@@ -329,7 +327,6 @@ class UserControllerTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user);
-
 
         Storage::fake('spaces');
 
@@ -351,17 +348,16 @@ class UserControllerTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJson([
-            'message' => 'The document image must not be greater than 2mb'
+            'message' => 'The document image must not be greater than 2mb',
         ]);
     }
 
     public function test_update_with_different_document_types()
     {
 
-        $documentTypes = ["Driver's license", "National Id card", "National Passport"];
+        $documentTypes = ["Driver's license", 'National Id card', 'National Passport'];
 
         foreach ($documentTypes as $type) {
-
 
             $user = User::factory()->create();
 

@@ -155,7 +155,7 @@ class User extends Authenticatable implements CanResetPassword
      */
     public function receivesBroadcastNotificationsOn(): string
     {
-        return 'users.' . $this->id;
+        return 'users.'.$this->id;
     }
 
     /**
@@ -165,6 +165,6 @@ class User extends Authenticatable implements CanResetPassword
      */
     public function kycComplete()
     {
-        return !is_null($this->country) && !is_null($this->document_type) && !is_null($this->document_image);
+        return ! is_null($this->country) && ! is_null($this->document_type) && ! is_null($this->document_image);
     }
 }

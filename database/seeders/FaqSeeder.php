@@ -20,24 +20,24 @@ class FaqSeeder extends Seeder
      */
     public function run(): void
     {
-       Faq::factory()->create([
-        'title' => "General Question",
-        'question' => 'What is Productize?',
-        'answer' => 'Productize is a platform for buying and selling',
-       ]);
+        Faq::factory()->create([
+            'title' => 'General Question',
+            'question' => 'What is Productize?',
+            'answer' => 'Productize is a platform for buying and selling',
+        ]);
 
-       Faq::factory()->create([
-        'title' => "General Question",
-        'question' => 'Which club is the best?',
-        'answer' => 'Real Madrid football club',
-       ]);
+        Faq::factory()->create([
+            'title' => 'General Question',
+            'question' => 'Which club is the best?',
+            'answer' => 'Real Madrid football club',
+        ]);
 
-       Faq::factory()->create([
-        'title' => "Product Question",
-        'question' => 'How do we upload products?',
-        'answer' => 'Navigate to your user dashboard and head to the create product section.',
-       ]);
+        Faq::factory()->create([
+            'title' => 'Product Question',
+            'question' => 'How do we upload products?',
+            'answer' => 'Navigate to your user dashboard and head to the create product section.',
+        ]);
 
-       Faq::factory(3)->create();
+        Faq::factory(3)->create();
     }
 }

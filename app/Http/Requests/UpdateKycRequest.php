@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  *  @author @obajide028 Odesanya Babajide
  *
@@ -9,10 +8,8 @@
  *  @since 21-06-2024
  */
 
+namespace App\Http\Requests;
 
- namespace App\Http\Requests;
-
-use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,8 +40,8 @@ class UpdateKycRequest extends FormRequest
 
     public function messages()
     {
-        return[
-            'document_image.max' => 'The document image must not be greater than 2mb'
+        return [
+            'document_image.max' => 'The document image must not be greater than 2mb',
         ];
     }
 

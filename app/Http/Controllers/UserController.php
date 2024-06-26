@@ -19,6 +19,7 @@ use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
 use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateKycRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -281,5 +282,16 @@ class UserController extends Controller
         return new JsonResource([
             'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.',
         ]);
+    }
+
+    public function updateKyc(UpdateKycRequest $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validated();
+
+        $updated = $this->userRepository->update($user, $validated);
+
+        return new UserResource($updated);
     }
 }

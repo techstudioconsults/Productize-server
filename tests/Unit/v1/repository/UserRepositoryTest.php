@@ -13,7 +13,9 @@ use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Storage;
 use Tests\TestCase;
 
 use function PHPUnit\Framework\assertEquals;
@@ -495,5 +497,60 @@ class UserRepositoryTest extends TestCase
             'email' => $email,
             'full_name' => $name,
         ]);
+    }
+
+    public function test_upload_document_image(): void
+    {
+        // Fake spaces storage
+        Storage::fake('spaces');
+
+        $file_name = 'document.png';
+
+        $document = UploadedFile::fake()->image($file_name);
+
+        $expected_result = config('filesystems.disks.spaces.cdn_endpoint').'/'.UserRepository::KYCDOCUMENT_PATH."/$file_name";
+
+        $result = $this->userRepository->uploadDocumentImage($document);
+
+        Storage::disk('spaces')->assertExists(UserRepository::KYCDOCUMENT_PATH."/$file_name");
+
+        $this->assertEquals($expected_result, $result);
+    }
+
+    public function test_upload_document_invalid_image(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->userRepository->uploadDocumentImage(UploadedFile::fake()->create('not_an_image.pdf'));
+    }
+
+    public function test_update_kyc(): void
+    {
+        $expected_user = User::factory()->create();
+
+        //Fake spaces storage
+        Storage::fake('spaces');
+
+        $user = $this->userRepository->update($expected_user, [
+            'country' => 'Nigeria',
+            'document_type' => 'National Id card',
+            'document_image' => UploadedFile::fake()->image('document_image.jpg'),
+        ]);
+
+        // Assert that the user's information was updated correctly
+        $this->assertEquals($user->country, 'Nigeria');
+        $this->assertEquals($user->document_type, 'National Id card');
+
+        //Assert that the document image was stored
+        $this->assertNotEmpty($user->document_image);
+
+        // Extract the file path from the full URL
+        $filePath = str_replace('https://productize.nyc3.cdn.digitaloceanspaces.com/', '', $user->document_image);
+
+        // Assert that the file exists in the faked storage
+        Storage::disk('spaces')->assertExists($filePath);
+
+        // Optionally, you can check if the stored file name contains the original file name
+        $this->assertStringContainsString('document_image', $filePath);
     }
 }

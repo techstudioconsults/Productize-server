@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use App\Dtos\CustomerDto;
+use App\Dtos\SubscriptionDto;
 use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Models\Paystack;
@@ -61,11 +63,12 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json',
-        ])->post($this->baseUrl.'/customer', $payload)->throw()->json();
+        ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
-        return $response['data'];
+        return CustomerDto::create($response['data']);
+        // return $response['data'];
     }
 
     /**
@@ -73,14 +76,15 @@ class PaystackRepository
      */
     public function fetchCustomer(string $email)
     {
-        $url = $this->baseUrl."/customer/$email";
+        $url = $this->baseUrl . "/customer/$email";
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$this->secret_key,
+                'Authorization' => 'Bearer ' . $this->secret_key,
             ])->get($url)->throw()->json();
 
-            return $response['data'];
+            return CustomerDto::create($response['data']);
+            // return $response['data'];
         } catch (\Throwable $th) {
             $status_code = $th->getCode();
 
@@ -101,7 +105,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            'callback_url' => $this->client_url.'/dashboard/home',
+            'callback_url' => $this->client_url . '/dashboard/home',
         ];
 
         if ($isSubscription) {
@@ -109,7 +113,7 @@ class PaystackRepository
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
@@ -121,11 +125,11 @@ class PaystackRepository
     {
 
         $payload = array_merge($payload, [
-            'callback_url' => $this->client_url.'/dashboard/downloads#all-downloads',
+            'callback_url' => $this->client_url . '/dashboard/downloads#all-downloads',
         ]);
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
@@ -145,11 +149,12 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json',
         ])->post($this->subscriptionEndpoint, $payload)->throw()->json();
 
-        return $response['data'];
+        return SubscriptionDto::create($response['data']);
+        // return $response['data'];
     }
 
     public function manageSubscription(string $subscriptionId)
@@ -157,7 +162,7 @@ class PaystackRepository
         $url = "{$this->baseUrl}/subscription/{$subscriptionId}/manage/link";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get($url);
 
         $data = json_decode($response->body(), true);
@@ -173,13 +178,14 @@ class PaystackRepository
     public function fetchSubscription(string $subscriptionId)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
 
         if ($response->successful()) {
             $data = json_decode($response->body(), true);
 
-            return $data['data'];
+            return SubscriptionDto::create($response['data']);
+            // return $data['data'];
         } else {
             Log::critical('Fetch subscription error', ['status' => $response->status()]);
         }
@@ -195,7 +201,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
@@ -213,7 +219,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/disable", $payload)->throw()->json();
@@ -231,7 +237,7 @@ class PaystackRepository
     public function createSubAcount(array $payload)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subaccount", $payload)->throw()->json();
@@ -242,7 +248,7 @@ class PaystackRepository
     public function getBankList()
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/bank?country=nigeria");
 
         return $response['data'];
@@ -251,8 +257,8 @@ class PaystackRepository
     public function validateAccountNumber(string $account_number, string $bank_code)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
-        ])->get("{$this->baseUrl}/bank/resolve?account_number=".$account_number.'&bank_code='.$bank_code);
+            'Authorization' => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . '&bank_code=' . $bank_code);
 
         return $response['status'];
     }
@@ -268,7 +274,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transferrecipient", $payload)->throw()->json();
@@ -287,7 +293,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transfer", $payload)->throw()->json();

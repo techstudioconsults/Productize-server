@@ -2,6 +2,7 @@
 
 namespace App\Dtos;
 
+use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ServerErrorException;
 use Illuminate\Support\Collection;
 
@@ -31,8 +32,8 @@ class CustomerDto implements IDtoFactory
         private string $id,
         private string $email,
         private string $code,
-        private string $first_name,
-        private string $last_name,
+        private ?string $first_name,
+        private ?string $last_name,
         private string $createdAt,
         private Collection $subscriptions
     ) {
@@ -73,7 +74,7 @@ class CustomerDto implements IDtoFactory
      *
      * @return string
      */
-    public function getFirstName(): string
+    public function getFirstName(): ?string
     {
         return $this->first_name;
     }
@@ -83,7 +84,7 @@ class CustomerDto implements IDtoFactory
      *
      * @return string
      */
-    public function getLastName(): string
+    public function getLastName(): ?string
     {
         return $this->last_name;
     }
@@ -101,11 +102,32 @@ class CustomerDto implements IDtoFactory
     /**
      * Get the subscriptions.
      *
-     * @return Collection
+     * @return Collection<int, SubscriptionDto>
      */
     public function getSubscriptions(): Collection
     {
         return $this->subscriptions;
+    }
+
+    /**
+     * Check if the customer is subscribed based on their subscription statuses.
+     *
+     * @return bool True if the customer is subscribed, false otherwise.
+     */
+    public function isSubscribed(): bool
+    {
+        if ($this->subscriptions->isEmpty()) return false;
+
+        $validStatuses = [
+            SubscriptionStatusEnum::ACTIVE->value,
+            SubscriptionStatusEnum::NON_RENEWING->value,
+            SubscriptionStatusEnum::ATTENTION->value,
+            SubscriptionStatusEnum::PENDING->value,
+        ];
+
+        return $this->subscriptions->contains(function (SubscriptionDto $subscription) use ($validStatuses) {
+            return in_array($subscription->getStatus()->value, $validStatuses, true);
+        });
     }
 
     /**
@@ -117,19 +139,19 @@ class CustomerDto implements IDtoFactory
      */
     public static function create(array $customer): self
     {
-        if (!isset($customer['id'], $customer['email'], $customer['code'], $customer['subscriptions'])) {
+        if (!isset($customer['id'], $customer['email'], $customer['customer_code'], $customer['subscriptions'])) {
             throw new ServerErrorException("Invalid Customer Data Transfer");
         }
 
         // Create SubscriptionDto objects from the array data
         $subscriptions = collect($customer['subscriptions'])->map(function ($subscriptionData) {
-            return SubscriptionDto::create([...$subscriptionData, 'code' => $subscriptionData['subscription_code']]);
+            return SubscriptionDto::create($subscriptionData);
         });
 
         return new self(
             $customer['id'],
             $customer['email'],
-            $customer['code'],
+            $customer['customer_code'],
             $customer['first_name'],
             $customer['last_name'],
             $customer['createdAt'],

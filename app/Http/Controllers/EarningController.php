@@ -137,14 +137,3 @@ class EarningController extends Controller
         }
     }
 }
-
-/**
- * Tags
- * product types endpoint - with categories
- * Based on search
- * orders by customer - fixed
- * retrieve payouts - filter - fixed
- * top products for users - it works
- * billing - fixed
- * remove auth from featured and top products - done
- */

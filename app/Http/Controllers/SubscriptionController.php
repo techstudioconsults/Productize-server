@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\InvoiceDto;
 use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
@@ -33,7 +34,8 @@ class SubscriptionController extends Controller
     public function __construct(
         protected SubscriptionRepository $subscriptionRepository,
         protected PaystackRepository $paystackRepository
-    ) {}
+    ) {
+    }
 
     /**
      *  @author @Intuneteq Tobi Olanitori
@@ -104,7 +106,7 @@ class SubscriptionController extends Controller
 
         // If the user has a subscription, return an error with the subscription status
         if ($subscription) {
-            $status = $subscription['status'];
+            $status = $subscription->status;
 
             throw new BadRequestException(
                 "Sorry, you can't perform this action. It appears you already have a subscription plan with status $status."
@@ -244,7 +246,7 @@ class SubscriptionController extends Controller
         }
 
         // User is on a free account
-        if (! $user->isSubscribed()) {
+        if (!$user->isSubscribed()) {
             return new JsonResponse($response);
         }
 
@@ -252,35 +254,29 @@ class SubscriptionController extends Controller
         $db = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
 
         // Log this issue to slack
-        if (! $db) {
+        if (!$db) {
             return new JsonResponse($response);
         }
 
         $subscription_code = $db->subscription_code;
 
         // Log this issue to slack
-        if (! $subscription_code) {
+        if (!$subscription_code) {
             return new JsonResponse($response);
         }
 
         $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
 
-        $plans = Arr::map($subscription['invoices'], function ($plan) {
-            return [
-                'plan' => 'premium',
-                'price' => $plan['amount'] / 100,
-                'status' => $plan['status'],
-                'reference' => $plan['reference'],
-                'date' => $plan['createdAt'],
-            ];
-        });
+        if (!$subscription) {
+            return new JsonResponse($response);
+        }
 
         $response = [
             'id' => $db->id,
-            'renewal_date' => $subscription['next_payment_date'],
+            'renewal_date' => $subscription->getNextPaymentDate(),
             'plan' => $user->account_type,
-            'billing_total' => $subscription['amount'] / 100,
-            'plans' => $plans,
+            'billing_total' => $subscription->getTotalBilling(),
+            'plans' => $subscription->getPlans(),
         ];
 
         return new JsonResponse($response);

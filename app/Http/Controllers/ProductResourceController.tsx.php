@@ -18,8 +18,7 @@ class ProductResourceController extends Controller
     public function __construct(
         protected ProductResourceRepository $productResourceRepository,
         protected ProductRepository $productRepository
-    ) {
-    }
+    ) {}
 
     public function store(StoreProductResourceRequest $request)
     {
@@ -27,17 +26,19 @@ class ProductResourceController extends Controller
 
         $product = $this->productRepository->findById($entity['product_id']);
 
-        if (!$product) throw new NotFoundException("Product Not Found");
+        if (! $product) {
+            throw new NotFoundException('Product Not Found');
+        }
 
         $resource = $entity['resource'];
 
-        $name = Str::uuid() . '.' . $resource->extension(); // geneate a uuid
+        $name = Str::uuid().'.'.$resource->extension(); // geneate a uuid
 
-        $path = Storage::putFileAs("$product->product_type/" . ProductResourceRepository::PRODUCT_DATA_PATH, $resource, $name);
+        $path = Storage::putFileAs("$product->product_type/".ProductResourceRepository::PRODUCT_DATA_PATH, $resource, $name);
 
         $entity = [
             'name' => str_replace(' ', '', $resource->getClientOriginalName()),
-            'url' => config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path,
+            'url' => config('filesystems.disks.spaces.cdn_endpoint').'/'.$path,
             'size' => $resource->getSize(),
             'mime_type' => $resource->getMimeType(),
             'extension' => $resource->extension(),
@@ -60,7 +61,7 @@ class ProductResourceController extends Controller
         $this->productResourceRepository->deleteOne($resouce);
 
         return new JsonResource([
-            'message' => 'Resource Deleted'
+            'message' => 'Resource Deleted',
         ]);
     }
 }

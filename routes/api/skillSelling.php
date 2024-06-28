@@ -20,6 +20,6 @@ Route::controller(SkillSellingController::class)
             'can:allowed,App\Models\SkillSelling',
             'can:premium,App\Models\SkillSelling',
         ])->name('categories');
-        
+
         Route::put('/{skillSelling}', 'update')->name('update');
     });

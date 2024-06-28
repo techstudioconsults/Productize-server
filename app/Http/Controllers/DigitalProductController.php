@@ -6,17 +6,13 @@ use App\Enums\DigitalProductCategory;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreDigitalProductRequest;
-use App\Http\Requests\UpdateDigitalProductRequest;
 use App\Http\Resources\DigitalProductResource;
-use App\Models\Cart;
-use App\Models\DigitalProduct;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\ProductResourceRepository;
 use DB;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
-use PhpParser\Node\Stmt\Catch_;
 
 class DigitalProductController extends Controller
 {
@@ -65,7 +61,6 @@ class DigitalProductController extends Controller
         }
     }
 
-   
     public function categories()
     {
         return new JsonResource(DigitalProductCategory::cases());

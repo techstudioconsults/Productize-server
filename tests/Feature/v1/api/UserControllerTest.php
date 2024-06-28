@@ -335,8 +335,8 @@ class UserControllerTest extends TestCase
 
         $response = $this->postJson(route('users.kyc'), [
             'document_image' => $validFile,
-            'country' => "Nigeria",
-            'document_type' => "National Passport"
+            'country' => 'Nigeria',
+            'document_type' => 'National Passport',
         ]);
 
         $response->assertStatus(200);
@@ -346,8 +346,8 @@ class UserControllerTest extends TestCase
 
         $response = $this->postJson(route('users.kyc'), [
             'document_image' => $invalidFile,
-            'country' => "Nigeria",
-            'document_type' =>"National Passport"
+            'country' => 'Nigeria',
+            'document_type' => 'National Passport',
         ]);
 
         $response->assertStatus(422);
@@ -373,9 +373,9 @@ class UserControllerTest extends TestCase
             $this->actingAs($user);
 
             $data = ['document_type' => $type,
-                     'country' => "Nigeria",
-                     'document_image' => $validFile,
-        ];
+                'country' => 'Nigeria',
+                'document_image' => $validFile,
+            ];
 
             $response = $this->postJson(route('users.kyc'), $data);
 

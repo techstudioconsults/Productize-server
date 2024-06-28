@@ -25,11 +25,11 @@ class SkillSellingController extends Controller
 
     public function update(UpdateSkillSellingRequest $request, SkillSelling $skillSelling)
     {
-         $validated = $request->validated();
+        $validated = $request->validated();
 
-         $updated_skill_selling = $this->skillSellingRepository->update($skillSelling, $validated);
+        $updated_skill_selling = $this->skillSellingRepository->update($skillSelling, $validated);
 
-         return new SkillSellingResource($updated_skill_selling);
+        return new SkillSellingResource($updated_skill_selling);
     }
 
     public function categories()

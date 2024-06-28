@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\SkillSellingCategory;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateSkillSellingRequest extends FormRequest
 {

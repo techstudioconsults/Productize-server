@@ -185,7 +185,10 @@ class OrderRepository extends Repository
             }
 
             if ($start_date && $end_date) {
-                $relation->whereBetween('orders.created_at', [$start_date, $end_date]);
+                $relation->whereBetween('orders.created_at', [
+                    Carbon::parse($start_date)->startOfDay(),
+                    Carbon::parse($end_date)->endOfDay(),
+                ]);
             }
         }
 

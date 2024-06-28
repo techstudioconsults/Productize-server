@@ -462,11 +462,10 @@ class ProductRepository extends Repository
 
             return [
                 'product_id' => $product->id,
-                'total_amount' => $amount,
+                'amount' => $amount,
                 'quantity' => $item['quantity'],
                 'share' => $share,
-                'original_price' => $product->price,
-                'discounted_price' => $price,
+                'price' => $price,
             ];
         });
     }

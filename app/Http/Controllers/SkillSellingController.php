@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\SkillSellingCategory;
 use App\Http\Requests\StoreSkillSellingRequest;
+use App\Http\Requests\UpdateSkillSellingRequest;
 use App\Http\Resources\SkillSellingResource;
+use App\Models\SkillSelling;
 use App\Repositories\SkillSellingRepository;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,6 +21,15 @@ class SkillSellingController extends Controller
         $skill_selling = $this->skillSellingRepository->create($entity);
 
         return new SkillSellingResource($skill_selling);
+    }
+
+    public function update(UpdateSkillSellingRequest $request, SkillSelling $skillSelling)
+    {
+         $validated = $request->validated();
+
+         $updated_skill_selling = $this->skillSellingRepository->update($skillSelling, $validated);
+
+         return new SkillSellingResource($updated_skill_selling);
     }
 
     public function categories()

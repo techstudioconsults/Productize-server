@@ -482,7 +482,6 @@ class ProductController extends Controller
             return [
                 'id' => $product->id,
                 'title' => $product->title,
-                'data' => $product->data,
                 'thumbnail' => $product->thumbnail,
                 'slug' => $product->slug,
                 'publisher' => $product->user->full_name,

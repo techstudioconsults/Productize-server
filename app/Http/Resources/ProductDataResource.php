@@ -18,9 +18,9 @@ class ProductDataResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'mime_type' => $this->mime_type,
-            'size' => round($this->size / 1048576, 3) . 'MB', // Convert byte to MB
+            'size' => round($this->size / 1048576, 3).'MB', // Convert byte to MB
             'extension' => $this->extension,
-            'url' => $this->url
+            'url' => $this->url,
         ];
     }
 }

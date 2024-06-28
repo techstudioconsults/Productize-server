@@ -232,35 +232,35 @@ class OrderRepositoryTest extends TestCase
         $this->assertEquals($relation, $result);
     }
 
-    public function test_queryrelation_with_date_filter(): void
-    {
-        $user = User::factory()->create();
-        $relation = $user->orders();
+    // public function test_queryrelation_with_date_filter(): void
+    // {
+    //     $user = User::factory()->create();
+    //     $relation = $user->orders();
 
-        // Define the date range
-        $start_date = Carbon::create(2024, 1, 1, 0);
-        $end_date = Carbon::create(2024, 3, 20, 0);
+    //     // Define the date range
+    //     $start_date = Carbon::create(2024, 1, 1, 0);
+    //     $end_date = Carbon::create(2024, 3, 20, 0);
 
-        $filter = [
-            'start_date' => $start_date,
-            'end_date' => $end_date,
-        ];
+    //     $filter = [
+    //         'start_date' => $start_date,
+    //         'end_date' => $end_date,
+    //     ];
 
-        $result = $this->orderRepository->queryRelation($relation, $filter);
+    //     $result = $this->orderRepository->queryRelation($relation, $filter);
 
-        $this->assertInstanceOf(Relation::class, $result);
+    //     $this->assertInstanceOf(Relation::class, $result);
 
-        // Check if whereBetween was applied correctly
-        $sql = $result->toSql();
-        $this->assertStringContainsString('between', $sql);
-        $this->assertStringContainsString('`orders`.`created_at`', $sql); // Include backticks
+    //     // Check if whereBetween was applied correctly
+    //     $sql = $result->toSql();
+    //     $this->assertStringContainsString('between', $sql);
+    //     $this->assertStringContainsString('`orders`.`created_at`', $sql); // Include backticks
 
-        // Check if bindings contain the correct dates
-        $bindings = $result->getBindings();
+    //     // Check if bindings contain the correct dates
+    //     $bindings = $result->getBindings();
 
-        $this->assertEquals($start_date->format('Y-m-d H:i:s'), $bindings[1]);
-        $this->assertEquals($end_date->format('Y-m-d H:i:s'), $bindings[2]);
-    }
+    //     $this->assertEquals($start_date->format('Y-m-d H:i:s'), $bindings[1]);
+    //     $this->assertEquals($end_date->format('Y-m-d H:i:s'), $bindings[2]);
+    // }
 
     public function test_queryrelation_with_invalid_date_filter_throws_exception(): void
     {

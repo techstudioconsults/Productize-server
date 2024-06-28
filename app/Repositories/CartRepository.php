@@ -137,7 +137,7 @@ class CartRepository extends Repository
     public function calculateTotalAmount(array $products)
     {
         $total = array_reduce($products, function ($total_amount, $product) {
-            return $total_amount + $product['total_amount'];
+            return $total_amount + $product['amount'];
         }, 0);
     
         return round($total, 2); // Round to 2 decimal places

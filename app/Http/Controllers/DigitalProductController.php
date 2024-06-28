@@ -65,49 +65,7 @@ class DigitalProductController extends Controller
         }
     }
 
-    public function update(UpdateDigitalProductRequest $request, DigitalProduct $digitalProduct)
-    {
-        $entity = $request->validate();
-
-        try{
-            DB::beginTransaction();
-
-            if(isset($entity['product_id'])){
-                $product = $this->productRepository->findById($entity['product_id']);
-
-                if(!$product){
-                    throw new NotFoundException('Product Not Found');
-                }else{
-                    $product = $digitalProduct->product;
-                }
-            }
-
-
-            if (isset($entity['resources'])) {
-                $resources = $this->productResourceRepository->uploadResources($entity['resources'], $product->product_type);
-                foreach ($resources as $resource) {
-                    $this->productResourceRepository->create(['product_id' => $product->id, ...$resource]);
-                }
-                unset($entity['resources']);
-            }
-            $updated_digital_product = $this->digitalProductRepository->update($digitalProduct, $entity);
-
-            DB::commit();
-
-            return new DigitalProductResource($updated_digital_product);
-
-        }catch(\Throwable $th){
-            DB::rollBack();
-            Log::error($th->getMessage(), [
-                'endpoint' => '/api/digital-products/'.$digitalProduct->id,
-                'method' => 'PUT',
-            ]);
-
-            throw new ServerErrorException($th->getMessage(), 500);
-
-        }
-    }
-
+   
     public function categories()
     {
         return new JsonResource(DigitalProductCategory::cases());

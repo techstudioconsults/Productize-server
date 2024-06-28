@@ -31,7 +31,7 @@ class SubscriptionRepository extends Repository
      *
      * @param array $entity The entity containing user information.
      * @return array The response containing subscription and transaction details.
-     * 
+     *
      * @throws ServerErrorException If any error occurs during the process.
      */
     public function start(array $entity): array
@@ -68,10 +68,7 @@ class SubscriptionRepository extends Repository
                 // Initialize the transaction with Paystack
                 $response = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
 
-                return [
-                    'id' => $subscription->id,
-                    ...$response,
-                ];
+                return ['id' => $subscription->id, ...$response->toArray()];
             }
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());

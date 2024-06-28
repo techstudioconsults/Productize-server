@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Dtos\CustomerDto;
 use App\Dtos\SubscriptionDto;
-use App\Enums\SubscriptionStatusEnum;
+use App\Dtos\TransactionInitializationDto;
 use App\Exceptions\ApiException;
 use App\Models\Paystack;
 use App\Models\User;
@@ -42,11 +42,6 @@ class PaystackRepository
      */
     private $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
 
-    public function updateOrCreate(string $user_id, array $updatables)
-    {
-        return Paystack::updateOrCreate(['user_id' => $user_id], $updatables);
-    }
-
     /**
      * Create a plan on the dashboard - https://dashboard.paystack.com/#/plans
      * Subscription page for the plan - https://paystack.com/pay/lijv8w49sn
@@ -55,10 +50,11 @@ class PaystackRepository
      */
     public function createCustomer(User $user)
     {
+        $full_name = explode(' ', trim($user->full_name));
         $payload = [
             'email' => $user->email,
-            'first_name' => $user->full_name,
-            // "last_name" => "Sum",
+            'first_name' => $full_name[0],
+            "last_name" => end($full_name),
             'phone' => $user->phone_number,
         ];
 
@@ -68,7 +64,6 @@ class PaystackRepository
         ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
         return CustomerDto::create($response['data']);
-        // return $response['data'];
     }
 
     /**
@@ -84,7 +79,6 @@ class PaystackRepository
             ])->get($url)->throw()->json();
 
             return CustomerDto::create($response['data']);
-            // return $response['data'];
         } catch (\Throwable $th) {
             $status_code = $th->getCode();
 
@@ -118,7 +112,7 @@ class PaystackRepository
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
 
-        return $response['data'];
+        return TransactionInitializationDto::create($response['data']);
     }
 
     public function initializePurchaseTransaction(mixed $payload)
@@ -134,7 +128,7 @@ class PaystackRepository
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
 
-        return $response['data'];
+        return TransactionInitializationDto::create($response['data']);
     }
 
     /**
@@ -154,7 +148,6 @@ class PaystackRepository
         ])->post($this->subscriptionEndpoint, $payload)->throw()->json();
 
         return SubscriptionDto::create($response['data']);
-        // return $response['data'];
     }
 
     public function manageSubscription(string $subscriptionId)
@@ -172,6 +165,7 @@ class PaystackRepository
             $response->throw();
         }
 
+        // ["link" => ""]
         return $data['data'];
     }
 
@@ -185,7 +179,6 @@ class PaystackRepository
             $data = json_decode($response->body(), true);
 
             return SubscriptionDto::create($response['data']);
-            // return $data['data'];
         } else {
             Log::critical('Fetch subscription error', ['status' => $response->status()]);
         }
@@ -299,64 +292,5 @@ class PaystackRepository
         ])->post("{$this->baseUrl}/transfer", $payload)->throw()->json();
 
         return $response['data'];
-    }
-
-    public function isNewCustomer(string $email): bool
-    {
-        $customer = $this->fetchCustomer($email);
-
-        if ($customer) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
-     * Get the subscription status of a customer.
-     *
-     * @param  array  $customer  The customer data.
-     * @return string|null The status of the latest subscription, or null if no subscriptions exist.
-     */
-    public function getSubscriptionStatus(array $customer): ?string
-    {
-        $subscriptions = $customer['subscriptions'] ?? [];
-
-        if (empty($subscriptions)) {
-            return null;
-        }
-
-        // The first item in the array is the latest one, return its status.
-        return $subscriptions[0]['status'] ?? null;
-    }
-
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
-     * Determine if the customer has an active subscription.
-     *
-     * @param  array|null  $customer  The customer data.
-     * @return bool True if the customer has an active subscription, false otherwise.
-     */
-    public function hasSubscription(?array $customer): bool
-    {
-        if (empty($customer)) {
-            return false;
-        }
-
-        $status = $this->getSubscriptionStatus($customer);
-
-        if (empty($status)) {
-            return false;
-        }
-
-        return in_array($status, [
-            SubscriptionStatusEnum::ACTIVE->value,
-            SubscriptionStatusEnum::NON_RENEWING->value,
-            SubscriptionStatusEnum::ATTENTION->value,
-            SubscriptionStatusEnum::PENDING->value,
-        ], true);
     }
 }

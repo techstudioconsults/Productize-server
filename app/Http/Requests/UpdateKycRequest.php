@@ -32,9 +32,9 @@ class UpdateKycRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'country' => 'string|nullable',
-            'document_type' => 'string|nullable|in:Driver\'s license,National Id card,National Passport',
-            'document_image' => 'image|nullable|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB',
+            'country' => 'required|string',
+            'document_type' => 'required|string|in:Driver\'s license,National Id card,National Passport',
+            'document_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB',
         ];
     }
 

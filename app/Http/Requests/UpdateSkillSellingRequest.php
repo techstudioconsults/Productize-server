@@ -2,9 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\SkillSellingCategory;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
+use App\Exceptions\UnprocessableException;
+use Illuminate\Contracts\Validation\Validator;
 
-class UpdateDagitalProductRequest extends FormRequest
+class UpdateSkillSellingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +26,14 @@ class UpdateDagitalProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'resource.*' => 'file',
+            'level' => 'string',
+            'availability' => 'string',
+            'link' => 'string',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

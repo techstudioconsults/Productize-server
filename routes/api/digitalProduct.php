@@ -20,4 +20,7 @@ Route::controller(DigitalProductController::class)
             'can:allowed,App\Models\DigitalProduct',
             'can:premium,App\Models\DigitalProduct',
         ])->name('categories');
+
+        Route::put('/{resources}', 'update')->name('update');
+
     });

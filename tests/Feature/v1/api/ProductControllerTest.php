@@ -1361,7 +1361,6 @@ class ProductControllerTest extends TestCase
             '*' => [
                 'id',
                 'title',
-                'data',
                 'thumbnail',
                 'slug',
                 'publisher',

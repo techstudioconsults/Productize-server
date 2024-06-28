@@ -15,6 +15,8 @@ Route::controller(SkillSellingController::class)
     ->group(function () {
         Route::post('/', 'store')->name('store');
 
+        Route::get('/{skillSelling}', 'show')->name('show');
+
         Route::get('/categories', 'categories')->withoutMiddleware([
             'auth:sanctum',
             'can:allowed,App\Models\SkillSelling',

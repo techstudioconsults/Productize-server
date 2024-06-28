@@ -23,6 +23,11 @@ class SkillSellingController extends Controller
         return new SkillSellingResource($skill_selling);
     }
 
+    public function show(SkillSelling $skillSelling)
+    {
+        return new SkillSellingResource($skillSelling);
+    }
+
     public function update(UpdateSkillSellingRequest $request, SkillSelling $skillSelling)
     {
         $validated = $request->validated();

@@ -22,6 +22,8 @@ class SkillSellingResource extends JsonResource
             'link' => $this->link,
             'product' => [
                 'id' => $this->product->id,
+                'thumbnail' => $this->product->thumbnail,
+                'cover_photos' => $this->product->cover_photos,
             ],
             'created_at' => $this->created_at,
         ];

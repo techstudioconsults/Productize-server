@@ -7,6 +7,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreDigitalProductRequest;
 use App\Http\Resources\DigitalProductResource;
+use App\Models\DigitalProduct;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\ProductResourceRepository;
@@ -59,6 +60,11 @@ class DigitalProductController extends Controller
 
             throw new ServerErrorException($th->getMessage(), 500);
         }
+    }
+
+    public function show(DigitalProduct $digitalProduct)
+    {
+        return new DigitalProductResource($digitalProduct);
     }
 
     public function categories()

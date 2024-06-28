@@ -7,6 +7,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreDigitalProductRequest;
 use App\Http\Resources\DigitalProductResource;
+use App\Models\DigitalProduct;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\ProductResourceRepository;
@@ -20,7 +21,8 @@ class DigitalProductController extends Controller
         protected DigitalProductRepository $digitalProductRepository,
         protected ProductResourceRepository $productResourceRepository,
         protected ProductRepository $productRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -31,7 +33,7 @@ class DigitalProductController extends Controller
 
         $product = $this->productRepository->findById($entity['product_id']);
 
-        if (! $product) {
+        if (!$product) {
             throw new NotFoundException('Product Not Found');
         }
 
@@ -59,6 +61,11 @@ class DigitalProductController extends Controller
 
             throw new ServerErrorException($th->getMessage(), 500);
         }
+    }
+
+    public function show(DigitalProduct $digitalProduct)
+    {
+        return new DigitalProductResource($digitalProduct);
     }
 
     public function categories()

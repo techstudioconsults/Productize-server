@@ -12,7 +12,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class SkillSellingController extends Controller
 {
-    public function __construct(protected SkillSellingRepository $skillSellingRepository) {}
+    public function __construct(protected SkillSellingRepository $skillSellingRepository)
+    {
+    }
 
     public function store(StoreSkillSellingRequest $request)
     {
@@ -21,6 +23,11 @@ class SkillSellingController extends Controller
         $skill_selling = $this->skillSellingRepository->create($entity);
 
         return new SkillSellingResource($skill_selling);
+    }
+
+    public function show(SkillSelling $skillSelling)
+    {
+        return new SkillSellingResource($skillSelling);
     }
 
     public function update(UpdateSkillSellingRequest $request, SkillSelling $skillSelling)

@@ -18,6 +18,8 @@ class DigitalProductResource extends JsonResource
             'id' => $this->id,
             'product' => [
                 'id' => $this->product->id,
+                'thumbnail' => $this->product->thumbnail,
+                'cover_photos' => $this->product->cover_photos,
             ],
             'resources' => $this->resources->map(function ($resource) {
                 return [
@@ -25,7 +27,7 @@ class DigitalProductResource extends JsonResource
                     'name' => $resource->name,
                     'url' => $resource->url,
                     'mime_type' => $resource->mime_type,
-                    'size' => round($resource->size / 1048576, 3).'MB', // Convert byte to MB
+                    'size' => round($resource->size / 1048576, 3) . 'MB', // Convert byte to MB
                     'extension' => $resource->extension,
                 ];
             }),

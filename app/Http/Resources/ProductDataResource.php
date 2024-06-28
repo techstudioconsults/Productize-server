@@ -14,6 +14,13 @@ class ProductDataResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'mime_type' => $this->mime_type,
+            'size' => round($this->size / 1048576, 3) . 'MB', // Convert byte to MB
+            'extension' => $this->extension,
+            'url' => $this->url
+        ];
     }
 }

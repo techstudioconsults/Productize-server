@@ -2,12 +2,14 @@
 
 namespace App\Repositories;
 
+use App\Dtos\BankDto;
 use App\Dtos\CustomerDto;
 use App\Dtos\SubscriptionDto;
 use App\Dtos\TransactionInitializationDto;
 use App\Exceptions\ApiException;
 use App\Models\Paystack;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -227,24 +229,20 @@ class PaystackRepository
         return $computedSignature === $signature;
     }
 
-    public function createSubAcount(array $payload)
-    {
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
-            'Cache-Control' => 'no-cache',
-            'Content-Type' => 'application/json',
-        ])->post("{$this->baseUrl}/subaccount", $payload)->throw()->json();
-
-        return $response['data'];
-    }
-
-    public function getBankList()
+    /**
+     * Retrive Bank List from Paystack
+     *
+     * @return Collection<int, BankDto>
+     */
+    public function getBankList(): Collection
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/bank?country=nigeria");
 
-        return $response['data'];
+        return collect($response['data'])->map(function ($data) {
+            return BankDto::create($data);
+        });
     }
 
     public function validateAccountNumber(string $account_number, string $bank_code)

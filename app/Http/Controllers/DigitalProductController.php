@@ -7,7 +7,6 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreDigitalProductRequest;
 use App\Http\Resources\DigitalProductResource;
-use App\Models\DigitalProduct;
 use App\Models\Product;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
@@ -67,7 +66,9 @@ class DigitalProductController extends Controller
     {
         $digital_product = $this->digitalProductRepository->findOne(['product_id' => $product->id]);
 
-        if(!$digital_product) throw new NotFoundException("Resource Not Foud");
+        if (! $digital_product) {
+            throw new NotFoundException('Resource Not Foud');
+        }
 
         return new DigitalProductResource($digital_product);
     }

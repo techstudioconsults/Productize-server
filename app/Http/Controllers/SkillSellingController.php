@@ -29,8 +29,10 @@ class SkillSellingController extends Controller
     {
         $skill_selling = $this->skillSellingRepository->findOne(['product_id' => $product->id]);
 
-        if (!$skill_selling) throw new NotFoundException("Resource Not Found");
-        
+        if (! $skill_selling) {
+            throw new NotFoundException('Resource Not Found');
+        }
+
         return new SkillSellingResource($skill_selling);
     }
 

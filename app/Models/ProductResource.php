@@ -39,4 +39,9 @@ class ProductResource extends Model
         'url',
         'name',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

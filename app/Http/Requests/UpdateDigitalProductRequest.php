@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateDagitalProductRequest extends FormRequest
+class UpdateDigitalProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,6 +23,7 @@ class UpdateDagitalProductRequest extends FormRequest
     {
         return [
             'resource.*' => 'file',
+            'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }
 }

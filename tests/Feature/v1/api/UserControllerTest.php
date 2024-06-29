@@ -335,6 +335,8 @@ class UserControllerTest extends TestCase
 
         $response = $this->postJson(route('users.kyc'), [
             'document_image' => $validFile,
+            'country' => 'Nigeria',
+            'document_type' => 'National Passport',
         ]);
 
         $response->assertStatus(200);
@@ -344,6 +346,8 @@ class UserControllerTest extends TestCase
 
         $response = $this->postJson(route('users.kyc'), [
             'document_image' => $invalidFile,
+            'country' => 'Nigeria',
+            'document_type' => 'National Passport',
         ]);
 
         $response->assertStatus(422);
@@ -361,9 +365,17 @@ class UserControllerTest extends TestCase
 
             $user = User::factory()->create();
 
+            Storage::fake('spaces');
+
+            //create a file that's exactly 2048 KB
+            $validFile = UploadedFile::fake()->create('avatar.jpg', 2048);
+
             $this->actingAs($user);
 
-            $data = ['document_type' => $type];
+            $data = ['document_type' => $type,
+                'country' => 'Nigeria',
+                'document_image' => $validFile,
+            ];
 
             $response = $this->postJson(route('users.kyc'), $data);
 

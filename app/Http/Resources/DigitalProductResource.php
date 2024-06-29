@@ -18,6 +18,8 @@ class DigitalProductResource extends JsonResource
             'id' => $this->id,
             'product' => [
                 'id' => $this->product->id,
+                'thumbnail' => $this->product->thumbnail,
+                'cover_photos' => $this->product->cover_photos,
             ],
             'resources' => $this->resources->map(function ($resource) {
                 return [

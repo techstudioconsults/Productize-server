@@ -11,7 +11,6 @@ use App\Models\Product;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
-use Illuminate\Contracts\Cache\Store;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -509,11 +508,11 @@ class UserRepositoryTest extends TestCase
 
         $document = UploadedFile::fake()->image($file_name);
 
-        $expected_result = config('filesystems.disks.spaces.cdn_endpoint') . '/' . UserRepository::KYCDOCUMENT_PATH . "/$file_name";
+        $expected_result = config('filesystems.disks.spaces.cdn_endpoint').'/'.UserRepository::KYCDOCUMENT_PATH."/$file_name";
 
         $result = $this->userRepository->uploadDocumentImage($document);
 
-        Storage::disk('spaces')->assertExists(UserRepository::KYCDOCUMENT_PATH . "/$file_name");
+        Storage::disk('spaces')->assertExists(UserRepository::KYCDOCUMENT_PATH."/$file_name");
 
         $this->assertEquals($expected_result, $result);
     }
@@ -533,8 +532,8 @@ class UserRepositoryTest extends TestCase
         Storage::fake('spaces');
 
         $user = $this->userRepository->update($expected_user, [
-            'country' => "Nigeria",
-            'document_type' => "National Id card",
+            'country' => 'Nigeria',
+            'document_type' => 'National Id card',
             'document_image' => UploadedFile::fake()->image('document_image.jpg'),
         ]);
 
@@ -547,7 +546,6 @@ class UserRepositoryTest extends TestCase
 
         // Extract the file path from the full URL
         $filePath = str_replace('https://productize.nyc3.cdn.digitaloceanspaces.com/', '', $user->document_image);
-
 
         // Assert that the file exists in the faked storage
         Storage::disk('spaces')->assertExists($filePath);

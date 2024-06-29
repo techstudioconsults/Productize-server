@@ -15,9 +15,13 @@ Route::controller(SkillSellingController::class)
     ->group(function () {
         Route::post('/', 'store')->name('store');
 
+        Route::get('/products/{product}', 'show')->name('show');
+
         Route::get('/categories', 'categories')->withoutMiddleware([
             'auth:sanctum',
             'can:allowed,App\Models\SkillSelling',
             'can:premium,App\Models\SkillSelling',
         ])->name('categories');
+
+        Route::put('/{skillSelling}', 'update')->name('update');
     });

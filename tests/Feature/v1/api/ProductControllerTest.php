@@ -1361,7 +1361,6 @@ class ProductControllerTest extends TestCase
             '*' => [
                 'id',
                 'title',
-                'data',
                 'thumbnail',
                 'slug',
                 'publisher',
@@ -1373,7 +1372,6 @@ class ProductControllerTest extends TestCase
             $response->assertJsonFragment([
                 'id' => $product->id,
                 'title' => $product->title,
-                'data' => $product->data,
                 'thumbnail' => $product->thumbnail,
                 'slug' => $product->slug,
                 'publisher' => $publisher->full_name,

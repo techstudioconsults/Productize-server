@@ -21,6 +21,7 @@ class ProductDataResource extends JsonResource
             'size' => round($this->size / 1048576, 3).'MB', // Convert byte to MB
             'extension' => $this->extension,
             'url' => $this->url,
+            'publisher' => $this->product->user->full_name,
         ];
     }
 }

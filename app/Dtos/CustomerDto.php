@@ -131,6 +131,26 @@ class CustomerDto implements IDtoFactory
     }
 
     /**
+     * Get formatted properties.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'email' => $this->getEmail(),
+            'code' => $this->getCode(),
+            'first_name' => $this->getFirstName(),
+            'last_name' => $this->getLastName(),
+            'created_at' => $this->getCreatedAt(),
+            'subscriptions' => $this->subscriptions->map(function (SubscriptionDto $subscription) {
+                return $subscription->toArray();
+            })
+        ];
+    }
+
+    /**
      * Create an instance of CustomerDto from an array of data.
      *
      * @param array $customer

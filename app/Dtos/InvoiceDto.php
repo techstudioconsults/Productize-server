@@ -72,6 +72,22 @@ class InvoiceDto implements IDtoFactory
     }
 
     /**
+     * Get formatted properties.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'plan' => 'premium',
+            'price' => $this->getAmount(),
+            'status' => $this->getStatus(),
+            'reference' => $this->getReference(),
+            'date' => $this->getCreatedAt(),
+        ];
+    }
+
+    /**
      * Create an instance of InvoiceDto from an array of data.
      *
      * @param array $data

@@ -117,19 +117,31 @@ class SubscriptionDto implements IDtoFactory
     public function getPlans()
     {
         return $this->invoices->map(function (InvoiceDto $invoice) {
-            return [
-                'plan' => 'premium',
-                'price' => $invoice->getAmount(),
-                'status' => $invoice->getStatus(),
-                'reference' => $invoice->getReference(),
-                'date' => $invoice->getCreatedAt(),
-            ];
+            return $invoice->toArray();
         });
+    }
+
+    /**
+     * Get formatted properties.
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'code' => $this->getCode(),
+            'amount' => $this->getAmount(),
+            'status' => $this->getStatus()->value,
+            'next_payment_date' => $this->getNextPaymentDate(),
+            'created_at' => $this->getCreatedAt(),
+            'plans' => $this->getPlans()
+        ];
     }
 
     public function getTotalBilling(): int
     {
-        return $this->invoices->sum(fn(InvoiceDto $invoice) => $invoice->getAmount());
+        return $this->invoices->sum(fn (InvoiceDto $invoice) => $invoice->getAmount());
     }
 
     /**

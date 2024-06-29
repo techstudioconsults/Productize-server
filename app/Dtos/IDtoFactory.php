@@ -22,4 +22,11 @@ interface IDtoFactory
      * @return self
      */
     public static function create(array $data): self;
+
+    /**
+     * Get formatted properties.
+     *
+     * @return array
+     */
+    public function toArray(): array;
 }

@@ -8,6 +8,7 @@ use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreDigitalProductRequest;
 use App\Http\Resources\DigitalProductResource;
 use App\Models\DigitalProduct;
+use App\Models\Product;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\ProductResourceRepository;
@@ -63,9 +64,13 @@ class DigitalProductController extends Controller
         }
     }
 
-    public function show(DigitalProduct $digitalProduct)
+    public function show(Product $product)
     {
-        return new DigitalProductResource($digitalProduct);
+        $digital_product = $this->digitalProductRepository->findOne(['product_id' => $product->id]);
+
+        if(!$digital_product) throw new NotFoundException("Resource Not Foud");
+
+        return new DigitalProductResource($digital_product);
     }
 
     public function categories()

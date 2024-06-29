@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\SkillSellingCategory;
+use App\Exceptions\NotFoundException;
 use App\Http\Requests\StoreSkillSellingRequest;
 use App\Http\Requests\UpdateSkillSellingRequest;
 use App\Http\Resources\SkillSellingResource;
+use App\Models\Product;
 use App\Models\SkillSelling;
 use App\Repositories\SkillSellingRepository;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -25,9 +27,13 @@ class SkillSellingController extends Controller
         return new SkillSellingResource($skill_selling);
     }
 
-    public function show(SkillSelling $skillSelling)
+    public function show(Product $product)
     {
-        return new SkillSellingResource($skillSelling);
+        $skill_selling = $this->skillSellingRepository->findOne(['product_id' => $product->id]);
+
+        if (!$skill_selling) throw new NotFoundException("Resource Not Found");
+        
+        return new SkillSellingResource($skill_selling);
     }
 
     public function update(UpdateSkillSellingRequest $request, SkillSelling $skillSelling)

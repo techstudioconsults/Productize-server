@@ -22,8 +22,7 @@ class DigitalProductController extends Controller
         protected DigitalProductRepository $digitalProductRepository,
         protected ProductResourceRepository $productResourceRepository,
         protected ProductRepository $productRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Store a newly created resource in storage.
@@ -34,7 +33,7 @@ class DigitalProductController extends Controller
 
         $product = $this->productRepository->findById($entity['product_id']);
 
-        if (!$product) {
+        if (! $product) {
             throw new NotFoundException('Product Not Found');
         }
 

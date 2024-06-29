@@ -15,7 +15,7 @@ Route::controller(DigitalProductController::class)
     ->group(function () {
         Route::post('/', 'store')->name('store');
 
-        Route::get('/{digitalProduct}', 'show')->name('show');
+        Route::get('/products/{product}', 'show')->name('show');
 
         Route::get('/categories', 'categories')->withoutMiddleware([
             'auth:sanctum',
@@ -24,5 +24,4 @@ Route::controller(DigitalProductController::class)
         ])->name('categories');
 
         Route::put('/{resources}', 'update')->name('update');
-
     });

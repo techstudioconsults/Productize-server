@@ -25,6 +25,7 @@ use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Mail;
 
 /**
@@ -37,7 +38,8 @@ class CartController extends Controller
         protected ProductRepository $productRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -169,7 +171,7 @@ class CartController extends Controller
             $recipient = $this->userRepository->firstOrCreate($recipient_email, $recipient_name);
 
             // Send the Gift alert
-            Mail::to($recipient)->send(new GiftAlert($recipient));
+            Mail::send(new GiftAlert($recipient));
         }
 
         // Prepare products for the paystack transaction
@@ -199,7 +201,7 @@ class CartController extends Controller
             // Initialize payment
             $response = $this->paystackRepository->initializePurchaseTransaction($payload);
 
-            return new JsonResponse(['data' => $response]);
+            return new JsonResource($response->toArray());
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }

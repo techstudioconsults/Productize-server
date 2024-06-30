@@ -82,11 +82,6 @@ class User extends Authenticatable implements CanResetPassword
         return ($this->account_type === 'premium' || $this->account_type === 'free_trial') ? true : false;
     }
 
-    public function paystack()
-    {
-        return $this->hasOne(Paystack::class);
-    }
-
     public function products()
     {
         return $this->hasMany(Product::class);

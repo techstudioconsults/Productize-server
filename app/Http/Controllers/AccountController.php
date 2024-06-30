@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\BankDto;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
@@ -34,7 +35,8 @@ class AccountController extends Controller
         protected AccountRepository $accountRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -106,7 +108,7 @@ class AccountController extends Controller
         // Validate the account number with Paystack
         $isValidated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
 
-        if (! $isValidated) {
+        if (!$isValidated) {
             throw new BadRequestException('Invalid Account Number');
         }
 
@@ -117,7 +119,7 @@ class AccountController extends Controller
             $account = [
                 'user_id' => $user->id,
                 'account_number' => $account_number,
-                'paystack_recipient_code' => $response['recipient_code'],
+                'paystack_recipient_code' => $response->getCode(),
                 'name' => $name,
                 'bank_code' => $bank_code,
                 'bank_name' => $bank_name,
@@ -176,15 +178,14 @@ class AccountController extends Controller
         // Retrieve the list of banks from the Paystack repository
         $banks = $this->paystackRepository->getBankList();
 
-        // Map the bank data to include only the name and code
-        $response = Arr::map($banks, function ($bank) {
-            return [
-                'name' => $bank['name'],
-                'code' => $bank['code'],
-            ];
+        if (!$banks) {
+            return new JsonResponse([], 200);
+        }
+
+        $response = $banks->map(function (BankDto $bank) {
+            return $bank->toArray();
         });
 
-        // Return the response as a JSON object with a 200 status code
         return new JsonResponse($response, 200);
     }
 }

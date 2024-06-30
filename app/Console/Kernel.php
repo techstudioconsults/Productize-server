@@ -2,31 +2,18 @@
 
 namespace App\Console;
 
-use App\Helpers\Schedules\EndFreeTrial;
+use App\Console\Schedules\EndFreeTrial;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
-    protected $commands = [
-        \App\Console\Commands\MakeRepository::class,
-    ];
-
     /**
      * Define the application's command schedule.
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->call(new EndFreeTrial)
-            ->hourly();
-        // ->environments(['staging', 'production']);
-        // ->withoutOverlapping(); // Prevent schduler from overlapping. I.e, if the previous instance is still running, it will wait.
-        // ->onSuccess(function () {
-        //     // The task succeeded...
-        // })
-        // ->onFailure(function () {
-        //     // The task failed...
-        // });
+        $schedule->call(new EndFreeTrial)->twiceDaily();
     }
 
     /**

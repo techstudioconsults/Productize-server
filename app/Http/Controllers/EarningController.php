@@ -118,7 +118,7 @@ class EarningController extends Controller
             $payout_entity = [
                 'status' => PayoutStatus::Pending->value,
                 'reference' => $reference,
-                'paystack_transfer_code' => $response['transfer_code'],
+                'paystack_transfer_code' => $response->getCode(),
                 'account_id' => $account->id,
                 'amount' => $amount,
             ];
@@ -137,14 +137,3 @@ class EarningController extends Controller
         }
     }
 }
-
-/**
- * Tags
- * product types endpoint - with categories
- * Based on search
- * orders by customer - fixed
- * retrieve payouts - filter - fixed
- * top products for users - it works
- * billing - fixed
- * remove auth from featured and top products - done
- */

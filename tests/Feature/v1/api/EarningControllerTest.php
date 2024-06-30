@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\TransferDto;
 use App\Enums\PayoutStatus;
 use App\Exceptions\BadRequestException;
 use App\Http\Resources\EarningResource;
@@ -94,14 +95,14 @@ class EarningControllerTest extends TestCase
         $this->paystackRepository->shouldReceive('initiateTransfer')
             ->once()
             ->with(5000, $account->paystack_recipient_code, \Mockery::type('string'))
-            ->andReturn(['transfer_code' => 'test_transfer_code']);
+            ->andReturn(new TransferDto("5000", "TRF_1ptvuv321ahaa7q", "12-03-2024"));
 
         $this->payoutRepository->shouldReceive('create')
             ->once()
             ->with(Mockery::on(function ($payout) use ($account) {
                 return $payout['status'] === PayoutStatus::Pending->value &&
                     isset($payout['reference']) &&
-                    $payout['paystack_transfer_code'] === 'test_transfer_code' &&
+                    $payout['paystack_transfer_code'] === 'TRF_1ptvuv321ahaa7q' &&
                     $payout['account_id'] === $account->id &&
                     $payout['amount'] === 5000;
             }));

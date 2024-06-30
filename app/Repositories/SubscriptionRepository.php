@@ -47,29 +47,30 @@ class SubscriptionRepository extends Repository
             if ($customer && $customer->isSubscribed()) {
                 // Handle cases where the customer has a subscription but it's not in the database
                 $this->handleCustomerHasSubscriptionNotOnDb($customer, $userId);
-            } else {
-                // Fetch user details from the local database
-                $user = $this->userRepository->findById($userId);
 
-                // If the customer does not exist, create a new customer on Paystack
-                if (!$customer) {
-                    $customer = $this->paystackRepository->createCustomer($user);
-                }
-
-                $customer_code = $customer->getCode();
-
-                // Create a new subscription in the local database
-                $subscription = $this->create([
-                    'customer_code' => $customer_code,
-                    'user_id' => $user->id,
-                    'status' => SubscriptionStatusEnum::PENDING->value,
-                ]);
-
-                // Initialize the transaction with Paystack
-                $response = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
-
-                return ['id' => $subscription->id, ...$response->toArray()];
+                // Then return an error.
+                throw new BadRequestException("Sorry, you can't perform this action. It appears you already have a subscription plan.");
             }
+
+            // Fetch user details from the local database
+            $user = $this->userRepository->findById($userId);
+
+            // If the customer does not exist, create a new customer on Paystack
+            if (!$customer) {
+                $customer = $this->paystackRepository->createCustomer($user);
+            }
+
+            // Create a new subscription in the local database
+            $subscription = $this->create([
+                'customer_code' => $customer->getCode(),
+                'user_id' => $user->id,
+                'status' => SubscriptionStatusEnum::PENDING->value,
+            ]);
+
+            // Initialize the transaction with Paystack
+            $response = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+
+            return ['id' => $subscription->id, ...$response->toArray()];
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
@@ -175,8 +176,5 @@ class SubscriptionRepository extends Repository
 
             $this->userRepository->guardedUpdate($customer->getEmail(), 'account_type', 'premium');
         }
-
-        // Then return an error.
-        throw new BadRequestException("Sorry, you can't perform this action. It appears you already have a subscription plan.");
     }
 }

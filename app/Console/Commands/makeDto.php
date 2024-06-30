@@ -12,11 +12,15 @@ use Illuminate\Filesystem\Filesystem;
  * @version 1.0
  *
  * @since 30-06-2024
+ *
+ * Create DTO classes.
+ *
+ * Example: php artisan make:dto ExampleDto
  */
 class MakeDto extends Command
 {
     use HasFileSystem;
-    
+
     /**
      * The name and signature of the console command.
      *

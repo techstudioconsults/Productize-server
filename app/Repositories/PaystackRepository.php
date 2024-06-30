@@ -405,7 +405,7 @@ class PaystackRepository
                 'body' => $response->body(),
             ]);
 
-            return null;
+            return false;
         }
 
         return $response['status'];

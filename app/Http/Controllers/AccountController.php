@@ -21,7 +21,6 @@ use App\Models\Account;
 use App\Repositories\AccountRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\UserRepository;
-use Arr;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\Schedules;
+namespace App\Console\Schedules;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -16,8 +16,7 @@ class EndFreeTrial
         $currentDate = Carbon::now();
 
         // Calculate the date 30 days ago
-        // $thirtyDaysAgo = $currentDate->subDays(30);
-        $thirtyDaysAgo = $currentDate->subMinute(30);
+        $thirtyDaysAgo = $currentDate->subDays(30);
 
         try {
             $count = DB::table('users')->where('account_type', '=', 'free_trial')

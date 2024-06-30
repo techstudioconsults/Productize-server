@@ -7,7 +7,7 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Filesystem\Filesystem;
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq
  *
  * @version 1.0
  *

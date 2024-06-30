@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Traits\HasFileSystem;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 
@@ -12,8 +13,10 @@ use Illuminate\Filesystem\Filesystem;
  *
  * @since 30-06-2024
  */
-class makeDto extends Command
+class MakeDto extends Command
 {
+    use HasFileSystem;
+    
     /**
      * The name and signature of the console command.
      *
@@ -27,13 +30,6 @@ class makeDto extends Command
      * @var string
      */
     protected $description = 'Create a new Data Transfer Object class';
-
-    /**
-     * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    protected $files;
 
     /**
      * Create a new command instance.
@@ -75,7 +71,7 @@ class makeDto extends Command
 
         $this->files->put($path, $stub);
 
-        $this->info('Repository created successfully.');
+        $this->info('DTO created successfully.');
     }
 
     /**
@@ -134,18 +130,5 @@ class makeDto extends Command
                 }
             }
             STUB;
-    }
-
-    /**
-     * Create the directory for the class if it doesn't exist.
-     *
-     * @param  string  $path
-     * @return void
-     */
-    protected function makeDirectory($path)
-    {
-        if (!$this->files->isDirectory(dirname($path))) {
-            $this->files->makeDirectory(dirname($path), 0755, true, true);
-        }
     }
 }

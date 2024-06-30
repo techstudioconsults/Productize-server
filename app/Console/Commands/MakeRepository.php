@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Traits\HasFileSystem;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Filesystem\Filesystem;
@@ -20,6 +21,8 @@ use Illuminate\Filesystem\Filesystem;
  */
 class MakeRepository extends Command implements PromptsForMissingInput
 {
+    use HasFileSystem;
+
     /**
      * The name and signature of the console command.
      *
@@ -35,13 +38,6 @@ class MakeRepository extends Command implements PromptsForMissingInput
     protected $description = 'Create a new repository class
                              {name : Name of the Repository Class}
                              {--model: The database model for the repository}';
-
-    /**
-     * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    protected $files;
 
     /**
      * Create a new command instance.
@@ -231,19 +227,6 @@ class MakeRepository extends Command implements PromptsForMissingInput
                 }
             }
             STUB;
-    }
-
-    /**
-     * Create the directory for the class if it doesn't exist.
-     *
-     * @param  string  $path
-     * @return void
-     */
-    protected function makeDirectory($path)
-    {
-        if (!$this->files->isDirectory(dirname($path))) {
-            $this->files->makeDirectory(dirname($path), 0755, true, true);
-        }
     }
 
     /**

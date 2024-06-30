@@ -118,7 +118,7 @@ class EarningController extends Controller
             $payout_entity = [
                 'status' => PayoutStatus::Pending->value,
                 'reference' => $reference,
-                'paystack_transfer_code' => $response['transfer_code'],
+                'paystack_transfer_code' => $response->getCode(),
                 'account_id' => $account->id,
                 'amount' => $amount,
             ];

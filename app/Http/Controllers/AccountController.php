@@ -120,7 +120,7 @@ class AccountController extends Controller
             $account = [
                 'user_id' => $user->id,
                 'account_number' => $account_number,
-                'paystack_recipient_code' => $response['recipient_code'],
+                'paystack_recipient_code' => $response->getCode(),
                 'name' => $name,
                 'bank_code' => $bank_code,
                 'bank_name' => $bank_name,

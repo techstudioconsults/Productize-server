@@ -6,6 +6,7 @@ use App\Dtos\BankDto;
 use App\Dtos\CustomerDto;
 use App\Dtos\SubscriptionDto;
 use App\Dtos\TransactionInitializationDto;
+use App\Dtos\TransferRecipientDto;
 use App\Exceptions\ApiException;
 use App\Models\Paystack;
 use App\Models\User;
@@ -254,7 +255,7 @@ class PaystackRepository
         return $response['status'];
     }
 
-    public function createTransferRecipient($name, $account_number, $bank_code)
+    public function createTransferRecipient($name, $account_number, $bank_code): TransferRecipientDto
     {
         $payload = [
             'type' => 'nuban',
@@ -270,7 +271,7 @@ class PaystackRepository
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transferrecipient", $payload)->throw()->json();
 
-        return $response['data'];
+        return TransferRecipientDto::create($response['data']);
     }
 
     public function initiateTransfer(string $amount, string $recipient_code, string $reference)

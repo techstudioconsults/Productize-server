@@ -9,6 +9,7 @@ use App\Dtos\TransactionInitializationDto;
 use App\Dtos\TransferDto;
 use App\Dtos\TransferRecipientDto;
 use App\Exceptions\ApiException;
+use App\Exceptions\ServerErrorException;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -48,17 +49,9 @@ class PaystackRepository
     /**
      * Constructor to initialize repositories and configuration.
      *
-     * @param UserRepository $userRepository
-     * @param CustomerRepository $customerRepository
-     * @param OrderRepository $orderRepository
-     * @param PayoutRepository $payoutRepository
      */
-    public function __construct(
-        protected UserRepository $userRepository,
-        protected CustomerRepository $customerRepository,
-        protected OrderRepository $orderRepository,
-        protected PayoutRepository $payoutRepository,
-    ) {
+    public function __construct()
+    {
         $this->secret_key = config('payment.paystack.secret');
         $this->premium_plan_code = config('payment.paystack.plan_code');
         $this->client_url = config('app.client_url');
@@ -108,21 +101,19 @@ class PaystackRepository
     {
         $url = $this->baseUrl . "/customer/$email";
 
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->secret_key,
-            ])->get($url)->throw()->json();
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->secret_key,
+        ])->get($url);
 
-            return CustomerDto::create($response['data']);
-        } catch (\Throwable $th) {
-            $status_code = $th->getCode();
-
-            if ($status_code === 404) {
-                return null;
-            } else {
-                throw new ApiException($th->getMessage(), $status_code);
-            }
+        if ($response->notFound()) {
+            return null;
         }
+
+        if ($response->failed()) {
+            throw new ApiException($response->reason(), $response->status());
+        }
+
+        return CustomerDto::create($response['data']);
     }
 
     /**
@@ -156,7 +147,17 @@ class PaystackRepository
             'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
-        ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
+        ])->post($this->initializeTransactionUrl, $payload);
+
+        if ($response->failed()) {
+            Log::critical('Fetch subscription error', [
+                'status' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
+
+            throw new ServerErrorException("Error Initializing Paystack Transaction");
+        }
 
         return TransactionInitializationDto::create($response['data']);
     }
@@ -172,7 +173,6 @@ class PaystackRepository
      */
     public function initializePurchaseTransaction(mixed $payload)
     {
-
         $payload = array_merge($payload, [
             'callback_url' => $this->client_url . '/dashboard/downloads#all-downloads',
         ]);
@@ -181,7 +181,17 @@ class PaystackRepository
             'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
-        ])->post($this->initializeTransactionUrl, $payload)->throw()->json();
+        ])->post($this->initializeTransactionUrl, $payload);
+
+        if ($response->failed()) {
+            Log::critical('Fetch subscription error', [
+                'status' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
+
+            throw new ServerErrorException("Error Initializing Paystack Transaction For Purchase");
+        }
 
         return TransactionInitializationDto::create($response['data']);
     }
@@ -207,7 +217,17 @@ class PaystackRepository
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json',
-        ])->post($this->subscriptionEndpoint, $payload)->throw()->json();
+        ])->post($this->subscriptionEndpoint, $payload);
+
+        if ($response->failed()) {
+            Log::critical('Error Occured To Create Subscription', [
+                'status' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
+
+            throw new ServerErrorException("Error Subscribing User");
+        }
 
         return SubscriptionDto::create($response['data']);
     }
@@ -230,15 +250,18 @@ class PaystackRepository
             'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get($url);
 
-        $data = json_decode($response->body(), true);
-
         if ($response->failed()) {
-            Log::critical('Manage Paystack error', ['message' => $response]);
-            $response->throw();
+            Log::critical('Manage Paystack error', [
+                'status' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
+
+            throw new ServerErrorException("Error Managing Subscription");
         }
 
         // ["link" => ""]
-        return $data['data'];
+        return $response['data'];
     }
 
     /**
@@ -255,13 +278,17 @@ class PaystackRepository
             'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
 
-        if ($response->successful()) {
-            return SubscriptionDto::create($response['data']);
-        } else {
-            Log::critical('Fetch subscription error', ['status' => $response->status()]);
+        if ($response->failed()) {
+            Log::critical('Fetch subscription error', [
+                'status' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
 
             return null;
         }
+
+        return SubscriptionDto::create($response['data']);
     }
 
     /**
@@ -333,13 +360,23 @@ class PaystackRepository
     /**
      * Retrive Bank List from Paystack
      *
-     * @return Collection<int, BankDto>
+     * @return null|Collection<int, BankDto>
      */
-    public function getBankList(): Collection
+    public function getBankList(): ?Collection
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/bank?country=nigeria");
+
+        if ($response->failed()) {
+            Log::error("Error Fetching Bank List from paystack", [
+                'code' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
+
+            return null;
+        }
 
         return collect($response['data'])->map(function ($data) {
             return BankDto::create($data);
@@ -360,6 +397,16 @@ class PaystackRepository
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . '&bank_code=' . $bank_code);
+
+        if ($response->failed()) {
+            Log::error("Error Validating Account Number", [
+                'code' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        }
 
         return $response['status'];
     }
@@ -389,7 +436,17 @@ class PaystackRepository
             'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
-        ])->post("{$this->baseUrl}/transferrecipient", $payload)->throw()->json();
+        ])->post("{$this->baseUrl}/transferrecipient", $payload);
+
+        if ($response->failed()) {
+            Log::critical('ERROR CREATING A RECIPIENT', [
+                'status' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
+
+            throw new ServerErrorException("Error Creating A Recipient");
+        }
 
         return TransferRecipientDto::create($response['data']);
     }
@@ -419,8 +476,23 @@ class PaystackRepository
             'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
-        ])->post("{$this->baseUrl}/transfer", $payload)->throw()->json();
+        ])->post("{$this->baseUrl}/transfer", $payload);
+
+        if ($response->failed()) {
+            Log::critical('ERROR INITIATING A TRANSFER', [
+                'status' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body()
+            ]);
+
+            throw new ServerErrorException("Error Initiating Transfer");
+        }
 
         return TransferDto::create($response['data']);
+    }
+
+    public function getErrorMessage(array $body)
+    {
+        return $body['message'];
     }
 }

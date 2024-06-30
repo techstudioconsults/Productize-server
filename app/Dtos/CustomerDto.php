@@ -159,7 +159,7 @@ class CustomerDto implements IDtoFactory
      */
     public static function create(array $customer): self
     {
-        if (!isset($customer['id'], $customer['email'], $customer['customer_code'], $customer['subscriptions'])) {
+        if (!isset($customer['id'], $customer['email'], $customer['customer_code'], $customer['subscriptions'], $customer['createdAt'],)) {
             throw new ServerErrorException("Invalid Customer Data Transfer");
         }
 

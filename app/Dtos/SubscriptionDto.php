@@ -165,12 +165,12 @@ class SubscriptionDto implements IDtoFactory
         $status = SubscriptionStatusEnum::from($data['status']);
 
         return new self(
-            $data['id'],
+            $data['id'] ?? "",
             $data['subscription_code'],
-            $data['amount'],
+            $data['amount'] ?? "",
             $status,
             $data['next_payment_date'],
-            $data['createdAt'],
+            $data['createdAt'] ?? "",
             $invoices
         );
     }

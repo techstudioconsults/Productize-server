@@ -179,6 +179,10 @@ class AccountController extends Controller
         // Retrieve the list of banks from the Paystack repository
         $banks = $this->paystackRepository->getBankList();
 
+        if (!$banks) {
+            return new JsonResponse([], 200);
+        }
+
         $response = $banks->map(function (BankDto $bank) {
             return $bank->toArray();
         });

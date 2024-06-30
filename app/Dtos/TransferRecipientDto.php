@@ -18,21 +18,18 @@ class TransferRecipientDto implements IDtoFactory
     /**
      * TransferRecipientDto constructor.
      *
-     * @param string $code The recipient code.
-     * @param string $name The recipient name.
-     * @param string $created_at The creation date.
+     * @param  string  $code  The recipient code.
+     * @param  string  $name  The recipient name.
+     * @param  string  $created_at  The creation date.
      */
     public function __construct(
         private string $code,
         private string $name,
         private string $created_at
-    ) {
-    }
+    ) {}
 
     /**
      * Get the recipient code.
-     *
-     * @return string
      */
     public function getCode(): string
     {
@@ -41,8 +38,6 @@ class TransferRecipientDto implements IDtoFactory
 
     /**
      * Get the recipient name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -51,8 +46,6 @@ class TransferRecipientDto implements IDtoFactory
 
     /**
      * Get the creation date.
-     *
-     * @return string
      */
     public function getCreatedAt(): string
     {
@@ -61,8 +54,6 @@ class TransferRecipientDto implements IDtoFactory
 
     /**
      * Convert the DTO to an array.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -76,14 +67,14 @@ class TransferRecipientDto implements IDtoFactory
     /**
      * Create a new instance of TransferRecipientDto from array data.
      *
-     * @param array $data The array containing transfer recipient data.
-     * @return self
+     * @param  array  $data  The array containing transfer recipient data.
+     *
      * @throws ServerErrorException If required fields are missing in $data.
      */
     public static function create(array $data): self
     {
-        if (!isset($data['recipient_code'], $data['name'], $data['createdAt'])) {
-            throw new ServerErrorException("Invalid Transfer recipient Transfer");
+        if (! isset($data['recipient_code'], $data['name'], $data['createdAt'])) {
+            throw new ServerErrorException('Invalid Transfer recipient Transfer');
         }
 
         return new self($data['recipient_code'], $data['name'], $data['createdAt']);

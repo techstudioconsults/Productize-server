@@ -56,7 +56,7 @@ class MakeSchedule extends Command
         $name = $this->argument('name');
 
         // Define the path to store the repository
-        $path = app_path('Console/Schedules/' . $name . '.php');
+        $path = app_path('Console/Schedules/'.$name.'.php');
 
         // Check if file already exists
         if ($this->files->exists($path)) {
@@ -65,17 +65,17 @@ class MakeSchedule extends Command
             return;
         }
 
-         // Create the directory if it doesn't exist
-         $this->makeDirectory($path);
+        // Create the directory if it doesn't exist
+        $this->makeDirectory($path);
 
-         // Create the class file with predefined methods
-         $stub = $this->getStub();
+        // Create the class file with predefined methods
+        $stub = $this->getStub();
 
-         $stub = str_replace('DummyClass', $name, $stub);
+        $stub = str_replace('DummyClass', $name, $stub);
 
-         $this->files->put($path, $stub);
+        $this->files->put($path, $stub);
 
-         $this->info('Schedule created successfully.');
+        $this->info('Schedule created successfully.');
     }
 
     /**

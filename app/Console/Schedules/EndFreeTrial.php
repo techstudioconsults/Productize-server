@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Log;
  * Class EndFreeTrial
  *
  * This class handles the scheduled task of ending free trials for users.
- *
- * @package App\Console\Schedules
  */
 class EndFreeTrial
 {

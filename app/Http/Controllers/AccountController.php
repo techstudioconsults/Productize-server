@@ -34,8 +34,7 @@ class AccountController extends Controller
         protected AccountRepository $accountRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -107,7 +106,7 @@ class AccountController extends Controller
         // Validate the account number with Paystack
         $isValidated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
 
-        if (!$isValidated) {
+        if (! $isValidated) {
             throw new BadRequestException('Invalid Account Number');
         }
 
@@ -177,7 +176,7 @@ class AccountController extends Controller
         // Retrieve the list of banks from the Paystack repository
         $banks = $this->paystackRepository->getBankList();
 
-        if (!$banks) {
+        if (! $banks) {
             return new JsonResponse([], 200);
         }
 

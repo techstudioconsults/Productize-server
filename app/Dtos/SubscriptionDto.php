@@ -20,13 +20,13 @@ class SubscriptionDto implements IDtoFactory
     /**
      * SubscriptionDto constructor.
      *
-     * @param string $id                     Subscription Id from the Payment Gateway
-     * @param string $code                   Subscription code from the Payment Gateway
-     * @param int $amount
-     * @param SubscriptionStatusEnum $status Subscription status
-     * @param string $next_payment_date      Date of Next Payment
-     * @param string $createdAt              Subcription Date
-     * @var Collection<int, InvoiceDto>      A collection of all the subscription invoices
+     * @param  string  $id  Subscription Id from the Payment Gateway
+     * @param  string  $code  Subscription code from the Payment Gateway
+     * @param  SubscriptionStatusEnum  $status  Subscription status
+     * @param  string  $next_payment_date  Date of Next Payment
+     * @param  string  $createdAt  Subcription Date
+     *
+     * @var Collection<int, InvoiceDto> A collection of all the subscription invoices
      */
     public function __construct(
         private string $id,
@@ -36,13 +36,10 @@ class SubscriptionDto implements IDtoFactory
         private string $next_payment_date,
         private string $createdAt,
         private Collection $invoices
-    ) {
-    }
+    ) {}
 
     /**
      * Get the subscription ID.
-     *
-     * @return string
      */
     public function getId(): string
     {
@@ -51,8 +48,6 @@ class SubscriptionDto implements IDtoFactory
 
     /**
      * Get the subscription code.
-     *
-     * @return string
      */
     public function getCode(): string
     {
@@ -61,8 +56,6 @@ class SubscriptionDto implements IDtoFactory
 
     /**
      * Get the subscription amount.
-     *
-     * @return int
      */
     public function getAmount(): int
     {
@@ -71,8 +64,6 @@ class SubscriptionDto implements IDtoFactory
 
     /**
      * Get the subscription status.
-     *
-     * @return SubscriptionStatusEnum
      */
     public function getStatus(): SubscriptionStatusEnum
     {
@@ -81,8 +72,6 @@ class SubscriptionDto implements IDtoFactory
 
     /**
      * Get the subscription next payment date timestamp.
-     *
-     * @return string
      */
     public function getNextPaymentDate(): string
     {
@@ -91,8 +80,6 @@ class SubscriptionDto implements IDtoFactory
 
     /**
      * Get the subscription creation timestamp.
-     *
-     * @return string
      */
     public function getCreatedAt(): string
     {
@@ -101,8 +88,6 @@ class SubscriptionDto implements IDtoFactory
 
     /**
      * Get the subscription invoices.
-     *
-     * @return Collection
      */
     public function getInvoices(): Collection
     {
@@ -123,8 +108,6 @@ class SubscriptionDto implements IDtoFactory
 
     /**
      * Get formatted properties.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -135,7 +118,7 @@ class SubscriptionDto implements IDtoFactory
             'status' => $this->getStatus()->value,
             'next_payment_date' => $this->getNextPaymentDate(),
             'created_at' => $this->getCreatedAt(),
-            'plans' => $this->getPlans()
+            'plans' => $this->getPlans(),
         ];
     }
 
@@ -147,14 +130,12 @@ class SubscriptionDto implements IDtoFactory
     /**
      * Create an instance of SubscriptionDto from an array of data.
      *
-     * @param array $data
-     * @return self
      * @throws ServerErrorException
      */
     public static function create(array $data): self
     {
-        if (!isset($data['subscription_code'], $data['status'], $data['next_payment_date'], $data['invoices'])) {
-            throw new ServerErrorException("Invalid Subscription Data Transfer");
+        if (! isset($data['subscription_code'], $data['status'], $data['next_payment_date'], $data['invoices'])) {
+            throw new ServerErrorException('Invalid Subscription Data Transfer');
         }
 
         // Create SubscriptionDto objects from the array data
@@ -165,12 +146,12 @@ class SubscriptionDto implements IDtoFactory
         $status = SubscriptionStatusEnum::from($data['status']);
 
         return new self(
-            $data['id'] ?? "",
+            $data['id'] ?? '',
             $data['subscription_code'],
-            $data['amount'] ?? "",
+            $data['amount'] ?? '',
             $status,
             $data['next_payment_date'],
-            $data['createdAt'] ?? "",
+            $data['createdAt'] ?? '',
             $invoices
         );
     }

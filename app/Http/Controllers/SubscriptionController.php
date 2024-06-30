@@ -10,7 +10,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\InvoiceDto;
 use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
@@ -24,7 +23,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Arr;
 
 /**
  * Route handler methods for Subscription resource
@@ -34,8 +32,7 @@ class SubscriptionController extends Controller
     public function __construct(
         protected SubscriptionRepository $subscriptionRepository,
         protected PaystackRepository $paystackRepository
-    ) {
-    }
+    ) {}
 
     /**
      *  @author @Intuneteq Tobi Olanitori
@@ -246,7 +243,7 @@ class SubscriptionController extends Controller
         }
 
         // User is on a free account
-        if (!$user->isSubscribed()) {
+        if (! $user->isSubscribed()) {
             return new JsonResponse($response);
         }
 
@@ -254,20 +251,20 @@ class SubscriptionController extends Controller
         $db = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
 
         // Log this issue to slack
-        if (!$db) {
+        if (! $db) {
             return new JsonResponse($response);
         }
 
         $subscription_code = $db->subscription_code;
 
         // Log this issue to slack
-        if (!$subscription_code) {
+        if (! $subscription_code) {
             return new JsonResponse($response);
         }
 
         $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
 
-        if (!$subscription) {
+        if (! $subscription) {
             return new JsonResponse($response);
         }
 

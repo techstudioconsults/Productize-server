@@ -18,7 +18,7 @@ use Tests\TestCase;
 class AccountControllerTest extends TestCase
 {
     use RefreshDatabase;
-    use WithFaker, SanctumAuthentication;
+    use SanctumAuthentication, WithFaker;
 
     public function test_Index()
     {
@@ -179,8 +179,8 @@ class AccountControllerTest extends TestCase
             return BankDto::create($data);
         });
 
-         // Mock PaystackRepository
-         $paystackRepositoryMock = $this->partialMock(PaystackRepository::class);
+        // Mock PaystackRepository
+        $paystackRepositoryMock = $this->partialMock(PaystackRepository::class);
 
         // Mock getBankList() method to return a Collection of BankDto
         $paystackRepositoryMock->shouldReceive('getBankList')->andReturn($banks);
@@ -193,8 +193,8 @@ class AccountControllerTest extends TestCase
 
         // Assert JSON structure and content
         $response->assertJsonCount($banks->count())
-                ->assertJsonFragment(['name' => 'Bank A', 'code' => '001'])
-                ->assertJsonFragment(['name' => 'Bank B', 'code' => '002']);
+            ->assertJsonFragment(['name' => 'Bank A', 'code' => '001'])
+            ->assertJsonFragment(['name' => 'Bank B', 'code' => '002']);
     }
 
     public function testBankListEmpty()
@@ -206,7 +206,6 @@ class AccountControllerTest extends TestCase
 
         // Mock getBankList() method to return null (empty banks)
         $paystackRepositoryMock->shouldReceive('getBankList')->andReturn(null);
-
 
         $response = $this->get(route('account.bank-list'));
 

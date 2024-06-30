@@ -21,15 +21,14 @@ class SubscriptionRepository extends Repository
     public function __construct(
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq
      *
      * Start the subscription process for a user.
      *
-     * @param array $entity The entity containing user information.
+     * @param  array  $entity  The entity containing user information.
      * @return array The response containing subscription and transaction details.
      *
      * @throws ServerErrorException If any error occurs during the process.
@@ -52,7 +51,7 @@ class SubscriptionRepository extends Repository
                 $user = $this->userRepository->findById($userId);
 
                 // If the customer does not exist, create a new customer on Paystack
-                if (!$customer) {
+                if (! $customer) {
                     $customer = $this->paystackRepository->createCustomer($user);
                 }
 
@@ -118,7 +117,7 @@ class SubscriptionRepository extends Repository
     public function update(Model $entity, array $updates): Subscription
     {
         // Ensure that the provided entity is an instance of Order
-        if (!$entity instanceof Subscription) {
+        if (! $entity instanceof Subscription) {
             throw new ModelCastException('Subscription', get_class($entity));
         }
 
@@ -145,7 +144,7 @@ class SubscriptionRepository extends Repository
      * If the status is not cancelled hence, active for whatever reason.
      *
      * * @param CustomerDto $customer The customer data transfer object.
-     * @param int $userId The user ID.
+     * @param  int  $userId  The user ID.
      */
     private function handleCustomerHasSubscriptionNotOnDb(CustomerDto $customer, string $user_id)
     {

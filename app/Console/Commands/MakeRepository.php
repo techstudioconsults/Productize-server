@@ -65,7 +65,7 @@ class MakeRepository extends Command implements PromptsForMissingInput
         $model = $this->option('model');
 
         // Define the path to store the repository
-        $path = app_path('Repositories/' . $name . '.php');
+        $path = app_path('Repositories/'.$name.'.php');
 
         // Check if file already exists
         if ($this->files->exists($path)) {
@@ -74,11 +74,11 @@ class MakeRepository extends Command implements PromptsForMissingInput
             return;
         }
 
-        if (!$model) {
-            $model = $this->ask("What database model is the repository for?");
+        if (! $model) {
+            $model = $this->ask('What database model is the repository for?');
         }
 
-        if (!$model) {
+        if (! $model) {
             $this->error('Model for repository not passed. Example usage: php artisan make:repository ExampleRepository --model=ExampleModel');
 
             return;

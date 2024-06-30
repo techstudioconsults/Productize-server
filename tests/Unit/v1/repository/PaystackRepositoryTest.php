@@ -51,12 +51,12 @@ class PaystackRepositoryTest extends TestCase
                 'last_name' => 'Doe',
                 'customer_code' => 'CUS_bslevty3j70vk62',
                 'subscriptions' => [],
-                'createdAt' => "12-03-2024"
-            ]
+                'createdAt' => '12-03-2024',
+            ],
         ];
 
         Http::fake([
-            'https://api.paystack.co/customer' => Http::response($response_data, 200)
+            'https://api.paystack.co/customer' => Http::response($response_data, 200),
         ]);
 
         $customerDto = $this->paystackRepository->createCustomer($user);
@@ -79,7 +79,7 @@ class PaystackRepositoryTest extends TestCase
         $user->phone_number = '0987654321';
 
         Http::fake([
-            'https://api.paystack.co/customer' => Http::response([], 500)
+            'https://api.paystack.co/customer' => Http::response([], 500),
         ]);
 
         $this->paystackRepository->createCustomer($user);
@@ -98,12 +98,12 @@ class PaystackRepositoryTest extends TestCase
                 'last_name' => 'Doe',
                 'customer_code' => 'CUS_bslevty3j70vk62',
                 'subscriptions' => [],
-                'createdAt' => "12-03-2024"
-            ]
+                'createdAt' => '12-03-2024',
+            ],
         ];
 
         Http::fake([
-            "https://api.paystack.co/customer/$email" => Http::response($response_data, 200)
+            "https://api.paystack.co/customer/$email" => Http::response($response_data, 200),
         ]);
 
         $customerDto = $this->paystackRepository->fetchCustomer($email);
@@ -121,7 +121,7 @@ class PaystackRepositoryTest extends TestCase
         $email = 'john.doe@example.com';
 
         Http::fake([
-            'https://api.paystack.co/customer/*' => Http::response([], 404)
+            'https://api.paystack.co/customer/*' => Http::response([], 404),
         ]);
 
         $customerDto = $this->paystackRepository->fetchCustomer($email);
@@ -136,7 +136,7 @@ class PaystackRepositoryTest extends TestCase
         $email = 'john.doe@example.com';
 
         Http::fake([
-            'https://api.paystack.co/customer/*' => Http::response([], 500)
+            'https://api.paystack.co/customer/*' => Http::response([], 500),
         ]);
 
         $this->paystackRepository->fetchCustomer($email);
@@ -154,12 +154,12 @@ class PaystackRepositoryTest extends TestCase
             'data' => [
                 'authorization_url' => 'https://paystack.com/authorization-url',
                 'access_code' => 'access_code',
-                'reference' => 'reference'
-            ]
+                'reference' => 'reference',
+            ],
         ];
 
         Http::fake([
-            'https://api.paystack.co/transaction/initialize' => Http::response($response, 200)
+            'https://api.paystack.co/transaction/initialize' => Http::response($response, 200),
         ]);
 
         $transactionInitializationDto = $this->paystackRepository->initializeTransaction($email, $amount, $isSubscription);
@@ -178,11 +178,11 @@ class PaystackRepositoryTest extends TestCase
 
         $errorResponse = [
             'status' => false,
-            'message' => 'Initialization failed'
+            'message' => 'Initialization failed',
         ];
 
         Http::fake([
-            'https://api.paystack.co/transaction/initialize' => Http::response($errorResponse, 400)
+            'https://api.paystack.co/transaction/initialize' => Http::response($errorResponse, 400),
         ]);
 
         Log::shouldReceive('critical')->once()->with('Fetch subscription error', Mockery::on(function ($data) {
@@ -199,7 +199,7 @@ class PaystackRepositoryTest extends TestCase
     {
         $payload = [
             'email' => 'test@example.com',
-            'amount' => 5000
+            'amount' => 5000,
         ];
 
         $response = [
@@ -208,12 +208,12 @@ class PaystackRepositoryTest extends TestCase
             'data' => [
                 'authorization_url' => 'https://paystack.com/authorization-url',
                 'access_code' => 'access_code',
-                'reference' => 'reference'
-            ]
+                'reference' => 'reference',
+            ],
         ];
 
         Http::fake([
-            'https://api.paystack.co/transaction/initialize' => Http::response($response, 200)
+            'https://api.paystack.co/transaction/initialize' => Http::response($response, 200),
         ]);
 
         $transactionInitializationDto = $this->paystackRepository->initializePurchaseTransaction($payload);
@@ -228,16 +228,16 @@ class PaystackRepositoryTest extends TestCase
     {
         $payload = [
             'email' => 'test@example.com',
-            'amount' => 5000
+            'amount' => 5000,
         ];
 
         $errorResponse = [
             'status' => false,
-            'message' => 'Initialization failed'
+            'message' => 'Initialization failed',
         ];
 
         Http::fake([
-            'https://api.paystack.co/transaction/initialize' => Http::response($errorResponse, 400)
+            'https://api.paystack.co/transaction/initialize' => Http::response($errorResponse, 400),
         ]);
 
         Log::shouldReceive('critical')->once()->with('Fetch subscription error', Mockery::on(function ($data) {
@@ -258,7 +258,7 @@ class PaystackRepositoryTest extends TestCase
             'status' => true,
             'message' => 'Subscription created',
             'data' => [
-                'id' => "12",
+                'id' => '12',
                 'subscription_code' => 'sub_123456',
                 'amount' => '5000',
                 'customer' => $customerId,
@@ -266,12 +266,12 @@ class PaystackRepositoryTest extends TestCase
                 'status' => 'active',
                 'next_payment_date' => '2023-06-30T12:34:56Z',
                 'createdAt' => '2023-06-30T12:34:56Z',
-                'invoices' => []
-            ]
+                'invoices' => [],
+            ],
         ];
 
         Http::fake([
-            'https://api.paystack.co/subscription' => Http::response($response, 200)
+            'https://api.paystack.co/subscription' => Http::response($response, 200),
         ]);
 
         $subscriptionDto = $this->paystackRepository->createSubscription($customerId);
@@ -287,11 +287,11 @@ class PaystackRepositoryTest extends TestCase
 
         $errorResponse = [
             'status' => false,
-            'message' => 'Subscription creation failed'
+            'message' => 'Subscription creation failed',
         ];
 
         Http::fake([
-            'https://api.paystack.co/subscription' => Http::response($errorResponse, 400)
+            'https://api.paystack.co/subscription' => Http::response($errorResponse, 400),
         ]);
 
         $this->expectException(ServerErrorException::class);
@@ -308,12 +308,12 @@ class PaystackRepositoryTest extends TestCase
             'status' => true,
             'message' => 'Manage link generated',
             'data' => [
-                'link' => 'https://paystack.com/manage/subscription/123456'
-            ]
+                'link' => 'https://paystack.com/manage/subscription/123456',
+            ],
         ];
 
         Http::fake([
-            "https://api.paystack.co/subscription/{$subscriptionId}/manage/link" => Http::response($response, 200)
+            "https://api.paystack.co/subscription/{$subscriptionId}/manage/link" => Http::response($response, 200),
         ]);
 
         $manageLink = $this->paystackRepository->manageSubscription($subscriptionId);
@@ -327,11 +327,11 @@ class PaystackRepositoryTest extends TestCase
 
         $errorResponse = [
             'status' => false,
-            'message' => 'Subscription not found'
+            'message' => 'Subscription not found',
         ];
 
         Http::fake([
-            "https://api.paystack.co/subscription/{$subscriptionId}/manage/link" => Http::response($errorResponse, 404)
+            "https://api.paystack.co/subscription/{$subscriptionId}/manage/link" => Http::response($errorResponse, 404),
         ]);
 
         Log::shouldReceive('critical')
@@ -358,12 +358,12 @@ class PaystackRepositoryTest extends TestCase
                 'interval' => 'monthly',
                 'status' => 'active',
                 'invoices' => [],
-                'next_payment_date' => "12-03-2024",
-            ]
+                'next_payment_date' => '12-03-2024',
+            ],
         ];
 
         Http::fake([
-            "https://api.paystack.co/subscription/{$subscriptionId}" => Http::response($response, 200)
+            "https://api.paystack.co/subscription/{$subscriptionId}" => Http::response($response, 200),
         ]);
 
         $subscription = $this->paystackRepository->fetchSubscription($subscriptionId);
@@ -376,7 +376,7 @@ class PaystackRepositoryTest extends TestCase
         $subscriptionId = 'sub_123456';
 
         Http::fake([
-            "https://api.paystack.co/subscription/{$subscriptionId}" => Http::response(null, 404)
+            "https://api.paystack.co/subscription/{$subscriptionId}" => Http::response(null, 404),
         ]);
 
         Log::shouldReceive('critical')
@@ -395,7 +395,7 @@ class PaystackRepositoryTest extends TestCase
         $subscriptionId = 'sub_123456';
 
         Http::fake([
-            "https://api.paystack.co/subscription/{$subscriptionId}" => Http::response(['message' => 'Server error'], 500)
+            "https://api.paystack.co/subscription/{$subscriptionId}" => Http::response(['message' => 'Server error'], 500),
         ]);
 
         Log::shouldReceive('critical')
@@ -416,11 +416,11 @@ class PaystackRepositoryTest extends TestCase
             'data' => [
                 ['name' => 'Bank A', 'code' => '001', 'country' => 'Nigeria'],
                 ['name' => 'Bank B', 'code' => '002', 'country' => 'Nigeria'],
-            ]
+            ],
         ];
 
         Http::fake([
-            "https://api.paystack.co/bank?country=nigeria" => Http::response($response, 200)
+            'https://api.paystack.co/bank?country=nigeria' => Http::response($response, 200),
         ]);
 
         $bankList = $this->paystackRepository->getBankList();
@@ -435,7 +435,7 @@ class PaystackRepositoryTest extends TestCase
     public function test_getBankList_failure()
     {
         Http::fake([
-            "https://api.paystack.co/bank?country=nigeria" => Http::response(['message' => 'Server error'], 500)
+            'https://api.paystack.co/bank?country=nigeria' => Http::response(['message' => 'Server error'], 500),
         ]);
 
         Log::shouldReceive('error')
@@ -459,8 +459,7 @@ class PaystackRepositoryTest extends TestCase
         ];
 
         Http::fake([
-            "https://api.paystack.co/bank/resolve?account_number={$accountNumber}&bank_code={$bankCode}" =>
-            Http::response($response, 200)
+            "https://api.paystack.co/bank/resolve?account_number={$accountNumber}&bank_code={$bankCode}" => Http::response($response, 200),
         ]);
 
         $isValid = $this->paystackRepository->validateAccountNumber($accountNumber, $bankCode);
@@ -478,8 +477,7 @@ class PaystackRepositoryTest extends TestCase
         ];
 
         Http::fake([
-            "https://api.paystack.co/bank/resolve?account_number={$accountNumber}&bank_code={$bankCode}" =>
-            Http::response($response, 200)
+            "https://api.paystack.co/bank/resolve?account_number={$accountNumber}&bank_code={$bankCode}" => Http::response($response, 200),
         ]);
 
         $isValid = $this->paystackRepository->validateAccountNumber($accountNumber, $bankCode);
@@ -492,18 +490,18 @@ class PaystackRepositoryTest extends TestCase
         $name = 'John Doe';
         $accountNumber = '1234567890';
         $bankCode = '001';
-        $recipient_code = "RCP_m7ljkv8leesep7p";
+        $recipient_code = 'RCP_m7ljkv8leesep7p';
 
         $response = [
             'data' => [
                 'recipient_code' => $recipient_code,
                 'name' => $name,
-                'createdAt' => '2024-06-30T12:00:00Z'
-            ]
+                'createdAt' => '2024-06-30T12:00:00Z',
+            ],
         ];
 
         Http::fake([
-            "https://api.paystack.co/transferrecipient" => Http::response($response, 200)
+            'https://api.paystack.co/transferrecipient' => Http::response($response, 200),
         ]);
 
         $recipientDto = $this->paystackRepository->createTransferRecipient($name, $accountNumber, $bankCode);
@@ -524,11 +522,11 @@ class PaystackRepositoryTest extends TestCase
         ];
 
         Http::fake([
-            "https://api.paystack.co/transferrecipient" => Http::response($response, 400)
+            'https://api.paystack.co/transferrecipient' => Http::response($response, 400),
         ]);
 
         $this->expectException(ServerErrorException::class);
-        $this->expectExceptionMessage("Error Creating A Recipient");
+        $this->expectExceptionMessage('Error Creating A Recipient');
 
         $this->paystackRepository->createTransferRecipient($name, $accountNumber, $bankCode);
     }
@@ -543,12 +541,12 @@ class PaystackRepositoryTest extends TestCase
             'data' => [
                 'amount' => $amount,
                 'transfer_code' => $transfer_code,
-                'createdAt' => '2024-06-30T12:00:00Z'
-            ]
+                'createdAt' => '2024-06-30T12:00:00Z',
+            ],
         ];
 
         Http::fake([
-            "https://api.paystack.co/transfer" => Http::response($response, 200)
+            'https://api.paystack.co/transfer' => Http::response($response, 200),
         ]);
 
         $transferDto = $this->paystackRepository->initiateTransfer($amount, $recipientCode, $recipientCode);
@@ -569,11 +567,11 @@ class PaystackRepositoryTest extends TestCase
         ];
 
         Http::fake([
-            "https://api.paystack.co/transfer" => Http::response($response, 400)
+            'https://api.paystack.co/transfer' => Http::response($response, 400),
         ]);
 
         $this->expectException(ServerErrorException::class);
-        $this->expectExceptionMessage("Error Initiating Transfer");
+        $this->expectExceptionMessage('Error Initiating Transfer');
 
         $this->paystackRepository->initiateTransfer($amount, $recipientCode, $reference);
     }

@@ -95,7 +95,7 @@ class EarningControllerTest extends TestCase
         $this->paystackRepository->shouldReceive('initiateTransfer')
             ->once()
             ->with(5000, $account->paystack_recipient_code, \Mockery::type('string'))
-            ->andReturn(new TransferDto("5000", "TRF_1ptvuv321ahaa7q", "12-03-2024"));
+            ->andReturn(new TransferDto('5000', 'TRF_1ptvuv321ahaa7q', '12-03-2024'));
 
         $this->payoutRepository->shouldReceive('create')
             ->once()

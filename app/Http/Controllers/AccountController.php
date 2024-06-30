@@ -25,7 +25,6 @@ use Arr;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Route handler methods for Account resource

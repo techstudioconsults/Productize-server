@@ -31,12 +31,12 @@ class ExternalProductResource extends JsonResource
                     'id' => $resource->id,
                     'name' => $resource->name,
                     'mime_type' => $resource->mime_type,
-                    'size' => round($resource->size / 1048576, 3) . 'MB', // Convert byte to MB
+                    'size' => round($resource->size / 1048576, 3).'MB', // Convert byte to MB
                     'extension' => $resource->extension,
                 ];
             }),
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            'updated_at' => $this->updated_at,
         ];
     }
 }

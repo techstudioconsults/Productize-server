@@ -55,7 +55,7 @@ class SubscriptionRepository extends Repository
             $user = $this->userRepository->findById($userId);
 
             // If the customer does not exist, create a new customer on Paystack
-            if (!$customer) {
+            if (! $customer) {
                 $customer = $this->paystackRepository->createCustomer($user);
             }
 

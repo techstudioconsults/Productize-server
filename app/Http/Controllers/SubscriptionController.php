@@ -10,7 +10,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\InvoiceDto;
 use App\Enums\SubscriptionStatusEnum;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
@@ -24,7 +23,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Arr;
 
 /**
  * Route handler methods for Subscription resource
@@ -34,8 +32,7 @@ class SubscriptionController extends Controller
     public function __construct(
         protected SubscriptionRepository $subscriptionRepository,
         protected PaystackRepository $paystackRepository
-    ) {
-    }
+    ) {}
 
     /**
      *  @author @Intuneteq Tobi Olanitori
@@ -72,21 +69,6 @@ class SubscriptionController extends Controller
      */
     public function store(StoreSubscriptionRequest $request)
     {
-        // check if user is subscriped on the db table
-        // if yes, return error - no point continuing.
-        // check if we have the user on the subscription table - First time subscriber or db wiped in dev ?
-        // If we have the subscriber on the db table, return error - user is a subscriber but it's cancelled. Let them use the enable button.
-
-        // No user on subscription table
-        // fetch user on paystack
-        // if user is found, check if user has any subscription history
-
-        // If yes, it should be on the db table - Most likely a dev wipe,
-        // check the status, if it is not cancelled, upgrade the user to premium - when moving to production, add the production condition to it so this behavior is not persistent in production
-        // so update the table with necessary subscription info log and throw error.
-
-        //if no user found or no subscription, create a new subscription
-
         // Check if the user is authenticated
         $user = $request->user('sanctum');
 
@@ -246,7 +228,7 @@ class SubscriptionController extends Controller
         }
 
         // User is on a free account
-        if (!$user->isSubscribed()) {
+        if (! $user->isSubscribed()) {
             return new JsonResponse($response);
         }
 
@@ -254,20 +236,20 @@ class SubscriptionController extends Controller
         $db = $this->subscriptionRepository->findOne(['user_id' => $user->id]);
 
         // Log this issue to slack
-        if (!$db) {
+        if (! $db) {
             return new JsonResponse($response);
         }
 
         $subscription_code = $db->subscription_code;
 
         // Log this issue to slack
-        if (!$subscription_code) {
+        if (! $subscription_code) {
             return new JsonResponse($response);
         }
 
         $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
 
-        if (!$subscription) {
+        if (! $subscription) {
             return new JsonResponse($response);
         }
 

@@ -35,6 +35,8 @@ class ExternalProductResource extends JsonResource
                     'extension' => $resource->extension,
                 ];
             }),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

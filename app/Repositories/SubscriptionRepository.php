@@ -21,15 +21,14 @@ class SubscriptionRepository extends Repository
     public function __construct(
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq
      *
      * Start the subscription process for a user.
      *
-     * @param array $entity The entity containing user information.
+     * @param  array  $entity  The entity containing user information.
      * @return array The response containing subscription and transaction details.
      *
      * @throws ServerErrorException If any error occurs during the process.
@@ -47,29 +46,30 @@ class SubscriptionRepository extends Repository
             if ($customer && $customer->isSubscribed()) {
                 // Handle cases where the customer has a subscription but it's not in the database
                 $this->handleCustomerHasSubscriptionNotOnDb($customer, $userId);
-            } else {
-                // Fetch user details from the local database
-                $user = $this->userRepository->findById($userId);
 
-                // If the customer does not exist, create a new customer on Paystack
-                if (!$customer) {
-                    $customer = $this->paystackRepository->createCustomer($user);
-                }
-
-                $customer_code = $customer->getCode();
-
-                // Create a new subscription in the local database
-                $subscription = $this->create([
-                    'customer_code' => $customer_code,
-                    'user_id' => $user->id,
-                    'status' => SubscriptionStatusEnum::PENDING->value,
-                ]);
-
-                // Initialize the transaction with Paystack
-                $response = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
-
-                return ['id' => $subscription->id, ...$response->toArray()];
+                // Then return an error.
+                throw new BadRequestException("Sorry, you can't perform this action. It appears you already have a subscription plan.");
             }
+
+            // Fetch user details from the local database
+            $user = $this->userRepository->findById($userId);
+
+            // If the customer does not exist, create a new customer on Paystack
+            if (! $customer) {
+                $customer = $this->paystackRepository->createCustomer($user);
+            }
+
+            // Create a new subscription in the local database
+            $subscription = $this->create([
+                'customer_code' => $customer->getCode(),
+                'user_id' => $user->id,
+                'status' => SubscriptionStatusEnum::PENDING->value,
+            ]);
+
+            // Initialize the transaction with Paystack
+            $response = $this->paystackRepository->initializeTransaction($user->email, 5000, true);
+
+            return ['id' => $subscription->id, ...$response->toArray()];
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
@@ -118,7 +118,7 @@ class SubscriptionRepository extends Repository
     public function update(Model $entity, array $updates): Subscription
     {
         // Ensure that the provided entity is an instance of Order
-        if (!$entity instanceof Subscription) {
+        if (! $entity instanceof Subscription) {
             throw new ModelCastException('Subscription', get_class($entity));
         }
 
@@ -145,7 +145,7 @@ class SubscriptionRepository extends Repository
      * If the status is not cancelled hence, active for whatever reason.
      *
      * * @param CustomerDto $customer The customer data transfer object.
-     * @param int $userId The user ID.
+     * @param  int  $userId  The user ID.
      */
     private function handleCustomerHasSubscriptionNotOnDb(CustomerDto $customer, string $user_id)
     {
@@ -175,8 +175,5 @@ class SubscriptionRepository extends Repository
 
             $this->userRepository->guardedUpdate($customer->getEmail(), 'account_type', 'premium');
         }
-
-        // Then return an error.
-        throw new BadRequestException("Sorry, you can't perform this action. It appears you already have a subscription plan.");
     }
 }

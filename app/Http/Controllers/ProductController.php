@@ -85,7 +85,7 @@ class ProductController extends Controller
     {
         $status = ProductStatusEnum::Published->value;
 
-        $products = $this->productRepository->find(['status' => $status]);
+        $products = $this->productRepository->query(['status' => $status])->latest()->get();
 
         return ExternalProductResource::collection($products);
     }

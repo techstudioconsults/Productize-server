@@ -45,10 +45,8 @@ class PaystackRepository
      */
     private $WhiteList = ['52.31.139.75', '52.49.173.169', '52.214.14.220'];
 
-
     /**
      * Constructor to initialize repositories and configuration.
-     *
      */
     public function __construct()
     {
@@ -60,9 +58,7 @@ class PaystackRepository
     /**
      * Create a new customer on Paystack.
      *
-     * @param User $user
      *
-     * @return CustomerDto
      *
      * @throws \Exception
      *
@@ -74,14 +70,14 @@ class PaystackRepository
         $payload = [
             'email' => $user->email,
             'first_name' => $full_name[0],
-            "last_name" => end($full_name),
+            'last_name' => end($full_name),
             'phone' => $user->phone_number,
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Content-Type' => 'application/json',
-        ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
+        ])->post($this->baseUrl.'/customer', $payload)->throw()->json();
 
         return CustomerDto::create($response['data']);
     }
@@ -89,9 +85,7 @@ class PaystackRepository
     /**
      * Fetch a customer from Paystack by email.
      *
-     * @param string $email Customer's email
-     *
-     * @return CustomerDto|null
+     * @param  string  $email  Customer's email
      *
      * @throws ApiException
      *
@@ -99,10 +93,10 @@ class PaystackRepository
      */
     public function fetchCustomer(string $email): ?CustomerDto
     {
-        $url = $this->baseUrl . "/customer/$email";
+        $url = $this->baseUrl."/customer/$email";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get($url);
 
         if ($response->notFound()) {
@@ -119,13 +113,9 @@ class PaystackRepository
     /**
      * Initialize a transaction on Paystack.
      *
-     * @param string $email User's email
-     *
-     * @param int $amount Transaction Amount
-     *
-     * @param bool $isSubscription True if it is a subscription transaction, false otherwise
-     *
-     * @return TransactionInitializationDto
+     * @param  string  $email  User's email
+     * @param  int  $amount  Transaction Amount
+     * @param  bool  $isSubscription  True if it is a subscription transaction, false otherwise
      *
      * @throws \Exception
      *
@@ -136,7 +126,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            'callback_url' => $this->client_url . '/dashboard/home',
+            'callback_url' => $this->client_url.'/dashboard/home',
         ];
 
         if ($isSubscription) {
@@ -144,7 +134,7 @@ class PaystackRepository
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload);
@@ -153,10 +143,10 @@ class PaystackRepository
             Log::critical('Fetch subscription error', [
                 'status' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
-            throw new ServerErrorException("Error Initializing Paystack Transaction");
+            throw new ServerErrorException('Error Initializing Paystack Transaction');
         }
 
         return TransactionInitializationDto::create($response['data']);
@@ -165,7 +155,6 @@ class PaystackRepository
     /**
      * Initialize a purchase transaction on Paystack.
      *
-     * @param mixed $payload
      *
      * @return TransactionInitializationDto
      *
@@ -174,11 +163,11 @@ class PaystackRepository
     public function initializePurchaseTransaction(mixed $payload)
     {
         $payload = array_merge($payload, [
-            'callback_url' => $this->client_url . '/dashboard/downloads#all-downloads',
+            'callback_url' => $this->client_url.'/dashboard/downloads#all-downloads',
         ]);
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload);
@@ -187,10 +176,10 @@ class PaystackRepository
             Log::critical('Fetch subscription error', [
                 'status' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
-            throw new ServerErrorException("Error Initializing Paystack Transaction For Purchase");
+            throw new ServerErrorException('Error Initializing Paystack Transaction For Purchase');
         }
 
         return TransactionInitializationDto::create($response['data']);
@@ -199,8 +188,7 @@ class PaystackRepository
     /**
      * Create a subscription on Paystack.
      *
-     * @param string $customerId The paystack cutomer id of the user
-     *
+     * @param  string  $customerId  The paystack cutomer id of the user
      * @return SubscriptionDto
      *
      * @throws \Exception
@@ -215,7 +203,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Content-Type' => 'application/json',
         ])->post($this->subscriptionEndpoint, $payload);
 
@@ -223,21 +211,19 @@ class PaystackRepository
             Log::critical('Error Occured To Create Subscription', [
                 'status' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
-            throw new ServerErrorException("Error Subscribing User");
+            throw new ServerErrorException('Error Subscribing User');
         }
 
         return SubscriptionDto::create($response['data']);
     }
 
-
     /**
      * Manage a subscription on Paystack.
      *
-     * @param string $subscriptionId Paystack's subscription for the user
-     *
+     * @param  string  $subscriptionId  Paystack's subscription for the user
      * @return array An associative array which includes a redirect link for the user to manage the subscription on paystack's UI
      *
      * @throws \Exception
@@ -247,17 +233,17 @@ class PaystackRepository
         $url = "{$this->baseUrl}/subscription/{$subscriptionId}/manage/link";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get($url);
 
         if ($response->failed()) {
             Log::critical('Manage Paystack error', [
                 'status' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
-            throw new ServerErrorException("Error Managing Subscription");
+            throw new ServerErrorException('Error Managing Subscription');
         }
 
         // ["link" => ""]
@@ -267,22 +253,21 @@ class PaystackRepository
     /**
      * Fetch a subscription from Paystack.
      *
-     * @param string $subscriptionId Paystack's subscription id of the user
-     * @return SubscriptionDto|null
+     * @param  string  $subscriptionId  Paystack's subscription id of the user
      *
      * @throws \Exception
      */
     public function fetchSubscription(string $subscriptionId): ?SubscriptionDto
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
 
         if ($response->failed()) {
             Log::critical('Fetch subscription error', [
                 'status' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
             return null;
@@ -294,8 +279,8 @@ class PaystackRepository
     /**
      * Enable a subscription on Paystack.
      *
-     * @param string $subscriptionId
      * @return array
+     *
      * @throws \Exception
      */
     public function enableSubscription(string $subscriptionId)
@@ -308,7 +293,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
@@ -319,8 +304,8 @@ class PaystackRepository
     /**
      * Disable a subscription on Paystack.
      *
-     * @param string $subscription_code
      * @return array
+     *
      * @throws \Exception
      */
     public function disableSubscription(string $subscription_code)
@@ -333,7 +318,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/disable", $payload)->throw()->json();
@@ -344,10 +329,8 @@ class PaystackRepository
     /**
      * Validate a Paystack webhook.
      *
-     * @param string $payload The Payload from Paystack
-     *
-     * @param string $signature The `x-paystack-signature` request header from paystack
-     *
+     * @param  string  $payload  The Payload from Paystack
+     * @param  string  $signature  The `x-paystack-signature` request header from paystack
      * @return bool True when from paystack, false otherwise
      */
     public function isValidPaystackWebhook($payload, $signature): bool
@@ -365,14 +348,14 @@ class PaystackRepository
     public function getBankList(): ?Collection
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get("{$this->baseUrl}/bank?country=nigeria");
 
         if ($response->failed()) {
-            Log::error("Error Fetching Bank List from paystack", [
+            Log::error('Error Fetching Bank List from paystack', [
                 'code' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
             return null;
@@ -386,20 +369,18 @@ class PaystackRepository
     /**
      * Validate an account number with Paystack.
      *
-     * @param string $account_number The Account Number
-     *
-     * @param string $bank_code Paystack Bank Code
-     *
+     * @param  string  $account_number  The Account Number
+     * @param  string  $bank_code  Paystack Bank Code
      * @return bool True when valid, false otherwise
      */
     public function validateAccountNumber(string $account_number, string $bank_code): bool
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
-        ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . '&bank_code=' . $bank_code);
+            'Authorization' => 'Bearer '.$this->secret_key,
+        ])->get("{$this->baseUrl}/bank/resolve?account_number=".$account_number.'&bank_code='.$bank_code);
 
         if ($response->failed()) {
-            Log::error("Error Validating Account Number", [
+            Log::error('Error Validating Account Number', [
                 'code' => $response->status(),
                 'message' => $response->reason(),
                 'body' => $response->body(),
@@ -414,11 +395,9 @@ class PaystackRepository
     /**
      * Create a transfer recipient on Paystack.
      *
-     * @param string $name Bank account name
-     * @param string $account_number Bank account number
-     * @param string $bank_code Paystack's bank code
-     *
-     * @return TransferRecipientDto
+     * @param  string  $name  Bank account name
+     * @param  string  $account_number  Bank account number
+     * @param  string  $bank_code  Paystack's bank code
      *
      * @throws \Exception
      */
@@ -433,7 +412,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transferrecipient", $payload);
@@ -442,10 +421,10 @@ class PaystackRepository
             Log::critical('ERROR CREATING A RECIPIENT', [
                 'status' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
-            throw new ServerErrorException("Error Creating A Recipient");
+            throw new ServerErrorException('Error Creating A Recipient');
         }
 
         return TransferRecipientDto::create($response['data']);
@@ -454,10 +433,8 @@ class PaystackRepository
     /**
      * Initiate a transfer on Paystack.
      *
-     * @param string $amount Transfer ammount
-     * @param string $recipient_code The user's paystack recipient code
-     * @param string $reference
-     *
+     * @param  string  $amount  Transfer ammount
+     * @param  string  $recipient_code  The user's paystack recipient code
      * @return TransferDto
      *
      * @throws \Exception
@@ -473,7 +450,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transfer", $payload);
@@ -482,10 +459,10 @@ class PaystackRepository
             Log::critical('ERROR INITIATING A TRANSFER', [
                 'status' => $response->status(),
                 'message' => $response->reason(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
-            throw new ServerErrorException("Error Initiating Transfer");
+            throw new ServerErrorException('Error Initiating Transfer');
         }
 
         return TransferDto::create($response['data']);

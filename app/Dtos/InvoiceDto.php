@@ -18,23 +18,20 @@ class InvoiceDto implements IDtoFactory
     /**
      * InvoiceDto constructor.
      *
-     * @param int $amount           Amount charged
-     * @param string $status        Current Charge Status
-     * @param string $reference     Invoice reference id
-     * @param string $createdAt     Date of creation
+     * @param  int  $amount  Amount charged
+     * @param  string  $status  Current Charge Status
+     * @param  string  $reference  Invoice reference id
+     * @param  string  $createdAt  Date of creation
      */
     public function __construct(
         private int $amount,
         private string $status,
         private string $reference,
         private string $createdAt,
-    ) {
-    }
+    ) {}
 
     /**
      * Get the invoice amount.
-     *
-     * @return int
      */
     public function getAmount(): int
     {
@@ -43,8 +40,6 @@ class InvoiceDto implements IDtoFactory
 
     /**
      * Get the invoice status.
-     *
-     * @return string
      */
     public function getStatus(): string
     {
@@ -53,8 +48,6 @@ class InvoiceDto implements IDtoFactory
 
     /**
      * Get the invoice reference.
-     *
-     * @return string
      */
     public function getReference(): string
     {
@@ -63,8 +56,6 @@ class InvoiceDto implements IDtoFactory
 
     /**
      * Get the invoice creation timestamp.
-     *
-     * @return string
      */
     public function getCreatedAt(): string
     {
@@ -73,8 +64,6 @@ class InvoiceDto implements IDtoFactory
 
     /**
      * Get formatted properties.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -90,14 +79,12 @@ class InvoiceDto implements IDtoFactory
     /**
      * Create an instance of InvoiceDto from an array of data.
      *
-     * @param array $data
-     * @return self
      * @throws ServerErrorException
      */
     public static function create(array $data): self
     {
-        if (!isset($data['amount'], $data['status'], $data['reference'], $data['createdAt'])) {
-            throw new ServerErrorException("Invalid Invoice Data Transfer");
+        if (! isset($data['amount'], $data['status'], $data['reference'], $data['createdAt'])) {
+            throw new ServerErrorException('Invalid Invoice Data Transfer');
         }
 
         return new self(

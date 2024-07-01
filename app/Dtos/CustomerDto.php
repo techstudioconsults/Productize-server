@@ -20,13 +20,13 @@ class CustomerDto implements IDtoFactory
     /**
      * CustomerDto constructor.
      *
-     * @param string $id                Customer Id from payment gateway
-     * @param string $email             Email From Payment Gateway
-     * @param string $code              Customer Code from Payment Gateway
-     * @param string $first_name        The first name saved in the payment gateway
-     * @param string $last_name         The last name saved in the payment gateway
-     * @param string $createdAt         Date of creation
-     * @param Collection $subscriptions The Customer's subscriptions
+     * @param  string  $id  Customer Id from payment gateway
+     * @param  string  $email  Email From Payment Gateway
+     * @param  string  $code  Customer Code from Payment Gateway
+     * @param  string  $first_name  The first name saved in the payment gateway
+     * @param  string  $last_name  The last name saved in the payment gateway
+     * @param  string  $createdAt  Date of creation
+     * @param  Collection  $subscriptions  The Customer's subscriptions
      */
     public function __construct(
         private string $id,
@@ -36,13 +36,10 @@ class CustomerDto implements IDtoFactory
         private ?string $last_name,
         private string $createdAt,
         private Collection $subscriptions
-    ) {
-    }
+    ) {}
 
     /**
      * Get the ID.
-     *
-     * @return string
      */
     public function getId(): string
     {
@@ -51,8 +48,6 @@ class CustomerDto implements IDtoFactory
 
     /**
      * Get the email.
-     *
-     * @return string
      */
     public function getEmail(): string
     {
@@ -61,8 +56,6 @@ class CustomerDto implements IDtoFactory
 
     /**
      * Get the code.
-     *
-     * @return string
      */
     public function getCode(): string
     {
@@ -71,8 +64,6 @@ class CustomerDto implements IDtoFactory
 
     /**
      * Get the first name.
-     *
-     * @return string
      */
     public function getFirstName(): ?string
     {
@@ -81,8 +72,6 @@ class CustomerDto implements IDtoFactory
 
     /**
      * Get the last name.
-     *
-     * @return string
      */
     public function getLastName(): ?string
     {
@@ -91,8 +80,6 @@ class CustomerDto implements IDtoFactory
 
     /**
      * Get the created at timestamp.
-     *
-     * @return string
      */
     public function getCreatedAt(): string
     {
@@ -116,7 +103,9 @@ class CustomerDto implements IDtoFactory
      */
     public function isSubscribed(): bool
     {
-        if ($this->subscriptions->isEmpty()) return false;
+        if ($this->subscriptions->isEmpty()) {
+            return false;
+        }
 
         $validStatuses = [
             SubscriptionStatusEnum::ACTIVE->value,
@@ -132,8 +121,6 @@ class CustomerDto implements IDtoFactory
 
     /**
      * Get formatted properties.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -146,21 +133,19 @@ class CustomerDto implements IDtoFactory
             'created_at' => $this->getCreatedAt(),
             'subscriptions' => $this->subscriptions->map(function (SubscriptionDto $subscription) {
                 return $subscription->toArray();
-            })
+            }),
         ];
     }
 
     /**
      * Create an instance of CustomerDto from an array of data.
      *
-     * @param array $customer
-     * @return self
      * @throws Exception
      */
     public static function create(array $customer): self
     {
-        if (!isset($customer['id'], $customer['email'], $customer['customer_code'], $customer['subscriptions'], $customer['createdAt'],)) {
-            throw new ServerErrorException("Invalid Customer Data Transfer");
+        if (! isset($customer['id'], $customer['email'], $customer['customer_code'], $customer['subscriptions'], $customer['createdAt'])) {
+            throw new ServerErrorException('Invalid Customer Data Transfer');
         }
 
         // Create SubscriptionDto objects from the array data

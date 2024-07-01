@@ -56,7 +56,7 @@ class MakeDto extends Command
         $name = $this->argument('name');
 
         // Define the path to store the repository
-        $path = app_path('Dtos/' . $name . '.php');
+        $path = app_path('Dtos/'.$name.'.php');
 
         // Check if file already exists
         if ($this->files->exists($path)) {

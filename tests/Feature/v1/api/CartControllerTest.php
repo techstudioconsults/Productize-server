@@ -465,9 +465,9 @@ class CartControllerTest extends TestCase
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
             ->andReturn(new TransactionInitializationDto(
-                "https://checkout.paystack.com/0peioxfhpn",
-                "0peioxfhpn",
-                "7PVGX8MEk85tgeEpVDtD"
+                'https://checkout.paystack.com/0peioxfhpn',
+                '0peioxfhpn',
+                '7PVGX8MEk85tgeEpVDtD'
             ));
 
         // Mock UserRepository and ensure firstOrCreate is never called
@@ -514,9 +514,9 @@ class CartControllerTest extends TestCase
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
             ->andReturn(new TransactionInitializationDto(
-                "https://checkout.paystack.com/0peioxfhpn",
-                "0peioxfhpn",
-                "7PVGX8MEk85tgeEpVDtD"
+                'https://checkout.paystack.com/0peioxfhpn',
+                '0peioxfhpn',
+                '7PVGX8MEk85tgeEpVDtD'
             ));
 
         // Perform the request to clear the cart with recipient information
@@ -564,9 +564,9 @@ class CartControllerTest extends TestCase
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
             ->andReturn(new TransactionInitializationDto(
-                "https://checkout.paystack.com/0peioxfhpn",
-                "0peioxfhpn",
-                "7PVGX8MEk85tgeEpVDtD"
+                'https://checkout.paystack.com/0peioxfhpn',
+                '0peioxfhpn',
+                '7PVGX8MEk85tgeEpVDtD'
             ));
 
         $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
@@ -580,9 +580,9 @@ class CartControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson(['data' => [
-                'authorization_url' => "https://checkout.paystack.com/0peioxfhpn",
-                'access_code' => "0peioxfhpn",
-                'reference' => "7PVGX8MEk85tgeEpVDtD"
+                'authorization_url' => 'https://checkout.paystack.com/0peioxfhpn',
+                'access_code' => '0peioxfhpn',
+                'reference' => '7PVGX8MEk85tgeEpVDtD',
             ]]);
 
         Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {

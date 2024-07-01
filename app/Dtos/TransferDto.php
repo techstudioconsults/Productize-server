@@ -18,21 +18,18 @@ class TransferDto implements IDtoFactory
     /**
      * TransferDto constructor.
      *
-     * @param string $amount The amount of the transfer.
-     * @param string $code The transfer code.
-     * @param string $created_at The creation timestamp of the transfer.
+     * @param  string  $amount  The amount of the transfer.
+     * @param  string  $code  The transfer code.
+     * @param  string  $created_at  The creation timestamp of the transfer.
      */
     public function __construct(
         private string $amount,
         private string $code,
         private string $created_at
-    ) {
-    }
+    ) {}
 
     /**
      * Get the amount of the transfer.
-     *
-     * @return string
      */
     public function getAmount(): string
     {
@@ -41,8 +38,6 @@ class TransferDto implements IDtoFactory
 
     /**
      * Get the transfer code.
-     *
-     * @return string
      */
     public function getCode(): string
     {
@@ -51,8 +46,6 @@ class TransferDto implements IDtoFactory
 
     /**
      * Get the creation timestamp of the transfer.
-     *
-     * @return string
      */
     public function getCreatedAt(): string
     {
@@ -61,29 +54,25 @@ class TransferDto implements IDtoFactory
 
     /**
      * Convert the DTO to an array.
-     *
-     * @return array
      */
     public function toArray(): array
     {
         return [
             'amount' => $this->amount,
             'transfer_code' => $this->code,
-            'createdAt' => $this->created_at
+            'createdAt' => $this->created_at,
         ];
     }
 
     /**
      * Create an instance of TransferDto from an array of data.
      *
-     * @param array $data
-     * @return self
      * @throws ServerErrorException
      */
     public static function create(array $data): self
     {
-        if (!isset($data['amount'], $data['transfer_code'], $data['createdAt'])) {
-            throw new ServerErrorException("Invalid TransferDto Transfer");
+        if (! isset($data['amount'], $data['transfer_code'], $data['createdAt'])) {
+            throw new ServerErrorException('Invalid TransferDto Transfer');
         }
 
         return new TransferDto(

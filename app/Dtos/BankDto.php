@@ -18,17 +18,13 @@ class BankDto implements IDtoFactory
     /**
      * BankDto constructor.
      *
-     * @param string $name Bank Name
-     * @param string $code Bank Code
+     * @param  string  $name  Bank Name
+     * @param  string  $code  Bank Code
      */
-    public function __construct(private string $name, private string $code)
-    {
-    }
+    public function __construct(private string $name, private string $code) {}
 
     /**
      * Get the name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -37,8 +33,6 @@ class BankDto implements IDtoFactory
 
     /**
      * Get the code.
-     *
-     * @return string
      */
     public function getCode(): string
     {
@@ -47,28 +41,26 @@ class BankDto implements IDtoFactory
 
     /**
      * Get formatted properties.
-     *
-     * @return array
      */
     public function toArray(): array
     {
         return [
             'name' => $this->getName(),
-            'code' => $this->getCode()
+            'code' => $this->getCode(),
         ];
     }
 
     /**
      * Create an instance of BankDto from an array of data.
      *
-     * @param array $data Response data from paystack
-     * @return self
+     * @param  array  $data  Response data from paystack
+     *
      * @throws ServerErrorException When the bank name and code are not in the array.
      */
     public static function create(array $data): self
     {
-        if (!isset($data['name'], $data['code'])) {
-            throw new ServerErrorException("Invalid Bank Data Transfer");
+        if (! isset($data['name'], $data['code'])) {
+            throw new ServerErrorException('Invalid Bank Data Transfer');
         }
 
         return new BankDto($data['name'], $data['code']);

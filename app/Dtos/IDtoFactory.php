@@ -17,16 +17,11 @@ interface IDtoFactory
 {
     /**
      * Create an instance of the DTO from an array of data.
-     *
-     * @param array $data
-     * @return self
      */
     public static function create(array $data): self;
 
     /**
      * Get formatted properties.
-     *
-     * @return array
      */
     public function toArray(): array;
 }

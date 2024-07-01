@@ -53,7 +53,7 @@ class ReviewRepository extends Repository
      * Find reviews based on the provided filter.
      *
      * @param  array|null  $filter  The filter criteria to apply (optional).
-     * @return Collection The collection of found review.
+     * @return Collection<int, Review> The collection of found review.
      */
     public function find(?array $filter = null): ?Collection
     {

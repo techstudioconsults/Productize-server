@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\TransactionInitializationDto;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
 use App\Exceptions\ForbiddenException;
@@ -463,7 +464,11 @@ class CartControllerTest extends TestCase
 
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
-            ->andReturn(['status' => 'success', 'data' => []]);
+            ->andReturn(new TransactionInitializationDto(
+                'https://checkout.paystack.com/0peioxfhpn',
+                '0peioxfhpn',
+                '7PVGX8MEk85tgeEpVDtD'
+            ));
 
         // Mock UserRepository and ensure firstOrCreate is never called
         $userRepository = $this->partialMock(UserRepository::class);
@@ -508,7 +513,11 @@ class CartControllerTest extends TestCase
         $paystackRepository = $this->partialMock(PaystackRepository::class);
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
-            ->andReturn(['status' => 'success', 'data' => []]);
+            ->andReturn(new TransactionInitializationDto(
+                'https://checkout.paystack.com/0peioxfhpn',
+                '0peioxfhpn',
+                '7PVGX8MEk85tgeEpVDtD'
+            ));
 
         // Perform the request to clear the cart with recipient information
         $response = $this->post(route('cart.clear'), [
@@ -554,7 +563,11 @@ class CartControllerTest extends TestCase
 
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
             ->once()
-            ->andReturn(['status' => 'success', 'data' => []]);
+            ->andReturn(new TransactionInitializationDto(
+                'https://checkout.paystack.com/0peioxfhpn',
+                '0peioxfhpn',
+                '7PVGX8MEk85tgeEpVDtD'
+            ));
 
         $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
             'recipient_email' => $recipient_email,
@@ -566,7 +579,11 @@ class CartControllerTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJson(['data' => ['status' => 'success']]);
+            ->assertJson(['data' => [
+                'authorization_url' => 'https://checkout.paystack.com/0peioxfhpn',
+                'access_code' => '0peioxfhpn',
+                'reference' => '7PVGX8MEk85tgeEpVDtD',
+            ]]);
 
         Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {
             return $mail->hasTo($recipient_email);

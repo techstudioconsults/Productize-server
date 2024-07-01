@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Traits\HasFileSystem;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Filesystem\Filesystem;
 
 /**
- * @author Tobi Olanitori
+ * @author @Intuneteq
  *
  * @version 1.0
  *
@@ -17,8 +19,10 @@ use Illuminate\Filesystem\Filesystem;
  *
  * Model base class `Model` if the model flag is not passed.
  */
-class MakeRepository extends Command
+class MakeRepository extends Command implements PromptsForMissingInput
 {
+    use HasFileSystem;
+
     /**
      * The name and signature of the console command.
      *
@@ -31,14 +35,9 @@ class MakeRepository extends Command
      *
      * @var string
      */
-    protected $description = 'Create a new repository class';
-
-    /**
-     * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
-     */
-    protected $files;
+    protected $description = 'Create a new repository class
+                             {name : Name of the Repository Class}
+                             {--model: The database model for the repository}';
 
     /**
      * Create a new command instance.
@@ -76,10 +75,16 @@ class MakeRepository extends Command
         }
 
         if (! $model) {
+            $model = $this->ask('What database model is the repository for?');
+        }
+
+        if (! $model) {
             $this->error('Model for repository not passed. Example usage: php artisan make:repository ExampleRepository --model=ExampleModel');
 
             return;
         }
+
+        $model = ucfirst($model);
 
         // Create the directory if it doesn't exist
         $this->makeDirectory($path);
@@ -225,15 +230,14 @@ class MakeRepository extends Command
     }
 
     /**
-     * Create the directory for the class if it doesn't exist.
+     * Prompt for missing input arguments using the returned questions.
      *
-     * @param  string  $path
-     * @return void
+     * @return array
      */
-    protected function makeDirectory($path)
+    protected function promptForMissingArgumentsUsing()
     {
-        if (! $this->files->isDirectory(dirname($path))) {
-            $this->files->makeDirectory(dirname($path), 0755, true, true);
-        }
+        return [
+            'model' => 'Which user ID should receive the mail?',
+        ];
     }
 }

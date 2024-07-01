@@ -13,8 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-use function PHPUnit\Framework\assertEquals;
-
 class CartRepositoryTest extends TestCase
 {
     use RefreshDatabase;
@@ -286,7 +284,7 @@ class CartRepositoryTest extends TestCase
 
         $result = $this->cartRepository->findById($cart->id);
 
-        assertEquals($cart->id, $result->id);
+        $this->assertEquals($cart->id, $result->id);
         $this->assertInstanceOf(Cart::class, $result);
     }
 
@@ -296,7 +294,7 @@ class CartRepositoryTest extends TestCase
 
         $result = $this->cartRepository->findById($cart_id);
 
-        assertEquals(null, $result);
+        $this->assertEquals(null, $result);
     }
 
     public function test_findone_with_slug(): void
@@ -310,7 +308,7 @@ class CartRepositoryTest extends TestCase
         $result = $this->cartRepository->findOne(['product_slug' => $product->slug]);
 
         $this->assertInstanceOf(Cart::class, $result);
-        assertEquals($product->slug, $result->product_slug);
+        $this->assertEquals($product->slug, $result->product_slug);
     }
 
     public function test_findone_with_wrong_slug_return_null(): void
@@ -323,7 +321,7 @@ class CartRepositoryTest extends TestCase
 
         $result = $this->cartRepository->findOne(['product_slug' => 'wrong_slug']);
 
-        assertEquals(null, $result);
+        $this->assertEquals(null, $result);
     }
 
     public function test_update_cart_successfully(): void

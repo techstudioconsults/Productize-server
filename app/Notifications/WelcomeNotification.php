@@ -64,7 +64,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)->markdown('mail.welcome')->subject('Welcome To Productize')->with([
-            'url' => $this->client_url,
+            'url' => $this->client_url.'/dashboard/home',
             'message' => 'welcome',
         ]);
     }

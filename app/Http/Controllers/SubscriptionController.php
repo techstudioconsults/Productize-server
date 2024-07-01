@@ -23,7 +23,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Arr;
 
 /**
  * Route handler methods for Subscription resource
@@ -70,21 +69,6 @@ class SubscriptionController extends Controller
      */
     public function store(StoreSubscriptionRequest $request)
     {
-        // check if user is subscriped on the db table
-        // if yes, return error - no point continuing.
-        // check if we have the user on the subscription table - First time subscriber or db wiped in dev ?
-        // If we have the subscriber on the db table, return error - user is a subscriber but it's cancelled. Let them use the enable button.
-
-        // No user on subscription table
-        // fetch user on paystack
-        // if user is found, check if user has any subscription history
-
-        // If yes, it should be on the db table - Most likely a dev wipe,
-        // check the status, if it is not cancelled, upgrade the user to premium - when moving to production, add the production condition to it so this behavior is not persistent in production
-        // so update the table with necessary subscription info log and throw error.
-
-        //if no user found or no subscription, create a new subscription
-
         // Check if the user is authenticated
         $user = $request->user('sanctum');
 
@@ -104,7 +88,7 @@ class SubscriptionController extends Controller
 
         // If the user has a subscription, return an error with the subscription status
         if ($subscription) {
-            $status = $subscription['status'];
+            $status = $subscription->status;
 
             throw new BadRequestException(
                 "Sorry, you can't perform this action. It appears you already have a subscription plan with status $status."
@@ -265,22 +249,16 @@ class SubscriptionController extends Controller
 
         $subscription = $this->paystackRepository->fetchSubscription($subscription_code);
 
-        $plans = Arr::map($subscription['invoices'], function ($plan) {
-            return [
-                'plan' => 'premium',
-                'price' => $plan['amount'] / 100,
-                'status' => $plan['status'],
-                'reference' => $plan['reference'],
-                'date' => $plan['createdAt'],
-            ];
-        });
+        if (! $subscription) {
+            return new JsonResponse($response);
+        }
 
         $response = [
             'id' => $db->id,
-            'renewal_date' => $subscription['next_payment_date'],
+            'renewal_date' => $subscription->getNextPaymentDate(),
             'plan' => $user->account_type,
-            'billing_total' => $subscription['amount'] / 100,
-            'plans' => $plans,
+            'billing_total' => $subscription->getTotalBilling(),
+            'plans' => $subscription->getPlans(),
         ];
 
         return new JsonResponse($response);

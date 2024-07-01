@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\BankDto;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
@@ -20,7 +21,6 @@ use App\Models\Account;
 use App\Repositories\AccountRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\UserRepository;
-use Arr;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -117,7 +117,7 @@ class AccountController extends Controller
             $account = [
                 'user_id' => $user->id,
                 'account_number' => $account_number,
-                'paystack_recipient_code' => $response['recipient_code'],
+                'paystack_recipient_code' => $response->getCode(),
                 'name' => $name,
                 'bank_code' => $bank_code,
                 'bank_name' => $bank_name,
@@ -176,15 +176,14 @@ class AccountController extends Controller
         // Retrieve the list of banks from the Paystack repository
         $banks = $this->paystackRepository->getBankList();
 
-        // Map the bank data to include only the name and code
-        $response = Arr::map($banks, function ($bank) {
-            return [
-                'name' => $bank['name'],
-                'code' => $bank['code'],
-            ];
+        if (! $banks) {
+            return new JsonResponse([], 200);
+        }
+
+        $response = $banks->map(function (BankDto $bank) {
+            return $bank->toArray();
         });
 
-        // Return the response as a JSON object with a 200 status code
         return new JsonResponse($response, 200);
     }
 }

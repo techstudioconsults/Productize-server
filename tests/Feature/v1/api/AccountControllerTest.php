@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Dtos\BankDto;
+use App\Dtos\TransferRecipientDto;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Models\User;
 use App\Repositories\PaystackRepository;
+use App\Traits\SanctumAuthentication;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -15,7 +18,7 @@ use Tests\TestCase;
 class AccountControllerTest extends TestCase
 {
     use RefreshDatabase;
-    use WithFaker;
+    use SanctumAuthentication, WithFaker;
 
     public function test_Index()
     {
@@ -79,7 +82,7 @@ class AccountControllerTest extends TestCase
 
         $paystackRepositoryMock->shouldReceive('createTransferRecipient')
             ->with($data['name'], $data['account_number'], $data['bank_code'])
-            ->andReturn(['recipient_code' => 'RCP_2x5j67tnnw1t98k']);
+            ->andReturn(new TransferRecipientDto('RCP_2x5j67tnnw1t98k', 'John Doe', '12-03-2024'));
 
         $response = $this->post(route('account.store'), $data);
         $response->assertCreated()
@@ -159,5 +162,54 @@ class AccountControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson(['data' => ['active' => false]]);
+    }
+
+    public function testBankListSuccess()
+    {
+        $this->actingAsRegularUser();
+
+        // Simulated bank data
+        $bank_data = [
+            ['name' => 'Bank A', 'code' => '001'],
+            ['name' => 'Bank B', 'code' => '002'],
+        ];
+
+        // Create BankDto instances from simulated data
+        $banks = collect($bank_data)->map(function ($data) {
+            return BankDto::create($data);
+        });
+
+        // Mock PaystackRepository
+        $paystackRepositoryMock = $this->partialMock(PaystackRepository::class);
+
+        // Mock getBankList() method to return a Collection of BankDto
+        $paystackRepositoryMock->shouldReceive('getBankList')->andReturn($banks);
+
+        // Call bankList() method
+        $response = $this->get(route('account.bank-list'));
+
+        // Assert response is successful
+        $response->assertStatus(200);
+
+        // Assert JSON structure and content
+        $response->assertJsonCount($banks->count())
+            ->assertJsonFragment(['name' => 'Bank A', 'code' => '001'])
+            ->assertJsonFragment(['name' => 'Bank B', 'code' => '002']);
+    }
+
+    public function testBankListEmpty()
+    {
+        $this->actingAsRegularUser();
+
+        // Mock PaystackRepository
+        $paystackRepositoryMock = $this->partialMock(PaystackRepository::class);
+
+        // Mock getBankList() method to return null (empty banks)
+        $paystackRepositoryMock->shouldReceive('getBankList')->andReturn(null);
+
+        $response = $this->get(route('account.bank-list'));
+
+        // Assert response is successful and returns an empty array
+        $response->assertStatus(200)->assertExactJson([]);
     }
 }

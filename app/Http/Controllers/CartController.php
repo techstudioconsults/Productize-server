@@ -25,7 +25,7 @@ use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
-use Log;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Mail;
 
 /**
@@ -181,12 +181,12 @@ class CartController extends Controller
         $totalAmount = $this->cartRepository->calculateTotalAmount($products);
 
 
-        // Log the calculated amount and the amount from the request
-        var_dump('Cart clearing', [
-            'calculated_amount' => $totalAmount,
-            'request_amount' => $validated['amount'],
-            'products' => $products
-        ]);
+        // // Log the calculated amount and the amount from the request
+        // var_dump('Cart clearing', [
+        //     'calculated_amount' => $totalAmount,
+        //     'request_amount' => $validated['amount'],
+        //     'products' => $products
+        // ]);
 
         //Validate that the total amount declared in the request payload matches that which was calculated
         if (abs($totalAmount !== $validated['amount'])> 0.01) {

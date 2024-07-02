@@ -181,13 +181,6 @@ class CartController extends Controller
         $totalAmount = $this->cartRepository->calculateTotalAmount($products);
 
 
-        // // Log the calculated amount and the amount from the request
-        // var_dump('Cart clearing', [
-        //     'calculated_amount' => $totalAmount,
-        //     'request_amount' => $validated['amount'],
-        //     'products' => $products
-        // ]);
-
         //Validate that the total amount declared in the request payload matches that which was calculated
         if (abs($totalAmount !== $validated['amount'])> 0.01) {
             throw new BadRequestException('Total amount does not match quantity');

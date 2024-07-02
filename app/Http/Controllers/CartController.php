@@ -38,7 +38,8 @@ class CartController extends Controller
         protected ProductRepository $productRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -179,15 +180,19 @@ class CartController extends Controller
         // Calculate the total amount for products in the cart
         $totalAmount = $this->cartRepository->calculateTotalAmount($products);
 
-        // Validate that the total amount declared in the request payload matches that which was calculated
-        if ($totalAmount !== $validated['amount']) {
+
+        //Validate that the total amount declared in the request payload matches that which was calculated
+        if (abs($totalAmount !== $validated['amount'])> 0.01) {
             throw new BadRequestException('Total amount does not match quantity');
         }
+
+        // Round the total amount to 2 decimal places for the payment
+         $roundedTotalAmount = round($totalAmount, 2);
 
         // Prepare paystack's payload
         $payload = [
             'email' => $user->email,
-            'amount' => $totalAmount * 100,
+            'amount' => $roundedTotalAmount * 100,
             'metadata' => [
                 'isPurchase' => true,
                 'buyer_id' => $user->id,

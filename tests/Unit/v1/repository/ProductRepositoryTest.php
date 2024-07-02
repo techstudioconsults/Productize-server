@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\ProductSearch;
 use App\Models\User;
 use App\Repositories\ProductRepository;
+use App\Repositories\RevenueRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -797,7 +798,7 @@ class ProductRepositoryTest extends TestCase
     public function test_prepareProducts_valid_data()
     {
         // Arrange
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 10]);
 
         $cart = [
             ['product_slug' => $product->slug, 'quantity' => 2],
@@ -807,12 +808,51 @@ class ProductRepositoryTest extends TestCase
         $result = $this->productRepository->prepareProducts($cart);
 
         // Assert
+        $discountedPrice = 900;
+        $amount = $discountedPrice * 2;
+        $share = $amount - ($amount * RevenueRepository::SALE_COMMISSION);
+
+        // Assert
         $expected = [
             [
                 'product_id' => $product->id,
-                'amount' => 2000,
+                'amount' => $amount,
                 'quantity' => 2,
-                'share' => 1900,
+                'share' => $share,
+                'price' => $discountedPrice,
+            ],
+        ];
+
+        $this->assertEquals($expected, $result);
+    }
+
+    public function test_prepareProducts_valid_data_no_discount()
+    {
+        // Arrange
+        $product = Product::factory()->create([
+            'price' => 1000,
+            'status' => 'published',
+            'discount' => 0,  // Explicitly set discount to 0
+        ]);
+
+        $cart = [
+            ['product_slug' => $product->slug, 'quantity' => 2],
+        ];
+
+        // Act
+        $result = $this->productRepository->prepareProducts($cart);
+
+        // Assert
+        $amount = 1000 * 2;
+        $share = $amount - ($amount * RevenueRepository::SALE_COMMISSION);
+
+        $expected = [
+            [
+                'product_id' => $product->id,
+                'amount' => $amount,
+                'quantity' => 2,
+                'share' => $share,
+                'price' => 1000,  // Original price, no discount applied
             ],
         ];
 

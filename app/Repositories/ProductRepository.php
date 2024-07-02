@@ -451,7 +451,12 @@ class ProductRepository extends Repository
                 throw new BadRequestException('Product with slug '.$slug.' not published');
             }
 
-            $amount = $product->price * $item['quantity'];
+            $price = $product->price;
+            if ($product->discount > 0) {
+                $price = $price - ($price * ($product->discount / 100));
+            }
+
+            $amount = $price * $item['quantity'];
 
             $share = $amount - ($amount * RevenueRepository::SALE_COMMISSION);
 
@@ -460,6 +465,7 @@ class ProductRepository extends Repository
                 'amount' => $amount,
                 'quantity' => $item['quantity'],
                 'share' => $share,
+                'price' => $price,
             ];
         });
     }

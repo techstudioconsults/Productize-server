@@ -12,7 +12,9 @@ use App\Mail\GiftAlert;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
+use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
+use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -458,7 +460,7 @@ class CartControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 0]);
 
         $paystackRepository = $this->partialMock(PaystackRepository::class);
 
@@ -474,11 +476,31 @@ class CartControllerTest extends TestCase
         $userRepository = $this->partialMock(UserRepository::class);
         $userRepository->shouldNotReceive('firstOrCreate');
 
+        // Mock CartRepository
+        $cartRepository = $this->partialMock(CartRepository::class);
+        $cartRepository->shouldReceive('calculateTotalAmount')
+            ->once()
+            ->andReturn(1000.00);
+
+        // Mock ProductRepository
+        $productRepository = $this->partialMock(ProductRepository::class);
+        $productRepository->shouldReceive('prepareProducts')
+            ->once()
+            ->andReturn([
+                [
+                    'product_id' => $product->id,
+                    'amount' => 1000,
+                    'quantity' => 1,
+                    'share' => 950, // Assuming 5% commission
+                    'price' => 1000,
+                ],
+            ]);
+
         $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [
             'products' => [
                 ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => 1000,
+            'amount' => 1000.00,
         ]);
 
         $response->assertStatus(200);
@@ -500,7 +522,7 @@ class CartControllerTest extends TestCase
         $recipient = User::factory()->create(['email' => $recipient_email, 'full_name' => $recipient_name]);
 
         // Create a product with specified attributes
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 0]);
 
         // Mock UserRepository and set expectation for firstOrCreate method
         $userRepository = $this->partialMock(UserRepository::class);
@@ -526,7 +548,7 @@ class CartControllerTest extends TestCase
             'products' => [
                 ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => 1000,
+            'amount' => 1000.00,
         ]);
 
         // Assert the response status
@@ -550,7 +572,7 @@ class CartControllerTest extends TestCase
 
         $recipient = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
 
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published']);
+        $product = Product::factory()->create(['price' => 1000.00, 'status' => 'published', 'discount' => 0]);
 
         $userRepository = $this->partialMock(UserRepository::class);
 

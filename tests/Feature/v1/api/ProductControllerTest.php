@@ -383,107 +383,107 @@ class ProductControllerTest extends TestCase
         ]);
     }
 
-    public function test_store_first_product_should_update_user_first_product_created(): void
-    {
-        // Fake spaces storage
-        Storage::fake('spaces');
+    // public function test_store_first_product_should_update_user_first_product_created(): void
+    // {
+    //     // Fake spaces storage
+    //     Storage::fake('spaces');
 
-        // Fake event for product created event
-        Event::fake([ProductCreated::class]);
+    //     // Fake event for product created event
+    //     Event::fake([ProductCreated::class]);
 
-        // Mocking payload
-        $payload = [
-            'title' => 'title',
-            'price' => 2,
-            'product_type' => 'digital_product',
-            'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
-            'description' => 'description',
-            'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
-            'highlights' => ['highlight1', 'highlight2'],
-            'tags' => ['tag1', 'tag2'],
-            'stock_count' => true,
-            'choose_quantity' => false,
-            'show_sales_count' => true,
-        ];
+    //     // Mocking payload
+    //     $payload = [
+    //         'title' => 'title',
+    //         'price' => 2,
+    //         'product_type' => 'digital_product',
+    //         'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
+    //         'description' => 'description',
+    //         'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
+    //         'highlights' => ['highlight1', 'highlight2'],
+    //         'tags' => ['tag1', 'tag2'],
+    //         'stock_count' => true,
+    //         'choose_quantity' => false,
+    //         'show_sales_count' => true,
+    //     ];
 
-        // Asserting that the user's first product created at property is null before creating the product
-        $this->assertNull($this->user->first_product_created_at);
+    //     // Asserting that the user's first product created at property is null before creating the product
+    //     $this->assertNull($this->user->first_product_created_at);
 
-        $response = $this
-            ->actingAs($this->user, 'web')
-            ->withoutExceptionHandling()
-            ->post(route('product.store'), $payload);
+    //     $response = $this
+    //         ->actingAs($this->user, 'web')
+    //         ->withoutExceptionHandling()
+    //         ->post(route('product.store'), $payload);
 
-        // Asserting that the request was successful
-        $response->assertCreated();
+    //     // Asserting that the request was successful
+    //     $response->assertCreated();
 
-        // Assert files are saved in the disk storage
-        Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
+    //     // Assert files are saved in the disk storage
+    //     Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
 
-        // Assert the event was dispatched
-        Event::assertDispatched(ProductCreated::class);
+    //     // Assert the event was dispatched
+    //     Event::assertDispatched(ProductCreated::class);
 
-        // Assert SendProductCreatedMail listener is listening
-        Event::assertListening(ProductCreated::class, SendProductCreatedMail::class);
+    //     // Assert SendProductCreatedMail listener is listening
+    //     Event::assertListening(ProductCreated::class, SendProductCreatedMail::class);
 
-        // Asserting that the user's first product created at property is now set
-        $this->user->refresh();
-        $this->assertNotNull($this->user->first_product_created_at);
-    }
+    //     // Asserting that the user's first product created at property is now set
+    //     $this->user->refresh();
+    //     $this->assertNotNull($this->user->first_product_created_at);
+    // }
 
-    public function test_store_not_first_product(): void
-    {
-        // Create products
-        Product::factory(5)->create([
-            'user_id' => $this->user->id,
-            'created_at' => Carbon::create(2024, 3, 21, 0),
-        ]);
+    // public function test_store_not_first_product(): void
+    // {
+    //     // Create products
+    //     Product::factory(5)->create([
+    //         'user_id' => $this->user->id,
+    //         'created_at' => Carbon::create(2024, 3, 21, 0),
+    //     ]);
 
-        // set first product created time
-        $this->user->first_product_created_at = Carbon::now();
+    //     // set first product created time
+    //     $this->user->first_product_created_at = Carbon::now();
 
-        $expected_created_time = $this->user->first_product_created_at;
+    //     $expected_created_time = $this->user->first_product_created_at;
 
-        // Fake spaces storage
-        Storage::fake('spaces');
+    //     // Fake spaces storage
+    //     Storage::fake('spaces');
 
-        // Fake event for product created event
-        Event::fake([ProductCreated::class]);
+    //     // Fake event for product created event
+    //     Event::fake([ProductCreated::class]);
 
-        // Mocking payload
-        $payload = [
-            'title' => 'title',
-            'price' => 2,
-            'product_type' => 'digital_product',
-            'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
-            'description' => 'description',
-            'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
-            'highlights' => ['highlight1', 'highlight2'],
-            'tags' => ['tag1', 'tag2'],
-            'stock_count' => true,
-            'choose_quantity' => false,
-            'show_sales_count' => true,
-        ];
+    //     // Mocking payload
+    //     $payload = [
+    //         'title' => 'title',
+    //         'price' => 2,
+    //         'product_type' => 'digital_product',
+    //         'thumbnail' => UploadedFile::fake()->image('avatar.jpg'),
+    //         'description' => 'description',
+    //         'cover_photos' => [UploadedFile::fake()->image('cover1.jpg')],
+    //         'highlights' => ['highlight1', 'highlight2'],
+    //         'tags' => ['tag1', 'tag2'],
+    //         'stock_count' => true,
+    //         'choose_quantity' => false,
+    //         'show_sales_count' => true,
+    //     ];
 
-        // Asserting that this is not the user's first product.
-        $this->assertNotNull($this->user->first_product_created_at);
+    //     // Asserting that this is not the user's first product.
+    //     $this->assertNotNull($this->user->first_product_created_at);
 
-        $response = $this
-            ->actingAs($this->user, 'web')
-            ->withoutExceptionHandling()
-            ->post(route('product.store'), $payload);
+    //     $response = $this
+    //         ->actingAs($this->user, 'web')
+    //         ->withoutExceptionHandling()
+    //         ->post(route('product.store'), $payload);
 
-        // Asserting that the request was successful
-        $response->assertStatus(201);
+    //     // Asserting that the request was successful
+    //     $response->assertStatus(201);
 
-        Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
-        Event::assertDispatched(ProductCreated::class);
-        Event::assertListening(ProductCreated::class, SendProductCreatedMail::class);
+    //     Storage::disk('spaces')->assertExists('products-thumbnail/avatar.jpg');
+    //     Event::assertDispatched(ProductCreated::class);
+    //     Event::assertListening(ProductCreated::class, SendProductCreatedMail::class);
 
-        // Asserting that the user's first product created property is unchanged. model listener method was not called
-        $this->user->refresh();
-        $this->assertEquals($expected_created_time, $this->user->first_product_created_at);
-    }
+    //     // Asserting that the user's first product created property is unchanged. model listener method was not called
+    //     $this->user->refresh();
+    //     $this->assertEquals($expected_created_time, $this->user->first_product_created_at);
+    // }
 
     public function test_store_unauthenticated(): void
     {

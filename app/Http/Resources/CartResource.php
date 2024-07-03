@@ -20,7 +20,7 @@ class CartResource extends JsonResource
             'product_slug' => $this->product->slug,
             'product_title' => $this->product->title,
             'product_thumbnail' => $this->product->thumbnail,
-            'product_price' => $this->product->price,
+            'product_price' => $this->product->discount_price > 0 ? $this->product->discount_price : $this->product->price,
         ];
     }
 }

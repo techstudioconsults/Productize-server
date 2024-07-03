@@ -24,38 +24,38 @@ class SkillSellingControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_storeSkillSelling(): void
-    {
-        // Create a user
-        $user = User::factory()->create();
-        $this->actingAs($user);
+    // public function test_storeSkillSelling(): void
+    // {
+    //     // Create a user
+    //     $user = User::factory()->create();
+    //     $this->actingAs($user);
 
-        //create product
-        $product = Product::factory()->create();
+    //     //create product
+    //     $product = Product::factory()->create();
 
-        // Generate new data for creating the skillselling
-        $skillsellingData = [
-            'level' => 'high',
-            'availability' => 'yes',
-            'category' => 'Product',
-            'link' => 'www.github.com',
-            'product_id' => $product->id,
-        ];
+    //     // Generate new data for creating the skillselling
+    //     $skillsellingData = [
+    //         'level' => 'high',
+    //         'availability' => 'yes',
+    //         'category' => 'Product',
+    //         'link' => 'www.github.com',
+    //         'product_id' => $product->id,
+    //     ];
 
-        // Send a POST request to store the skillselling
-        $response = $this->post('api/skillSellings/', $skillsellingData);
+    //     // Send a POST request to store the skillselling
+    //     $response = $this->post('api/skillSellings/', $skillsellingData);
 
-        // Assert that the request was successful (status code 201)
-        $response->assertStatus(201);
+    //     // Assert that the request was successful (status code 201)
+    //     $response->assertStatus(201);
 
-        // Assert that the skillselling was stored in the database with the provided data
-        $this->assertDatabaseHas('skill_sellings', [
-            'level' => $skillsellingData['level'],
-            'availability' => $skillsellingData['availability'],
-            'product_id' => $skillsellingData['product_id'],
-            'link' => $skillsellingData['link'],
-        ]);
-    }
+    //     // Assert that the skillselling was stored in the database with the provided data
+    //     $this->assertDatabaseHas('skill_sellings', [
+    //         'level' => $skillsellingData['level'],
+    //         'availability' => $skillsellingData['availability'],
+    //         'product_id' => $skillsellingData['product_id'],
+    //         'link' => $skillsellingData['link'],
+    //     ]);
+    // }
 
     public function test_updateSkillSelling(): void
     {

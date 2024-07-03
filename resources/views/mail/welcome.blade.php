@@ -1,14 +1,36 @@
 <x-mail::message>
     <x-slot name="imageUrl">https://productize.nyc3.cdn.digitaloceanspaces.com/productize/welcome-to-productize.png</x-slot>
 
-    <h1>Welcome to PRODUCTIZE!</h1>
+    <h1>Welcome to PRODUCTIZE - Your Digital Creativity Hub!</h1>
 
-    <p>Welcome to Productize! We're thrilled to have you as a part of our creative community. Your journey as a digital creator begins now. Whether you're an artist, writer, developer, or any other type of creator, our platform is here to support and showcase your talent.</p>
+    <p class="text-left">
+        Welcome to Productize - the ultimate destination for digital creators and customers like you! We're thrilled to have you join our vibrant community, where creativity knows no bounds.
+    </p>
 
-    <p> Get ready to share your digital creations with the world and unlock exciting opportunities. Feel free to explore, start uploading your products, and make your mark in the digital world. We're here to help you every step of the way. Let's create something amazing together!</p>
+    <p class="text-left">
+        At Productize, you'll discover a world of endless possibilities, from stunning digital art to innovative software solutions. Whether you're a customer, a seasoned creator or just starting your digital journey, we're here to support and inspire you every step of the way.
+    </p>
+
+    <p class="text-left">
+        Ready to embark on your digital journey with Productize? Get started today and experience the endless possibilities of creativity in the digital age.
+    </p>
 
     <x-mail::button :url="trim($url)" color="#6D5DD3">
         Complete your Profiile
     </x-mail::button>
+
+    <p class="text-left">
+        If you have any questions or need assistance, our support team is here to help. Feel free to reach out to us at <span style="color:#6D5DD3">info@productize.com</span>.
+    </p>
+
+    <p class="text-left">
+        Once again, welcome to Productize! We can't wait to see what amazing creations you'll share with the world.
+    </p>
+
+    <p class="text-left">
+        Best Regards,
+        <br>
+        The Productize Team
+    </p>
 
 </x-mail::message>

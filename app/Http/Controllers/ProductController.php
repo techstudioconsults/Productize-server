@@ -15,7 +15,7 @@ use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Enums\SkillSellingCategory;
-use App\Events\ProductCreated;
+// use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
 use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\SearchRequest;
@@ -26,6 +26,8 @@ use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Mail\BestSellerCongratulations;
 use App\Models\Product;
+use App\Notifications\ProductCreated;
+use App\Notifications\ProductPublished;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
@@ -190,7 +192,8 @@ class ProductController extends Controller
         $product = $this->productRepository->create($validated);
 
         // Trigger product created event
-        event(new ProductCreated($product));
+        // event(new ProductCreated($product));
+        // $user->notify(new ProductCreated($product));
 
         return new ProductResource($product);
     }
@@ -374,6 +377,8 @@ class ProductController extends Controller
      * If the product is currently in 'Published' status, it will be set to 'Draft'.
      * If the product has been deleted (soft-deleted), an exception will be thrown.
      *
+     * It Notifies the Product owner of the published product
+     *
      * @param  Product  $product  The product whose status is to be toggled.
      * @return ProductResource A resource containing the updated product.
      *
@@ -395,6 +400,11 @@ class ProductController extends Controller
             $product,
             ['status' => $status]
         );
+
+        // Dispatch Product Publish Notification
+        if ($product->status === ProductStatusEnum::Published->value) {
+            $product->user->notify(new ProductPublished($product));
+        }
 
         return new ProductResource($product);
     }

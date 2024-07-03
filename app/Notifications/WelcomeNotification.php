@@ -63,21 +63,22 @@ class WelcomeNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->markdown('mail.welcome')->subject('Welcome To Productize')->with([
+        return (new MailMessage)->markdown('mail.welcome', [
             'url' => $this->client_url.'/dashboard/home',
             'message' => 'welcome',
-        ]);
+        ])->subject('Welcome To Productize');
     }
 
     /**
-     * Get the array representation of the notification.
+     * Determine which queues should be used for each notification channel.
      *
-     * @return array<string, mixed>
+     * @return array<string, string>
      */
-    public function toArray(object $notifiable): array
+    public function viaQueues(): array
     {
         return [
-            //
+            'mail' => 'mail',
+            'broadcast' => 'broadcast',
         ];
     }
 }

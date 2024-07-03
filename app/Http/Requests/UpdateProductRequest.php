@@ -26,6 +26,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'title' => 'string',
             'price' => 'integer',
+            'discount_price' => 'integer',
             'description' => 'string',
             'cover_photos.*' => 'image',
             'thumbnail' => 'image',

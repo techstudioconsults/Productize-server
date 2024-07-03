@@ -164,6 +164,13 @@ class CartController extends Controller
 
         $recipient = null;
 
+        if ($recipient_email) {
+            $recipient = $this->userRepository->firstOrCreate($recipient_email, $recipient_name);
+
+            // Send the Gift alert
+            // Mail::to($recipient)->send(new GiftAlert($recipient));
+        }
+
         // Prepare products for the paystack transaction
         $products = $this->productRepository->prepareProducts($validated['products']);
 

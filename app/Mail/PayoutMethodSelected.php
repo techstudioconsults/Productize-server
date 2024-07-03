@@ -9,19 +9,14 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class GiftAlert extends Mailable
+class PayoutMethodSelected extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public User $user;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user)
-    {
-        $this->user = $user;
-    }
+    public function __construct(public User $user) {}
 
     /**
      * Get the message envelope.
@@ -29,8 +24,8 @@ class GiftAlert extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Gift Alert',
-            to: $this->user->email,
+            subject: 'Payout Method Selected',
+            to: $this->user->email
         );
     }
 
@@ -40,20 +35,10 @@ class GiftAlert extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.gift',
+            markdown: 'mail.payout-method-selected',
             with: [
-                'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
-            ]
+                'url' => config('app.client_url').'/dashboard/settings/account',
+            ],
         );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
     }
 }

@@ -29,6 +29,7 @@ class StoreProductRequest extends FormRequest
         return [
             'title' => 'string|required',
             'price' => 'integer|required',
+            'discount_price' => 'integer',
             'product_type' => ['required', new Enum(ProductEnum::class)],
             'description' => 'string|required',
             'cover_photos' => 'required',

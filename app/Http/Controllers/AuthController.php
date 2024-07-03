@@ -24,6 +24,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
+use App\Mail\PasswordChanged;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
@@ -359,6 +360,12 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
 
+        $user = $this->userRepository->findOne(['email' => $credentials['email']]);
+
+        if (! $user) {
+            throw new NotFoundException('User Not Found');
+        }
+
         $forceChangePassword = function (User $user, string $password) {
             $user->forceFill([
                 'password' => $password,
@@ -373,6 +380,10 @@ class AuthController extends Controller
         $res = Password::reset($credentials, $forceChangePassword);
 
         if ($res === Password::PASSWORD_RESET) {
+
+            // Send Email to user
+            Mail::send(new PasswordChanged($user));
+
             return new JsonResponse(['message' => 'Password Reset Successful']);
         } elseif ($res === Password::INVALID_TOKEN) {
             throw new UnAuthorizedException('Invalid Token');

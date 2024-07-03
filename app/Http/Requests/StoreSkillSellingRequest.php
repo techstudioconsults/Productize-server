@@ -30,7 +30,8 @@ class StoreSkillSellingRequest extends FormRequest
             'level' => 'required|string',
             'availability' => 'required|string',
             'link' => 'required|string',
-            'resources.*' => 'file',
+            'resources' => 'required',
+            'resources.*' => 'required|file',
             'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }

@@ -132,7 +132,7 @@ class ProductResourceRepository extends Repository
      *
      * @throws BadRequestException If any of the provided data files fail validation.
      */
-    public function uploadResources(array $data, string $product_type): array
+    public function uploadResources($data, string $product_type): array
     {
         // Each item in the 'data' array must be a file
         if (! $this->isValidated($data, ['required|file'])) {

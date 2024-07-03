@@ -32,7 +32,6 @@ class ProductFactory extends Factory
             'highlights' => ['arrow', 'oliver', 'queen'],
             'tags' => ['Audio', 'Business/Finance', '3D'],
             'user_id' => $user->id,
-            'discount'=>fake()->randomNumber(2)
         ];
     }
 }

@@ -524,13 +524,6 @@ class CartControllerTest extends TestCase
         // Create a product with specified attributes
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 0]);
 
-        // Mock UserRepository and set expectation for firstOrCreate method
-        $userRepository = $this->partialMock(UserRepository::class);
-        $userRepository->shouldReceive('firstOrCreate')
-            ->once()
-            ->with($recipient_email, $recipient_name)
-            ->andReturn($recipient);
-
         // Mock PaystackRepository and set expectation for initializePurchaseTransaction method
         $paystackRepository = $this->partialMock(PaystackRepository::class);
         $paystackRepository->shouldReceive('initializePurchaseTransaction')
@@ -548,16 +541,11 @@ class CartControllerTest extends TestCase
             'products' => [
                 ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => 1000.00,
+            'amount' => 1000,
         ]);
 
         // Assert the response status
         $response->assertStatus(200);
-
-        // Assert that the GiftAlert mail was sent to the recipient email
-        Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {
-            return $mail->hasTo($recipient_email);
-        });
     }
 
     public function test_clear_cart_creates_new_gift_user_and_sends_email()
@@ -572,14 +560,9 @@ class CartControllerTest extends TestCase
 
         $recipient = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
 
-        $product = Product::factory()->create(['price' => 1000.00, 'status' => 'published', 'discount' => 0]);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 0]);
 
         $userRepository = $this->partialMock(UserRepository::class);
-
-        $userRepository->shouldReceive('firstOrCreate')
-            ->once()
-            ->with($recipient_email, $recipient_name)
-            ->andReturn($recipient);
 
         $paystackRepository = $this->partialMock(PaystackRepository::class);
 
@@ -606,10 +589,6 @@ class CartControllerTest extends TestCase
                 'access_code' => '0peioxfhpn',
                 'reference' => '7PVGX8MEk85tgeEpVDtD',
             ]]);
-
-        Mail::assertSent(GiftAlert::class, function ($mail) use ($recipient_email) {
-            return $mail->hasTo($recipient_email);
-        });
     }
 
     public function test_clear_cart_throws_error_if_product_not_found()

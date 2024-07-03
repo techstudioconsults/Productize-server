@@ -21,8 +21,7 @@ class WebhookRepository
         protected EarningRepository $earningRepository,
         protected PayoutRepository $payoutRepository,
         protected RevenueRepository $revenueRepository,
-    ) {
-    }
+    ) {}
 
     public function paystack(string $type, $data)
     {

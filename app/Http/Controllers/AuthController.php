@@ -46,8 +46,7 @@ class AuthController extends Controller
 {
     public function __construct(
         protected UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -116,7 +115,7 @@ class AuthController extends Controller
         $remember = $credentials['remember'] ?? false;
         unset($credentials['remember']);
 
-        if (!Auth::attempt($credentials, $remember)) {
+        if (! Auth::attempt($credentials, $remember)) {
             throw new UnprocessableException('The Provided credentials are not correct');
         }
 
@@ -198,7 +197,7 @@ class AuthController extends Controller
 
         $user = User::firstWhere('email', $oauthUser->email);
 
-        if (!$user) {
+        if (! $user) {
             $credentials = [
                 'full_name' => $oauthUser->name,
                 'email' => $oauthUser->email,
@@ -249,21 +248,21 @@ class AuthController extends Controller
         /**
          * Dont throw an error, render error page instead.
          */
-        if (!$request->hasValidSignature()) {
+        if (! $request->hasValidSignature()) {
             throw new UnAuthorizedException('Invalid/Expired url provided');
         }
 
         $user = User::find($user_id);
 
-        if (!$user) {
+        if (! $user) {
             throw new NotFoundException('User Does Not Exist');
         }
 
-        if (!$user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url') . '/dashboard/home';
+        $redirectUrl = config('app.client_url').'/dashboard/home';
 
         return redirect($redirectUrl);
     }
@@ -363,7 +362,9 @@ class AuthController extends Controller
 
         $user = $this->userRepository->findOne(['email' => $credentials['email']]);
 
-        if (!$user) throw new NotFoundException("User Not Found");
+        if (! $user) {
+            throw new NotFoundException('User Not Found');
+        }
 
         $forceChangePassword = function (User $user, string $password) {
             $user->forceFill([

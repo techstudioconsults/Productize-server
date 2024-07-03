@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -39,7 +38,7 @@ class FreeTrialEndingReminder extends Mailable
         return new Content(
             markdown: 'mail.free-trial-reminder',
             with: [
-                'url' => config('app.client_url') . '/dashboard/settings/plans/billing-cycle',
+                'url' => config('app.client_url').'/dashboard/settings/plans/billing-cycle',
             ],
         );
     }

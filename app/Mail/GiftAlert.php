@@ -42,7 +42,7 @@ class GiftAlert extends Mailable
         return new Content(
             markdown: 'mail.gift',
             with: [
-                'url' => config('app.client_url') . '/dashboard/downloads#all-downloads',
+                'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
             ]
         );
     }

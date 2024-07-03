@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('users.{id}', function (User $user, $id) {
     // return $user->id === $id;
-    Log::alert("I GOT HERE");
+    Log::alert('I GOT HERE');
+
     return true;
 });
 

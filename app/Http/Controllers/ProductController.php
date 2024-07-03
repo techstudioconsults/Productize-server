@@ -402,7 +402,7 @@ class ProductController extends Controller
         );
 
         // Dispatch Product Publish Notification
-        if($product->status === ProductStatusEnum::Published->value) {
+        if ($product->status === ProductStatusEnum::Published->value) {
             $product->user->notify(new ProductPublished($product));
         }
 

@@ -17,6 +17,7 @@ use App\Exceptions\ConflictException;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\UpdateAccountRequest;
 use App\Http\Resources\AccountResource;
+use App\Mail\PayoutMethodSelected;
 use App\Models\Account;
 use App\Notifications\PayoutCardAdded;
 use App\Repositories\AccountRepository;
@@ -25,6 +26,7 @@ use App\Repositories\UserRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Mail;
 
 /**
  * Route handler methods for Account resource
@@ -150,18 +152,21 @@ class AccountController extends Controller
      *
      * @param  \App\Models\Account  $account
      *                                        The payout account instance to be updated.
-     * @param  \App\Http\Requests\UpdateAccountRequest  $request
-     *                                                            The request object containing the validated data for updating the payout account.
+     * @param  \App\Http\Requests\UpdateAccountRequest  $request The request object containing the validated data for updating the payout account.
      * @return \App\Http\Resources\AccountResource
      *                                             The updated AccountResource instance.
      */
     public function update(Account $account, UpdateAccountRequest $request)
     {
+        $user = Auth::user();
+
         $validated = $request->validated();
 
         $account->active = $validated['active'];
 
         $account->save();
+
+        Mail::send(new PayoutMethodSelected($user));
 
         return new AccountResource($account);
     }

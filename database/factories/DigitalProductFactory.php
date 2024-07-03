@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,9 @@ class DigitalProductFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'id' => $this->faker->uuid(),
+            'product_id' => Product::factory(),
+            'category' => $this->faker->randomElement(['EBOOK', 'VIDEO', 'AUDIO']),
         ];
     }
 }

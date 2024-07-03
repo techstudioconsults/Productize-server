@@ -17,7 +17,6 @@ use App\Http\Requests\ClearCartRequest;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
-use App\Mail\GiftAlert;
 use App\Models\Cart;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
@@ -26,7 +25,6 @@ use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Mail;
 
 /**
  * Route handler methods for Cart resource
@@ -166,13 +164,6 @@ class CartController extends Controller
 
         $recipient = null;
 
-        if ($recipient_email) {
-            $recipient = $this->userRepository->firstOrCreate($recipient_email, $recipient_name);
-
-            // Send the Gift alert
-            Mail::send(new GiftAlert($recipient));
-        }
-
         // Prepare products for the paystack transaction
         $products = $this->productRepository->prepareProducts($validated['products']);
 
@@ -180,17 +171,14 @@ class CartController extends Controller
         $totalAmount = $this->cartRepository->calculateTotalAmount($products);
 
         //Validate that the total amount declared in the request payload matches that which was calculated
-        if (abs($totalAmount !== $validated['amount']) > 0.01) {
+        if ($totalAmount !== $validated['amount']) {
             throw new BadRequestException('Total amount does not match quantity');
         }
-
-        // Round the total amount to 2 decimal places for the payment
-        $roundedTotalAmount = round($totalAmount, 2);
 
         // Prepare paystack's payload
         $payload = [
             'email' => $user->email,
-            'amount' => $roundedTotalAmount * 100,
+            'amount' => $totalAmount * 100,
             'metadata' => [
                 'isPurchase' => true,
                 'buyer_id' => $user->id,

@@ -61,7 +61,7 @@ class OrderRepository extends Repository
         $rules = [
             'reference_no' => 'required|string',
             'user_id' => 'required|string',
-            'total_amount' => 'required|numeric',
+            'total_amount' => 'required|integer',
             'quantity' => 'required|integer|min:1',
             'product_id' => 'required|string',
         ];

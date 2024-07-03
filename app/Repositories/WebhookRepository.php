@@ -5,7 +5,9 @@ namespace App\Repositories;
 use App\Enums\PayoutStatus;
 use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
+use App\Mail\GiftAlert;
 use Log;
+use Mail;
 
 class WebhookRepository
 {
@@ -19,7 +21,8 @@ class WebhookRepository
         protected EarningRepository $earningRepository,
         protected PayoutRepository $payoutRepository,
         protected RevenueRepository $revenueRepository,
-    ) {}
+    ) {
+    }
 
     public function paystack(string $type, $data)
     {
@@ -154,6 +157,12 @@ class WebhookRepository
                 ]);
             }
 
+            if ($recipient_id) {
+                $recipient = $this->userRepository->findById($recipient_id);
+
+                Mail::to($recipient)->send(new GiftAlert($recipient));
+            }
+
             // Update productize's revenue
             $this->revenueRepository->create([
                 'user_id' => $recipient_id ? $recipient_id : $buyer_id,
@@ -162,7 +171,6 @@ class WebhookRepository
                 'amount' => $data['amount'],
                 'commission' => RevenueRepository::SALE_COMMISSION,
             ]);
-
         } catch (\Throwable $th) {
             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
         }

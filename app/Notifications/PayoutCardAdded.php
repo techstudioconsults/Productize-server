@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Account;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -16,7 +15,7 @@ class PayoutCardAdded extends Notification
     /**
      * @var string Broadcast event name
      */
-    const NAME = "payout-card-added";
+    const NAME = 'payout-card-added';
 
     /**
      * Create a new notification instance.
@@ -28,7 +27,6 @@ class PayoutCardAdded extends Notification
          */
         $this->afterCommit();
     }
-
 
     /**
      * The number of times the job may be attempted.
@@ -68,7 +66,7 @@ class PayoutCardAdded extends Notification
     {
         return (new MailMessage)
             ->markdown('mail.payout-card-added', [
-                'url' => config('app.client_url') . "/dashboard/settings/account",
+                'url' => config('app.client_url').'/dashboard/settings/account',
             ])
             ->subject('New Payout Card Added');
     }
@@ -84,8 +82,8 @@ class PayoutCardAdded extends Notification
             'account' => [
                 'name' => $this->account->name,
                 'account_number' => $this->account->account_number,
-                'bank_name' => $this->account->bank_name
-            ]
+                'bank_name' => $this->account->bank_name,
+            ],
         ];
     }
 
@@ -98,8 +96,8 @@ class PayoutCardAdded extends Notification
             'account' => [
                 'name' => $this->account->name,
                 'account_number' => $this->account->account_number,
-                'bank_name' => $this->account->bank_name
-            ]
+                'bank_name' => $this->account->bank_name,
+            ],
         ]);
     }
 
@@ -118,8 +116,6 @@ class PayoutCardAdded extends Notification
 
     /**
      * Get the notification's database type.
-     *
-     * @return string
      */
     public function databaseType(object $notifiable): string
     {

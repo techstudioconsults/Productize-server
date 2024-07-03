@@ -17,8 +17,6 @@ use Mail;
  * @since 03-07-2024
  *
  * Class FreeTrialReminder
- *
- * @package App\Console\Schedules
  */
 class FreeTrialReminder
 {
@@ -44,7 +42,9 @@ class FreeTrialReminder
                 ->get();
 
             // End operation when no user is found
-            if ($users->isEmpty()) return;
+            if ($users->isEmpty()) {
+                return;
+            }
 
             $emails = $users->map(function (User $user) {
                 return $user->email;

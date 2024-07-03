@@ -16,7 +16,7 @@ class ProductPublished extends Notification implements ShouldQueue
     /**
      * @var string Broadcast event name
      */
-    const NAME = "product-published";
+    const NAME = 'product-published';
 
     /**
      * Create a new notification instance.
@@ -69,7 +69,7 @@ class ProductPublished extends Notification implements ShouldQueue
             ->markdown('mail.product-published', [
                 'title' => $this->product->title,
                 'thumbnail' => $this->product->thumbnail,
-                'link' => config('app.client_url') . "/products/" . $this->product->id
+                'link' => config('app.client_url').'/products/'.$this->product->id,
             ])
             ->subject('New product published successfully!');
     }
@@ -85,11 +85,11 @@ class ProductPublished extends Notification implements ShouldQueue
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
+                'thumbnail' => $this->product->thumbnail,
             ],
             'user' => [
                 'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name
+                'full_name' => $notifiable->full_name,
             ],
         ];
     }
@@ -103,12 +103,12 @@ class ProductPublished extends Notification implements ShouldQueue
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
+                'thumbnail' => $this->product->thumbnail,
             ],
             'user' => [
                 'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name
-            ]
+                'full_name' => $notifiable->full_name,
+            ],
         ]);
     }
 
@@ -127,8 +127,6 @@ class ProductPublished extends Notification implements ShouldQueue
 
     /**
      * Get the notification's database type.
-     *
-     * @return string
      */
     public function databaseType(object $notifiable): string
     {

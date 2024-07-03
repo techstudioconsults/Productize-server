@@ -18,7 +18,7 @@ class FirstProductCreated extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    const NAME = "first-product-created";
+    const NAME = 'first-product-created';
 
     /**
      * Create a new notification instance.
@@ -70,7 +70,7 @@ class FirstProductCreated extends Notification implements ShouldQueue
         return (new MailMessage)
             ->markdown('mail.first-product-created', [
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
+                'thumbnail' => $this->product->thumbnail,
             ])
             ->subject('First Product Created!');
     }
@@ -86,11 +86,11 @@ class FirstProductCreated extends Notification implements ShouldQueue
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
+                'thumbnail' => $this->product->thumbnail,
             ],
             'user' => [
                 'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name
+                'full_name' => $notifiable->full_name,
             ],
         ];
     }
@@ -104,12 +104,12 @@ class FirstProductCreated extends Notification implements ShouldQueue
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
+                'thumbnail' => $this->product->thumbnail,
             ],
             'user' => [
                 'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name
-            ]
+                'full_name' => $notifiable->full_name,
+            ],
         ]);
     }
 
@@ -128,8 +128,6 @@ class FirstProductCreated extends Notification implements ShouldQueue
 
     /**
      * Get the notification's database type.
-     *
-     * @return string
      */
     public function databaseType(object $notifiable): string
     {

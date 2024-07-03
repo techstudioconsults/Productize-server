@@ -16,9 +16,7 @@ class PayoutMethodSelected extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public User $user)
-    {
-    }
+    public function __construct(public User $user) {}
 
     /**
      * Get the message envelope.
@@ -39,7 +37,7 @@ class PayoutMethodSelected extends Mailable
         return new Content(
             markdown: 'mail.payout-method-selected',
             with: [
-                'url' => config('app.client_url') . "/dashboard/settings/account",
+                'url' => config('app.client_url').'/dashboard/settings/account',
             ],
         );
     }

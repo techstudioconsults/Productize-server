@@ -37,8 +37,7 @@ class AccountController extends Controller
         protected AccountRepository $accountRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -110,7 +109,7 @@ class AccountController extends Controller
         // Validate the account number with Paystack
         $isValidated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
 
-        if (!$isValidated) {
+        if (! $isValidated) {
             throw new BadRequestException('Invalid Account Number');
         }
 
@@ -152,7 +151,7 @@ class AccountController extends Controller
      *
      * @param  \App\Models\Account  $account
      *                                        The payout account instance to be updated.
-     * @param  \App\Http\Requests\UpdateAccountRequest  $request The request object containing the validated data for updating the payout account.
+     * @param  \App\Http\Requests\UpdateAccountRequest  $request  The request object containing the validated data for updating the payout account.
      * @return \App\Http\Resources\AccountResource
      *                                             The updated AccountResource instance.
      */
@@ -186,7 +185,7 @@ class AccountController extends Controller
         // Retrieve the list of banks from the Paystack repository
         $banks = $this->paystackRepository->getBankList();
 
-        if (!$banks) {
+        if (! $banks) {
             return new JsonResponse([], 200);
         }
 

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\SkillSelling;
 use Illuminate\Database\Seeder;
 
 class SkillSellingSeeder extends Seeder
@@ -11,6 +12,6 @@ class SkillSellingSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        SkillSelling::factory(5)->create();
     }
 }

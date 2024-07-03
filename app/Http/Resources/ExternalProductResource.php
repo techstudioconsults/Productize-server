@@ -36,6 +36,7 @@ class ExternalProductResource extends JsonResource
                     'extension' => $resource->extension,
                 ];
             }),
+            'avg_rating' => (int)$this->reviews()->avg('rating'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -24,6 +24,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\EmailVerification;
+use App\Mail\PasswordChanged;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Auth\Events\Registered;
@@ -45,7 +46,8 @@ class AuthController extends Controller
 {
     public function __construct(
         protected UserRepository $userRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -114,7 +116,7 @@ class AuthController extends Controller
         $remember = $credentials['remember'] ?? false;
         unset($credentials['remember']);
 
-        if (! Auth::attempt($credentials, $remember)) {
+        if (!Auth::attempt($credentials, $remember)) {
             throw new UnprocessableException('The Provided credentials are not correct');
         }
 
@@ -196,7 +198,7 @@ class AuthController extends Controller
 
         $user = User::firstWhere('email', $oauthUser->email);
 
-        if (! $user) {
+        if (!$user) {
             $credentials = [
                 'full_name' => $oauthUser->name,
                 'email' => $oauthUser->email,
@@ -247,21 +249,21 @@ class AuthController extends Controller
         /**
          * Dont throw an error, render error page instead.
          */
-        if (! $request->hasValidSignature()) {
+        if (!$request->hasValidSignature()) {
             throw new UnAuthorizedException('Invalid/Expired url provided');
         }
 
         $user = User::find($user_id);
 
-        if (! $user) {
+        if (!$user) {
             throw new NotFoundException('User Does Not Exist');
         }
 
-        if (! $user->hasVerifiedEmail()) {
+        if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url').'/dashboard/home';
+        $redirectUrl = config('app.client_url') . '/dashboard/home';
 
         return redirect($redirectUrl);
     }
@@ -359,6 +361,10 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
 
+        $user = $this->userRepository->findOne(['email' => $credentials['email']]);
+
+        if (!$user) throw new NotFoundException("User Not Found");
+
         $forceChangePassword = function (User $user, string $password) {
             $user->forceFill([
                 'password' => $password,
@@ -373,6 +379,10 @@ class AuthController extends Controller
         $res = Password::reset($credentials, $forceChangePassword);
 
         if ($res === Password::PASSWORD_RESET) {
+
+            // Send Email to user
+            Mail::send(new PasswordChanged($user));
+
             return new JsonResponse(['message' => 'Password Reset Successful']);
         } elseif ($res === Password::INVALID_TOKEN) {
             throw new UnAuthorizedException('Invalid Token');

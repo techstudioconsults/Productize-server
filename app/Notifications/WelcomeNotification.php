@@ -68,4 +68,17 @@ class WelcomeNotification extends Notification implements ShouldQueue
             'message' => 'welcome',
         ])->subject('Welcome To Productize');
     }
+
+    /**
+     * Determine which queues should be used for each notification channel.
+     *
+     * @return array<string, string>
+     */
+    public function viaQueues(): array
+    {
+        return [
+            'mail' => 'mail',
+            'broadcast' => 'broadcast',
+        ];
+    }
 }

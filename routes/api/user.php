@@ -3,6 +3,7 @@
 use App\Http\Controllers\UserController;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\ProductPublished;
 // use App\Notifications\FirstProductCreated;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -38,9 +39,9 @@ Route::group([
         $user = User::find('9c5edc2c-28b3-4441-a4e7-8a9178eb4361');
         $product = Product::where("user_id", $user->id)->first();
 
-        Notification::send($user, new WelcomeNotification($user));
+        // Notification::send($user, new WelcomeNotification($user));
 
-        // $user->notify(new FirstProductCreated($product));
+        $user->notify(new ProductPublished($product));
 
         return new JsonResource($user->notifications);
     });

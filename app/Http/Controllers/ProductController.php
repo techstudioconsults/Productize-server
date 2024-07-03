@@ -27,6 +27,7 @@ use App\Http\Resources\ProductResource;
 use App\Mail\BestSellerCongratulations;
 use App\Models\Product;
 use App\Notifications\ProductCreated;
+use App\Notifications\ProductPublished;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
@@ -397,6 +398,11 @@ class ProductController extends Controller
             $product,
             ['status' => $status]
         );
+
+        // Dispatch Product Publish Notification
+        if($product->status === ProductStatusEnum::Published->value) {
+            $product->user->notify(new ProductPublished($product));
+        }
 
         return new ProductResource($product);
     }

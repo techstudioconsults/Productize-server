@@ -377,6 +377,8 @@ class ProductController extends Controller
      * If the product is currently in 'Published' status, it will be set to 'Draft'.
      * If the product has been deleted (soft-deleted), an exception will be thrown.
      *
+     * It Notifies the Product owner of the published product
+     *
      * @param  Product  $product  The product whose status is to be toggled.
      * @return ProductResource A resource containing the updated product.
      *

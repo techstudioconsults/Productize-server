@@ -23,8 +23,7 @@ class SkillSellingController extends Controller
         protected SkillSellingRepository $skillSellingRepository,
         protected ProductResourceRepository $productResourceRepository,
         protected ProductRepository $productRepository,
-    ) {
-    }
+    ) {}
 
     public function store(StoreSkillSellingRequest $request)
     {
@@ -32,7 +31,7 @@ class SkillSellingController extends Controller
 
         $product = $this->productRepository->findById($entity['product_id']);
 
-        if (!$product) {
+        if (! $product) {
             throw new NotFoundException('Product Not Found');
         }
 
@@ -66,7 +65,7 @@ class SkillSellingController extends Controller
     {
         $skill_selling = $this->skillSellingRepository->findOne(['product_id' => $product->id]);
 
-        if (!$skill_selling) {
+        if (! $skill_selling) {
             throw new NotFoundException('Resource Not Found');
         }
 

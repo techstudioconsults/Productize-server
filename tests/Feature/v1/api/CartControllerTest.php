@@ -460,7 +460,7 @@ class CartControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 0]);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount_price' => 0]);
 
         $paystackRepository = $this->partialMock(PaystackRepository::class);
 
@@ -480,7 +480,7 @@ class CartControllerTest extends TestCase
         $cartRepository = $this->partialMock(CartRepository::class);
         $cartRepository->shouldReceive('calculateTotalAmount')
             ->once()
-            ->andReturn(1000.00);
+            ->andReturn(1000);
 
         // Mock ProductRepository
         $productRepository = $this->partialMock(ProductRepository::class);
@@ -500,7 +500,7 @@ class CartControllerTest extends TestCase
             'products' => [
                 ['product_slug' => $product->slug, 'quantity' => 1],
             ],
-            'amount' => 1000.00,
+            'amount' => 1000,
         ]);
 
         $response->assertStatus(200);
@@ -522,7 +522,7 @@ class CartControllerTest extends TestCase
         $recipient = User::factory()->create(['email' => $recipient_email, 'full_name' => $recipient_name]);
 
         // Create a product with specified attributes
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 0]);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount_price' => 0]);
 
         // Mock PaystackRepository and set expectation for initializePurchaseTransaction method
         $paystackRepository = $this->partialMock(PaystackRepository::class);
@@ -560,7 +560,7 @@ class CartControllerTest extends TestCase
 
         $recipient = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
 
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 0]);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount_price' => 0]);
 
         $userRepository = $this->partialMock(UserRepository::class);
 

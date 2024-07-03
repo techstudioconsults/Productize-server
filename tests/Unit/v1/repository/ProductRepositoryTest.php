@@ -798,7 +798,7 @@ class ProductRepositoryTest extends TestCase
     public function test_prepareProducts_valid_data()
     {
         // Arrange
-        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount' => 900]);
+        $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount_price' => 900]);
 
         $cart = [
             ['product_slug' => $product->slug, 'quantity' => 2],
@@ -832,7 +832,7 @@ class ProductRepositoryTest extends TestCase
         $product = Product::factory()->create([
             'price' => 1000,
             'status' => 'published',
-            'discount' => 0,  // Explicitly set discount to 0
+            'discount_price' => 0,  // Explicitly set discount to 0
         ]);
 
         $cart = [

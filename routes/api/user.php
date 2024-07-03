@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\UserController;
+use App\Models\Account;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\PayoutCardAdded;
 use App\Notifications\ProductPublished;
 // use App\Notifications\FirstProductCreated;
 use App\Notifications\WelcomeNotification;
@@ -35,14 +37,17 @@ Route::group([
 
     Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
 
-    Route::get("/test", function() {
-        $user = User::find('9c5edc2c-28b3-4441-a4e7-8a9178eb4361');
-        $product = Product::where("user_id", $user->id)->first();
+    // Route::get("/test", function() {
+    //     $user = User::find('9c5edc2c-28b3-4441-a4e7-8a9178eb4361');
+    //     // $product = Product::where("user_id", $user->id)->first();
+    //     $account = Account::where("user_id", $user->id)->first();
 
-        // Notification::send($user, new WelcomeNotification($user));
+    //     // Notification::send($user, new WelcomeNotification($user));
 
-        $user->notify(new ProductPublished($product));
+    //     // $user->notify(new ProductPublished($product));
 
-        return new JsonResource($user->notifications);
-    });
+    //     $user->notify(new PayoutCardAdded($account));
+
+    //     return new JsonResource($user->notifications);
+    // });
 });

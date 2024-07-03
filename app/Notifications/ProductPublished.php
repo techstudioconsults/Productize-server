@@ -150,4 +150,16 @@ class ProductPublished extends Notification implements ShouldQueue
     {
         return self::NAME;
     }
+
+    /**
+     * Determine the notification's delivery delay.
+     *
+     * @return array<string, \Illuminate\Support\Carbon>
+     */
+    public function withDelay(object $notifiable): array
+    {
+        return [
+            'mail' => now()->addMinute(),
+        ];
+    }
 }

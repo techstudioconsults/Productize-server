@@ -18,6 +18,7 @@ use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\UpdateAccountRequest;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
+use App\Notifications\PayoutCardAdded;
 use App\Repositories\AccountRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\UserRepository;
@@ -34,7 +35,8 @@ class AccountController extends Controller
         protected AccountRepository $accountRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -106,7 +108,7 @@ class AccountController extends Controller
         // Validate the account number with Paystack
         $isValidated = $this->paystackRepository->validateAccountNumber($account_number, $bank_code);
 
-        if (! $isValidated) {
+        if (!$isValidated) {
             throw new BadRequestException('Invalid Account Number');
         }
 
@@ -129,6 +131,9 @@ class AccountController extends Controller
 
             // Update the user's payout setup timestamp
             $this->userRepository->guardedUpdate($user->email, 'payout_setup_at', Carbon::now());
+
+            // Notify User
+            $user->notify(new PayoutCardAdded($account));
 
             return new AccountResource($account);
         } catch (\Throwable $th) {
@@ -176,7 +181,7 @@ class AccountController extends Controller
         // Retrieve the list of banks from the Paystack repository
         $banks = $this->paystackRepository->getBankList();
 
-        if (! $banks) {
+        if (!$banks) {
             return new JsonResponse([], 200);
         }
 

@@ -2,34 +2,33 @@
 
 namespace App\Notifications;
 
-use App\Models\Product;
+use App\Models\Account;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * Notification class for First Product Created By User
- *
- * @see \App\Models\Product Event is triggered in the model create event implementation
- */
-class FirstProductCreated extends Notification implements ShouldQueue
+class PayoutCardAdded extends Notification
 {
     use Queueable;
 
-    const NAME = "first-product-created";
+    /**
+     * @var string Broadcast event name
+     */
+    const NAME = "payout-card-added";
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public Product $product)
+    public function __construct(public Account $account)
     {
         /**
          * Ensure all Database transactions are committed
          */
         $this->afterCommit();
     }
+
 
     /**
      * The number of times the job may be attempted.
@@ -68,11 +67,10 @@ class FirstProductCreated extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->markdown('mail.first-product-created', [
-                'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
+            ->markdown('mail.payout-card-added', [
+                'url' => config('app.client_url') . "/dashboard/settings/account",
             ])
-            ->subject('First Product Created!');
+            ->subject('New Payout Card Added');
     }
 
     /**
@@ -83,15 +81,11 @@ class FirstProductCreated extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'product' => [
-                'id' => $this->product->id,
-                'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
-            ],
-            'user' => [
-                'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name
-            ],
+            'account' => [
+                'name' => $this->account->name,
+                'account_number' => $this->account->account_number,
+                'bank_name' => $this->account->bank_name
+            ]
         ];
     }
 
@@ -101,14 +95,10 @@ class FirstProductCreated extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'product' => [
-                'id' => $this->product->id,
-                'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
-            ],
-            'user' => [
-                'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name
+            'account' => [
+                'name' => $this->account->name,
+                'account_number' => $this->account->account_number,
+                'bank_name' => $this->account->bank_name
             ]
         ]);
     }
@@ -150,17 +140,5 @@ class FirstProductCreated extends Notification implements ShouldQueue
     public function broadcastAs()
     {
         return self::NAME;
-    }
-
-    /**
-     * Determine the notification's delivery delay.
-     *
-     * @return array<string, \Illuminate\Support\Carbon>
-     */
-    public function withDelay(object $notifiable): array
-    {
-        return [
-            'mail' => now()->addMinute(),
-        ];
     }
 }

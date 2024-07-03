@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete();
             $table->string('title');
             $table->integer('price');
-            $table->integer('discount')->default(0);
+            $table->integer('discount_price')->default(0);
             $table->enum('product_type', array_column(ProductEnum::cases(), 'value'));
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->longText('description');

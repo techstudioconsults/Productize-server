@@ -7,7 +7,6 @@ use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
 use Log;
 
-
 class WebhookRepository
 {
     public function __construct(

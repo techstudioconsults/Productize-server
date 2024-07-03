@@ -8,7 +8,6 @@ use App\Exceptions\ConflictException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
-use App\Mail\GiftAlert;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;

@@ -10,30 +10,29 @@ use Tests\TestCase;
 
 class DigitalProductRepositoryTest extends TestCase
 {
+    use RefreshDatabase;
 
-  use RefreshDatabase;
-
-  protected $digitalProductRepository;
+    protected $digitalProductRepository;
 
     public function setUp(): void
     {
-       parent::setup();
-       $this->digitalProductRepository = new DigitalProductRepository();
+        parent::setup();
+        $this->digitalProductRepository = new DigitalProductRepository();
     }
 
     public function test_create()
     {
-      $product = Product::factory()->create();
+        $product = Product::factory()->create();
 
-      $data = [
-        'category' => 'Product',
-        'product_id' => $product->id,
-      ];
+        $data = [
+            'category' => 'Product',
+            'product_id' => $product->id,
+        ];
 
-      $digitalProduct = $this->digitalProductRepository->create($data);
+        $digitalProduct = $this->digitalProductRepository->create($data);
 
-      $this->assertInstanceOf(DigitalProduct::class, $digitalProduct);
-      $this->assertDatabaseHas('digital_products', $data);
+        $this->assertInstanceOf(DigitalProduct::class, $digitalProduct);
+        $this->assertDatabaseHas('digital_products', $data);
     }
 
     // public function testQuery()

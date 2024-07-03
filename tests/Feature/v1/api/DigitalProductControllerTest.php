@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\DigitalProductCategory;
 use App\Exceptions\UnAuthorizedException;
 use App\Models\DigitalProduct;
 use App\Models\Product;
@@ -12,18 +11,20 @@ use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\ProductResourceRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Storage;
 use Tests\TestCase;
 
 class DigitalProductControllerTest extends TestCase
 {
     use RefreshDatabase;
-    protected DigitalProductRepository $digitalProductRepository;
-    protected ProductResourceRepository $productResourceRepository;
-    protected ProductRepository $productRepository;
 
+    protected DigitalProductRepository $digitalProductRepository;
+
+    protected ProductResourceRepository $productResourceRepository;
+
+    protected ProductRepository $productRepository;
 
     public function testStore()
     {
@@ -58,7 +59,6 @@ class DigitalProductControllerTest extends TestCase
 
         $response = $this->postJson('/api/digitalProducts', $data);
 
-
         $response->assertStatus(201)
             ->assertJsonStructure([
                 'data' => [
@@ -75,13 +75,13 @@ class DigitalProductControllerTest extends TestCase
 
     public function testStoreProductNotFound()
     {
-         // Create a user
-         $user = User::factory()->create();
-         $this->actingAs($user);
+        // Create a user
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-         Storage::fake('spaces');
+        Storage::fake('spaces');
 
-         $file = UploadedFile::fake()->create('document.pdf', 2048);
+        $file = UploadedFile::fake()->create('document.pdf', 2048);
 
         $data = [
             'category' => 'Product',
@@ -102,7 +102,7 @@ class DigitalProductControllerTest extends TestCase
         $this->expectException(UnAuthorizedException::class);
 
         $this->withoutExceptionHandling()
-            ->get('api/digitalProducts/products/' . $product->id);
+            ->get('api/digitalProducts/products/'.$product->id);
     }
 
     public function test_show_not_found()
@@ -120,11 +120,10 @@ class DigitalProductControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-      
         $data = [
             'category' => 'Product',
             'resources' => '',
-            'product_id' => ''
+            'product_id' => '',
         ];
 
         $response = $this->postJson('/api/digitalProducts', $data);

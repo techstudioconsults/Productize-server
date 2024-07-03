@@ -8,7 +8,6 @@
  *  @since 02-07-2024
  */
 
-
 namespace Tests\Feature;
 
 use App\Enums\SkillSellingCategory;
@@ -40,7 +39,7 @@ class SkillSellingControllerTest extends TestCase
             'availability' => 'yes',
             'category' => 'Product',
             'link' => 'www.github.com',
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ];
 
         // Send a POST request to store the skillselling
@@ -74,7 +73,7 @@ class SkillSellingControllerTest extends TestCase
             'availability' => 'yes',
             'category' => 'Product',
             'link' => 'www.github.com',
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         // Generate new data for updating the faq
@@ -85,7 +84,7 @@ class SkillSellingControllerTest extends TestCase
         ];
 
         // send a PUT request to update the user
-        $response = $this->put('api/skillSellings/' . $skillSellingData->id, $newSkillSellingData);
+        $response = $this->put('api/skillSellings/'.$skillSellingData->id, $newSkillSellingData);
 
         // Assert that the request was successful (status code 200)
         $response->assertStatus(200);
@@ -106,7 +105,7 @@ class SkillSellingControllerTest extends TestCase
         $this->expectException(UnAuthorizedException::class);
 
         $this->withoutExceptionHandling()
-            ->get('api/skillSellings/products/' . $product->id);
+            ->get('api/skillSellings/products/'.$product->id);
     }
 
     public function test_show(): void
@@ -123,12 +122,11 @@ class SkillSellingControllerTest extends TestCase
             'availability' => 'yes',
             'category' => 'Product',
             'link' => 'www.github.com',
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
-
         // Invoke the show method
-        $response =  $this->actingAs($user, 'web')->get('api/skillSellings/products/' . $product->id);
+        $response = $this->actingAs($user, 'web')->get('api/skillSellings/products/'.$product->id);
 
         $expected_json = SkillSellingResource::make($skillSelling)->response()->getData(true);
 
@@ -143,7 +141,6 @@ class SkillSellingControllerTest extends TestCase
 
         $this->actingAs($user, 'web')->withoutExceptionHandling()->get(route('skillSelling.show', ['product' => '1234']));
     }
-
 
     public function testStoreWithInvalidData()
     {

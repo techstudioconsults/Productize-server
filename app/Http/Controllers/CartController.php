@@ -17,7 +17,6 @@ use App\Http\Requests\ClearCartRequest;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
-use App\Mail\GiftAlert;
 use App\Models\Cart;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
@@ -26,7 +25,6 @@ use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Mail;
 
 /**
  * Route handler methods for Cart resource

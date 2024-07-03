@@ -19,7 +19,7 @@ class ProductResourceFactory extends Factory
     {
         return [
             'product_id' => Product::factory(),
-            'name' => $this->faker->word . '.' . $this->faker->fileExtension,
+            'name' => $this->faker->word.'.'.$this->faker->fileExtension,
             'url' => $this->faker->url,
             'size' => $this->faker->numberBetween(1000, 10000000), // 1KB to 10MB
             'mime_type' => $this->faker->mimeType,

@@ -819,7 +819,7 @@ class ProductRepositoryTest extends TestCase
                 'amount' => $amount,
                 'quantity' => 2,
                 'share' => $share,
-                'price' => $discountedPrice
+                'price' => $discountedPrice,
             ],
         ];
 

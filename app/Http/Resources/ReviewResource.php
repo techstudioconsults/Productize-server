@@ -32,6 +32,7 @@ class ReviewResource extends JsonResource
             'product' => $this->product_id,
             'rating' => $this->rating,
             'comment' => $this->comment,
+            'averageRating' => $this->averageRating,
             'created_at' => $this->created_at,
         ];
     }

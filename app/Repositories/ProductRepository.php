@@ -452,8 +452,8 @@ class ProductRepository extends Repository
             }
 
             $price = $product->price;
-            if($product->discount_price > 0){
-               $price = $product->discount_price;
+            if ($product->discount_price > 0) {
+                $price = $product->discount_price;
             }
 
             $amount = $price * $item['quantity'];

@@ -38,8 +38,7 @@ class CartController extends Controller
         protected ProductRepository $productRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -172,7 +171,6 @@ class CartController extends Controller
 
         // Calculate the total amount for products in the cart
         $totalAmount = $this->cartRepository->calculateTotalAmount($products);
-
 
         //Validate that the total amount declared in the request payload matches that which was calculated
         if ($totalAmount !== $validated['amount']) {

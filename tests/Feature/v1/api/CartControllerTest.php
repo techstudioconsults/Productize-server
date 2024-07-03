@@ -493,7 +493,7 @@ class CartControllerTest extends TestCase
                     'quantity' => 1,
                     'share' => 950, // Assuming 5% commission
                     'price' => 1000,
-                ]
+                ],
             ]);
 
         $response = $this->withoutExceptionHandling()->post(route('cart.clear'), [

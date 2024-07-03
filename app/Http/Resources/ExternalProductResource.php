@@ -18,6 +18,7 @@ class ExternalProductResource extends JsonResource
             'title' => $this->title,
             'thumbnail' => $this->thumbnail,
             'price' => (int) $this->price,
+            'discount_price' => (int) $this->discount_price,
             'publisher' => $this->user->full_name,
             'slug' => $this->slug,
             'highlights' => $this->highlights,

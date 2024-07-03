@@ -3,7 +3,8 @@
 use App\Http\Controllers\UserController;
 use App\Models\Product;
 use App\Models\User;
-use App\Notifications\FirstProductCreated;
+// use App\Notifications\FirstProductCreated;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Route;
 
@@ -33,12 +34,14 @@ Route::group([
 
     Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
 
-    // Route::get("/test", function() {
-    //     $user = User::find('9c5edc2c-28b3-4441-a4e7-8a9178eb4361');
-    //     $product = Product::where("user_id", $user->id)->first();
+    Route::get("/test", function() {
+        $user = User::find('9c5edc2c-28b3-4441-a4e7-8a9178eb4361');
+        $product = Product::where("user_id", $user->id)->first();
 
-    //     $user->notify(new FirstProductCreated($product));
+        Notification::send($user, new WelcomeNotification($user));
 
-    //     return new JsonResource($user->notifications);
-    // });
+        // $user->notify(new FirstProductCreated($product));
+
+        return new JsonResource($user->notifications);
+    });
 });

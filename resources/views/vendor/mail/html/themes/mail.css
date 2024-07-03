@@ -11,7 +11,7 @@
 }
 
 .mail-body {
-    background-color: #F3F2FB;
+    background-color: #f3f2fb;
     width: 37rem;
     padding: 0rem 0rem 2rem;
     margin: 5rem auto;
@@ -134,4 +134,8 @@ small {
 .bottom {
     margin-bottom: 30px;
     border: 1px solid red;
+}
+
+.text-left {
+    text-align: left;
 }

@@ -192,7 +192,7 @@ class ProductController extends Controller
 
         // Trigger product created event
         // event(new ProductCreated($product));
-        $user->notify(new ProductCreated($product));
+        // $user->notify(new ProductCreated($product));
 
         return new ProductResource($product);
     }

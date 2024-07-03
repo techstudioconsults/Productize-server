@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\UserController;
+use App\Models\Product;
+use App\Models\User;
+use App\Notifications\FirstProductCreated;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -28,4 +32,13 @@ Route::group([
         ->name('users.revoke-admin-role');
 
     Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
+
+    // Route::get("/test", function() {
+    //     $user = User::find('9c5edc2c-28b3-4441-a4e7-8a9178eb4361');
+    //     $product = Product::where("user_id", $user->id)->first();
+
+    //     $user->notify(new FirstProductCreated($product));
+
+    //     return new JsonResource($user->notifications);
+    // });
 });

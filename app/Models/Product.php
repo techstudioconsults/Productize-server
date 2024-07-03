@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProductStatusEnum;
+use App\Notifications\FirstProductCreated;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
@@ -78,6 +79,9 @@ class Product extends Model
                 // Update the first product created at property for the user
                 $user->first_product_created_at = Carbon::now();
                 $user->save();
+
+                // Notify the user
+                $user->notify(new FirstProductCreated($product));
             }
         });
     }

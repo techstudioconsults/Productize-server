@@ -68,16 +68,4 @@ class WelcomeNotification extends Notification implements ShouldQueue
             'message' => 'welcome',
         ]);
     }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            //
-        ];
-    }
 }

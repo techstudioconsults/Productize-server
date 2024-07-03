@@ -15,7 +15,7 @@ use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Enums\SkillSellingCategory;
-use App\Events\ProductCreated;
+// use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
 use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\SearchRequest;
@@ -26,6 +26,7 @@ use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Mail\BestSellerCongratulations;
 use App\Models\Product;
+use App\Notifications\ProductCreated;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
@@ -190,7 +191,8 @@ class ProductController extends Controller
         $product = $this->productRepository->create($validated);
 
         // Trigger product created event
-        event(new ProductCreated($product));
+        // event(new ProductCreated($product));
+        $user->notify(new ProductCreated($product));
 
         return new ProductResource($product);
     }

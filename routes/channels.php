@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('users.{id}', function (User $user, $id) {
+    // return $user->id === $id;
+    Log::alert("I GOT HERE");
+    return true;
 });
 
 Broadcast::channel('order-created.{userId}', function (User $user, $userId) {

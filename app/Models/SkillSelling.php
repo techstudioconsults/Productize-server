@@ -31,4 +31,9 @@ class SkillSelling extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function resources()
+    {
+        return $this->hasManyThrough(ProductResource::class, Product::class, 'id', 'product_id', 'product_id', 'id');
+    }
 }

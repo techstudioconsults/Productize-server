@@ -17,7 +17,6 @@ class WithdrawReversed extends Notification implements ShouldQueue
      */
     const NAME = 'withdraw.reversed';
 
-
     /**
      * Create a new notification instance.
      */
@@ -78,7 +77,7 @@ class WithdrawReversed extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "Withdraw Reversed"
+            'message' => 'Withdraw Reversed',
         ];
     }
 
@@ -88,7 +87,7 @@ class WithdrawReversed extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "Withdraw Reversed"
+            'message' => 'Withdraw Reversed',
         ]);
     }
 

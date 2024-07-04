@@ -29,8 +29,7 @@ class WebhookRepository
         protected PayoutRepository $payoutRepository,
         protected RevenueRepository $revenueRepository,
         protected PaystackRepository $paystackRepository
-    ) {
-    }
+    ) {}
 
     public function paystack(string $type, $data)
     {
@@ -236,7 +235,6 @@ class WebhookRepository
         ]);
     }
 
-
     private function handleSubscriptionPaymentFailed(array $data)
     {
         $subscription_code = $data['subscription']['subscription_code'];
@@ -354,8 +352,8 @@ class WebhookRepository
 
     private function getPurchaseOwner($buyer_id, $recipient_id): User
     {
-        if (!$buyer_id && !$recipient_id) {
-            throw new ServerErrorException("No Buyer or Recipient In Purchase");
+        if (! $buyer_id && ! $recipient_id) {
+            throw new ServerErrorException('No Buyer or Recipient In Purchase');
         }
 
         if ($recipient_id) {

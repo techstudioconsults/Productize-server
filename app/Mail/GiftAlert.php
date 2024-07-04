@@ -46,7 +46,7 @@ class GiftAlert extends Mailable
             markdown: 'mail.gift',
             with: [
                 'url' => config('app.client_url').'/auth/login',
-                'buyer_email' => $this->buyer->email
+                'buyer_email' => $this->buyer->email,
             ]
         );
     }

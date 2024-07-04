@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -17,9 +16,7 @@ class FreeTrialEnded extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     /**
      * Get the notification's delivery channels.
@@ -38,7 +35,7 @@ class FreeTrialEnded extends Notification
     {
         return (new MailMessage)
             ->markdown('mail.free-trial-ended', [
-                'url' => config('app.client_url') . '/dashboard/settings/plans/billing-cycle',
+                'url' => config('app.client_url').'/dashboard/settings/plans/billing-cycle',
             ])
             ->subject('Free Trial Ended');
     }
@@ -51,7 +48,7 @@ class FreeTrialEnded extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "Free Trial Ended"
+            'message' => 'Free Trial Ended',
         ];
     }
 
@@ -61,7 +58,7 @@ class FreeTrialEnded extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "Free Trial Ended"
+            'message' => 'Free Trial Ended',
         ]);
     }
 

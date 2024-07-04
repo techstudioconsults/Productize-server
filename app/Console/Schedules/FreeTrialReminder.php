@@ -42,6 +42,7 @@ class FreeTrialReminder
             // End operation when no user is found
             if ($users->isEmpty()) {
                 Log::channel('schedule')->info('No users found with expiring free trials.');
+
                 return;
             }
 

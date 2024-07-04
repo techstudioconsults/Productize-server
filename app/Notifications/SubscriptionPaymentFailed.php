@@ -60,8 +60,8 @@ class SubscriptionPaymentFailed extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->markdown('mail.subscription-payment-failed', [
-                'url' => config('app.client_url') . '/dashboard/settings/plans/billing-cycle',
-                'reason' => $this->reason
+                'url' => config('app.client_url').'/dashboard/settings/plans/billing-cycle',
+                'reason' => $this->reason,
             ])
             ->subject('Subscription Payment Failed');
     }
@@ -74,8 +74,8 @@ class SubscriptionPaymentFailed extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "Subscription Payment Failed",
-            'reason' => $this->reason
+            'message' => 'Subscription Payment Failed',
+            'reason' => $this->reason,
         ];
     }
 
@@ -85,8 +85,8 @@ class SubscriptionPaymentFailed extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "Subscription Payment Failed",
-            'reason' => $this->reason
+            'message' => 'Subscription Payment Failed',
+            'reason' => $this->reason,
         ]);
     }
 

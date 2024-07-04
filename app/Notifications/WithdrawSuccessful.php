@@ -77,7 +77,7 @@ class WithdrawSuccessful extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "Withdraw Successful"
+            'message' => 'Withdraw Successful',
         ];
     }
 
@@ -87,7 +87,7 @@ class WithdrawSuccessful extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "Withdraw Successful"
+            'message' => 'Withdraw Successful',
         ]);
     }
 

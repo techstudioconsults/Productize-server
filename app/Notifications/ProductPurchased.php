@@ -61,8 +61,8 @@ class ProductPurchased extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->markdown('mail.product-purchased', [
-                'url' => config('app.client_url') . '/dashboard/downloads#all-downloads',
-                'title' => $this->product->title
+                'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
+                'title' => $this->product->title,
             ])
             ->subject('Product Purchased');
     }
@@ -75,12 +75,12 @@ class ProductPurchased extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "New Product Purchased",
+            'message' => 'New Product Purchased',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
-            ]
+                'thumbnail' => $this->product->thumbnail,
+            ],
         ];
     }
 
@@ -90,12 +90,12 @@ class ProductPurchased extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "New Product Purchased",
+            'message' => 'New Product Purchased',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail
-            ]
+                'thumbnail' => $this->product->thumbnail,
+            ],
         ]);
     }
 

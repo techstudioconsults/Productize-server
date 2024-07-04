@@ -16,7 +16,7 @@ class ProductPublished extends Notification implements ShouldQueue
     /**
      * @var string Broadcast event name
      */
-    const NAME = 'product-published';
+    const NAME = 'product.published';
 
     /**
      * Create a new notification instance.

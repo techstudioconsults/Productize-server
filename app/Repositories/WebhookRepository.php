@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\ProductPurchased;
 use App\Notifications\SubscriptionCancelled;
 use App\Notifications\SubscriptionPaymentFailed;
+use App\Notifications\WithdrawSuccessful;
 use Log;
 use Mail;
 
@@ -283,11 +284,9 @@ class WebhookRepository
 
             $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatus::Completed->value]);
 
-            $user_id = $payout->account->user->id;
+            $user = $payout->account->user;
 
-            $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
-
-            Log::channel('webhook')->error('Updating Payout', ['data' => $earnings]);
+            $earnings = $this->earningRepository->findOne(['user_id' => $user->id]);
 
             $new_withdrawn_earnings = $earnings->withdrawn_earnings + $data['amount'];
 
@@ -295,6 +294,8 @@ class WebhookRepository
                 'withdrawn_earnings' => $new_withdrawn_earnings,
                 'pending' => 0,
             ]);
+
+            $user->notify(new WithdrawSuccessful());
 
             // Email User
         } catch (\Throwable $th) {

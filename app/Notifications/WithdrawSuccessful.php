@@ -8,18 +8,46 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class FreeTrialEnded extends Notification
+class WithdrawSuccessful extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    const NAME = 'free.trial.ended';
+    /**
+     * @var string Broadcast event name
+     */
+    const NAME = 'withdraw.successful';
 
     /**
      * Create a new notification instance.
      */
     public function __construct()
     {
+        /**
+         * Ensure all Database transactions are committed
+         */
+        $this->afterCommit();
     }
+
+    /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 5;
+
+    /**
+     * Indicate if the job should be marked as failed on timeout.
+     *
+     * @var bool
+     */
+    public $failOnTimeout = true;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $backoff = 3;
 
     /**
      * Get the notification's delivery channels.
@@ -37,10 +65,8 @@ class FreeTrialEnded extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->markdown('mail.free-trial-ended', [
-                'url' => config('app.client_url') . '/dashboard/settings/plans/billing-cycle',
-            ])
-            ->subject('Free Trial Ended');
+            ->markdown('mail.withdraw-successful')
+            ->subject('Withdrawal Success');
     }
 
     /**
@@ -51,7 +77,7 @@ class FreeTrialEnded extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "Free Trial Ended"
+            'message' => "Withdraw Successful"
         ];
     }
 
@@ -61,8 +87,21 @@ class FreeTrialEnded extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "Free Trial Ended"
+            'message' => "Withdraw Successful"
         ]);
+    }
+
+    /**
+     * Determine which queues should be used for each notification channel.
+     *
+     * @return array<string, string>
+     */
+    public function viaQueues(): array
+    {
+        return [
+            'mail' => 'mail',
+            'broadcast' => 'broadcast',
+        ];
     }
 
     /**
@@ -87,5 +126,17 @@ class FreeTrialEnded extends Notification
     public function broadcastAs()
     {
         return self::NAME;
+    }
+
+    /**
+     * Determine the notification's delivery delay.
+     *
+     * @return array<string, \Illuminate\Support\Carbon>
+     */
+    public function withDelay(object $notifiable): array
+    {
+        return [
+            'mail' => now()->addMinute(),
+        ];
     }
 }

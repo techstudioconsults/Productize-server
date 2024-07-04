@@ -357,9 +357,9 @@ class WebhookRepository
         }
 
         if ($recipient_id) {
-            return $this->userRepository->findOne(['user_id' => $recipient_id]);
+            return $this->userRepository->findById($recipient_id);
         }
 
-        return $this->userRepository->findOne(['user_id' => $buyer_id]);
+        return $this->userRepository->findById($buyer_id);
     }
 }

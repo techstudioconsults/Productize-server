@@ -2,9 +2,11 @@
 
 namespace App\Console\Schedules;
 
+use App\Models\User;
+use App\Notifications\FreeTrialEnded;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Notification;
 
 /**
  * @author @Intuneteq
@@ -31,20 +33,30 @@ class EndFreeTrial
     {
         Log::channel('schedule')->info('Ending Free Trials!');
 
-        // Get the current date
-        $currentDate = Carbon::now();
-
-        // Calculate the date 30 days ago
-        $thirtyDaysAgo = $currentDate->subDays(30);
+        // Calculate the date 30 days ago without modifying the original date object
+        $thirtyDaysAgo = Carbon::now()->subDays(30);
 
         try {
-            // Update users who have been on a free trial for more than 30 days
-            $count = DB::table('users')->where('account_type', '=', 'free_trial')
+            // Retrieve users who have been on a free trial for more than 30 days
+            $users = User::where('account_type', '=', 'free_trial')
                 ->where('created_at', '<', $thirtyDaysAgo)
-                ->update(['account_type' => 'free']);
+                ->get();
 
-            // Log the count of updated users
-            Log::channel('schedule')->info('Total Update Count', ['count' => $count]);
+            // Update the account type of the retrieved users
+            $count = $users->count();
+
+            if ($count > 0) {
+                User::whereIn('id', $users->pluck('id'))
+                    ->update(['account_type' => 'free']);
+
+                // Send notifications to users whose account type was updated
+                Notification::send($users, new FreeTrialEnded());
+
+                // Log the count of updated users
+                Log::channel('schedule')->info('Total Update Count', ['count' => $count]);
+            } else {
+                Log::channel('schedule')->info('No users found with expiring free trials.');
+            }
         } catch (\Throwable $th) {
             // Log any errors that occur during the process
             Log::channel('schedule')->error('Error Ending Free Trials!', ['message' => $th->getMessage()]);

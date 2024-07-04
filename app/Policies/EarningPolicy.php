@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;

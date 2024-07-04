@@ -15,12 +15,15 @@ class GiftAlert extends Mailable
 
     public User $user;
 
+    public User $buyer;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, User $buyer)
     {
         $this->user = $user;
+        $this->buyer = $buyer;
     }
 
     /**
@@ -42,18 +45,9 @@ class GiftAlert extends Mailable
         return new Content(
             markdown: 'mail.gift',
             with: [
-                'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
+                'url' => config('app.client_url').'/auth/login',
+                'buyer_email' => $this->buyer->email
             ]
         );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
     }
 }

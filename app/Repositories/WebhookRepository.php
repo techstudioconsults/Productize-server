@@ -158,8 +158,9 @@ class WebhookRepository
 
             if ($recipient_id) {
                 $recipient = $this->userRepository->findById($recipient_id);
+                $buyer = $this->userRepository->findById($buyer_id);
 
-                Mail::to($recipient)->send(new GiftAlert($recipient));
+                Mail::send(new GiftAlert($recipient, $buyer));
             }
 
             // Update productize's revenue

@@ -60,7 +60,7 @@ class SubscriptionCancelled extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->markdown('mail.subscription-cancelled', [
-                'url' => config('app.client_url') . '/dashboard/settings/plans/billing-cycle',
+                'url' => config('app.client_url').'/dashboard/settings/plans/billing-cycle',
             ])
             ->subject('Subscription Cancelled');
     }
@@ -73,7 +73,7 @@ class SubscriptionCancelled extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "Subscription Cancelled"
+            'message' => 'Subscription Cancelled',
         ];
     }
 
@@ -83,7 +83,7 @@ class SubscriptionCancelled extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "Subscription Cancelled"
+            'message' => 'Subscription Cancelled',
         ]);
     }
 

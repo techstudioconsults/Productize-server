@@ -70,10 +70,10 @@ stdout_logfile=/home/forge/app.com/worker.log
 stopwaitsecs=3600
  */
 
- // /etc/supervisor/conf.d
- // sudo supervisorctl reread
- // sudo supervisorctl update
- // sudo supervisorctl start "laravel-worker:*"
+// /etc/supervisor/conf.d
+// sudo supervisorctl reread
+// sudo supervisorctl update
+// sudo supervisorctl start "laravel-worker:*"
 
 // php artisan queue:work
 

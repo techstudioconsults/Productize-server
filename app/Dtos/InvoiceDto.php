@@ -29,8 +29,7 @@ class InvoiceDto implements IDtoFactory
         private string $reference,
         private string $description,
         private string $createdAt,
-    ) {
-    }
+    ) {}
 
     /**
      * Get the invoice amount.
@@ -61,7 +60,7 @@ class InvoiceDto implements IDtoFactory
      */
     public function getDescription(): string
     {
-        return $this->description ?? "";
+        return $this->description ?? '';
     }
 
     /**
@@ -94,7 +93,7 @@ class InvoiceDto implements IDtoFactory
      */
     public static function create(array $data): self
     {
-        if (!isset($data['amount'], $data['status'], $data['reference'], $data['createdAt'])) {
+        if (! isset($data['amount'], $data['status'], $data['reference'], $data['createdAt'])) {
             throw new ServerErrorException('Invalid Invoice Data Transfer');
         }
 
@@ -102,7 +101,7 @@ class InvoiceDto implements IDtoFactory
             $data['amount'],
             $data['status'],
             $data['reference'],
-            $data['description'] ?? "",
+            $data['description'] ?? '',
             $data['createdAt'],
         );
     }

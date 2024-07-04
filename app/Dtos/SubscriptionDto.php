@@ -37,8 +37,7 @@ class SubscriptionDto implements IDtoFactory
         private string $createdAt,
         private Collection $invoices,
         private ?InvoiceDto $most_recent_invoice
-    ) {
-    }
+    ) {}
 
     /**
      * Get the subscription ID.
@@ -141,7 +140,7 @@ class SubscriptionDto implements IDtoFactory
      */
     public static function create(array $data): self
     {
-        if (!isset($data['subscription_code'], $data['status'], $data['next_payment_date'], $data['invoices'])) {
+        if (! isset($data['subscription_code'], $data['status'], $data['next_payment_date'], $data['invoices'])) {
             throw new ServerErrorException('Invalid Subscription Data Transfer');
         }
 

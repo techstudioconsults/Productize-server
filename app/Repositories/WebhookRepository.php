@@ -5,7 +5,14 @@ namespace App\Repositories;
 use App\Enums\PayoutStatus;
 use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
+use App\Exceptions\ServerErrorException;
 use App\Mail\GiftAlert;
+use App\Models\User;
+use App\Notifications\ProductPurchased;
+use App\Notifications\SubscriptionCancelled;
+use App\Notifications\SubscriptionPaymentFailed;
+use App\Notifications\WithdrawReversed;
+use App\Notifications\WithdrawSuccessful;
 use Log;
 use Mail;
 
@@ -21,6 +28,7 @@ class WebhookRepository
         protected EarningRepository $earningRepository,
         protected PayoutRepository $payoutRepository,
         protected RevenueRepository $revenueRepository,
+        protected PaystackRepository $paystackRepository
     ) {}
 
     public function paystack(string $type, $data)
@@ -40,12 +48,15 @@ class WebhookRepository
                      */
                     if ($this->isPurchaseCharge($data)) {
                         $this->handlePurchaseCharge($data);
+                    } else {
+                        // Subscription charge success
+                        $this->handleSubscriptionRenewEvent($data);
                     }
 
                     break;
 
                 case 'subscription.not_renew':
-                    $this->handleSubscriptionRenewEvent($data);
+
                     break;
 
                 case 'invoice.create':
@@ -60,7 +71,7 @@ class WebhookRepository
                      * Cancelling a subscription will also trigger the following events:
                      */
                 case 'invoice.payment_failed':
-                    // code...
+                    $this->handleSubscriptionPaymentFailed($data);
                     break;
 
                 case 'subscription.disable':
@@ -113,6 +124,11 @@ class WebhookRepository
         // If it is a gift, retrieve the user id of the recipient
         $recipient_id = $metadata['recipient_id'];
 
+        // Product will be available in this user's download
+        // If it is a gift, owner will be the recipient
+        // Else, the buyer
+        $owner = $this->getPurchaseOwner($buyer_id, $recipient_id);
+
         // Find Cart
         $cart = $this->cartRepository->findOne(['user_id' => $buyer_id]);
 
@@ -143,6 +159,9 @@ class WebhookRepository
                 // Trigger Order created Event
                 OrderCreated::dispatch($user, $order);
 
+                // Notify owner of this product availability in download
+                $owner->notify(new ProductPurchased($product_saved));
+
                 $this->customerRepository->create([
                     'user_id' => $order->user->id,
                     'merchant_id' => $order->product->user->id,
@@ -158,13 +177,14 @@ class WebhookRepository
 
             if ($recipient_id) {
                 $recipient = $this->userRepository->findById($recipient_id);
+                $buyer = $this->userRepository->findById($buyer_id);
 
-                Mail::to($recipient)->send(new GiftAlert($recipient));
+                Mail::send(new GiftAlert($recipient, $buyer));
             }
 
             // Update productize's revenue
             $this->revenueRepository->create([
-                'user_id' => $recipient_id ? $recipient_id : $buyer_id,
+                'user_id' => $owner->id,
                 'activity' => RevenueActivity::PURCHASE->value,
                 'product' => 'Purchase',
                 'amount' => $data['amount'],
@@ -190,15 +210,7 @@ class WebhookRepository
         ]);
 
         // update user to premium
-        $user = $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
-
-        // Update productize's revenue
-        $this->revenueRepository->create([
-            'user_id' => $user->id,
-            'activity' => RevenueActivity::SUBSCRIPTION->value,
-            'product' => 'Subscription',
-            'amount' => SubscriptionRepository::PRICE,
-        ]);
+        $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
     }
 
     private function handleSubscriptionRenewEvent(array $data): void
@@ -210,17 +222,37 @@ class WebhookRepository
         ]);
 
         // update the status
-        $user = $this->subscriptionRepository->update($subscription, [
+        $this->subscriptionRepository->update($subscription, [
             'status' => $data['status'],
         ]);
 
         // Update productize's revenue
         $this->revenueRepository->create([
-            'user_id' => $user->id,
+            'user_id' => $subscription->user->id,
             'activity' => RevenueActivity::SUBSCRIPTION_RENEW->value,
             'product' => 'Subscription',
             'amount' => SubscriptionRepository::PRICE,
         ]);
+    }
+
+    private function handleSubscriptionPaymentFailed(array $data)
+    {
+        $subscription_code = $data['subscription']['subscription_code'];
+
+        $subscriptionDto = $this->paystackRepository->fetchSubscription($subscription_code);
+
+        $description = $subscriptionDto->getMostRecentInvoice()->getDescription();
+
+        $subscription = $this->subscriptionRepository->findOne([
+            'subscription_code' => $subscription_code,
+        ]);
+
+        // update the status
+        $this->subscriptionRepository->update($subscription, [
+            'status' => $data['status'],
+        ]);
+
+        $subscription->user->notify(new SubscriptionPaymentFailed($description));
     }
 
     private function handleSubscriptionDisableEvent(array $data): void
@@ -236,7 +268,9 @@ class WebhookRepository
         // delete the subscription
         $this->subscriptionRepository->deleteOne($subscription);
 
-        $this->userRepository->guardedUpdate($email, 'account_type', 'free');
+        $user = $this->userRepository->guardedUpdate($email, 'account_type', 'free');
+
+        $user->notify(new SubscriptionCancelled());
     }
 
     private function handleTransferSuccessEvent(array $data): void
@@ -249,11 +283,9 @@ class WebhookRepository
 
             $payout = $this->payoutRepository->update($payout, ['status' => PayoutStatus::Completed->value]);
 
-            $user_id = $payout->account->user->id;
+            $user = $payout->account->user;
 
-            $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
-
-            Log::channel('webhook')->error('Updating Payout', ['data' => $earnings]);
+            $earnings = $this->earningRepository->findOne(['user_id' => $user->id]);
 
             $new_withdrawn_earnings = $earnings->withdrawn_earnings + $data['amount'];
 
@@ -261,6 +293,8 @@ class WebhookRepository
                 'withdrawn_earnings' => $new_withdrawn_earnings,
                 'pending' => 0,
             ]);
+
+            $user->notify(new WithdrawSuccessful());
 
             // Email User
         } catch (\Throwable $th) {
@@ -300,17 +334,32 @@ class WebhookRepository
 
             $payout = $this->payoutRepository->update($payout, ['status' => 'reversed']);
 
-            $user_id = $payout->account->user->id;
+            $user = $payout->account->user;
 
-            $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
+            $earnings = $this->earningRepository->findOne(['user_id' => $user->id]);
 
             $this->earningRepository->update($earnings, [
                 'pending' => 0,
             ]);
 
+            $user->notify(new WithdrawReversed());
+
             // Email User
         } catch (\Throwable $th) {
             Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
         }
+    }
+
+    private function getPurchaseOwner($buyer_id, $recipient_id): User
+    {
+        if (! $buyer_id && ! $recipient_id) {
+            throw new ServerErrorException('No Buyer or Recipient In Purchase');
+        }
+
+        if ($recipient_id) {
+            return $this->userRepository->findOne(['user_id' => $recipient_id]);
+        }
+
+        return $this->userRepository->findOne(['user_id' => $buyer_id]);
     }
 }

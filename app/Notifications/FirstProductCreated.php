@@ -18,7 +18,7 @@ class FirstProductCreated extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    const NAME = 'first-product-created';
+    const NAME = 'first.product.created';
 
     /**
      * Create a new notification instance.

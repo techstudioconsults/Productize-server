@@ -29,31 +29,31 @@ class FreeTrialReminder
     {
         Log::channel('schedule')->info('Scanning For Expiring Free Trials!');
 
-        // Get the current date
-        $currentDate = Carbon::now();
-
-        // Calculate the date 30 days ago
-        $twentySevenDaysAgo = $currentDate->subDays(27);
+        // Calculate the date 27 days ago without modifying the original date object
+        $twentySevenDaysAgo = Carbon::now()->subDays(27);
 
         try {
             // Retrieve users on the 27th day of their free trial
-            $users = DB::table('users')->where('account_type', '=', 'free_trial')
+            $users = DB::table('users')
+                ->where('account_type', '=', 'free_trial')
                 ->whereBetween('created_at', [$twentySevenDaysAgo->startOfDay(), $twentySevenDaysAgo->endOfDay()])
                 ->get();
 
             // End operation when no user is found
             if ($users->isEmpty()) {
+                Log::channel('schedule')->info('No users found with expiring free trials.');
+
                 return;
             }
 
-            $emails = $users->map(function (User $user) {
-                return $user->email;
-            });
+            // Collect user emails
+            $emails = $users->pluck('email');
 
+            // Send reminder emails to the collected emails
             Mail::to($emails->toArray())->send(new FreeTrialEndingReminder());
 
-            // Log the count of updated users
-            Log::channel('schedule')->info('Free Trial Emails Sent');
+            // Log the count of users who received the email
+            Log::channel('schedule')->info('Free Trial Emails Sent', ['count' => $emails->count()]);
         } catch (\Throwable $th) {
             // Log any errors that occur during the process
             Log::channel('schedule')->error('Error Sending Free Trial Mail', ['message' => $th->getMessage()]);

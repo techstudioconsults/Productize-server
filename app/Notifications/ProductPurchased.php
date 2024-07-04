@@ -9,23 +9,17 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ProductPublished extends Notification implements ShouldQueue
+class ProductPurchased extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * @var string Broadcast event name
-     */
-    const NAME = 'product.published';
+    const NAME = 'product.purchased';
 
     /**
      * Create a new notification instance.
      */
     public function __construct(public Product $product)
     {
-        /**
-         * Ensure all Database transactions are committed
-         */
         $this->afterCommit();
     }
 
@@ -66,12 +60,11 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->markdown('mail.product-published', [
+            ->markdown('mail.product-purchased', [
+                'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
                 'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail,
-                'link' => config('app.client_url').'/products/'.$this->product->id,
             ])
-            ->subject('New product published successfully!');
+            ->subject('Product Purchased');
     }
 
     /**
@@ -82,14 +75,11 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
+            'message' => 'New Product Purchased',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
                 'thumbnail' => $this->product->thumbnail,
-            ],
-            'user' => [
-                'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name,
             ],
         ];
     }
@@ -100,29 +90,13 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
+            'message' => 'New Product Purchased',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
                 'thumbnail' => $this->product->thumbnail,
             ],
-            'user' => [
-                'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name,
-            ],
         ]);
-    }
-
-    /**
-     * Determine which queues should be used for each notification channel.
-     *
-     * @return array<string, string>
-     */
-    public function viaQueues(): array
-    {
-        return [
-            'mail' => 'mail',
-            'broadcast' => 'broadcast',
-        ];
     }
 
     /**
@@ -147,6 +121,19 @@ class ProductPublished extends Notification implements ShouldQueue
     public function broadcastAs()
     {
         return self::NAME;
+    }
+
+    /**
+     * Determine which queues should be used for each notification channel.
+     *
+     * @return array<string, string>
+     */
+    public function viaQueues(): array
+    {
+        return [
+            'mail' => 'mail',
+            'broadcast' => 'broadcast',
+        ];
     }
 
     /**

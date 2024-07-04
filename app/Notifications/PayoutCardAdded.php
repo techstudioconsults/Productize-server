@@ -15,7 +15,7 @@ class PayoutCardAdded extends Notification
     /**
      * @var string Broadcast event name
      */
-    const NAME = 'payout-card-added';
+    const NAME = 'payout.card.added';
 
     /**
      * Create a new notification instance.

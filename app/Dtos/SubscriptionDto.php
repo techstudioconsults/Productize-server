@@ -35,7 +35,8 @@ class SubscriptionDto implements IDtoFactory
         private SubscriptionStatusEnum $status,
         private string $next_payment_date,
         private string $createdAt,
-        private Collection $invoices
+        private Collection $invoices,
+        private ?InvoiceDto $most_recent_invoice
     ) {}
 
     /**
@@ -106,6 +107,11 @@ class SubscriptionDto implements IDtoFactory
         });
     }
 
+    public function getMostRecentInvoice(): InvoiceDto
+    {
+        return $this->most_recent_invoice;
+    }
+
     /**
      * Get formatted properties.
      */
@@ -143,6 +149,12 @@ class SubscriptionDto implements IDtoFactory
             return InvoiceDto::create($invoice);
         });
 
+        $most_recent_invoice = null;
+
+        if (isset($data['most_recent_invoice'])) {
+            $most_recent_invoice = InvoiceDto::create($data['most_recent_invoice']);
+        }
+
         $status = SubscriptionStatusEnum::from($data['status']);
 
         return new self(
@@ -152,7 +164,8 @@ class SubscriptionDto implements IDtoFactory
             $status,
             $data['next_payment_date'],
             $data['createdAt'] ?? '',
-            $invoices
+            $invoices,
+            $most_recent_invoice
         );
     }
 }

@@ -2,26 +2,25 @@
 
 namespace App\Notifications;
 
-use App\Models\Product;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ProductPublished extends Notification implements ShouldQueue
+class WithdrawSuccessful extends Notification implements ShouldQueue
 {
     use Queueable;
 
     /**
      * @var string Broadcast event name
      */
-    const NAME = 'product.published';
+    const NAME = 'withdraw.successful';
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public Product $product)
+    public function __construct()
     {
         /**
          * Ensure all Database transactions are committed
@@ -66,12 +65,8 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->markdown('mail.product-published', [
-                'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail,
-                'link' => config('app.client_url').'/products/'.$this->product->id,
-            ])
-            ->subject('New product published successfully!');
+            ->markdown('mail.withdraw-successful')
+            ->subject('Withdrawal Success');
     }
 
     /**
@@ -82,15 +77,7 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'product' => [
-                'id' => $this->product->id,
-                'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail,
-            ],
-            'user' => [
-                'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name,
-            ],
+            'message' => 'Withdraw Successful',
         ];
     }
 
@@ -100,15 +87,7 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'product' => [
-                'id' => $this->product->id,
-                'title' => $this->product->title,
-                'thumbnail' => $this->product->thumbnail,
-            ],
-            'user' => [
-                'id' => $notifiable->id,
-                'full_name' => $notifiable->full_name,
-            ],
+            'message' => 'Withdraw Successful',
         ]);
     }
 

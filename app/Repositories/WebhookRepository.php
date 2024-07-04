@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\ProductPurchased;
 use App\Notifications\SubscriptionCancelled;
 use App\Notifications\SubscriptionPaymentFailed;
+use App\Notifications\WithdrawReversed;
 use App\Notifications\WithdrawSuccessful;
 use Log;
 use Mail;
@@ -335,13 +336,15 @@ class WebhookRepository
 
             $payout = $this->payoutRepository->update($payout, ['status' => 'reversed']);
 
-            $user_id = $payout->account->user->id;
+            $user = $payout->account->user;
 
-            $earnings = $this->earningRepository->findOne(['user_id' => $user_id]);
+            $earnings = $this->earningRepository->findOne(['user_id' => $user->id]);
 
             $this->earningRepository->update($earnings, [
                 'pending' => 0,
             ]);
+
+            $user->notify(new WithdrawReversed());
 
             // Email User
         } catch (\Throwable $th) {

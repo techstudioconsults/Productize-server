@@ -35,8 +35,10 @@ class SubscriptionDto implements IDtoFactory
         private SubscriptionStatusEnum $status,
         private string $next_payment_date,
         private string $createdAt,
-        private Collection $invoices
-    ) {}
+        private Collection $invoices,
+        private ?InvoiceDto $most_recent_invoice
+    ) {
+    }
 
     /**
      * Get the subscription ID.
@@ -106,6 +108,11 @@ class SubscriptionDto implements IDtoFactory
         });
     }
 
+    public function getMostRecentInvoice(): InvoiceDto
+    {
+        return $this->most_recent_invoice;
+    }
+
     /**
      * Get formatted properties.
      */
@@ -134,7 +141,7 @@ class SubscriptionDto implements IDtoFactory
      */
     public static function create(array $data): self
     {
-        if (! isset($data['subscription_code'], $data['status'], $data['next_payment_date'], $data['invoices'])) {
+        if (!isset($data['subscription_code'], $data['status'], $data['next_payment_date'], $data['invoices'])) {
             throw new ServerErrorException('Invalid Subscription Data Transfer');
         }
 
@@ -142,6 +149,12 @@ class SubscriptionDto implements IDtoFactory
         $invoices = collect($data['invoices'])->map(function ($invoice) {
             return InvoiceDto::create($invoice);
         });
+
+        $most_recent_invoice = null;
+
+        if (isset($data['most_recent_invoice'])) {
+            $most_recent_invoice = InvoiceDto::create($data['most_recent_invoice']);
+        }
 
         $status = SubscriptionStatusEnum::from($data['status']);
 
@@ -152,7 +165,8 @@ class SubscriptionDto implements IDtoFactory
             $status,
             $data['next_payment_date'],
             $data['createdAt'] ?? '',
-            $invoices
+            $invoices,
+            $most_recent_invoice
         );
     }
 }

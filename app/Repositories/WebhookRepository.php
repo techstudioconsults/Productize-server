@@ -7,6 +7,7 @@ use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
 use App\Mail\GiftAlert;
 use App\Notifications\SubscriptionCancelled;
+use App\Notifications\SubscriptionPaymentFailed;
 use Log;
 use Mail;
 
@@ -22,7 +23,9 @@ class WebhookRepository
         protected EarningRepository $earningRepository,
         protected PayoutRepository $payoutRepository,
         protected RevenueRepository $revenueRepository,
-    ) {}
+        protected PaystackRepository $paystackRepository
+    ) {
+    }
 
     public function paystack(string $type, $data)
     {
@@ -41,12 +44,15 @@ class WebhookRepository
                      */
                     if ($this->isPurchaseCharge($data)) {
                         $this->handlePurchaseCharge($data);
+                    } else {
+                        // Subscription charge success
+                        $this->handleSubscriptionRenewEvent($data);
                     }
 
                     break;
 
                 case 'subscription.not_renew':
-                    $this->handleSubscriptionRenewEvent($data);
+
                     break;
 
                 case 'invoice.create':
@@ -61,7 +67,7 @@ class WebhookRepository
                      * Cancelling a subscription will also trigger the following events:
                      */
                 case 'invoice.payment_failed':
-                    // code...
+                    $this->handleSubscriptionPaymentFailed($data);
                     break;
 
                 case 'subscription.disable':
@@ -192,15 +198,7 @@ class WebhookRepository
         ]);
 
         // update user to premium
-        $user = $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
-
-        // Update productize's revenue
-        $this->revenueRepository->create([
-            'user_id' => $user->id,
-            'activity' => RevenueActivity::SUBSCRIPTION->value,
-            'product' => 'Subscription',
-            'amount' => SubscriptionRepository::PRICE,
-        ]);
+        $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
     }
 
     private function handleSubscriptionRenewEvent(array $data): void
@@ -212,17 +210,38 @@ class WebhookRepository
         ]);
 
         // update the status
-        $user = $this->subscriptionRepository->update($subscription, [
+        $this->subscriptionRepository->update($subscription, [
             'status' => $data['status'],
         ]);
 
         // Update productize's revenue
         $this->revenueRepository->create([
-            'user_id' => $user->id,
+            'user_id' => $subscription->user->id,
             'activity' => RevenueActivity::SUBSCRIPTION_RENEW->value,
             'product' => 'Subscription',
             'amount' => SubscriptionRepository::PRICE,
         ]);
+    }
+
+
+    private function handleSubscriptionPaymentFailed(array $data)
+    {
+        $subscription_code = $data['subscription']['subscription_code'];
+
+        $subscriptionDto = $this->paystackRepository->fetchSubscription($subscription_code);
+
+        $description = $subscriptionDto->getMostRecentInvoice()->getDescription();
+
+        $subscription = $this->subscriptionRepository->findOne([
+            'subscription_code' => $subscription_code,
+        ]);
+
+        // update the status
+        $this->subscriptionRepository->update($subscription, [
+            'status' => $data['status'],
+        ]);
+
+        $subscription->user->notify(new SubscriptionPaymentFailed($description));
     }
 
     private function handleSubscriptionDisableEvent(array $data): void

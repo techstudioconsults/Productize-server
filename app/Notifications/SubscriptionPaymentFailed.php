@@ -8,16 +8,16 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SubscriptionCancelled extends Notification implements ShouldQueue
+class SubscriptionPaymentFailed extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    const NAME = 'subscription.cancelled';
+    const NAME = 'subscription.payment.failed';
 
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(public string $reason)
     {
         $this->afterCommit();
     }
@@ -59,10 +59,11 @@ class SubscriptionCancelled extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->markdown('mail.subscription-cancelled', [
+            ->markdown('mail.subscription-payment-failed', [
                 'url' => config('app.client_url') . '/dashboard/settings/plans/billing-cycle',
+                'reason' => $this->reason
             ])
-            ->subject('Subscription Cancelled');
+            ->subject('Subscription Payment Failed');
     }
 
     /**
@@ -73,7 +74,8 @@ class SubscriptionCancelled extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "Subscription Cancelled"
+            'message' => "Subscription Payment Failed",
+            'reason' => $this->reason
         ];
     }
 
@@ -83,7 +85,8 @@ class SubscriptionCancelled extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => "Subscription Cancelled"
+            'message' => "Subscription Payment Failed",
+            'reason' => $this->reason
         ]);
     }
 

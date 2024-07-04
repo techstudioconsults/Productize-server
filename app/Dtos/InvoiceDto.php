@@ -93,14 +93,14 @@ class InvoiceDto implements IDtoFactory
      */
     public static function create(array $data): self
     {
-        if (! isset($data['amount'], $data['status'], $data['reference'], $data['createdAt'])) {
+        if (! isset($data['amount'], $data['status'], $data['createdAt'])) {
             throw new ServerErrorException('Invalid Invoice Data Transfer');
         }
 
         return new self(
             $data['amount'],
             $data['status'],
-            $data['reference'],
+            $data['reference'] ?? '',
             $data['description'] ?? '',
             $data['createdAt'],
         );

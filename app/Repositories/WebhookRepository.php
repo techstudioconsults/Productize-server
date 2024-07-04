@@ -5,7 +5,10 @@ namespace App\Repositories;
 use App\Enums\PayoutStatus;
 use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
+use App\Exceptions\ServerErrorException;
 use App\Mail\GiftAlert;
+use App\Models\User;
+use App\Notifications\ProductPurchased;
 use App\Notifications\SubscriptionCancelled;
 use App\Notifications\SubscriptionPaymentFailed;
 use Log;
@@ -120,6 +123,11 @@ class WebhookRepository
         // If it is a gift, retrieve the user id of the recipient
         $recipient_id = $metadata['recipient_id'];
 
+        // Product will be available in this user's download
+        // If it is a gift, owner will be the recipient
+        // Else, the buyer
+        $owner = $this->getPurchaseOwner($buyer_id, $recipient_id);
+
         // Find Cart
         $cart = $this->cartRepository->findOne(['user_id' => $buyer_id]);
 
@@ -150,6 +158,9 @@ class WebhookRepository
                 // Trigger Order created Event
                 OrderCreated::dispatch($user, $order);
 
+                // Notify owner of this product availability in download
+                $owner->notify(new ProductPurchased($product_saved));
+
                 $this->customerRepository->create([
                     'user_id' => $order->user->id,
                     'merchant_id' => $order->product->user->id,
@@ -172,7 +183,7 @@ class WebhookRepository
 
             // Update productize's revenue
             $this->revenueRepository->create([
-                'user_id' => $recipient_id ? $recipient_id : $buyer_id,
+                'user_id' => $owner->id,
                 'activity' => RevenueActivity::PURCHASE->value,
                 'product' => 'Purchase',
                 'amount' => $data['amount'],
@@ -335,5 +346,18 @@ class WebhookRepository
         } catch (\Throwable $th) {
             Log::channel('webhook')->error('Updating Payout', ['data' => $th->getMessage()]);
         }
+    }
+
+    private function getPurchaseOwner($buyer_id, $recipient_id): User
+    {
+        if (!$buyer_id && !$recipient_id) {
+            throw new ServerErrorException("No Buyer or Recipient In Purchase");
+        }
+
+        if ($recipient_id) {
+            return $this->userRepository->findOne(['user_id' => $recipient_id]);
+        }
+
+        return $this->userRepository->findOne(['user_id' => $buyer_id]);
     }
 }

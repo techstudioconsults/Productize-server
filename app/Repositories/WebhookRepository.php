@@ -6,6 +6,7 @@ use App\Enums\PayoutStatus;
 use App\Enums\RevenueActivity;
 use App\Events\OrderCreated;
 use App\Mail\GiftAlert;
+use App\Notifications\SubscriptionCancelled;
 use Log;
 use Mail;
 
@@ -237,7 +238,9 @@ class WebhookRepository
         // delete the subscription
         $this->subscriptionRepository->deleteOne($subscription);
 
-        $this->userRepository->guardedUpdate($email, 'account_type', 'free');
+        $user = $this->userRepository->guardedUpdate($email, 'account_type', 'free');
+
+        $user->notify(new SubscriptionCancelled());
     }
 
     private function handleTransferSuccessEvent(array $data): void

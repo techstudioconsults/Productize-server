@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\UnprocessableException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProductResourceRequest extends FormRequest
@@ -25,5 +27,10 @@ class StoreProductResourceRequest extends FormRequest
             'resource' => 'required|file',
             'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

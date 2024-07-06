@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\NotFoundException;
 use App\Http\Requests\StoreProductResourceRequest;
 use App\Http\Resources\ProductDataResource;
 use App\Models\Product;
 use App\Models\ProductResource;
 use App\Repositories\ProductRepository;
 use App\Repositories\ProductResourceRepository;
-use Auth;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Storage;
 use Str;
@@ -25,22 +22,9 @@ class ProductResourceController extends Controller
 
     public function store(StoreProductResourceRequest $request)
     {
-        $user = Auth::user();
-
         $entity = $request->validated();
-        dd("i got here");
 
         $product = $this->productRepository->findById($entity['product_id']);
-
-        var_dump($product);
-
-        if (!$product) {
-            throw new NotFoundException('Product Not Found');
-        }
-
-        if ($product->user->id !== $user->id) {
-            throw new ForbiddenException("No Permission to access this product resource");
-        }
 
         $resource = $entity['resource'];
 

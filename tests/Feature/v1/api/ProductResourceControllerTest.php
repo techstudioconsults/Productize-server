@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Models\User;
 use App\Traits\SanctumAuthentication;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -54,7 +53,7 @@ class ProductResourceControllerTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_store_throws_422_when_the_product_not_found()
+    public function test_store_throws_404_when_the_product_not_found()
     {
         Storage::fake('spaces');
 

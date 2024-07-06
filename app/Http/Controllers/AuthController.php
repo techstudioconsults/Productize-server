@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @author @Intuneteq Tobi Olanitori
- *
- * @version 1.0
- *
- * @since 25-05-2024
- */
-
 namespace App\Http\Controllers;
 
 use App\Enums\OAuthTypeEnum;
@@ -40,13 +32,20 @@ use Mail;
 use Str;
 
 /**
- * Route handler methods for Auth resource
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 25-05-2024
+ *
+ * Route handler methods for Authentication and Authorization
  */
 class AuthController extends Controller
 {
     public function __construct(
         protected UserRepository $userRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -95,7 +94,7 @@ class AuthController extends Controller
      * Handle the user login request.
      *
      * This method processes a user login request, validates the provided credentials, and attempts to authenticate the user.
-     * If the authentication is successful, it generates an access token for the user and returns a JSON response containing
+     * If the authentication is successful, it generates an access token for the user with role ability and returns a JSON response containing
      * the authenticated user details and the access token. If the authentication fails, it throws an UnprocessableException
      * with an error message indicating incorrect credentials.
      *
@@ -115,7 +114,7 @@ class AuthController extends Controller
         $remember = $credentials['remember'] ?? false;
         unset($credentials['remember']);
 
-        if (! Auth::attempt($credentials, $remember)) {
+        if (!Auth::attempt($credentials, $remember)) {
             throw new UnprocessableException('The Provided credentials are not correct');
         }
 
@@ -197,7 +196,7 @@ class AuthController extends Controller
 
         $user = User::firstWhere('email', $oauthUser->email);
 
-        if (! $user) {
+        if (!$user) {
             $credentials = [
                 'full_name' => $oauthUser->name,
                 'email' => $oauthUser->email,
@@ -244,25 +243,21 @@ class AuthController extends Controller
      */
     public function verify(string $user_id, Request $request)
     {
-
-        /**
-         * Dont throw an error, render error page instead.
-         */
-        if (! $request->hasValidSignature()) {
-            throw new UnAuthorizedException('Invalid/Expired url provided');
+        if (!$request->hasValidSignature()) {
+            return view("pages.auth.expired-url");
         }
 
         $user = User::find($user_id);
 
-        if (! $user) {
+        if (!$user) {
             throw new NotFoundException('User Does Not Exist');
         }
 
-        if (! $user->hasVerifiedEmail()) {
+        if (!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url').'/dashboard/home';
+        $redirectUrl = config('app.client_url') . '/dashboard/home';
 
         return redirect($redirectUrl);
     }
@@ -362,7 +357,7 @@ class AuthController extends Controller
 
         $user = $this->userRepository->findOne(['email' => $credentials['email']]);
 
-        if (! $user) {
+        if (!$user) {
             throw new NotFoundException('User Not Found');
         }
 

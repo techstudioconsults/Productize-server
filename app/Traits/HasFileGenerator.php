@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\Services;
+namespace App\Traits;
 
 use Illuminate\Support\Facades\Storage;
 use Mpdf\Mpdf;

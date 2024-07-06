@@ -17,7 +17,6 @@ use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ServerErrorException;
 use App\Exceptions\UnprocessableException;
-use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateKycRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -43,8 +42,6 @@ use Throwable;
  */
 class UserController extends Controller
 {
-    use HasFileGenerator;
-
     public function __construct(
         protected UserRepository $userRepository,
         protected ProductRepository $productRepository,

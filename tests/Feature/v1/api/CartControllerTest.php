@@ -507,8 +507,6 @@ class CartControllerTest extends TestCase
 
     public function test_clear_cart_with_existing_gift_user()
     {
-        Mail::fake();
-
         // Create a user and authenticate
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -545,23 +543,22 @@ class CartControllerTest extends TestCase
 
         // Assert the response status
         $response->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $recipient_email,
+            'full_name' => $recipient_name
+        ]);
     }
 
-    public function test_clear_cart_creates_new_gift_user_and_sends_email()
+    public function test_clear_cart_creates_new_gift_user()
     {
-        Mail::fake();
-
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $recipient_email = 'gift@example.com';
         $recipient_name = 'Gift User';
 
-        $recipient = User::factory()->make(['email' => $recipient_email, 'full_name' => $recipient_name]);
-
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount_price' => 0]);
-
-        $userRepository = $this->partialMock(UserRepository::class);
 
         $paystackRepository = $this->partialMock(PaystackRepository::class);
 
@@ -588,6 +585,11 @@ class CartControllerTest extends TestCase
                 'access_code' => '0peioxfhpn',
                 'reference' => '7PVGX8MEk85tgeEpVDtD',
             ]]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $recipient_email,
+            'full_name' => $recipient_name
+        ]);
     }
 
     public function test_clear_cart_throws_error_if_product_not_found()

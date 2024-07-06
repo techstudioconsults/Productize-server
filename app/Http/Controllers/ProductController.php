@@ -15,9 +15,7 @@ use App\Enums\ProductEnum;
 use App\Enums\ProductStatusEnum;
 use App\Enums\ProductTagsEnum;
 use App\Enums\SkillSellingCategory;
-// use App\Events\ProductCreated;
 use App\Exceptions\BadRequestException;
-use App\Helpers\Services\HasFileGenerator;
 use App\Http\Requests\SearchRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -26,7 +24,6 @@ use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Mail\BestSellerCongratulations;
 use App\Models\Product;
-use App\Notifications\ProductCreated;
 use App\Notifications\ProductPublished;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderRepository;
@@ -44,8 +41,6 @@ use Mail;
  */
 class ProductController extends Controller
 {
-    use HasFileGenerator;
-
     public function __construct(
         protected ProductRepository $productRepository,
         protected UserRepository $userRepository,

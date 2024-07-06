@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RevenueActivity;
-use App\Helpers\Services\HasFileGenerator;
 use App\Http\Resources\RevenueResource;
 use App\Repositories\RevenueRepository;
 use Carbon\Carbon;
@@ -21,8 +20,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class RevenueController extends Controller
 {
-    use HasFileGenerator;
-
     public function __construct(protected RevenueRepository $revenueRepository) {}
 
     /**

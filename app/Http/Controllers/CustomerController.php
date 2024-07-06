@@ -10,7 +10,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\Services\HasFileGenerator;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use App\Repositories\CustomerRepository;
@@ -23,11 +22,10 @@ use Illuminate\Support\Facades\Auth;
  */
 class CustomerController extends Controller
 {
-    use HasFileGenerator;
-
     public function __construct(
         protected CustomerRepository $customerRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori

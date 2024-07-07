@@ -186,10 +186,6 @@ class ProductController extends Controller
 
         $product = $this->productRepository->create($validated);
 
-        // Trigger product created event
-        // event(new ProductCreated($product));
-        // $user->notify(new ProductCreated($product));
-
         return new ProductResource($product);
     }
 

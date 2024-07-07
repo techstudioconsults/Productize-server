@@ -7,10 +7,13 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreDigitalProductRequest;
 use App\Http\Resources\DigitalProductResource;
+use App\Models\DigitalProduct;
 use App\Models\Product;
+use App\Notifications\ProductCreated;
+use App\Repositories\AssetRepository;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
-use App\Repositories\ProductResourceRepository;
+use Auth;
 use DB;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Log;
@@ -18,38 +21,53 @@ use Illuminate\Support\Facades\Log;
 class DigitalProductController extends Controller
 {
     public function __construct(
-        protected DigitalProductRepository $digitalProductRepository,
-        protected ProductResourceRepository $productResourceRepository,
+        protected AssetRepository $assetRepository,
         protected ProductRepository $productRepository,
-    ) {}
+        protected DigitalProductRepository $digitalProductRepository,
+    ) {
+    }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created digital product resource in storage.
+     *
+     * @param StoreDigitalProductRequest $request
+     * @return DigitalProductResource
+     * @throws NotFoundHttpException
+     * @throws HttpException
      */
     public function store(StoreDigitalProductRequest $request)
     {
+        $user = Auth::user();
+
         $entity = $request->validated();
 
+        // Find the product
         $product = $this->productRepository->findById($entity['product_id']);
 
-        if (! $product) {
+        if (!$product) {
             throw new NotFoundException('Product Not Found');
         }
 
-        $resources = $entity['resources'];
-        unset($entity['resources']);
+        // Extract the assets from the product request
+        $assets = $entity['assets'];
+        unset($entity['assets']);
 
         try {
-            $digital_product = DB::transaction(function () use ($resources, $product, $entity) {
+            // Initialize a transaction so the product is not persisted when there is an upload fail.
+            $digital_product = DB::transaction(function () use ($assets, $product, $entity) {
 
-                $resources = $this->productResourceRepository->uploadResources($resources, $product->product_type);
+                // Upload the assets to D.O spaces
+                $assets = $this->assetRepository->uploadAssets($assets, $product->product_type);
 
-                foreach ($resources as $resource) {
-                    $this->productResourceRepository->create(['product_id' => $product->id, ...$resource]);
+                // Then save assets metadata in the db
+                foreach ($assets as $asset) {
+                    $this->assetRepository->create(['product_id' => $product->id, ...$asset]);
                 }
 
                 return $this->digitalProductRepository->create($entity);
             });
+
+            $user->notify(new ProductCreated($product));
 
             return new DigitalProductResource($digital_product);
         } catch (\Throwable $th) {
@@ -62,17 +80,43 @@ class DigitalProductController extends Controller
         }
     }
 
-    public function show(Product $product)
+    /**
+     * Retrieve the specified digital product.
+     *
+     * @param Product $product
+     *
+     * @return DigitalProductResource
+     */
+    public function show(DigitalProduct $digitalProduct)
+    {
+        return new DigitalProductResource($digitalProduct);
+    }
+
+    /**
+     * Retrieve the specified digital product resource by its product.
+     *
+     * @param Product $product
+     *
+     * @return DigitalProductResource
+     *
+     * @throws NotFoundException
+     */
+    public function product(Product $product)
     {
         $digital_product = $this->digitalProductRepository->findOne(['product_id' => $product->id]);
 
-        if (! $digital_product) {
+        if (!$digital_product) {
             throw new NotFoundException('Resource Not Foud');
         }
 
         return new DigitalProductResource($digital_product);
     }
 
+    /**
+     * Get all digital product categories.
+     *
+     * @return JsonResource
+     */
     public function categories()
     {
         return new JsonResource(DigitalProductCategory::cases());

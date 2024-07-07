@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\ProductResourceController;
+use App\Http\Controllers\AssetController;
 use Illuminate\Support\Facades\Route;
 
-Route::controller(ProductResourceController::class)
-    ->prefix('resources')
-    ->as('resources.')
+Route::controller(AssetController::class)
+    ->prefix('assets')
+    ->as('assets.')
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',

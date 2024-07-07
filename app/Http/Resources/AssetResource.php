@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProductDataResource extends JsonResource
+class AssetResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,7 +18,7 @@ class ProductDataResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'mime_type' => $this->mime_type,
-            'size' => round($this->size / 1048576, 3).'MB', // Convert byte to MB
+            'size' => round($this->size / 1048576, 3) . 'MB', // Convert byte to MB
             'extension' => $this->extension,
             'url' => $this->url,
             'publisher' => $this->product->user->full_name,

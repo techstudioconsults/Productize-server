@@ -7,10 +7,10 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
 use App\Models\Product;
 use Auth;
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
-class StoreProductResourceRequest extends FormRequest
+class StoreAssetRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -46,7 +46,7 @@ class StoreProductResourceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'resource' => 'required|file',
+            'asset' => 'required|file',
             'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }

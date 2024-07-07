@@ -15,7 +15,9 @@ Route::controller(DigitalProductController::class)
     ->group(function () {
         Route::post('/', 'store')->name('store');
 
-        Route::get('/products/{product}', 'show')->name('show');
+        Route::get('/products/{product}', 'product')->name('product')->middleware('can:viewByProduct,product');
+
+        Route::get('{digitalProduct}', 'show')->name('show')->middleware('can:view,digitalProduct');
 
         Route::get('/categories', 'categories')->withoutMiddleware([
             'auth:sanctum',

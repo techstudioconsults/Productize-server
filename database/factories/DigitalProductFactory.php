@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DigitalProductCategory;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,8 +20,8 @@ class DigitalProductFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'product_id' => Product::factory(),
-            'category' => $this->faker->randomElement(['EBOOK', 'VIDEO', 'AUDIO']),
+            'product_id' => Product::factory()->create()->id,
+            'category' => $this->faker->randomElement(DigitalProductCategory::cases()),
         ];
     }
 }

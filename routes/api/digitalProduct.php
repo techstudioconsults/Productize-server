@@ -17,13 +17,11 @@ Route::controller(DigitalProductController::class)
 
         Route::get('/products/{product}', 'product')->name('product')->middleware('can:viewByProduct,product');
 
-        Route::get('{digitalProduct}', 'show')->name('show')->middleware('can:view,digitalProduct');
-
         Route::get('/categories', 'categories')->withoutMiddleware([
             'auth:sanctum',
             'can:allowed,App\Models\DigitalProduct',
             'can:premium,App\Models\DigitalProduct',
         ])->name('categories');
 
-        Route::put('/{resources}', 'update')->name('update');
+        Route::get('/{digitalProduct}', 'show')->name('show')->middleware('can:view,digitalProduct');
     });

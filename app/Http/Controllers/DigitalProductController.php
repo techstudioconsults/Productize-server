@@ -31,9 +31,12 @@ class DigitalProductController extends Controller
      * Store a newly created digital product resource in storage.
      *
      * @param StoreDigitalProductRequest $request
+     *
      * @return DigitalProductResource
-     * @throws NotFoundHttpException
-     * @throws HttpException
+     *
+     * @throws NotFoundException
+     *
+     * @throws ServerErrorException
      */
     public function store(StoreDigitalProductRequest $request)
     {
@@ -41,12 +44,8 @@ class DigitalProductController extends Controller
 
         $entity = $request->validated();
 
-        // Find the product
-        $product = $this->productRepository->findById($entity['product_id']);
-
-        if (!$product) {
-            throw new NotFoundException('Product Not Found');
-        }
+        // Get the product from the request - See request class
+        $product = $request->input('product');
 
         // Extract the assets from the product request
         $assets = $entity['assets'];

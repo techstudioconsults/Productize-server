@@ -3,13 +3,14 @@
 namespace Tests\Feature;
 
 use App\Exceptions\UnAuthorizedException;
+use App\Models\Asset;
 use App\Models\DigitalProduct;
 use App\Models\Product;
-use App\Models\ProductResource;
 use App\Models\User;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
-use App\Repositories\ProductResourceRepository;
+use App\Repositories\AssetRepository;
+use App\Traits\SanctumAuthentication;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -18,62 +19,59 @@ use Tests\TestCase;
 
 class DigitalProductControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SanctumAuthentication;
 
     protected DigitalProductRepository $digitalProductRepository;
 
-    protected ProductResourceRepository $productResourceRepository;
+    protected AssetRepository $assetRepository;
 
     protected ProductRepository $productRepository;
 
-    public function testStore()
+    public function test_store()
     {
         // Create a user
         $user = User::factory()->create();
+
         $this->actingAs($user);
 
         Storage::fake('spaces');
 
+        $file_name = 'document.pdf';
+
         $product = Product::factory()->create([
-            'thumbnail' => 'path/to/thumbnail.jpg',
-            'cover_photos' => ['path/to/cover1.jpg', 'path/to/cover2.jpg'],
+            'user_id' => $user->id
         ]);
 
-        $file = UploadedFile::fake()->create('document.pdf', 2048);
+        $file = UploadedFile::fake()->create($file_name, 2048);
 
         $data = [
             'category' => 'Product',
-            'resources' => [$file],
+            'assets' => [$file],
             'product_id' => $product->id,
         ];
 
-        $digitalProduct = DigitalProduct::factory()->make(['product_id' => $product->id]);
-        $resource = ProductResource::factory()->make([
-            'product_id' => $product->id,
-            'name' => 'document.pdf',
-            'url' => 'path/to/document.pdf',
-            'mime_type' => 'application/pdf',
-            'size' => 102400, // 100KB
-            'extension' => 'pdf',
-        ]);
+        $response = $this->withoutExceptionHandling()->post(route('digitalProduct.store'), $data);
 
-        $response = $this->postJson('/api/digitalProducts', $data);
-
-        $response->assertStatus(201)
+        $response->assertCreated()
             ->assertJsonStructure([
                 'data' => [
                     'id',
                     'product' => ['id', 'thumbnail', 'cover_photos'],
-                    'resources' => [['id', 'name', 'url', 'mime_type', 'size', 'extension']],
+                    'assets' => [['id', 'name', 'url', 'mime_type', 'size', 'extension']],
                 ],
             ]);
+
         $this->assertDatabaseHas('digital_products', [
             'product_id' => $data['product_id'],
             'category' => $data['category'],
         ]);
+
+        $this->assertDatabaseHas('assets', [
+            'product_id' => $data['product_id'],
+        ]);
     }
 
-    public function testStoreProductNotFound()
+    public function test_store_product_not_found()
     {
         // Create a user
         $user = User::factory()->create();
@@ -85,24 +83,37 @@ class DigitalProductControllerTest extends TestCase
 
         $data = [
             'category' => 'Product',
-            'resources' => [$file],
+            'assets' => [$file],
             'product_id' => 'non-existent-id',
         ];
 
-        $response = $this->postJson('/api/digitalProducts', $data);
+        $response = $this->post(route('digitalProduct.store'), $data);
 
-        $response->assertStatus(422);
+        $response->assertNotFound();
+    }
+
+    public function test_store_unauthenticated()
+    {
+        $file = UploadedFile::fake()->create('document.pdf', 2048);
+
+        $data = [
+            'category' => 'Product',
+            'assets' => [$file],
+        ];
+
+        $response = $this->post(route('digitalProduct.store'), $data);
+
+        $response->assertUnauthorized();
     }
 
     public function test_show_unauthenticated()
     {
-        //create product
-        $product = Product::factory()->create();
+        $digitalProduct = DigitalProduct::factory()->create();
 
         $this->expectException(UnAuthorizedException::class);
 
         $this->withoutExceptionHandling()
-            ->get('api/digitalProducts/products/'.$product->id);
+            ->get(route('digitalProduct.show', ['digitalProduct' => $digitalProduct->id]));
     }
 
     public function test_show_not_found()
@@ -111,45 +122,46 @@ class DigitalProductControllerTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->actingAs($user, 'web')->withoutExceptionHandling()->get(route('digitalProduct.show', ['product' => '1234']));
+        $this->actingAs($user, 'web');
+
+        $this->withoutExceptionHandling()->get(route('digitalProduct.show', ['digitalProduct' => 1234]));
     }
 
-    public function testStoreWithInvalidData()
+    public function test_show_forbidden()
+    {
+        $this->actingAsRegularUser();
+
+        $digital_product = DigitalProduct::factory()->create();
+
+        $response = $this->get(route('digitalProduct.show', ['digitalProduct' => $digital_product->id]));
+
+        $response->assertForbidden();
+    }
+
+    public function test_show()
     {
         // Create a user
-        $user = User::factory()->create();
-        $this->actingAs($user);
+        $user = $this->actingAsRegularUser();
 
-        $data = [
-            'category' => 'Product',
-            'resources' => '',
-            'product_id' => '',
-        ];
+        $product = Product::factory()->create([
+            'user_id' => $user->id
+        ]);
 
-        $response = $this->postJson('/api/digitalProducts', $data);
+        $digital_product = DigitalProduct::factory()->create([
+            'product_id' => $product->id
+        ]);
 
-        $response->assertStatus(422);
+        $response = $this->withoutExceptionHandling()
+            ->get(route('digitalProduct.show', ['digitalProduct' => $digital_product->id]));
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['data' => ['id', 'category', 'product', 'assets']]);
     }
 
-    public function testCategories()
+    public function test_categories()
     {
-        $response = $this->getJson('/api/digitalProducts/categories');
+        $response = $this->get(route('digitalProduct.categories'));
 
-        $response->assertStatus(200);
+        $response->assertOk();
     }
-
-    // public function testShow()
-    // {
-    //       // Create a user
-    //       $user = User::factory()->create();
-    //       $this->actingAs($user);
-
-    //     $product = Product::factory()->create();
-    //     $digitalProduct = DigitalProduct::factory()->make(['product_id' => $product->id]);
-
-    //     $response = $this->getJson("/api/digitalProducts/products/{$product->id}");
-
-    //     $response->assertStatus(200)
-    //         ->assertJsonStructure(['data' => ['id', 'category', 'product_id']]);
-    // }
 }

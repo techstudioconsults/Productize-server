@@ -1,14 +1,6 @@
 <?php
 
 use App\Http\Controllers\UserController;
-use App\Models\Account;
-use App\Models\Product;
-use App\Models\User;
-use App\Notifications\PayoutCardAdded;
-use App\Notifications\ProductPublished;
-// use App\Notifications\FirstProductCreated;
-use App\Notifications\WelcomeNotification;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Route;
 
 Route::group([

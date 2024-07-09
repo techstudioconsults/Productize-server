@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
-use App\Models\ProductResource;
+use App\Models\Asset;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -16,38 +16,38 @@ use Str;
  *
  * @version 1.0
  *
- * @since 24-06-2024
+ * @since 06-07-2024
  *
- * Repository for ProductResource resource
+ * Repository for Asset resource
  */
-class ProductResourceRepository extends Repository
+class AssetRepository extends Repository
 {
-    const PRODUCT_DATA_PATH = 'resources';
+    const PRODUCT_DATA_PATH = 'assets';
 
     /**
-     * @author @Intuneteq
+     * @author
      *
-     * Create a new productResource with the provided entity.
+     * Create a new asset with the provided entity.
      *
-     * @param  array  $entity  An array of productResource data to be uploaded to cloud storage and stored.
-     * @return ProductResource The newly created productResource.
+     * @param  array  $entity  The asset data.
+     * @return Asset The newly created asset.
      */
-    public function create(array $entity): ProductResource
+    public function create(array $entity): Asset
     {
-        return ProductResource::create($entity);
+        return Asset::create($entity);
     }
 
     /**
-     * @author @Intuneteq
+     * @author
      *
-     * Query productResource based on the provided filter.
+     * Query asset based on the provided filter.
      *
      * @param  array  $filter  The filter criteria to apply.
-     * @return Builder The query builder for productResources.
+     * @return Builder The query builder for assets.
      */
     public function query(array $filter): Builder
     {
-        $query = ProductResource::query();
+        $query = Asset::query();
 
         // Apply date filter
         $this->applyDateFilters($query, $filter);
@@ -59,12 +59,12 @@ class ProductResourceRepository extends Repository
     }
 
     /**
-     * @author @Intuneteq
+     * @author
      *
-     * Find productResources based on the provided filter.
+     * Find assets based on the provided filter.
      *
      * @param  array|null  $filter  The filter criteria to apply (optional).
-     * @return Collection The collection of found productResources.
+     * @return Collection The collection of found assets.
      */
     public function find(?array $filter): ?Collection
     {
@@ -72,47 +72,47 @@ class ProductResourceRepository extends Repository
     }
 
     /**
-     * @author @Intuneteq
+     * @author
      *
-     * Find a productResource by their ID.
+     * Find a asset by their ID.
      *
-     * @param  string  $id  The ID of the productResource to find.
-     * @return ProductResource|null The found productResource instance, or null if not found.
+     * @param  string  $id  The ID of the asset to find.
+     * @return Asset|null The found asset instance, or null if not found.
      */
-    public function findById(string $id): ?ProductResource
+    public function findById(string $id): ?Asset
     {
-        return ProductResource::find($id);
+        return Asset::find($id);
     }
 
     /**
-     * @author @Intuneteq
+     * @author
      *
-     * Find a single productResource based on the provided filter.
+     * Find a single asset based on the provided filter.
      *
      * @param  array  $filter  The filter criteria to apply.
-     * @return ProductResource|null The found productResource instance, or null if not found.
+     * @return Asset|null The found asset instance, or null if not found.
      */
-    public function findOne(array $filter): ?ProductResource
+    public function findOne(array $filter): ?Asset
     {
-        return ProductResource::where($filter)->firstOr(function () {
+        return Asset::where($filter)->firstOr(function () {
             return null;
         });
     }
 
     /**
-     * @author @Intuneteq
+     * @author
      *
      * Update an entity in the database.
      *
-     * @param  Model  $entity  The productResource to be updated
+     * @param  Model  $entity  The asset to be updated
      * @param  array  $updates  The array of data containing the fields to be updated.
-     * @return ProductResource The updated productResource
+     * @return Asset The updated asset
      */
-    public function update(Model $entity, array $updates): ProductResource
+    public function update(Model $entity, array $updates): Asset
     {
-        // Ensure that the provided entity is an instance of ProductResource
-        if (! $entity instanceof ProductResource) {
-            throw new ModelCastException('ProductResource', get_class($entity));
+        // Ensure that the provided entity is an instance of Asset
+        if (! $entity instanceof Asset) {
+            throw new ModelCastException('Asset', get_class($entity));
         }
 
         $entity->update($updates);
@@ -132,7 +132,7 @@ class ProductResourceRepository extends Repository
      *
      * @throws BadRequestException If any of the provided data files fail validation.
      */
-    public function uploadResources($data, string $product_type): array
+    public function uploadAssets($data, string $product_type): array
     {
         // Each item in the 'data' array must be a file
         if (! $this->isValidated($data, ['required|file'])) {

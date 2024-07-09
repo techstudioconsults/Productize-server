@@ -27,13 +27,13 @@ class ExternalProductResource extends JsonResource
             'tags' => $this->tags,
             'description' => $this->description,
             'status' => $this->status,
-            'resources' => $this->resources->map(function ($resource) {
+            'assets' => $this->assets->map(function ($asset) {
                 return [
-                    'id' => $resource->id,
-                    'name' => $resource->name,
-                    'mime_type' => $resource->mime_type,
-                    'size' => round($resource->size / 1048576, 3).'MB', // Convert byte to MB
-                    'extension' => $resource->extension,
+                    'id' => $asset->id,
+                    'name' => $asset->name,
+                    'mime_type' => $asset->mime_type,
+                    'size' => round($asset->size / 1048576, 3).'MB', // Convert byte to MB
+                    'extension' => $asset->extension,
                 ];
             }),
             'avg_rating' => (int) $this->reviews()->avg('rating'),

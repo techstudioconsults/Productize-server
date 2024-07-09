@@ -4,11 +4,13 @@ namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
 
+use App\Models\Asset;
 use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Policies\AssetPolicy;
 use App\Policies\CartPolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\OrderPolicy;
@@ -29,6 +31,7 @@ class AuthServiceProvider extends ServiceProvider
         Customer::class => CustomerPolicy::class,
         Order::class => OrderPolicy::class,
         Cart::class => CartPolicy::class,
+        Asset::class => AssetPolicy::class,
     ];
 
     /**

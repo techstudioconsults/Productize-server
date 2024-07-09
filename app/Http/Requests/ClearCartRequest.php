@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\UnprocessableException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ClearCartRequest extends FormRequest
@@ -29,5 +31,10 @@ class ClearCartRequest extends FormRequest
             'products.*.product_slug' => 'required|string',
             'products.*.quantity' => 'required|integer|min:1',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_resources', function (Blueprint $table) {
+        Schema::create('assets', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\Product::class, 'product_id')->cascadeOnDelete();
             $table->string('url'); // The product url - upload to cloud first.
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_resources');
+        Schema::dropIfExists('assets');
     }
 };

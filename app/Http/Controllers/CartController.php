@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @author @Intuneteq Tobi Olanitori
- *
- * @version 1.0
- *
- * @since 25-05-2024
- */
-
 namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
@@ -27,6 +19,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 25-05-2024
+ *
  * Route handler methods for Cart resource
  */
 class CartController extends Controller
@@ -166,9 +164,6 @@ class CartController extends Controller
 
         if ($recipient_email) {
             $recipient = $this->userRepository->firstOrCreate($recipient_email, $recipient_name);
-
-            // Send the Gift alert
-            // Mail::to($recipient)->send(new GiftAlert($recipient));
         }
 
         // Prepare products for the paystack transaction

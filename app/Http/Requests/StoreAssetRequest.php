@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\SkillSellingCategory;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnprocessableException;
@@ -10,9 +9,8 @@ use App\Models\Product;
 use Auth;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
-class StoreSkillSellingRequest extends FormRequest
+class StoreAssetRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -51,12 +49,7 @@ class StoreSkillSellingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category' => ['required', new Enum(SkillSellingCategory::class)],
-            'level' => 'required|string',
-            'availability' => 'required|string',
-            'link' => 'required|string',
-            'assets' => 'required',
-            'assets.*' => 'required|file',
+            'asset' => 'required|file',
             'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }

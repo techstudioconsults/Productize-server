@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Exceptions\UnAuthorizedException;
-use App\Models\Asset;
 use App\Models\DigitalProduct;
 use App\Models\Product;
 use App\Models\User;

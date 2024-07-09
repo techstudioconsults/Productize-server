@@ -43,8 +43,6 @@ class SkillSellingController extends Controller
      *
      * @return SkillSellingResource
      *
-     * @throws NotFoundException
-     *
      * @throws ServerErrorException
      */
     public function store(StoreSkillSellingRequest $request)
@@ -53,12 +51,8 @@ class SkillSellingController extends Controller
 
         $entity = $request->validated();
 
-        // Find the product
-        $product = $this->productRepository->findById($entity['product_id']);
-
-        if (!$product) {
-            throw new NotFoundException('Product Not Found');
-        }
+        // Get the product from the request - See request class
+        $product = $request->input('product');
 
         // Extract the assets from the product request
         $assets = $entity['assets'];
@@ -94,13 +88,24 @@ class SkillSellingController extends Controller
     }
 
     /**
-     * Retrieve the specified skill selling resource.
+     * Retrieve the specified Skill selling product.
+     *
+     * @param SkillSelling $skillselling
+     *
+     * @return SkillsellingResource
+     */
+    public function show(SkillSelling $skillSelling)
+    {
+        return new SkillSellingResource($skillSelling);
+    }
+
+    /**
+     * Retrieve the specified skill selling resource by its product id.
      *
      * @param Product $product
      * @return SkillSellingResource
-     * @throws NotFoundHttpException
      */
-    public function show(Product $product)
+    public function product(Product $product)
     {
         $skill_selling = $this->skillSellingRepository->findOne(['product_id' => $product->id]);
 

@@ -82,7 +82,7 @@ class DigitalProductController extends Controller
     /**
      * Retrieve the specified digital product.
      *
-     * @param Product $product
+     * @param DigitalProduct $digitalProduct
      *
      * @return DigitalProductResource
      */

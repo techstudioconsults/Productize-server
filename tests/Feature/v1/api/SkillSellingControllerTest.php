@@ -16,50 +16,181 @@ use App\Http\Resources\SkillSellingResource;
 use App\Models\Product;
 use App\Models\SkillSelling;
 use App\Models\User;
+use App\Traits\SanctumAuthentication;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Storage;
 use Tests\TestCase;
 
 class SkillSellingControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SanctumAuthentication;
 
-    // public function test_storeSkillSelling(): void
-    // {
-    //     // Create a user
-    //     $user = User::factory()->create();
-    //     $this->actingAs($user);
-
-    //     //create product
-    //     $product = Product::factory()->create();
-
-    //     // Generate new data for creating the skillselling
-    //     $skillsellingData = [
-    //         'level' => 'high',
-    //         'availability' => 'yes',
-    //         'category' => 'Product',
-    //         'link' => 'www.github.com',
-    //         'product_id' => $product->id,
-    //     ];
-
-    //     // Send a POST request to store the skillselling
-    //     $response = $this->post('api/skillSellings/', $skillsellingData);
-
-    //     // Assert that the request was successful (status code 201)
-    //     $response->assertStatus(201);
-
-    //     // Assert that the skillselling was stored in the database with the provided data
-    //     $this->assertDatabaseHas('skill_sellings', [
-    //         'level' => $skillsellingData['level'],
-    //         'availability' => $skillsellingData['availability'],
-    //         'product_id' => $skillsellingData['product_id'],
-    //         'link' => $skillsellingData['link'],
-    //     ]);
-    // }
-
-    public function test_updateSkillSelling(): void
+    public function test_store(): void
     {
+        $user = $this->actingAsRegularUser();
 
+        Storage::fake('spaces');
+
+        $file_name = 'document.pdf';
+
+        $product = Product::factory()->create([
+            'user_id' => $user->id
+        ]);
+
+        $file = UploadedFile::fake()->create($file_name, 2048);
+
+        $data = [
+            'category' => 'Product',
+            'assets' => [$file],
+            'product_id' => $product->id,
+            'level' => 'high',
+            'availability' => 'yes',
+            'category' => 'Product',
+            'link' => 'www.github.com',
+        ];
+
+        $response = $this->withoutExceptionHandling()->post(route('skillSelling.store'), $data);
+
+        $response->assertCreated()
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'level',
+                    'availability',
+                    'category',
+                    'link',
+                    'created_at',
+                    'product' => ['id', 'thumbnail', 'cover_photos'],
+                    'assets' => [['id', 'name', 'url', 'mime_type', 'size', 'extension']],
+                ],
+            ]);
+
+        $this->assertDatabaseHas('skill_sellings', [
+            'product_id' => $data['product_id'],
+            'category' => $data['category'],
+        ]);
+
+        $this->assertDatabaseHas('assets', [
+            'product_id' => $data['product_id'],
+        ]);
+    }
+
+    public function test_store_product_not_found()
+    {
+        $this->actingAsRegularUser();
+
+        Storage::fake('spaces');
+
+        $file = UploadedFile::fake()->create('document.pdf', 2048);
+
+        $data = [
+            'category' => 'Product',
+            'assets' => [$file],
+            'product_id' => 'non-existent-id',
+            'level' => 'high',
+            'availability' => 'yes',
+            'category' => 'Product',
+            'link' => 'www.github.com',
+        ];
+
+        $response = $this->post(route('skillSelling.store'), $data);
+
+        $response->assertNotFound();
+    }
+
+    public function test_store_unauthenticated()
+    {
+        $file = UploadedFile::fake()->create('document.pdf', 2048);
+
+        $data = [
+            'category' => 'Product',
+            'assets' => [$file],
+        ];
+
+        $response = $this->post(route('skillSelling.store'), $data);
+
+        $response->assertUnauthorized();
+    }
+
+    public function test_store_forbidden()
+    {
+        $this->actingAsRegularUser();
+
+        $product = Product::factory()->create(); // create a product for another user
+
+        $data = [
+            'product_id' => $product->id
+        ];
+
+        $response = $this->post(route('skillSelling.store'), $data);
+
+        $response->assertForbidden();
+    }
+
+
+    public function test_show(): void
+    {
+        // Create a user
+        $user = $this->actingAsRegularUser();
+
+        //create product
+        $product = Product::factory()->create(
+            ['user_id' => $user->id]
+        );
+
+        // Create a skillselling
+        $skillSelling = SkillSelling::factory()->create([
+            'level' => 'high',
+            'availability' => 'yes',
+            'category' => 'Product',
+            'link' => 'www.github.com',
+            'product_id' => $product->id,
+        ]);
+
+        // Invoke the show method
+        $response = $this->withoutExceptionHandling()->get(route('skillSelling.show', ['skillSelling' => $skillSelling->id]));
+
+        $expected_json = SkillSellingResource::make($skillSelling)->response()->getData(true);
+
+        $response->assertOk()->assertJson($expected_json, true);
+    }
+
+    public function test_show_unauthenticated()
+    {
+        $skillSelling = SkillSelling::factory()->create();
+
+        $this->expectException(UnAuthorizedException::class);
+
+        $this->withoutExceptionHandling()
+            ->get(route('skillSelling.show', ['skillSelling' => $skillSelling->id]));
+    }
+
+    public function test_show_not_found()
+    {
+        $this->expectException(ModelNotFoundException::class);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'web');
+
+        $this->withoutExceptionHandling()->get(route('skillSelling.show', ['skillSelling' => 1234]));
+    }
+
+    public function test_show_forbidden()
+    {
+        $this->actingAsRegularUser();
+
+        $skill_selling = SkillSelling::factory()->create();
+
+        $response = $this->get(route('skillSelling.show', ['skillSelling' => $skill_selling->id]));
+
+        $response->assertForbidden();
+    }
+
+    public function test_update(): void
+    {
         // Create a user
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -84,7 +215,7 @@ class SkillSellingControllerTest extends TestCase
         ];
 
         // send a PUT request to update the user
-        $response = $this->put('api/skillSellings/'.$skillSellingData->id, $newSkillSellingData);
+        $response = $this->put(route('skillSelling.update', ['skillSelling' => $skillSellingData->id]), $newSkillSellingData);
 
         // Assert that the request was successful (status code 200)
         $response->assertStatus(200);
@@ -97,71 +228,7 @@ class SkillSellingControllerTest extends TestCase
         ]);
     }
 
-    public function test_show_unauthenticated()
-    {
-        //create product
-        $product = Product::factory()->create();
-
-        $this->expectException(UnAuthorizedException::class);
-
-        $this->withoutExceptionHandling()
-            ->get('api/skillSellings/products/'.$product->id);
-    }
-
-    public function test_show(): void
-    {
-        // Create a user
-        $user = User::factory()->create();
-
-        //create product
-        $product = Product::factory()->create();
-
-        // Create a skillselling
-        $skillSelling = SkillSelling::factory()->create([
-            'level' => 'high',
-            'availability' => 'yes',
-            'category' => 'Product',
-            'link' => 'www.github.com',
-            'product_id' => $product->id,
-        ]);
-
-        // Invoke the show method
-        $response = $this->actingAs($user, 'web')->get('api/skillSellings/products/'.$product->id);
-
-        $expected_json = SkillSellingResource::make($skillSelling)->response()->getData(true);
-
-        $response->assertOk()->assertJson($expected_json, true);
-    }
-
-    public function test_show_not_found()
-    {
-        $this->expectException(ModelNotFoundException::class);
-
-        $user = User::factory()->create();
-
-        $this->actingAs($user, 'web')->withoutExceptionHandling()->get(route('skillSelling.show', ['product' => '1234']));
-    }
-
-    public function testStoreWithInvalidData()
-    {
-        // Create a user
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $data = [
-            'category' => 'Invalid Category',
-            'level' => '',
-            'availability' => '',
-            'link' => 'not-a-url',
-            'product_id' => 'non-existent-id',
-        ];
-
-        $response = $this->postJson('/api/skillSellings', $data);
-
-        $response->assertStatus(422);
-    }
-
-    public function testUpdateWithInvalidData()
+    public function test_update_with_invalid_data()
     {
         // Create a user
         $user = User::factory()->create();
@@ -175,7 +242,7 @@ class SkillSellingControllerTest extends TestCase
             'link' => 'not-a-url',
         ];
 
-        $response = $this->putJson("/api/skillSellings/{$skillSelling->id}", $data);
+        $response = $this->put(route('skillSelling.update', ['skillSelling' => $skillSelling->id]), $data);
 
         $response->assertStatus(422);
     }

@@ -67,7 +67,7 @@ class DigitalProductController extends Controller
         $digital_product = $this->digitalProductRepository->findOne(['product_id' => $product->id]);
 
         if (! $digital_product) {
-            throw new NotFoundException('Resource Not Foud');
+            throw new NotFoundException('Resource Not Found');
         }
 
         return new DigitalProductResource($digital_product);

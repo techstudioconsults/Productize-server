@@ -63,9 +63,6 @@ class CommunityControllerTest extends TestCase
 
         // Assert that the request failed (status code 422)
         $response->assertStatus(422);
-
-        // Assert that the validation errors are returned
-        $response->assertJsonValidationErrors('email');
     }
 
     public function test_it_fails_to_store_a_community_member_with_empty_email()
@@ -78,8 +75,5 @@ class CommunityControllerTest extends TestCase
 
         // Assert that the request failed (status code 422)
         $response->assertStatus(422);
-
-        // Assert that the validation errors are returned
-        $response->assertJsonValidationErrors('email');
     }
 }

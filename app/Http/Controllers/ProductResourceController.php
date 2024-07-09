@@ -37,6 +37,7 @@ class ProductResourceController extends Controller
         $path = Storage::putFileAs("$product->product_type/".ProductResourceRepository::PRODUCT_DATA_PATH, $resource, $name);
 
         $entity = [
+            'product_id' => $product->id,
             'name' => str_replace(' ', '', $resource->getClientOriginalName()),
             'url' => config('filesystems.disks.spaces.cdn_endpoint').'/'.$path,
             'size' => $resource->getSize(),

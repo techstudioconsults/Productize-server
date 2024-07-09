@@ -11,6 +11,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Exceptions\UnprocessableException;
+use Illuminate\Contracts\Validation\Validator;
 
 class StorecommunityRequest extends FormRequest
 {
@@ -32,5 +34,10 @@ class StorecommunityRequest extends FormRequest
         return [
             'email' => 'required|email|unique:communities',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

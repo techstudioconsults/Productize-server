@@ -10,8 +10,9 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\UnprocessableException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules;
 
 class UpdateFaqRequest extends FormRequest
 {
@@ -35,5 +36,11 @@ class UpdateFaqRequest extends FormRequest
             'question' => 'required|string',
             'answer' => 'required|string',
         ];
+    }
+
+    
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

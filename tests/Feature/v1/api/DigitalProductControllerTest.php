@@ -102,7 +102,7 @@ class DigitalProductControllerTest extends TestCase
         $this->expectException(UnAuthorizedException::class);
 
         $this->withoutExceptionHandling()
-            ->get('api/digitalProducts/products/'.$product->id);
+            ->get('api/digitalProducts/products/' . $product->id);
     }
 
     public function test_show_not_found()
@@ -138,18 +138,56 @@ class DigitalProductControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
-    // public function testShow()
-    // {
-    //       // Create a user
-    //       $user = User::factory()->create();
-    //       $this->actingAs($user);
 
-    //     $product = Product::factory()->create();
-    //     $digitalProduct = DigitalProduct::factory()->make(['product_id' => $product->id]);
+    public function test_show_digital_product()
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create([
+            'thumbnail' => 'path/to/thumbnail.jpg',
+            'cover_photos' => ['path/to/cover1.jpg', 'path/to/cover2.jpg'],
+        ]);
+        $digitalProduct = DigitalProduct::factory()->create(['product_id' => $product->id]);
+        ProductResource::factory()->count(2)->create([
+            'product_id' => $product->id,
+        ]);
 
-    //     $response = $this->getJson("/api/digitalProducts/products/{$product->id}");
+        $response = $this->actingAs($user)
+            ->getJson("/api/digitalProducts/products/{$product->id}");
 
-    //     $response->assertStatus(200)
-    //         ->assertJsonStructure(['data' => ['id', 'category', 'product_id']]);
-    // }
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'product' => [
+                        'id',
+                        'thumbnail',
+                        'cover_photos',
+                    ],
+                    'resources' => [
+                        '*' => [
+                            'id',
+                            'name',
+                            'url',
+                            'mime_type',
+                            'size',
+                            'extension',
+                        ]
+                    ],
+                ]
+            ]);
+    }
+
+    public function test_show_non_existent_digital_product()
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->getJson("/api/digitalProducts/products/{$product->id}");
+
+        $response->assertStatus(404)
+            ->assertJson([
+                'message' => 'Resource Not Found'
+            ]);
+    }
 }

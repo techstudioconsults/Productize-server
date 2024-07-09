@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\DigitalProduct;
 use Illuminate\Database\Seeder;
 
 class DigitalProductSeeder extends Seeder
@@ -11,6 +12,6 @@ class DigitalProductSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        DigitalProduct::factory()->create(5);
     }
 }

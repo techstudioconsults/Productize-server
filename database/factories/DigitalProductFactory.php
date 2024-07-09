@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DigitalProductCategory;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,7 +21,9 @@ class DigitalProductFactory extends Factory
         return [
             'id' => $this->faker->uuid(),
             'product_id' => Product::factory(),
-            'category' => $this->faker->randomElement(['EBOOK', 'VIDEO', 'AUDIO']),
+            'category' => DigitalProductCategory::Product->value,
+            'created_at' => $this->faker->dateTimeBetween('-1 year','now'),
+            'updated_at' => $this->faker->dateTimeBetween('-1 year', 'now')
         ];
     }
 }

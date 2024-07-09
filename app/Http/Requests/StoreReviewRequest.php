@@ -10,6 +10,8 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\UnprocessableException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreReviewRequest extends FormRequest
@@ -33,5 +35,11 @@ class StoreReviewRequest extends FormRequest
             'rating' => 'required|integer|between:1,5',
             'comment' => 'required|string',
         ];
+    }
+
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

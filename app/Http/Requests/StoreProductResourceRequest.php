@@ -26,4 +26,5 @@ class StoreProductResourceRequest extends FormRequest
             'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }
+    
 }

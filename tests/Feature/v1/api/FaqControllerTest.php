@@ -120,8 +120,7 @@ class FaqControllerTest extends TestCase
 
         $response = $this->putJson("api/faqs/{$faq->id}", $newFaqData);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['title', 'question', 'answer']);
+        $response->assertStatus(422);
     }
 
     public function test_updateFaq_nonExistentFaq(): void

@@ -61,7 +61,7 @@ class SkillSellingRepository extends Repository
      * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found skillSellings.
      */
-    public function find(?array $filter): ?Collection
+    public function find(?array $filter = []): ?Collection
     {
         return $this->query($filter ?? [])->get();
     }
@@ -106,7 +106,7 @@ class SkillSellingRepository extends Repository
     public function update(Model $entity, array $updates): SkillSelling
     {
         // Ensure that the provided entity is an instance of SkillSelling
-        if (! $entity instanceof SkillSelling) {
+        if (!$entity instanceof SkillSelling) {
             throw new ModelCastException('SkillSelling', get_class($entity));
         }
 

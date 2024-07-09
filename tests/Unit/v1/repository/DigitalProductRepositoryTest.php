@@ -100,7 +100,7 @@ class DigitalProductRepositoryTest extends TestCase
     public function test_findOne_returns_null_for_no_match()
     {
         $filter = ['product_id' => 'invalid-id'];
-        
+
         $foundProduct = $this->digitalProductRepository->findOne($filter);
 
         $this->assertNull($foundProduct);

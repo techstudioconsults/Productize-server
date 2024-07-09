@@ -14,6 +14,8 @@ use App\Exceptions\ModelCastException;
 use App\Models\Product;
 use App\Models\SkillSelling;
 use App\Repositories\SkillSellingRepository;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,7 +31,7 @@ class SkillSellingRepositoryTest extends TestCase
         $this->skillSellingRepository = new SkillSellingRepository();
     }
 
-    public function testCreateSkillSelling()
+    public function test_create()
     {
         $product = Product::factory()->create();
 
@@ -47,7 +49,52 @@ class SkillSellingRepositoryTest extends TestCase
         $this->assertEquals($data['level'], $result->level);
         $this->assertEquals($data['availability'], $result->availability);
         $this->assertEquals($data['link'], $result->link);
+    }
 
+
+    public function test_query()
+    {
+        SkillSelling::factory()->count(5)->create(['created_at' => now()->subDays(5)]);
+        SkillSelling::factory()->count(5)->create(['created_at' => now()->subDays(10)]);
+
+        $filter = [
+            'start_date' => now()->subDays(5)->toDateString(),
+            'end_date' => now()->toDateString()
+        ];
+
+        $query = $this->skillSellingRepository->query($filter);
+
+        $this->assertInstanceOf(Builder::class, $query);
+        $this->assertCount(5, $query->get());
+    }
+
+    public function test_query_with_non_existent_skillSelling_avaliability()
+    {
+        SkillSelling::factory()->count(3)->create();
+
+        $query = $this->skillSellingRepository->query(['availability' => 'General Products']);
+        $results = $query->get();
+
+        $this->assertCount(0, $results);
+    }
+
+    public function test_find()
+    {
+        SkillSelling::factory()->count(5)->create();
+
+        $products = $this->skillSellingRepository->find();
+
+        $this->assertInstanceOf(Collection::class, $products);
+        $this->assertCount(5, $products);
+    }
+
+    public function test_find_by_id()
+    {
+        $product = SkillSelling::factory()->create();
+        $foundProduct = $this->skillSellingRepository->findById($product->id);
+
+        $this->assertInstanceOf(SkillSelling::class, $foundProduct);
+        $this->assertEquals($product->id, $foundProduct->id);
     }
 
     public function test_findbyid_return_null_for_when_not_found(): void
@@ -57,18 +104,34 @@ class SkillSellingRepositoryTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function testFindById()
+    public function test_findOne()
     {
-        $skillSelling = SkillSelling::factory()->create();
+        $product = Product::factory()->create();
 
-        $result = $this->skillSellingRepository->findById($skillSelling->id);
+        $expected = SkillSelling::factory()->create([
+            'product_id' => $product->id
+        ]);
+
+        $filter = ['product_id' => $product->id];
+
+        $result = $this->skillSellingRepository->findOne($filter);
 
         $this->assertInstanceOf(SkillSelling::class, $result);
-        $this->assertEquals($skillSelling->id, $result->id);
 
+        $this->assertEquals($product->id, $result->product->id);
+        $this->assertEquals($expected->id, $result->id);
     }
 
-    public function testUpdate()
+    public function test_findOne_returns_null_for_no_match()
+    {
+        $filter = ['product_id' => 'invalid-id'];
+
+        $foundProduct = $this->skillSellingRepository->findOne($filter);
+
+        $this->assertNull($foundProduct);
+    }
+
+    public function test_update()
     {
         $skillSelling = SkillSelling::factory()->create();
 
@@ -77,29 +140,6 @@ class SkillSellingRepositoryTest extends TestCase
 
         $this->assertEquals($skillSelling->id, $result->id);
         $this->assertEquals($updates['availability'], $result->availability);
-    }
-
-    public function testFindOne()
-    {
-        SkillSelling::factory()->count(3)->create();
-
-        $skillSelling = SkillSelling::factory()->create(['level' => 'medium']);
-
-        $result = $this->skillSellingRepository->findOne(['level' => 'medium']);
-
-        $this->assertInstanceOf(SkillSelling::class, $result);
-        $this->assertEquals($skillSelling->id, $result->id);
-    }
-
-    public function testQuery()
-    {
-        SkillSelling::factory()->count(5)->create();
-
-        $filter = ['level' => 'high'];
-        $query = $this->skillSellingRepository->query($filter);
-
-        // $this->assertInstanceOf(SkillSelling::class, $query);
-        $this->assertEquals(5, $query->count());
     }
 
     public function test_update_with_non_skillselling_model_throws_model_cast_exception(): void
@@ -116,27 +156,5 @@ class SkillSellingRepositoryTest extends TestCase
 
         // Attempt to update skillselling instance using the product repository (should throw exception)
         $this->skillSellingRepository->update($product, $updates);
-    }
-
-    public function testQueryWithNonExistentSkillSellingAvaliability()
-    {
-        SkillSelling::factory()->count(3)->create();
-
-        $query = $this->skillSellingRepository->query(['availability' => 'General Products']);
-        $results = $query->get();
-
-        $this->assertCount(0, $results);
-    }
-
-    public function testQueryAndFind()
-    {
-        SkillSelling::factory()->count(5)->create(['level' => 'small']);
-        SkillSelling::factory()->count(3)->create();
-
-        $query = $this->skillSellingRepository->query(['level' => 'small']);
-        $this->assertEquals(5, $query->count());
-
-        $faqs = $this->skillSellingRepository->find(['level' => 'high']);
-        $this->assertCount(3, $faqs);
     }
 }

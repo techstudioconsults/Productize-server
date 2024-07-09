@@ -22,8 +22,6 @@ class DigitalProductFactory extends Factory
             'id' => $this->faker->uuid(),
             'product_id' => Product::factory(),
             'category' => DigitalProductCategory::Product->value,
-            'created_at' => $this->faker->dateTimeBetween('-1 year','now'),
-            'updated_at' => $this->faker->dateTimeBetween('-1 year', 'now')
         ];
     }
 }

@@ -148,11 +148,11 @@ class AssetControllerTest extends TestCase
         $user = $this->actingAsRegularUser();
 
         $product = Product::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $asset = Asset::factory()->create([
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         $response = $this->withoutExceptionHandling()->delete(route('assets.delete', ['asset' => $asset->id]));
@@ -169,7 +169,7 @@ class AssetControllerTest extends TestCase
         $product = Product::factory()->create();
 
         $asset = Asset::factory()->create([
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         $response = $this->delete(route('assets.delete', ['asset' => $asset->id]));
@@ -182,7 +182,7 @@ class AssetControllerTest extends TestCase
         $product = Product::factory()->create();
 
         $asset = Asset::factory()->create([
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         $response = $this->delete(route('assets.delete', ['asset' => $asset->id]));

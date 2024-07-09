@@ -18,7 +18,6 @@ use App\Repositories\UserRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class CartControllerTest extends TestCase
@@ -546,7 +545,7 @@ class CartControllerTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => $recipient_email,
-            'full_name' => $recipient_name
+            'full_name' => $recipient_name,
         ]);
     }
 
@@ -588,7 +587,7 @@ class CartControllerTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => $recipient_email,
-            'full_name' => $recipient_name
+            'full_name' => $recipient_name,
         ]);
     }
 

@@ -11,8 +11,8 @@ use App\Http\Resources\SkillSellingResource;
 use App\Models\Product;
 use App\Models\SkillSelling;
 use App\Notifications\ProductCreated;
-use App\Repositories\ProductRepository;
 use App\Repositories\AssetRepository;
+use App\Repositories\ProductRepository;
 use App\Repositories\SkillSellingRepository;
 use Auth;
 use DB;
@@ -32,14 +32,11 @@ class SkillSellingController extends Controller
         protected SkillSellingRepository $skillSellingRepository,
         protected AssetRepository $assetRepository,
         protected ProductRepository $productRepository,
-    ) {
-    }
-
+    ) {}
 
     /**
      * Store a newly created skill selling resource in storage.
      *
-     * @param StoreSkillSellingRequest $request
      *
      * @return SkillSellingResource
      *
@@ -90,8 +87,7 @@ class SkillSellingController extends Controller
     /**
      * Retrieve the specified Skill selling product.
      *
-     * @param SkillSelling $skillselling
-     *
+     * @param  SkillSelling  $skillselling
      * @return SkillsellingResource
      */
     public function show(SkillSelling $skillSelling)
@@ -102,27 +98,23 @@ class SkillSellingController extends Controller
     /**
      * Retrieve the specified skill selling resource by its product id.
      *
-     * @param Product $product
      * @return SkillSellingResource
      */
     public function product(Product $product)
     {
         $skill_selling = $this->skillSellingRepository->findOne(['product_id' => $product->id]);
 
-        if (!$skill_selling) {
+        if (! $skill_selling) {
             throw new NotFoundException('Resource Not Found');
         }
 
         return new SkillSellingResource($skill_selling);
     }
 
-
     /**
      * Update the specified skill selling resource in storage.
      *
-     * @param UpdateSkillSellingRequest $request
      *
-     * @param SkillSelling $skillSelling
      *
      * @return SkillSellingResource
      */

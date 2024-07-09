@@ -36,7 +36,7 @@ class SkillSellingControllerTest extends TestCase
         $file_name = 'document.pdf';
 
         $product = Product::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $file = UploadedFile::fake()->create($file_name, 2048);
@@ -121,14 +121,13 @@ class SkillSellingControllerTest extends TestCase
         $product = Product::factory()->create(); // create a product for another user
 
         $data = [
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ];
 
         $response = $this->post(route('skillSelling.store'), $data);
 
         $response->assertForbidden();
     }
-
 
     public function test_show(): void
     {

@@ -6,9 +6,9 @@ use App\Exceptions\UnAuthorizedException;
 use App\Models\DigitalProduct;
 use App\Models\Product;
 use App\Models\User;
+use App\Repositories\AssetRepository;
 use App\Repositories\DigitalProductRepository;
 use App\Repositories\ProductRepository;
-use App\Repositories\AssetRepository;
 use App\Traits\SanctumAuthentication;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,7 +38,7 @@ class DigitalProductControllerTest extends TestCase
         $file_name = 'document.pdf';
 
         $product = Product::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $file = UploadedFile::fake()->create($file_name, 2048);
@@ -143,11 +143,11 @@ class DigitalProductControllerTest extends TestCase
         $user = $this->actingAsRegularUser();
 
         $product = Product::factory()->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $digital_product = DigitalProduct::factory()->create([
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         $response = $this->withoutExceptionHandling()

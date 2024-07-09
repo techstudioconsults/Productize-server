@@ -9,7 +9,6 @@ use App\Models\Asset;
 use App\Models\Product;
 use App\Repositories\AssetRepository;
 use App\Repositories\ProductRepository;
-use GuzzleHttp\Exception\ServerException;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Log;
 use Storage;
@@ -29,13 +28,11 @@ class AssetController extends Controller
     public function __construct(
         protected AssetRepository $assetRepository,
         protected ProductRepository $productRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Store a newly created asset in storage.
      *
-     * @param StoreAssetRequest $request
      * @return AssetResource
      */
     public function store(StoreAssetRequest $request)
@@ -49,19 +46,19 @@ class AssetController extends Controller
         $asset = $entity['asset'];
 
         // Name the asset using uuid string
-        $name = Str::uuid() . '.' . $asset->extension(); // generate a uuid - save as file name in cloud
+        $name = Str::uuid().'.'.$asset->extension(); // generate a uuid - save as file name in cloud
 
         // Upload the asset
-        $path = Storage::putFileAs("$product->product_type/" . AssetRepository::PRODUCT_DATA_PATH, $asset, $name);
+        $path = Storage::putFileAs("$product->product_type/".AssetRepository::PRODUCT_DATA_PATH, $asset, $name);
 
         // Arrange the data for storage
         $entity = [
             'name' => str_replace(' ', '', $asset->getClientOriginalName()),
-            'url' => config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path,
+            'url' => config('filesystems.disks.spaces.cdn_endpoint').'/'.$path,
             'size' => $asset->getSize(),
             'mime_type' => $asset->getMimeType(),
             'extension' => $asset->extension(),
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ];
 
         $asset = $this->assetRepository->create($entity);
@@ -72,7 +69,7 @@ class AssetController extends Controller
     /**
      * Retrieve a list of the assets for a given product.
      *
-     * @param Product $product Product associated with the Asset
+     * @param  Product  $product  Product associated with the Asset
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection<Asset>
      */
     public function product(Product $product)
@@ -85,7 +82,6 @@ class AssetController extends Controller
     /**
      * Remove the specified asset from storage.
      *
-     * @param Asset $asset
      * @return JsonResource
      */
     public function delete(Asset $asset)
@@ -93,16 +89,16 @@ class AssetController extends Controller
         try {
             $isDeleted = $asset->forceDelete();
 
-            if (!$isDeleted) {
-                throw new ServerErrorException("Asset Not Deleted");
+            if (! $isDeleted) {
+                throw new ServerErrorException('Asset Not Deleted');
             }
 
             return new JsonResource([
                 'message' => 'Asset Deleted',
             ]);
         } catch (\Exception $e) {
-            Log::error("Error deleting asset: " . $e->getMessage());
-            throw new ServerErrorException("Asset Not Deleted");
+            Log::error('Error deleting asset: '.$e->getMessage());
+            throw new ServerErrorException('Asset Not Deleted');
         }
     }
 }

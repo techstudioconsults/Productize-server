@@ -106,7 +106,7 @@ class SkillSellingRepository extends Repository
     public function update(Model $entity, array $updates): SkillSelling
     {
         // Ensure that the provided entity is an instance of SkillSelling
-        if (!$entity instanceof SkillSelling) {
+        if (! $entity instanceof SkillSelling) {
             throw new ModelCastException('SkillSelling', get_class($entity));
         }
 

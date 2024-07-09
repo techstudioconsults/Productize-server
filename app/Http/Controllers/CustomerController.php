@@ -24,8 +24,7 @@ class CustomerController extends Controller
 {
     public function __construct(
         protected CustomerRepository $customerRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori

@@ -30,7 +30,6 @@ class AssetRepository extends Repository
      * Create a new asset with the provided entity.
      *
      * @param  array  $entity  The asset data.
-     *
      * @return Asset The newly created asset.
      */
     public function create(array $entity): Asset
@@ -112,11 +111,12 @@ class AssetRepository extends Repository
     public function update(Model $entity, array $updates): Asset
     {
         // Ensure that the provided entity is an instance of Asset
-        if (!$entity instanceof Asset) {
+        if (! $entity instanceof Asset) {
             throw new ModelCastException('Asset', get_class($entity));
         }
 
         $entity->update($updates);
+
         return $entity;
     }
 
@@ -135,18 +135,18 @@ class AssetRepository extends Repository
     public function uploadAssets($data, string $product_type): array
     {
         // Each item in the 'data' array must be a file
-        if (!$this->isValidated($data, ['required|file'])) {
+        if (! $this->isValidated($data, ['required|file'])) {
             throw new BadRequestException($this->getValidator()->errors()->first());
         }
 
         return collect($data)->map(function ($file) use ($product_type) {
-            $name = Str::uuid() . '.' . $file->extension(); // geneate a uuid
+            $name = Str::uuid().'.'.$file->extension(); // geneate a uuid
 
-            $path = Storage::putFileAs("$product_type/" . self::PRODUCT_DATA_PATH, $file, $name);
+            $path = Storage::putFileAs("$product_type/".self::PRODUCT_DATA_PATH, $file, $name);
 
             return [
                 'name' => str_replace(' ', '', $file->getClientOriginalName()),
-                'url' => config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path,
+                'url' => config('filesystems.disks.spaces.cdn_endpoint').'/'.$path,
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'extension' => $file->extension(),
@@ -169,7 +169,7 @@ class AssetRepository extends Repository
             $mime_Type = Storage::mimeType($filePath);
 
             return [
-                'size' => round($size / 1048576, 2) . 'MB', // Convert byte to MB
+                'size' => round($size / 1048576, 2).'MB', // Convert byte to MB
                 'mime_type' => $mime_Type,
             ];
         } else {

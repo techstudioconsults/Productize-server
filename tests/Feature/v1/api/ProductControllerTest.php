@@ -46,8 +46,6 @@ class ProductControllerTest extends TestCase
 
         // Create user with a free trial account, else test fails - check UserFactory.php
         $this->user = User::factory()->create(['account_type' => 'free_trial']);
-
-        // $this->productRepository->seed();
     }
 
     public function test_index_with_date_filters()

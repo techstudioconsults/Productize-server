@@ -35,6 +35,9 @@ class StoreAssetRequest extends FormRequest
             throw new ForbiddenException("You are not authorized to access this product resource.");
         }
 
+        // Add the product to the request data
+        $this->merge(['product' => $product]);
+
         return true;
     }
 

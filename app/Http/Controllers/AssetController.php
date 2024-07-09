@@ -12,6 +12,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Storage;
 use Str;
 
+/**
+ * @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 26-06-2024
+ *
+ * Controller for managing assets.
+ */
 class AssetController extends Controller
 {
     public function __construct(
@@ -21,20 +30,28 @@ class AssetController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created asset in storage.
+     *
+     * @param StoreAssetRequest $request
+     * @return AssetResource
      */
     public function store(StoreAssetRequest $request)
     {
         $entity = $request->validated();
 
-        $product = $this->productRepository->findById($entity['product_id']);
+        // Get the product merged from the StoreAssetRequest
+        $product = $request->input('product');
 
+        // Get the product's asset
         $asset = $entity['asset'];
 
+        // Name the asset using uuid string
         $name = Str::uuid() . '.' . $asset->extension(); // generate a uuid - save as file name in cloud
 
+        // Upload the asset
         $path = Storage::putFileAs("$product->product_type/" . AssetRepository::PRODUCT_DATA_PATH, $asset, $name);
 
+        // Arrange the data for storage
         $entity = [
             'name' => str_replace(' ', '', $asset->getClientOriginalName()),
             'url' => config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path,
@@ -49,6 +66,12 @@ class AssetController extends Controller
         return new AssetResource($asset);
     }
 
+    /**
+     * Retrieve a list of the assets for a given product.
+     *
+     * @param Product $product Product associated with the Asset
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection<Asset>
+     */
     public function product(Product $product)
     {
         $assets = $this->assetRepository->find(['product_id' => $product->id]);
@@ -56,6 +79,12 @@ class AssetController extends Controller
         return AssetResource::collection($assets);
     }
 
+    /**
+     * Remove the specified asset from storage.
+     *
+     * @param Asset $asset
+     * @return JsonResource
+     */
     public function delete(Asset $asset)
     {
         $this->assetRepository->deleteOne($asset);

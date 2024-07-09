@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ServerErrorException;
 use App\Http\Requests\StoreAssetRequest;
 use App\Http\Resources\AssetResource;
 use App\Models\Asset;
 use App\Models\Product;
 use App\Repositories\AssetRepository;
 use App\Repositories\ProductRepository;
+use GuzzleHttp\Exception\ServerException;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Log;
 use Storage;
 use Str;
 
@@ -87,10 +90,19 @@ class AssetController extends Controller
      */
     public function delete(Asset $asset)
     {
-        $this->assetRepository->deleteOne($asset);
+        try {
+            $isDeleted = $asset->forceDelete();
 
-        return new JsonResource([
-            'message' => 'Asset Deleted',
-        ]);
+            if (!$isDeleted) {
+                throw new ServerErrorException("Asset Not Deleted");
+            }
+
+            return new JsonResource([
+                'message' => 'Asset Deleted',
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error deleting asset: " . $e->getMessage());
+            throw new ServerErrorException("Asset Not Deleted");
+        }
     }
 }

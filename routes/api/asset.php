@@ -12,6 +12,8 @@ Route::controller(AssetController::class)
     ])
     ->group(function () {
         Route::post('/', 'store')->name('store');
+
         Route::get('/products/{product}', 'product')->name('product');
-        Route::delete('/', 'delete')->name('delete');
+
+        Route::delete('/{asset}', 'delete')->name('delete')->middleware('can:view,asset');
     });

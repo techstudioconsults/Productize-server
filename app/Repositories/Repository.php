@@ -129,9 +129,9 @@ abstract class Repository extends ValidationService
     public function deleteOne(Model $entity): bool
     {
         try {
-            $entity->delete();
+            $isDeleted = $entity->delete();
 
-            return true;
+            return $isDeleted;
         } catch (\Throwable $th) {
             return false;
         }

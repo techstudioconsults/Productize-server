@@ -185,8 +185,8 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
-    public function resources()
+    public function assets()
     {
-        return $this->hasMany(ProductResource::class);
+        return $this->hasMany(Asset::class);
     }
 }

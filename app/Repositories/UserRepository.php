@@ -323,7 +323,7 @@ class UserRepository extends Repository
             $user->username,
             $user->phone_number,
             $user->bio,
-            $user->logo
+            $user->logo,
         ]);
 
         $un_filled = $collection->whereNull();

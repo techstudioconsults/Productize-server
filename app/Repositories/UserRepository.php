@@ -324,9 +324,6 @@ class UserRepository extends Repository
             $user->phone_number,
             $user->bio,
             $user->logo,
-            $user->twitter_account,
-            $user->facebook_account,
-            $user->youtube_account,
         ]);
 
         $un_filled = $collection->whereNull();

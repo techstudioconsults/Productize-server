@@ -282,7 +282,7 @@ class UserController extends Controller
     /**
      * Update the KYC information of the authenticated user.
      *
-     * @param UpdateKycRequest $request The request containing the KYC information to be updated.
+     * @param  UpdateKycRequest  $request  The request containing the KYC information to be updated.
      * @return UserResource The resource representing the updated user.
      */
     public function updateKyc(UpdateKycRequest $request)
@@ -315,7 +315,6 @@ class UserController extends Controller
      *
      * @return JsonResource A JSON resource containing a success message.
      */
-
     public function readNotifications()
     {
         $user = Auth::user();

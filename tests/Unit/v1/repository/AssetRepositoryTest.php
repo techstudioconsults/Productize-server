@@ -4,11 +4,9 @@ namespace Tests\Feature;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
-use App\Http\Resources\AssetResource;
 use App\Models\Asset;
 use App\Models\Product;
 use App\Repositories\AssetRepository;
-use Aws\Multipart\UploadState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Storage;
@@ -36,7 +34,7 @@ class AssetRepositoryTest extends TestCase
             'size' => 1000,
             'mime_type' => 'application/pdf',
             'extension' => 'pdf',
-            'product_id' => Product::factory()->create()->id
+            'product_id' => Product::factory()->create()->id,
         ];
 
         $asset = $this->assetRepository->create($data);
@@ -130,7 +128,7 @@ class AssetRepositoryTest extends TestCase
         Storage::fake('spaces');
 
         $file = UploadedFile::fake()->create('document.pdf', 100);
-        $path =  Storage::disk('spaces')->putFile('test', $file);
+        $path = Storage::disk('spaces')->putFile('test', $file);
 
         $metadata = $this->assetRepository->getFileMetaData($path);
 

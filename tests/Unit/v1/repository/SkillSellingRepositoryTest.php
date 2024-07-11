@@ -51,7 +51,6 @@ class SkillSellingRepositoryTest extends TestCase
         $this->assertEquals($data['link'], $result->link);
     }
 
-
     public function test_query()
     {
         SkillSelling::factory()->count(5)->create(['created_at' => now()->subDays(5)]);
@@ -59,7 +58,7 @@ class SkillSellingRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => now()->subDays(5)->toDateString(),
-            'end_date' => now()->toDateString()
+            'end_date' => now()->toDateString(),
         ];
 
         $query = $this->skillSellingRepository->query($filter);
@@ -109,7 +108,7 @@ class SkillSellingRepositoryTest extends TestCase
         $product = Product::factory()->create();
 
         $expected = SkillSelling::factory()->create([
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         $filter = ['product_id' => $product->id];

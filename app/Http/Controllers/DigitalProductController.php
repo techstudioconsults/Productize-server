@@ -24,18 +24,15 @@ class DigitalProductController extends Controller
         protected AssetRepository $assetRepository,
         protected ProductRepository $productRepository,
         protected DigitalProductRepository $digitalProductRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Store a newly created digital product resource in storage.
      *
-     * @param StoreDigitalProductRequest $request
      *
      * @return DigitalProductResource
      *
      * @throws NotFoundException
-     *
      * @throws ServerErrorException
      */
     public function store(StoreDigitalProductRequest $request)
@@ -82,7 +79,6 @@ class DigitalProductController extends Controller
     /**
      * Retrieve the specified digital product.
      *
-     * @param DigitalProduct $digitalProduct
      *
      * @return DigitalProductResource
      */
@@ -94,7 +90,6 @@ class DigitalProductController extends Controller
     /**
      * Retrieve the specified digital product resource by its product.
      *
-     * @param Product $product
      *
      * @return DigitalProductResource
      *
@@ -104,7 +99,7 @@ class DigitalProductController extends Controller
     {
         $digital_product = $this->digitalProductRepository->findOne(['product_id' => $product->id]);
 
-        if (!$digital_product) {
+        if (! $digital_product) {
             throw new NotFoundException('Resource Not Foud');
         }
 

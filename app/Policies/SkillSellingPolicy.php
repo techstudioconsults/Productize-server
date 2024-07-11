@@ -21,20 +21,20 @@ class SkillSellingPolicy
     {
         return $user->isPremium()
             ? Response::allow()
-            : throw new ForbiddenException($user->full_name . ' is not a subscribed user');
+            : throw new ForbiddenException($user->full_name.' is not a subscribed user');
     }
 
     public function view(User $user, SkillSelling $skillSelling)
     {
         return $user->id === $skillSelling->product->user->id
             ? Response::allow()
-            : throw new ForbiddenException("Access Denied: No permission to access this resource");
+            : throw new ForbiddenException('Access Denied: No permission to access this resource');
     }
 
     public function viewForProduct(User $user, Product $product)
     {
         return $user->id === $product->user->id
             ? Response::allow()
-            : throw new ForbiddenException("Access Denied: No permission to access this resource");
+            : throw new ForbiddenException('Access Denied: No permission to access this resource');
     }
 }

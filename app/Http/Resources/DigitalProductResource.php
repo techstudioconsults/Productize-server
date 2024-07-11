@@ -28,7 +28,7 @@ class DigitalProductResource extends JsonResource
                     'name' => $asset->name,
                     'url' => $asset->url,
                     'mime_type' => $asset->mime_type,
-                    'size' => round($asset->size / 1048576, 3) . 'MB', // Convert byte to MB
+                    'size' => round($asset->size / 1048576, 3).'MB', // Convert byte to MB
                     'extension' => $asset->extension,
                 ];
             }),

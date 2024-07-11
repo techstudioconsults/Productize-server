@@ -44,7 +44,7 @@ class DigitalProductRepositoryTest extends TestCase
 
         $filter = [
             'start_date' => now()->subDays(5)->toDateString(),
-            'end_date' => now()->toDateString()
+            'end_date' => now()->toDateString(),
         ];
 
         $query = $this->digitalProductRepository->query($filter);
@@ -84,7 +84,7 @@ class DigitalProductRepositoryTest extends TestCase
         $product = Product::factory()->create();
 
         $expected = DigitalProduct::factory()->create([
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ]);
 
         $filter = ['product_id' => $product->id];

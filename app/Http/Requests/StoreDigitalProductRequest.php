@@ -28,13 +28,13 @@ class StoreDigitalProductRequest extends FormRequest
         // Retrieve the product by product_id
         $product = Product::find($product_id);
 
-        if (!$product) {
-            throw new NotFoundException("Product Not Found");
+        if (! $product) {
+            throw new NotFoundException('Product Not Found');
         }
 
         // Check if the product exists and if the product's user_id matches the authenticated user's id
         if ($product->user_id !== $user->id) {
-            throw new ForbiddenException("You are not authorized to access this product resource.");
+            throw new ForbiddenException('You are not authorized to access this product resource.');
         }
 
         // Add the product to the request data

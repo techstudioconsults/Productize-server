@@ -69,7 +69,7 @@ class ProductPublished extends Notification implements ShouldQueue
             ->markdown('mail.product-published', [
                 'title' => $this->product->title,
                 'thumbnail' => $this->product->thumbnail,
-                'link' => config('app.client_url') . '/products/' . $this->product->id,
+                'link' => config('app.client_url').'/products/'.$this->product->id,
             ])
             ->subject('New product published successfully!');
     }

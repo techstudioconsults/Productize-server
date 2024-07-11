@@ -83,7 +83,7 @@ class FirstProductCreated extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => "You have successfully created a Product with title " . $this->product->title,
+            'message' => 'You have successfully created a Product with title '.$this->product->title,
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,

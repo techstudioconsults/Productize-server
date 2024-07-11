@@ -280,6 +280,12 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Update the KYC information of the authenticated user.
+     *
+     * @param UpdateKycRequest $request The request containing the KYC information to be updated.
+     * @return UserResource The resource representing the updated user.
+     */
     public function updateKyc(UpdateKycRequest $request)
     {
         $user = Auth::user();
@@ -291,6 +297,11 @@ class UserController extends Controller
         return new UserResource($updated);
     }
 
+    /**
+     * Get the unread notifications of the authenticated user.
+     *
+     * @return JsonResource A JSON resource containing the unread notifications.
+     */
     public function notifications()
     {
         $user = Auth::user();
@@ -299,6 +310,12 @@ class UserController extends Controller
 
         return new JsonResource($notifications);
     }
+
+    /**
+     * Mark all unread notifications of the authenticated user as read.
+     *
+     * @return JsonResource A JSON resource containing a success message.
+     */
 
     public function readNotifications()
     {

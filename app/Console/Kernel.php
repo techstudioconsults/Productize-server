@@ -16,6 +16,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->call(new EndFreeTrial)->twiceDaily();
         $schedule->call(new FreeTrialReminder)->daily();
+
+        // Prune Models
+        $schedule->command('model:prune')->daily();
     }
 
     /**
@@ -23,7 +26,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

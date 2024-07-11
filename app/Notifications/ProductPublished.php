@@ -82,6 +82,7 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
+            'message' => 'New Product Published',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
@@ -100,6 +101,7 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
+            'message' => 'New Product Published',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,

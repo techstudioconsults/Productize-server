@@ -1,13 +1,5 @@
 <?php
 
-/**
- *  @author @Intuneteq Tobi Olanitori
- *
- * @version 1.0
- *
- * @since 26-05-2024
- */
-
 namespace App\Http\Controllers;
 
 use App\Enums\AccountEnum;
@@ -38,6 +30,12 @@ use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 /**
+ *  @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 26-05-2024
+ *
  * Route handler methods for User resource
  */
 class UserController extends Controller
@@ -281,6 +279,12 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Update the KYC information of the authenticated user.
+     *
+     * @param  UpdateKycRequest  $request  The request containing the KYC information to be updated.
+     * @return UserResource The resource representing the updated user.
+     */
     public function updateKyc(UpdateKycRequest $request)
     {
         $user = Auth::user();
@@ -290,5 +294,33 @@ class UserController extends Controller
         $updated = $this->userRepository->update($user, $validated);
 
         return new UserResource($updated);
+    }
+
+    /**
+     * Get the unread notifications of the authenticated user.
+     *
+     * @return JsonResource A JSON resource containing the unread notifications.
+     */
+    public function notifications()
+    {
+        $user = Auth::user();
+
+        $notifications = $user->unreadNotifications;
+
+        return new JsonResource($notifications);
+    }
+
+    /**
+     * Mark all unread notifications of the authenticated user as read.
+     *
+     * @return JsonResource A JSON resource containing a success message.
+     */
+    public function readNotifications()
+    {
+        $user = Auth::user();
+
+        $user->unreadNotifications->markAsRead();
+
+        return new JsonResource(['message' => 'All notifications marked as read']);
     }
 }

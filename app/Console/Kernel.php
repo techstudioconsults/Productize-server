@@ -16,6 +16,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->call(new EndFreeTrial)->twiceDaily();
         $schedule->call(new FreeTrialReminder)->daily();
+
+        // Prune Models
+        $schedule->command('model:prune')->daily();
     }
 
     /**

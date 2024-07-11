@@ -66,7 +66,7 @@ class PayoutCardAdded extends Notification
     {
         return (new MailMessage)
             ->markdown('mail.payout-card-added', [
-                'url' => config('app.client_url') . '/dashboard/settings/account',
+                'url' => config('app.client_url').'/dashboard/settings/account',
             ])
             ->subject('New Payout Card Added');
     }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\UserController;
+use FontLib\Table\Type\name;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -17,6 +18,8 @@ Route::group([
 
     Route::get('/download', [UserController::class, 'download'])->middleware('abilities:role:super_admin')->name('download');
 
+    Route::get('/notifications', [UserController::class, 'notifications'])->name('notifications');
+
     Route::post('/', [UserController::class, 'store'])->middleware('abilities:role:super_admin')->name('store');
 
     Route::post('/me', [UserController::class, 'update']);
@@ -29,17 +32,5 @@ Route::group([
 
     Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
 
-    // Route::get("/test", function() {
-    //     $user = User::find('9c5edc2c-28b3-4441-a4e7-8a9178eb4361');
-    //     // $product = Product::where("user_id", $user->id)->first();
-    //     $account = Account::where("user_id", $user->id)->first();
-
-    //     // Notification::send($user, new WelcomeNotification($user));
-
-    //     // $user->notify(new ProductPublished($product));
-
-    //     $user->notify(new PayoutCardAdded($account));
-
-    //     return new JsonResource($user->notifications);
-    // });
+    Route::post('/notifications', [UserController::class, 'readNotifications'])->name('notifications.read');
 });

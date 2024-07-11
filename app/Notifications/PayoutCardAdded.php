@@ -66,7 +66,7 @@ class PayoutCardAdded extends Notification
     {
         return (new MailMessage)
             ->markdown('mail.payout-card-added', [
-                'url' => config('app.client_url').'/dashboard/settings/account',
+                'url' => config('app.client_url') . '/dashboard/settings/account',
             ])
             ->subject('New Payout Card Added');
     }
@@ -79,6 +79,7 @@ class PayoutCardAdded extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
+            'message' => 'New Payout Card Added',
             'account' => [
                 'name' => $this->account->name,
                 'account_number' => $this->account->account_number,
@@ -93,6 +94,7 @@ class PayoutCardAdded extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
+            'message' => 'New Payout Card Added',
             'account' => [
                 'name' => $this->account->name,
                 'account_number' => $this->account->account_number,

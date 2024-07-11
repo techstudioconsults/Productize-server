@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('thumbnail');
             $table->jsonb('highlights');
             $table->json('tags');
-            $table->string('slug', 1000);
+            $table->string('slug');
             $table->boolean('stock_count')->default(false);
             $table->boolean('choose_quantity')->default(false);
             $table->boolean('show_sales_count')->default(false);

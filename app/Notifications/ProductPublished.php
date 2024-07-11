@@ -69,7 +69,7 @@ class ProductPublished extends Notification implements ShouldQueue
             ->markdown('mail.product-published', [
                 'title' => $this->product->title,
                 'thumbnail' => $this->product->thumbnail,
-                'link' => config('app.client_url').'/products/'.$this->product->id,
+                'link' => config('app.client_url') . '/products/' . $this->product->id,
             ])
             ->subject('New product published successfully!');
     }
@@ -82,6 +82,7 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
+            'message' => 'New Product Published',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,
@@ -100,6 +101,7 @@ class ProductPublished extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
+            'message' => 'New Product Published',
             'product' => [
                 'id' => $this->product->id,
                 'title' => $this->product->title,

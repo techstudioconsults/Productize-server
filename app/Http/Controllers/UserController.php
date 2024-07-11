@@ -1,13 +1,5 @@
 <?php
 
-/**
- *  @author @Intuneteq Tobi Olanitori
- *
- * @version 1.0
- *
- * @since 26-05-2024
- */
-
 namespace App\Http\Controllers;
 
 use App\Enums\AccountEnum;
@@ -38,6 +30,12 @@ use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 /**
+ *  @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 26-05-2024
+ *
  * Route handler methods for User resource
  */
 class UserController extends Controller
@@ -47,7 +45,8 @@ class UserController extends Controller
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
         protected PayoutRepository $payoutRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -128,7 +127,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -182,7 +181,7 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if (! Hash::check($validated['password'], $user->password)) {
+        if (!Hash::check($validated['password'], $user->password)) {
             throw new BadRequestException('Incorrect Password');
         }
 
@@ -290,5 +289,23 @@ class UserController extends Controller
         $updated = $this->userRepository->update($user, $validated);
 
         return new UserResource($updated);
+    }
+
+    public function notifications()
+    {
+        $user = Auth::user();
+
+        $notifications = $user->unreadNotifications;
+
+        return new JsonResource($notifications);
+    }
+
+    public function readNotifications()
+    {
+        $user = Auth::user();
+
+        $user->unreadNotifications->markAsRead();
+
+        return new JsonResource(['message' => 'All notifications marked as read']);
     }
 }

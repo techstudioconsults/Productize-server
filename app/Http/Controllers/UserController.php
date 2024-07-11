@@ -1,13 +1,5 @@
 <?php
 
-/**
- *  @author @Intuneteq Tobi Olanitori
- *
- * @version 1.0
- *
- * @since 26-05-2024
- */
-
 namespace App\Http\Controllers;
 
 use App\Enums\AccountEnum;
@@ -38,6 +30,12 @@ use Illuminate\Validation\Rules\Password;
 use Throwable;
 
 /**
+ *  @author @Intuneteq Tobi Olanitori
+ *
+ * @version 1.0
+ *
+ * @since 26-05-2024
+ *
  * Route handler methods for User resource
  */
 class UserController extends Controller
@@ -290,5 +288,23 @@ class UserController extends Controller
         $updated = $this->userRepository->update($user, $validated);
 
         return new UserResource($updated);
+    }
+
+    public function notifications()
+    {
+        $user = Auth::user();
+
+        $notifications = $user->unreadNotifications;
+
+        return new JsonResource($notifications);
+    }
+
+    public function readNotifications()
+    {
+        $user = Auth::user();
+
+        $user->unreadNotifications->markAsRead();
+
+        return new JsonResource(['message' => 'All notifications marked as read']);
     }
 }

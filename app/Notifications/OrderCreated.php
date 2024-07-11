@@ -2,32 +2,57 @@
 
 namespace App\Notifications;
 
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
-class OrderCreated extends Notification
+class OrderCreated extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    // public User $user;
+    const NAME = 'order.created';
 
-    public $unread = 5;
+    public User $user;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
+    public Order $order;
+
+    public function __construct(User $user, Order $order)
     {
-        // $this->user = $user;
+        $this->user = $user;
+        $this->order = $order;
+
+        /**
+         * Ensure all Database transactions are committed
+         */
+        $this->afterCommit();
     }
 
     /**
-     * Get the notification's delivery channels.
+     * The number of times the job may be attempted.
      *
-     * use the database to store the count
-     * use broadcast to send to client
+     * @var int
+     */
+    public $tries = 5;
+
+    /**
+     * Indicate if the job should be marked as failed on timeout.
+     *
+     * @var bool
+     */
+    public $failOnTimeout = true;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $backoff = 3;
+
+    /**
+     * Get the notification's delivery channels.
      *
      * @return array<int, string>
      */
@@ -36,30 +61,88 @@ class OrderCreated extends Notification
         return ['broadcast', 'database'];
     }
 
-    /**
-     * Get the broadcastable representation of the notification.
-     */
-    public function toBroadcast(object $notifiable): BroadcastMessage
-    {
-        $message = new BroadcastMessage([
-            'unread' => $this->unread,
-            'user' => $notifiable->id,
-        ]);
-
-        return $message->onQueue('broadcast');
-    }
+    // /**
+    //  * Get the mail representation of the notification.
+    //  */
+    // public function toMail(object $notifiable): MailMessage
+    // {
+    //     return (new MailMessage)
+    //         ->markdown('mail.first-product-created', [
+    //             'title' => $this->product->title,
+    //             'thumbnail' => $this->product->thumbnail,
+    //         ])
+    //         ->subject('First Product Created!');
+    // }
 
     /**
      * Get the array representation of the notification.
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toDatabase(object $notifiable): array
     {
         return [
-            'unread' => $this->unread,
-            'user' => $notifiable->id,
+            'message' => 'An Order for for product '.$this->order->product->title.'was just created',
+            'order' => [
+                'id' => $this->order->id,
+                'quantity' => $this->order->quantity,
+                'total_amount' => $this->order->total_amount,
+            ],
+            'product' => [
+                'id' => $this->order->product->id,
+                'title' => $this->order->product->title,
+                'thumbnail' => $this->order->product->thumbnail,
+            ],
+            'user' => [
+                'id' => $notifiable->id,
+                'full_name' => $notifiable->full_name,
+            ],
         ];
+    }
+
+    /**
+     * Get the broadcastable representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'message' => 'An Order for for product '.$this->order->product->title.'was just created',
+            'order' => [
+                'id' => $this->order->id,
+                'quantity' => $this->order->quantity,
+                'total_amount' => $this->order->total_amount,
+            ],
+            'product' => [
+                'id' => $this->order->product->id,
+                'title' => $this->order->product->title,
+                'thumbnail' => $this->order->product->thumbnail,
+            ],
+            'user' => [
+                'id' => $notifiable->id,
+                'full_name' => $notifiable->full_name,
+            ],
+        ]);
+    }
+
+    /**
+     * Determine which queues should be used for each notification channel.
+     *
+     * @return array<string, string>
+     */
+    public function viaQueues(): array
+    {
+        return [
+            'mail' => 'mail',
+            'broadcast' => 'broadcast',
+        ];
+    }
+
+    /**
+     * Get the notification's database type.
+     */
+    public function databaseType(object $notifiable): string
+    {
+        return self::NAME;
     }
 
     /**
@@ -67,24 +150,26 @@ class OrderCreated extends Notification
      */
     public function broadcastType(): string
     {
-        return 'order-created-notification';
+        return self::NAME;
     }
 
     /**
-     * The event's broadcast name.
+     * Get the name of the notification event being broadcast.
      */
-    public function broadcastAs(): string
+    public function broadcastAs()
     {
-        return 'order-created-notification';
+        return self::NAME;
     }
 
-    // /**
-    //  * The name of the queue on which to place the broadcasting job.
-    //  *
-    //  * Configure supervisor to run the broadcast queue
-    //  */
-    // public function broadcastQueue(): string
-    // {
-    //     return 'broadcast';
-    // }
+    /**
+     * Determine the notification's delivery delay.
+     *
+     * @return array<string, \Illuminate\Support\Carbon>
+     */
+    public function withDelay(object $notifiable): array
+    {
+        return [
+            'mail' => now()->addMinute(),
+        ];
+    }
 }

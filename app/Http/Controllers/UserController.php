@@ -45,8 +45,7 @@ class UserController extends Controller
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
         protected PayoutRepository $payoutRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -127,7 +126,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -181,7 +180,7 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if (!Hash::check($validated['password'], $user->password)) {
+        if (! Hash::check($validated['password'], $user->password)) {
             throw new BadRequestException('Incorrect Password');
         }
 

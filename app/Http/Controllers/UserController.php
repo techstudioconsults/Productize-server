@@ -343,6 +343,6 @@ class UserController extends Controller
         // Mark the filtered notifications as read
         $notifications->markAsRead();
 
-        return new JsonResource(['message' => 'All notifications marked as read']);
+        return new JsonResource(['message' => 'Notifications marked as read']);
     }
 }

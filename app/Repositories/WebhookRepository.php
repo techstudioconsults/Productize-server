@@ -4,10 +4,10 @@ namespace App\Repositories;
 
 use App\Enums\PayoutStatus;
 use App\Enums\RevenueActivity;
-use App\Events\OrderCreated;
 use App\Exceptions\ServerErrorException;
 use App\Mail\GiftAlert;
 use App\Models\User;
+use App\Notifications\OrderCreated;
 use App\Notifications\ProductPurchased;
 use App\Notifications\SubscriptionCancelled;
 use App\Notifications\SubscriptionPaymentFailed;
@@ -157,7 +157,7 @@ class WebhookRepository
                 $order = $this->orderRepository->create($buildOrder);
 
                 // Trigger Order created Event
-                OrderCreated::dispatch($user, $order);
+                $user->notify(new OrderCreated($order));
 
                 // Notify owner of this product availability in download
                 $owner->notify(new ProductPurchased($product_saved));

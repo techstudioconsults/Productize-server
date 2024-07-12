@@ -196,39 +196,39 @@ class OrderController extends Controller
         return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
-     * Get the count of unseen orders for the authenticated user.
-     *
-     * @return JsonResource
-     */
-    public function unseen()
-    {
-        $user = Auth::user();
+    // /**
+    //  * @author @Intuneteq Tobi Olanitori
+    //  *
+    //  * Get the count of unseen orders for the authenticated user.
+    //  *
+    //  * @return JsonResource
+    //  */
+    // public function unseen()
+    // {
+    //     $user = Auth::user();
 
-        $count = $this->orderRepository->queryRelation($user->orders(), ['seen' => false])->count();
+    //     $count = $this->orderRepository->queryRelation($user->orders(), ['seen' => false])->count();
 
-        return new JsonResource(['count' => $count]);
-    }
+    //     return new JsonResource(['count' => $count]);
+    // }
 
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
-     * Mark all unseen orders for the authenticated user as seen.
-     *
-     * @return \Illuminate\Http\Resources\Json\JsonResource
-     */
-    public function markseen()
-    {
-        $user = Auth::user();
+    // /**
+    //  * @author @Intuneteq Tobi Olanitori
+    //  *
+    //  * Mark all unseen orders for the authenticated user as seen.
+    //  *
+    //  * @return \Illuminate\Http\Resources\Json\JsonResource
+    //  */
+    // public function markseen()
+    // {
+    //     $user = Auth::user();
 
-        $query = $this->orderRepository->queryRelation($user->orders(), ['seen' => false]);
+    //     $query = $this->orderRepository->queryRelation($user->orders(), ['seen' => false]);
 
-        $query->update(['seen' => true]);
+    //     $query->update(['seen' => true]);
 
-        return new JsonResource(['message' => 'orders marked as seen']);
-    }
+    //     return new JsonResource(['message' => 'orders marked as seen']);
+    // }
 
     /**
      * @author @Intuneteq Tobi Olanitori

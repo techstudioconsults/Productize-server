@@ -45,7 +45,8 @@ class UserController extends Controller
         protected ProductRepository $productRepository,
         protected OrderRepository $orderRepository,
         protected PayoutRepository $payoutRepository
-    ) {}
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -126,7 +127,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -180,7 +181,7 @@ class UserController extends Controller
 
         $user = Auth::user();
 
-        if (! Hash::check($validated['password'], $user->password)) {
+        if (!Hash::check($validated['password'], $user->password)) {
             throw new BadRequestException('Incorrect Password');
         }
 
@@ -301,11 +302,19 @@ class UserController extends Controller
      *
      * @return JsonResource A JSON resource containing the unread notifications.
      */
-    public function notifications()
+    public function notifications(Request $request)
     {
         $user = Auth::user();
 
-        $notifications = $user->unreadNotifications;
+        $type = $request->query('type'); // Get the type filter from query parameters
+
+        $query = $user->unreadNotifications();
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $notifications = $query->get();
 
         return new JsonResource($notifications);
     }
@@ -316,11 +325,23 @@ class UserController extends Controller
      * @return JsonResource A JSON resource containing a success message.
      */
 
-    public function readNotifications()
+    public function readNotifications(Request $request)
     {
         $user = Auth::user();
 
-        $user->unreadNotifications->markAsRead();
+        $type = $request->query('type'); // Get the type filter from query parameters
+
+        // Fetch unread notifications, optionally filter by type type
+        $query = $user->unreadNotifications();
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $notifications = $query->get();
+
+        // Mark the filtered notifications as read
+        $notifications->markAsRead();
 
         return new JsonResource(['message' => 'All notifications marked as read']);
     }

@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\Order;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -15,13 +14,10 @@ class OrderCreated extends Notification implements ShouldQueue
 
     const NAME = 'order.created';
 
-    public User $user;
-
     public Order $order;
 
-    public function __construct(User $user, Order $order)
+    public function __construct(Order $order)
     {
-        $this->user = $user;
         $this->order = $order;
 
         /**
@@ -82,7 +78,7 @@ class OrderCreated extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => 'An Order for for product '.$this->order->product->title.'was just created',
+            'message' => 'An Order for for product ' . $this->order->product->title . 'was just created',
             'order' => [
                 'id' => $this->order->id,
                 'quantity' => $this->order->quantity,
@@ -97,6 +93,10 @@ class OrderCreated extends Notification implements ShouldQueue
                 'id' => $notifiable->id,
                 'full_name' => $notifiable->full_name,
             ],
+            'buyer' => [
+                'id' => $this->order->user->id,
+                'full_name' => $this->order->user->full_name
+            ]
         ];
     }
 
@@ -106,7 +106,7 @@ class OrderCreated extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => 'An Order for for product '.$this->order->product->title.'was just created',
+            'message' => 'An Order for for product ' . $this->order->product->title . 'was just created',
             'order' => [
                 'id' => $this->order->id,
                 'quantity' => $this->order->quantity,
@@ -121,6 +121,10 @@ class OrderCreated extends Notification implements ShouldQueue
                 'id' => $notifiable->id,
                 'full_name' => $notifiable->full_name,
             ],
+            'buyer' => [
+                'id' => $this->order->user->id,
+                'full_name' => $this->order->user->full_name
+            ]
         ]);
     }
 

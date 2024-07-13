@@ -23,7 +23,6 @@ class Order extends Model
         'product_id',
         'quantity',
         'total_amount',
-        'seen',
     ];
 
     protected $casts = [

@@ -328,7 +328,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        $type = $request->query('type'); // Get the type filter from query parameters
+        $type = $request->input('type'); // Get the type filter from query parameters
 
         // Fetch unread notifications, optionally filter by type type
         $query = $user->unreadNotifications();

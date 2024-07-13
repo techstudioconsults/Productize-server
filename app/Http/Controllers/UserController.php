@@ -301,11 +301,19 @@ class UserController extends Controller
      *
      * @return JsonResource A JSON resource containing the unread notifications.
      */
-    public function notifications()
+    public function notifications(Request $request)
     {
         $user = Auth::user();
 
-        $notifications = $user->unreadNotifications;
+        $type = $request->query('type'); // Get the type filter from query parameters
+
+        $query = $user->unreadNotifications();
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $notifications = $query->get();
 
         return new JsonResource($notifications);
     }
@@ -315,12 +323,24 @@ class UserController extends Controller
      *
      * @return JsonResource A JSON resource containing a success message.
      */
-    public function readNotifications()
+    public function readNotifications(Request $request)
     {
         $user = Auth::user();
 
-        $user->unreadNotifications->markAsRead();
+        $type = $request->input('type'); // Get the type filter from query parameters
 
-        return new JsonResource(['message' => 'All notifications marked as read']);
+        // Fetch unread notifications, optionally filter by type type
+        $query = $user->unreadNotifications();
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $notifications = $query->get();
+
+        // Mark the filtered notifications as read
+        $notifications->markAsRead();
+
+        return new JsonResource(['message' => 'Notifications marked as read']);
     }
 }

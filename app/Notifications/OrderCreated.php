@@ -78,7 +78,7 @@ class OrderCreated extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'message' => 'An Order for for product ' . $this->order->product->title . 'was just created',
+            'message' => 'An Order for for product '.$this->order->product->title.'was just created',
             'order' => [
                 'id' => $this->order->id,
                 'quantity' => $this->order->quantity,
@@ -95,8 +95,8 @@ class OrderCreated extends Notification implements ShouldQueue
             ],
             'buyer' => [
                 'id' => $this->order->user->id,
-                'full_name' => $this->order->user->full_name
-            ]
+                'full_name' => $this->order->user->full_name,
+            ],
         ];
     }
 
@@ -106,7 +106,7 @@ class OrderCreated extends Notification implements ShouldQueue
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'message' => 'An Order for for product ' . $this->order->product->title . 'was just created',
+            'message' => 'An Order for for product '.$this->order->product->title.'was just created',
             'order' => [
                 'id' => $this->order->id,
                 'quantity' => $this->order->quantity,
@@ -123,8 +123,8 @@ class OrderCreated extends Notification implements ShouldQueue
             ],
             'buyer' => [
                 'id' => $this->order->user->id,
-                'full_name' => $this->order->user->full_name
-            ]
+                'full_name' => $this->order->user->full_name,
+            ],
         ]);
     }
 

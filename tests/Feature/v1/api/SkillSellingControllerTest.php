@@ -33,22 +33,15 @@ class SkillSellingControllerTest extends TestCase
 
         Storage::fake('spaces');
 
-        $file_name = 'document.pdf';
-
         $product = Product::factory()->create([
             'user_id' => $user->id,
         ]);
 
-        $file = UploadedFile::fake()->create($file_name, 2048);
-
         $data = [
             'category' => 'Product',
-            'assets' => [$file],
             'product_id' => $product->id,
-            'level' => 'high',
-            'availability' => 'yes',
             'category' => 'Product',
-            'link' => 'www.github.com',
+            'link' => 'https://www.github.com',
         ];
 
         $response = $this->withoutExceptionHandling()->post(route('skillSelling.store'), $data);
@@ -57,23 +50,16 @@ class SkillSellingControllerTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'id',
-                    'level',
-                    'availability',
                     'category',
                     'link',
                     'created_at',
                     'product' => ['id', 'thumbnail', 'cover_photos'],
-                    'assets' => [['id', 'name', 'url', 'mime_type', 'size', 'extension']],
                 ],
             ]);
 
         $this->assertDatabaseHas('skill_sellings', [
             'product_id' => $data['product_id'],
             'category' => $data['category'],
-        ]);
-
-        $this->assertDatabaseHas('assets', [
-            'product_id' => $data['product_id'],
         ]);
     }
 
@@ -141,8 +127,6 @@ class SkillSellingControllerTest extends TestCase
 
         // Create a skillselling
         $skillSelling = SkillSelling::factory()->create([
-            'level' => 'high',
-            'availability' => 'yes',
             'category' => 'Product',
             'link' => 'www.github.com',
             'product_id' => $product->id,
@@ -199,8 +183,6 @@ class SkillSellingControllerTest extends TestCase
 
         // Create a skillselling
         $skillSellingData = SkillSelling::factory()->create([
-            'level' => 'high',
-            'availability' => 'yes',
             'category' => 'Product',
             'link' => 'www.github.com',
             'product_id' => $product->id,
@@ -208,9 +190,7 @@ class SkillSellingControllerTest extends TestCase
 
         // Generate new data for updating the faq
         $newSkillSellingData = [
-            'level' => 'medium',
-            'availability' => 'no',
-            'link' => 'www.github.com',
+            'link' => 'https://www.github.com',
         ];
 
         // send a PUT request to update the user
@@ -221,8 +201,6 @@ class SkillSellingControllerTest extends TestCase
 
         // Assert that the faq was updated with the new data
         $this->assertDatabaseHas('skill_sellings', [
-            'level' => $newSkillSellingData['level'],
-            'availability' => $newSkillSellingData['availability'],
             'link' => $newSkillSellingData['link'],
         ]);
     }
@@ -236,8 +214,6 @@ class SkillSellingControllerTest extends TestCase
         $skillSelling = SkillSelling::factory()->create();
 
         $data = [
-            'level' => '',
-            'availability' => '',
             'link' => 'not-a-url',
         ];
 

@@ -24,7 +24,7 @@ class UpdateSkillSellingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'link' => 'string',
+            'link' => 'string|url',
         ];
     }
 

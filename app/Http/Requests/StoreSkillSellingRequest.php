@@ -52,7 +52,7 @@ class StoreSkillSellingRequest extends FormRequest
     {
         return [
             'category' => ['required', new Enum(SkillSellingCategory::class)],
-            'link' => 'required|string',
+            'link' => 'required|string|url',
             'product_id' => 'required|string|exists:products,id|unique:digital_products,product_id|unique:skill_sellings,product_id',
         ];
     }

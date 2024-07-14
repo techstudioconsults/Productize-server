@@ -38,16 +38,12 @@ class SkillSellingRepositoryTest extends TestCase
         $data = [
             'category' => 'Product',
             'product_id' => $product->id,
-            'level' => 'high',
-            'availability' => 'yes',
             'link' => 'https:github.com/intuneteq',
         ];
 
         $result = $this->skillSellingRepository->create($data);
         $this->assertInstanceOf(SkillSelling::class, $result);
         $this->assertEquals($data['category'], $result->category);
-        $this->assertEquals($data['level'], $result->level);
-        $this->assertEquals($data['availability'], $result->availability);
         $this->assertEquals($data['link'], $result->link);
     }
 
@@ -65,16 +61,6 @@ class SkillSellingRepositoryTest extends TestCase
 
         $this->assertInstanceOf(Builder::class, $query);
         $this->assertCount(5, $query->get());
-    }
-
-    public function test_query_with_non_existent_skillSelling_avaliability()
-    {
-        SkillSelling::factory()->count(3)->create();
-
-        $query = $this->skillSellingRepository->query(['availability' => 'General Products']);
-        $results = $query->get();
-
-        $this->assertCount(0, $results);
     }
 
     public function test_find()
@@ -134,11 +120,11 @@ class SkillSellingRepositoryTest extends TestCase
     {
         $skillSelling = SkillSelling::factory()->create();
 
-        $updates = ['availability' => 'no'];
+        $updates = ['link' => 'https://updated.com'];
         $result = $this->skillSellingRepository->update($skillSelling, $updates);
 
         $this->assertEquals($skillSelling->id, $result->id);
-        $this->assertEquals($updates['availability'], $result->availability);
+        $this->assertEquals($updates['link'], $result->link);
     }
 
     public function test_update_with_non_skillselling_model_throws_model_cast_exception(): void

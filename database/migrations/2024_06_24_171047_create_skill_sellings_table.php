@@ -15,8 +15,6 @@ return new class extends Migration
         Schema::create('skill_sellings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\Product::class, 'product_id')->cascadeOnDelete()->unique();
-            $table->string('level');
-            $table->string('availability');
             $table->string('link');
             $table->enum('category', array_column(SkillSellingCategory::cases(), 'value'))->default(SkillSellingCategory::PRODUCT->value);
             $table->softDeletes('deleted_at', 0);

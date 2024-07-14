@@ -14,9 +14,7 @@ use App\Notifications\ProductCreated;
 use App\Repositories\ProductRepository;
 use App\Repositories\SkillSellingRepository;
 use Auth;
-use DB;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Log;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -30,8 +28,7 @@ class SkillSellingController extends Controller
     public function __construct(
         protected SkillSellingRepository $skillSellingRepository,
         protected ProductRepository $productRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Store a newly created skill selling resource in storage.
@@ -77,7 +74,7 @@ class SkillSellingController extends Controller
     {
         $skill_selling = $this->skillSellingRepository->findOne(['product_id' => $product->id]);
 
-        if (!$skill_selling) {
+        if (! $skill_selling) {
             throw new NotFoundException('Resource Not Found');
         }
 

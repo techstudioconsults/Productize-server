@@ -15,10 +15,7 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Broadcast::channel('users.{id}', function (User $user, $id) {
-    // return $user->id === $id;
-    Log::alert('I GOT HERE');
-
-    return true;
+    return $user->id === $id;
 });
 
 Broadcast::channel('order-created.{userId}', function (User $user, $userId) {

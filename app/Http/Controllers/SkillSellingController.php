@@ -11,13 +11,10 @@ use App\Http\Resources\SkillSellingResource;
 use App\Models\Product;
 use App\Models\SkillSelling;
 use App\Notifications\ProductCreated;
-use App\Repositories\AssetRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\SkillSellingRepository;
 use Auth;
-use DB;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Log;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -30,7 +27,6 @@ class SkillSellingController extends Controller
 {
     public function __construct(
         protected SkillSellingRepository $skillSellingRepository,
-        protected AssetRepository $assetRepository,
         protected ProductRepository $productRepository,
     ) {}
 
@@ -51,37 +47,11 @@ class SkillSellingController extends Controller
         // Get the product from the request - See request class
         $product = $request->input('product');
 
-        // Extract the assets from the product request
-        $assets = $entity['assets'];
-        unset($entity['assets']);
+        $skill_selling = $this->skillSellingRepository->create($entity);
 
-        try {
-            // Initialize a transaction so the product is not persisted when there is an upload fail.
-            $skill_selling = DB::transaction(function () use ($assets, $product, $entity) {
+        $user->notify(new ProductCreated($product));
 
-                // Upload the assets to D.O spaces
-                $assets = $this->assetRepository->uploadAssets($assets, $product->product_type);
-
-                // Then save assets metadata in the db
-                foreach ($assets as $asset) {
-                    $this->assetRepository->create(['product_id' => $product->id, ...$asset]);
-                }
-
-                // Create skill selling
-                return $this->skillSellingRepository->create($entity);
-            });
-
-            $user->notify(new ProductCreated($product));
-
-            return new SkillSellingResource($skill_selling);
-        } catch (\Throwable $th) {
-            Log::error($th->getMessage(), [
-                'endpoint' => '/api/digital-products',
-                'method' => 'POST',
-            ]);
-
-            throw new ServerErrorException($th->getMessage(), 500);
-        }
+        return new SkillSellingResource($skill_selling);
     }
 
     /**

@@ -28,8 +28,6 @@ class SkillSellingFactory extends Factory
         ]);
 
         return [
-            'level' => 'high',
-            'availability' => 'yes',
             'category' => 'Product',
             'link' => 'www.github.com',
             'product_id' => $product->id,

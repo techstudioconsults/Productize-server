@@ -9,18 +9,18 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @author
+ * @author Tobi Olanitori <tobiolanitori@gmail.com>
  *
  * @version 1.0
  *
- * @since
+ * @since 24-06-2024
  *
  * Repository for SkillSelling resource
  */
 class SkillSellingRepository extends Repository
 {
     /**
-     * @author
+     * @author Tobi Olanitori <tobiolanitori@gmail.com>
      *
      * Create a new skill Selling with the provided entity.
      *
@@ -33,7 +33,7 @@ class SkillSellingRepository extends Repository
     }
 
     /**
-     * @author
+     * @author Tobi Olanitori <tobiolanitori@gmail.com>
      *
      * Query skillSelling based on the provided filter.
      *
@@ -54,7 +54,7 @@ class SkillSellingRepository extends Repository
     }
 
     /**
-     * @author
+     * @author Tobi Olanitori <tobiolanitori@gmail.com>
      *
      * Find skillSellings based on the provided filter.
      *
@@ -67,7 +67,7 @@ class SkillSellingRepository extends Repository
     }
 
     /**
-     * @author
+     * @author Tobi Olanitori <tobiolanitori@gmail.com>
      *
      * Find a skillSelling by their ID.
      *
@@ -80,7 +80,7 @@ class SkillSellingRepository extends Repository
     }
 
     /**
-     * @author
+     * @author Tobi Olanitori <tobiolanitori@gmail.com>
      *
      * Find a single skillSelling based on the provided filter.
      *
@@ -95,7 +95,7 @@ class SkillSellingRepository extends Repository
     }
 
     /**
-     * @author
+     * @author Tobi Olanitori <tobiolanitori@gmail.com>
      *
      * Update an entity in the database.
      *

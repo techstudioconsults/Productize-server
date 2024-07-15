@@ -16,8 +16,6 @@ class SkillSellingResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'level' => $this->level,
-            'availability' => $this->availability,
             'category' => $this->category,
             'link' => $this->link,
             'product' => [
@@ -25,16 +23,6 @@ class SkillSellingResource extends JsonResource
                 'thumbnail' => $this->product->thumbnail,
                 'cover_photos' => $this->product->cover_photos,
             ],
-            'assets' => $this->assets->map(function ($asset) {
-                return [
-                    'id' => $asset->id,
-                    'name' => $asset->name,
-                    'url' => $asset->url,
-                    'mime_type' => $asset->mime_type,
-                    'size' => round($asset->size / 1048576, 3).'MB', // Convert byte to MB
-                    'extension' => $asset->extension,
-                ];
-            }),
             'created_at' => $this->created_at,
         ];
     }

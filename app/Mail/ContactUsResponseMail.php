@@ -11,7 +11,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -45,7 +44,7 @@ class ContactUsResponseMail extends Mailable
     public function content(): Content
     {
         return new Content(
-           markdown: 'mail.contact-us-response'
+            markdown: 'mail.contact-us-response'
         );
     }
 

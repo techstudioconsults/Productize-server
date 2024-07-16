@@ -11,7 +11,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -54,7 +53,7 @@ class ContactUsMail extends Mailable
                 'lastname' => $this->data['lastname'],
                 'email' => $this->data['email'],
                 'subject' => $this->data['subject'],
-                'message' => $this->data['message']
+                'message' => $this->data['message'],
             ]
         );
     }

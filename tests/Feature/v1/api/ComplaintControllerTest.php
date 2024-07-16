@@ -160,15 +160,15 @@ class ComplaintControllerTest extends TestCase
             'lastname' => 'Odesanya',
             'email' => 'obajide028@gmail.com',
             'subject' => 'Quality Assurance',
-            'message' => 'How do i go it?'
+            'message' => 'How do i go it?',
         ];
 
         $response = $this->postJson('/api/complaints/contact-us', $formData);
 
         $response->assertStatus(200)
-                 ->assertJson(['Message' => 'Your message has been sent.']);
+            ->assertJson(['Message' => 'Your message has been sent.']);
 
-        Mail::assertSent(ContactUsMail::class, function($mail) use ($formData){
+        Mail::assertSent(ContactUsMail::class, function ($mail) use ($formData) {
             return $mail->hasTo($formData['email']);
         });
 
@@ -176,7 +176,6 @@ class ComplaintControllerTest extends TestCase
             return $mail->hasTo($formData['email']);
         });
     }
-
 
     public function test_contact_form_validation()
     {
@@ -193,7 +192,7 @@ class ComplaintControllerTest extends TestCase
             'firstname' => 'Babajide',
             'lastname' => 'Odesanya',
             'subject' => 'Quality Assurance',
-            'message' => 'How do i go it?'
+            'message' => 'How do i go it?',
         ];
 
         $response = $this->postJson('/api/complaints/contact-us', $formData);
@@ -205,12 +204,11 @@ class ComplaintControllerTest extends TestCase
     {
         $formData = [
             'firstname' => 'jide',
-            'email' => 'obajide028@gmail.com'
+            'email' => 'obajide028@gmail.com',
         ];
 
         $response = $this->postJson('/api/complaints/contact-us', $formData);
 
         $response->assertStatus(422);
     }
-
 }

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LodgeComplaintRequest;
+use App\Http\Requests\StoreContactUsRequest;
 use App\Http\Resources\ComplaintResource;
+use App\Mail\ContactUsMail;
+use App\Mail\ContactUsResponseMail;
 use App\Mail\LodgeComplaint;
 use App\Models\Complaint;
 use App\Repositories\ComplaintRepository;
@@ -79,5 +82,27 @@ class ComplaintController extends Controller
     public function show(Complaint $complaint)
     {
         return new ComplaintResource($complaint);
+    }
+
+    /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Store a newly created resource in storage.
+     *
+     * @param  StoreContactusrequest  $request
+     *
+     * creates a new contact-us info
+     */
+    public function contactUs(StoreContactUsRequest $request)
+    {
+        $data = $request->validated();
+
+        // Send mail to team
+        Mail::send(new ContactUsMail($data));
+
+        // Send the response mail to the user
+        Mail::to($data['email'])->send(new ContactUsResponseMail());
+
+        return response()->json(['Message' => 'Your message has been sent.'], 200);
     }
 }

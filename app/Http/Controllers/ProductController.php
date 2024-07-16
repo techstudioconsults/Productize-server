@@ -66,7 +66,7 @@ class ProductController extends Controller
             'end_date' => $request->end_date,
         ];
 
-        $products = $this->productRepository->query($filter)->paginate(4);
+        $products = $this->productRepository->query($filter)->paginate(10);
 
         return ProductResource::collection($products);
     }

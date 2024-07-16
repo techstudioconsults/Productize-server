@@ -1,12 +1,20 @@
 <?php
 
+/**
+ *  @author @obajide028 Odesanya Babajide
+ *
+ *  @version 1.0
+ *
+ *  @since 13-07-2024
+ */
+
 namespace App\Http\Requests;
 
 use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateSkillSellingRequest extends FormRequest
+class StoreContactUsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +32,11 @@ class UpdateSkillSellingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'link' => 'string|url',
-            'resource_link' => 'sometimes|array',
-            'resource_link.*' => 'required|string|url',
+            'firstname' => 'required|string',
+            'lastname' => 'required|string',
+            'email' => 'required|string',
+            'subject' => 'required|string',
+            'message' => 'required|string',
         ];
     }
 

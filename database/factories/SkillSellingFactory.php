@@ -31,6 +31,7 @@ class SkillSellingFactory extends Factory
             'category' => 'Product',
             'link' => 'www.github.com',
             'product_id' => $product->id,
+            'resource_link' => ['www.github.com', 'www.tsa.com'],
         ];
     }
 }

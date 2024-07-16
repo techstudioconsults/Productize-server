@@ -42,6 +42,7 @@ class SkillSellingControllerTest extends TestCase
             'product_id' => $product->id,
             'category' => 'Product',
             'link' => 'https://www.github.com',
+            'resource_link' => ['https://www.github.com', 'https://www.github.com']
         ];
 
         $response = $this->withoutExceptionHandling()->post(route('skillSelling.store'), $data);
@@ -52,6 +53,7 @@ class SkillSellingControllerTest extends TestCase
                     'id',
                     'category',
                     'link',
+                    'resource_link',
                     'created_at',
                     'product' => ['id', 'thumbnail', 'cover_photos'],
                 ],

@@ -25,4 +25,16 @@ Route::controller(ComplaintController::class)
         Route::get('/{complaint}', 'show')->name('show');
 
         Route::post('/', 'store')->name('store')->withoutMiddleware('abilities:role:super_admin');
+
+        Route::post('/contact-us', 'contactUs')->name('contactUs')->withoutMiddleware(['auth:sanctum', 'abilities:role:super_admin']);
     });
+
+    Route::controller(ComplaintController::class)
+    ->prefix('complaints')
+    ->as('complaints.')
+    ->namespace("\App\Http\Controllers")
+    ->group(function () {
+        Route::post('/contact-us', 'contactUs')->name('contactUs');
+    });
+
+

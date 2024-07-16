@@ -23,6 +23,11 @@ class SkillSelling extends Model
         'product_id',
         'category',
         'link',
+        'resource_link',
+    ];
+
+    protected $casts = [
+        'resource_link' => 'array',
     ];
 
     public function product()

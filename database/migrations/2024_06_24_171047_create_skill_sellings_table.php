@@ -16,6 +16,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignIdFor(\App\Models\Product::class, 'product_id')->cascadeOnDelete()->unique();
             $table->string('link');
+            $table->json('resource_link');
             $table->enum('category', array_column(SkillSellingCategory::cases(), 'value'))->default(SkillSellingCategory::PRODUCT->value);
             $table->softDeletes('deleted_at', 0);
             $table->timestamps();

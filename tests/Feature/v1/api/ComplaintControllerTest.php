@@ -3,6 +3,8 @@
 namespace Tests\Feature\v1\api;
 
 use App\Http\Resources\ComplaintResource;
+use App\Mail\ContactUsMail;
+use App\Mail\ContactUsResponseMail;
 use App\Mail\LodgeComplaint;
 use App\Models\Complaint;
 use App\Traits\SanctumAuthentication;
@@ -148,4 +150,67 @@ class ComplaintControllerTest extends TestCase
 
         $response->assertUnauthorized();
     }
+
+    public function test_contact()
+    {
+        Mail::fake();
+
+        $formData = [
+            'firstname' => 'Babajide',
+            'lastname' => 'Odesanya',
+            'email' => 'obajide028@gmail.com',
+            'subject' => 'Quality Assurance',
+            'message' => 'How do i go it?'
+        ];
+
+        $response = $this->postJson('/api/complaints/contact-us', $formData);
+
+        $response->assertStatus(200)
+                 ->assertJson(['Message' => 'Your message has been sent.']);
+
+        Mail::assertSent(ContactUsMail::class, function($mail) use ($formData){
+            return $mail->hasTo($formData['email']);
+        });
+
+        Mail::assertSent(ContactUsResponseMail::class, function ($mail) use ($formData) {
+            return $mail->hasTo($formData['email']);
+        });
+    }
+
+
+    public function test_contact_form_validation()
+    {
+        $response = $this->postJson('/api/complaints/contact-us', []);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_contact_form_validation_fails_with_invalid_email()
+    {
+        Mail::fake();
+
+        $formData = [
+            'firstname' => 'Babajide',
+            'lastname' => 'Odesanya',
+            'subject' => 'Quality Assurance',
+            'message' => 'How do i go it?'
+        ];
+
+        $response = $this->postJson('/api/complaints/contact-us', $formData);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_contact_form_validation_fails_with_missing_fields()
+    {
+        $formData = [
+            'firstname' => 'jide',
+            'email' => 'obajide028@gmail.com'
+        ];
+
+        $response = $this->postJson('/api/complaints/contact-us', $formData);
+
+        $response->assertStatus(422);
+    }
+
 }

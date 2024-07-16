@@ -25,6 +25,8 @@ class UpdateSkillSellingRequest extends FormRequest
     {
         return [
             'link' => 'string|url',
+            'resource_link' => 'sometimes|array',
+            'resource_link.*' => 'required|string|url',
         ];
     }
 

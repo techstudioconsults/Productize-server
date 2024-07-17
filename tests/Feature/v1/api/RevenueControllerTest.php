@@ -121,7 +121,7 @@ class RevenueControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_' . now()->isoFormat('DD_MMMM_YYYY') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_'.now()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
     /** @test */
@@ -177,18 +177,18 @@ class RevenueControllerTest extends TestCase
 
         Order::factory()->count(10)->create([
             'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
-            'created_at' => now()
+            'created_at' => now(),
         ]);
 
         Order::factory()->count(10)->create([
             'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
-            'created_at' => now()->subDays(2)
+            'created_at' => now()->subDays(2),
         ]);
 
         // create orders out of 7 days bound
         Order::factory()->count(10)->create([
             'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
-            'created_at' => now()->subDays(10)
+            'created_at' => now()->subDays(10),
         ]);
 
         $response = $this->withoutExceptionHandling()->get(route('revenue.daily'));

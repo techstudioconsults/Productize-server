@@ -4,14 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\RevenueActivity;
 use App\Http\Resources\RevenueResource;
-use App\Models\Order;
 use App\Repositories\OrderRepository;
 use App\Repositories\RevenueRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Collection;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -27,8 +25,7 @@ class RevenueController extends Controller
     public function __construct(
         protected RevenueRepository $revenueRepository,
         protected OrderRepository $orderRepository
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -89,7 +86,7 @@ class RevenueController extends Controller
 
         $relation_with_last_7_days_orders = $this->orderRepository->queryRelation($relation, [
             'start_date' => now()->subMonth(1),
-            'end_date' => now()
+            'end_date' => now(),
         ]);
 
         $orders = $relation_with_last_7_days_orders->get()->groupBy(function ($order) {

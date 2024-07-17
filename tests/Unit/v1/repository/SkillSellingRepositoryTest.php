@@ -39,7 +39,7 @@ class SkillSellingRepositoryTest extends TestCase
             'category' => 'Product',
             'product_id' => $product->id,
             'link' => 'https:github.com/intuneteq',
-            'resource_link' => ['https:github.com/obajide028']
+            'resource_link' => ['https:github.com/obajide028'],
         ];
 
         $result = $this->skillSellingRepository->create($data);

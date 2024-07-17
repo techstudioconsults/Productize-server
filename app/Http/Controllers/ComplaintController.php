@@ -84,7 +84,7 @@ class ComplaintController extends Controller
         return new ComplaintResource($complaint);
     }
 
-       /**
+    /**
      * @author @obajide028 Odesanya Babajide
      *
      * Store a newly created resource in storage.
@@ -93,17 +93,16 @@ class ComplaintController extends Controller
      *
      * creates a new contact-us info
      */
-
     public function contactUs(StoreContactUsRequest $request)
     {
         $data = $request->validated();
 
         // Send mail to team
         Mail::send(new ContactUsMail($data));
- 
+
         // Send the response mail to the user
         Mail::to($data['email'])->send(new ContactUsResponseMail());
- 
-         return response()->json(['Message' => "Your message has been sent."], 200);
+
+        return response()->json(['Message' => 'Your message has been sent.'], 200);
     }
 }

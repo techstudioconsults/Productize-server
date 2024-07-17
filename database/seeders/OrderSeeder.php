@@ -16,7 +16,14 @@ class OrderSeeder extends Seeder
 
     public function run(): void
     {
-        $user = User::where('email', 'kinxly@gmail.com')->first();
+        $user = User::where('email', 'kinxly@gmail.com')->firstOr(function () {
+            return User::factory()->create([
+                'email' => 'kinxly@gmail.com',
+                'full_name' => 'Kingsley Solomon',
+            ]);
+        });
+
+        // $user =
 
         $startDate = Carbon::create(2024, 6, 1);
         $endDate = Carbon::create(2024, 6, 30);

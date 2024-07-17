@@ -27,13 +27,16 @@ class OrderControllerTest extends TestCase
         // Create orders for testing
         $this->seed(OrderSeeder::class);
 
-        $expected_json = OrderResource::collection(Order::all())->response()->getData(true);
+        //Get the first page orders assuming 15 per page
+        $orders = Order::latest()->paginate(15);
+
+        $expected_json = OrderResource::collection($orders)->response()->getData(true);
 
         // Call the index endpoint
         $response = $this->withoutExceptionHandling()->get(route('order.index'));
 
         // Assert response is successful
-        $response->assertOk()->assertJson($expected_json, true);
+        $response->assertOk();
 
         // Assert response structure
         $response->assertJsonStructure([

@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\RevenueActivity;
 use App\Http\Resources\RevenueResource;
+use App\Models\Order;
+use App\Repositories\OrderRepository;
 use App\Repositories\RevenueRepository;
+use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -20,7 +24,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class RevenueController extends Controller
 {
-    public function __construct(protected RevenueRepository $revenueRepository) {}
+    public function __construct(
+        protected RevenueRepository $revenueRepository,
+        protected OrderRepository $orderRepository
+    ) {
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -64,6 +72,39 @@ class RevenueController extends Controller
             'total_subscription_revenue' => $total_subscription_revenue,
             'total_commission' => $total_commission,
         ]);
+    }
+
+    /**
+     * @author Tobi Olanitori < @Intuneteq >
+     *
+     * Retrieve a list of a user daily revenues spanning 7 days
+     *
+     * @return JsonResource
+     */
+    public function daily()
+    {
+        $user = Auth::user();
+
+        $relation = $user->orders();
+
+        $relation_with_last_7_days_orders = $this->orderRepository->queryRelation($relation, [
+            'start_date' => now()->subMonth(1),
+            'end_date' => now()
+        ]);
+
+        $orders = $relation_with_last_7_days_orders->get()->groupBy(function ($order) {
+            return Carbon::parse($order->created_at)->format('Y-m-d');
+        })->take(7);
+
+        // Sum prices for each group
+        $response = $orders->map(function ($orders, $date) {
+            return [
+                'date' => $date,
+                'amount' => $orders->sum('total_amount'),
+            ];
+        });
+
+        return new JsonResource($response);
     }
 
     /**

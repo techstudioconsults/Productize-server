@@ -28,7 +28,7 @@ class OrderSeeder extends Seeder
             Order::factory(10)->create([
                 'product_id' => Product::factory()->create(['user_id' => $user->id]),
                 'created_at' => $startDate,
-                'updated_at' => $startDate
+                'updated_at' => $startDate,
             ]);
 
             $startDate->addDay();

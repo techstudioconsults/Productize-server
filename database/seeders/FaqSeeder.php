@@ -41,7 +41,7 @@ class FaqSeeder extends Seeder
         Faq::factory()->create([
             'title' => 'General Question',
             'question' => 'What types of digital products can I sell?',
-            'answer' => 'You can sell a wide range of digital products, including art, photography, music, software, templates, eBooks, and more. If it is a digital creation, it is welcome here!'
+            'answer' => 'You can sell a wide range of digital products, including art, photography, music, software, templates, eBooks, and more. If it is a digital creation, it is welcome here!',
         ]);
 
         Faq::factory()->create([

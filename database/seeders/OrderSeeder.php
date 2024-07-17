@@ -34,6 +34,12 @@ class OrderSeeder extends Seeder
             $startDate->addDay();
         }
 
+        Order::factory(10)->create([
+            'product_id' => function () {
+                return Product::factory()->create(['user_id' => User::factory()->create()->id])->id;
+            },
+        ]);
+
         $this->enableForeignKeys();
     }
 }

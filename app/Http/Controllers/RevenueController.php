@@ -94,7 +94,7 @@ class RevenueController extends Controller
 
         $orders = $relation_with_last_7_days_orders->get()->groupBy(function ($order) {
             return Carbon::parse($order->created_at)->format('Y-m-d');
-        })->take(7);
+        })->take(14);
 
         // Sum prices for each group
         $response = $orders->map(function ($orders, $date) {

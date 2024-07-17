@@ -5,6 +5,8 @@ namespace Tests\Feature\v1\api;
 use App\Enums\RevenueActivity;
 use App\Exceptions\ForbiddenException;
 use App\Http\Resources\RevenueResource;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\Revenue;
 use App\Traits\SanctumAuthentication;
 use Database\Seeders\RevenueSeeder;
@@ -119,7 +121,7 @@ class RevenueControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_'.now()->isoFormat('DD_MMMM_YYYY').'.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_' . now()->isoFormat('DD_MMMM_YYYY') . '.csv');
     }
 
     /** @test */
@@ -167,5 +169,39 @@ class RevenueControllerTest extends TestCase
             'start_date' => now()->subMonth()->toDateString(),
             'end_date' => now()->toDateString(),
         ]));
+    }
+
+    public function test_daily()
+    {
+        $user = $this->actingAsRegularUser();
+
+        Order::factory()->count(10)->create([
+            'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+            'created_at' => now()
+        ]);
+
+        Order::factory()->count(10)->create([
+            'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+            'created_at' => now()->subDays(2)
+        ]);
+
+        // create orders out of 7 days bound
+        Order::factory()->count(10)->create([
+            'product_id' => Product::factory()->create(['user_id' => $user->id])->id,
+            'created_at' => now()->subDays(10)
+        ]);
+
+        $response = $this->withoutExceptionHandling()->get(route('revenue.daily'));
+
+        $response->assertOk();
+
+        $response->assertJsonCount(3, 'data');
+    }
+
+    public function test_daily_unauthenticated()
+    {
+        $response = $this->get(route('revenue.daily'));
+
+        $response->assertUnauthorized();
     }
 }

@@ -184,7 +184,7 @@ class WebhookRepository
 
             // Update productize's revenue
             $this->revenueRepository->create([
-                'user_id' => $owner->id,
+                'user_id' => $owner->id, // They spent the money
                 'activity' => RevenueActivity::PURCHASE->value,
                 'product' => 'Purchase',
                 'amount' => $data['amount'],

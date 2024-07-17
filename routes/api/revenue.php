@@ -14,6 +14,8 @@ Route::controller(RevenueController::class)
     ->group(function () {
         Route::get('/', 'index')->name('index');
 
+        Route::get('/daily', 'daily')->name('daily')->withoutMiddleware('abilities:role:super_admin');
+
         Route::get('/stats', 'stats')->name('stats');
 
         Route::get('/download', 'download')->name('download');

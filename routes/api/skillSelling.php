@@ -15,7 +15,7 @@ Route::controller(SkillSellingController::class)
     ->group(function () {
         Route::post('/', 'store')->name('store');
 
-        Route::get('/products/{product}', 'product')->name('product')->middleware('can:viewByProduct,product');
+        Route::get('/products/{product}', 'product')->name('product');
 
         Route::get('/categories', 'categories')->withoutMiddleware([
             'auth:sanctum',

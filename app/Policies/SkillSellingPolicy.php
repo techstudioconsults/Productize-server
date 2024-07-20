@@ -33,8 +33,9 @@ class SkillSellingPolicy
 
     public function viewForProduct(User $user, Product $product)
     {
-        return $user->id === $product->user->id
-            ? Response::allow()
-            : throw new ForbiddenException('Access Denied: No permission to access this resource');
+        return Response::allow();
+        // return $user->id === $product->user->id
+        //     ? Response::allow()
+        //     : throw new ForbiddenException('Access Denied: No permission to access this resource');
     }
 }

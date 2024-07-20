@@ -487,7 +487,6 @@ class ProductController extends Controller
                 'slug' => $product->slug,
                 'publisher' => $product->user->full_name,
                 'price' => $product->price,
-                'resource_link' => $product->skillSelling ? $product->skillSelling->resource_link : null,
             ];
         });
 

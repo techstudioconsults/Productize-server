@@ -527,7 +527,7 @@ class ProductController extends Controller
             'end_date' => $request->end_date,
         ];
 
-        $top_products = $this->productRepository->topProducts($filter)->paginate(5);
+        $top_products = $this->productRepository->topProducts($filter)->paginate(10);
 
         return ProductResource::collection($top_products);
     }

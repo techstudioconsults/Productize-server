@@ -13,7 +13,8 @@ Route::controller(PayoutController::class)
         'can:subscribed,App\Models\Payout',
     ])
     ->group(function () {
-        Route::get('/', 'index')->name('index')->middleware('abilities:role:super_admin');
+        Route::get('/', 'index')->name('index')->middleware('abilities:role:super_admin')
+            ->withoutMiddleware('can:subscribed,App\Models\Payout');
 
         Route::get('/user', 'user')->name('user');
 

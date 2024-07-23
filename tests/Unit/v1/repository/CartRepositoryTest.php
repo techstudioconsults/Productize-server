@@ -24,7 +24,7 @@ class CartRepositoryTest extends TestCase
         parent::setUp();
 
         // Create an instance of the repository
-        $this->cartRepository = new CartRepository();
+        $this->cartRepository = new CartRepository;
     }
 
     public function test_create(): void

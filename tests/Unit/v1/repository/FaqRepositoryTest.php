@@ -19,7 +19,7 @@ class FaqRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->faqRepository = new FaqRepository();
+        $this->faqRepository = new FaqRepository;
     }
 
     /**

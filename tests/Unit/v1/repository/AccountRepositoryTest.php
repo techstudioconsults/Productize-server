@@ -23,7 +23,7 @@ class AccountRepositoryTest extends TestCase
         parent::setUp();
 
         // Create an instance of the repository
-        $this->accountRepository = new AccountRepository();
+        $this->accountRepository = new AccountRepository;
     }
 
     public function test_create(): void

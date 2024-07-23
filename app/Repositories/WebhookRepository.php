@@ -270,7 +270,7 @@ class WebhookRepository
 
         $user = $this->userRepository->guardedUpdate($email, 'account_type', 'free');
 
-        $user->notify(new SubscriptionCancelled());
+        $user->notify(new SubscriptionCancelled);
     }
 
     private function handleTransferSuccessEvent(array $data): void
@@ -294,7 +294,7 @@ class WebhookRepository
                 'pending' => 0,
             ]);
 
-            $user->notify(new WithdrawSuccessful());
+            $user->notify(new WithdrawSuccessful);
 
             // Email User
         } catch (\Throwable $th) {
@@ -342,7 +342,7 @@ class WebhookRepository
                 'pending' => 0,
             ]);
 
-            $user->notify(new WithdrawReversed());
+            $user->notify(new WithdrawReversed);
 
             // Email User
         } catch (\Throwable $th) {

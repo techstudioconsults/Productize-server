@@ -58,7 +58,7 @@ class UserRepository extends Repository
      */
     public function create(array $credentials): User
     {
-        $user = new User();
+        $user = new User;
 
         if (! isset($credentials['email'])) {
             throw new BadRequestException('No Email Provided');

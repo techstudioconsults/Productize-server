@@ -19,7 +19,7 @@ class ValidationServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->validationService = new ValidationService();
+        $this->validationService = new ValidationService;
     }
 
     public function test_is_invalid_date_range(): void

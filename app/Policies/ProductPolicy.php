@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\Roles;
 use App\Exceptions\ForbiddenException;
 use App\Models\Product;
 use App\Models\User;
@@ -25,6 +26,10 @@ class ProductPolicy
 
     public function view(User $user, Product $product)
     {
+        if ($user->role === Roles::SUPER_ADMIN->value) {
+            return Response::allow();
+        }
+
         return $user->id === $product->user_id
             ? Response::allow()
             : throw new ForbiddenException($user->full_name.' with id '.$user->id.' is not permitted to request this resource');

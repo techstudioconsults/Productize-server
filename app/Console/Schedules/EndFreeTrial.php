@@ -50,7 +50,7 @@ class EndFreeTrial
                     ->update(['account_type' => 'free']);
 
                 // Send notifications to users whose account type was updated
-                Notification::send($users, new FreeTrialEnded());
+                Notification::send($users, new FreeTrialEnded);
 
                 // Log the count of updated users
                 Log::channel('schedule')->info('Total Update Count', ['count' => $count]);

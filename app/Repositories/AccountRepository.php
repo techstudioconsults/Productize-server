@@ -33,7 +33,7 @@ class AccountRepository extends Repository
      */
     public function create(array $entity): Account
     {
-        $rules = (new StoreAccountRequest())->rules();
+        $rules = (new StoreAccountRequest)->rules();
 
         // Add the 'user_id' rule to the validation rules
         $rules['user_id'] = 'required';

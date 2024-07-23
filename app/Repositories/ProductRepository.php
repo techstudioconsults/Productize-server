@@ -59,7 +59,7 @@ class ProductRepository extends Repository
     public function create(array $credentials): Product
     {
         // Get the validation rules from the StoreProductRequest
-        $rules = (new StoreProductRequest())->rules();
+        $rules = (new StoreProductRequest)->rules();
 
         // Add the 'user_id' rule to the validation rules
         $rules['user_id'] = 'required';
@@ -202,7 +202,7 @@ class ProductRepository extends Repository
             throw new ModelCastException('Product', get_class($product));
         }
         // Get the validation rules from the StoreProductRequest
-        $rules = (new UpdateProductRequest())->rules();
+        $rules = (new UpdateProductRequest)->rules();
 
         if (! $this->isValidated($updatables, $rules)) {
             throw new BadRequestException($this->getValidator()->errors()->first());

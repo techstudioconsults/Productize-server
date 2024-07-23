@@ -53,7 +53,7 @@ trait HasFileGenerator
      */
     public function generatePdf(string $fileName, string $htmlContent): string
     {
-        $mpdf = new Mpdf();
+        $mpdf = new Mpdf;
         $mpdf->WriteHTML($htmlContent);
 
         $filePath = 'pdf/'.$fileName;

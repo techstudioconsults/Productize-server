@@ -12,4 +12,9 @@ class Revenue extends Model
     use HasUuids;
 
     protected $fillable = ['activity', 'product', 'amount', 'user_id', 'commission'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

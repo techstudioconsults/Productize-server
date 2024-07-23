@@ -13,7 +13,8 @@ Route::controller(OrderController::class)
         'can:premium,App\Models\Order',
     ])
     ->group(function () {
-        Route::get('/', 'index')->middleware('abilities:role:super_admin')->name('index');
+        Route::get('/', 'index')->middleware('abilities:role:super_admin')
+            ->withoutMiddleware('can:premium,App\Models\Order')->name('index');
 
         Route::get('/user', 'user')->name('user');
 

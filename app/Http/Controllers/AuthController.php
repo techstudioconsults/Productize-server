@@ -325,7 +325,7 @@ class AuthController extends Controller
         } elseif ($response == Password::INVALID_USER) {
             throw new NotFoundException('User not found');
         } elseif ($response == Password::RESET_THROTTLED) {
-            throw new TooManyRequestException();
+            throw new TooManyRequestException;
         } else {
             throw new ServerErrorException('Password reset email could not be sent');
         }

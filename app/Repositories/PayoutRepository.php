@@ -34,7 +34,7 @@ class PayoutRepository extends Repository
      */
     public function create(array $credentials): Payout
     {
-        $payout = new Payout();
+        $payout = new Payout;
 
         $payout->account_id = $credentials['account_id'];
         $payout->reference = $credentials['reference'];
@@ -123,7 +123,7 @@ class PayoutRepository extends Repository
      * @param  array|null  $filter  The filter criteria to apply (optional).
      * @return Collection The collection of found payouts.
      */
-    public function find(?array $filter= []): ?Collection
+    public function find(?array $filter = []): ?Collection
     {
         return $this->query($filter ?? [])->get();
     }

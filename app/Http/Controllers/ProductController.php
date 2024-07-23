@@ -162,7 +162,7 @@ class ProductController extends Controller
         }
 
         if (! $this->productRepository->isPublished($product)) {
-            throw new BadRequestException();
+            throw new BadRequestException;
         }
 
         return new ExternalProductResource($product);

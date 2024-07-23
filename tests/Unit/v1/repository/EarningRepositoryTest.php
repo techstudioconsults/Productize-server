@@ -21,7 +21,7 @@ class EarningRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->earningRepository = new EarningRepository();
+        $this->earningRepository = new EarningRepository;
     }
 
     public function test_create_earning(): void

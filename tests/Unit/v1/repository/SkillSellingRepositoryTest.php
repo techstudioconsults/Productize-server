@@ -28,7 +28,7 @@ class SkillSellingRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->skillSellingRepository = new SkillSellingRepository();
+        $this->skillSellingRepository = new SkillSellingRepository;
     }
 
     public function test_create()

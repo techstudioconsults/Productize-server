@@ -21,7 +21,7 @@ class AssetRepositoryTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->assetRepository = new AssetRepository();
+        $this->assetRepository = new AssetRepository;
     }
 
     public function test_create_asset()
@@ -95,7 +95,7 @@ class AssetRepositoryTest extends TestCase
     public function test_update_throws_exception_for_invalid_model()
     {
         $this->expectException(ModelCastException::class);
-        $invalidModel = new Product();
+        $invalidModel = new Product;
         $this->assetRepository->update($invalidModel, []);
     }
 

@@ -50,7 +50,7 @@ class FreeTrialReminder
             $emails = $users->pluck('email');
 
             // Send reminder emails to the collected emails
-            Mail::to($emails->toArray())->send(new FreeTrialEndingReminder());
+            Mail::to($emails->toArray())->send(new FreeTrialEndingReminder);
 
             // Log the count of users who received the email
             Log::channel('schedule')->info('Free Trial Emails Sent', ['count' => $emails->count()]);

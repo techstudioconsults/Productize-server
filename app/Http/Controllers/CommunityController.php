@@ -50,7 +50,7 @@ class CommunityController extends Controller
         $community = $this->communityRepository->create($request->validated());
 
         // Send the welcome email
-        Mail::to($community->email)->send(new CommunityWelcomeMail());
+        Mail::to($community->email)->send(new CommunityWelcomeMail);
 
         return response()->json(new CommunityResource($community), 201);
     }

@@ -20,7 +20,7 @@ class ComplaintRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->repository = new ComplaintRepository();
+        $this->repository = new ComplaintRepository;
     }
 
     public function test_create_complaint()

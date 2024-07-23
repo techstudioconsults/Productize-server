@@ -21,7 +21,7 @@ class ReviewRepositoryTest extends TestCase
     {
 
         parent::setUp();
-        $this->reviewRepository = new ReviewRepository();
+        $this->reviewRepository = new ReviewRepository;
     }
 
     /**

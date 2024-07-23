@@ -19,7 +19,7 @@ class DigitalProductRepositoryTest extends TestCase
     public function setUp(): void
     {
         parent::setup();
-        $this->digitalProductRepository = new DigitalProductRepository();
+        $this->digitalProductRepository = new DigitalProductRepository;
     }
 
     public function test_create()

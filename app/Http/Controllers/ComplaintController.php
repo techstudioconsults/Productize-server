@@ -101,7 +101,7 @@ class ComplaintController extends Controller
         Mail::send(new ContactUsMail($data));
 
         // Send the response mail to the user
-        Mail::to($data['email'])->send(new ContactUsResponseMail());
+        Mail::to($data['email'])->send(new ContactUsResponseMail);
 
         return response()->json(['Message' => 'Your message has been sent.'], 200);
     }

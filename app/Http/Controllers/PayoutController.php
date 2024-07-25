@@ -116,4 +116,45 @@ class PayoutController extends Controller
 
         return $this->streamFile($filePath, $fileName, 'text/csv');
     }
+
+    /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Download a CSV file of the super admin's payouts filtered by the given start and end dates.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadPayout(Request $request)
+    {
+        $user = Auth::user();
+
+        $start_date = $request->start_date;
+
+        $end_date = $request->end_date;
+
+        $filter = [
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ];
+
+        $payouts = $this->payoutRepository->queryRelation($user->payouts(), $filter)->get();
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+        $fileName = "payouts_$now.csv";
+
+        $columns = ['Price',  'BankAccountNumber', 'Period'];
+        $data = [$columns];
+
+        foreach ($payouts as $payout) {
+            $data[] = [
+                $payout->amount,
+                $payout->account->account_number,
+                $payout->created_at,
+            ];
+        }
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
+    }
 }

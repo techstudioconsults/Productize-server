@@ -22,8 +22,8 @@ class ComplaintFactory extends Factory
         return [
             'user_id' => $user->id,
             'email' => $user->email,
-            'subject' => fake()->text(),
-            'message' => fake()->sentence(),
+            'subject' => fake()->sentence(),
+            'message' => fake()->text(),
         ];
     }
 }

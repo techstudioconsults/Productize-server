@@ -24,6 +24,7 @@ class UserResource extends JsonResource
             'account_type' => $this->account_type,
             'logo' => $this->logo,
             'role' => $this->role,
+            'status' => $this->status,
             'twitter_account' => $this->twitter_account,
             'facebook_account' => $this->facebook_account,
             'youtube_account' => $this->youtube_account,

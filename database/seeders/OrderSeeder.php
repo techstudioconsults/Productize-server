@@ -23,8 +23,6 @@ class OrderSeeder extends Seeder
             ]);
         });
 
-        // $user =
-
         $startDate = Carbon::create(2024, 6, 1);
         $endDate = Carbon::create(2024, 6, 30);
 

@@ -19,4 +19,7 @@ Route::controller(PayoutController::class)
         Route::get('/user', 'user')->name('user');
 
         Route::get('/download', 'download')->name('download');
+
+        Route::get('/download/superadmin', 'downloadPayout')->middleware('abilities:role:super_admin')
+            ->withoutMiddleware('can:subscribed,App\Models\Payout')->name('downloadPayout');
     });

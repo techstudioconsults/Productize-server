@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Enums\PayoutStatus;
 use App\Enums\RevenueActivity;
+use App\Enums\RevenueActivityStatus;
 use App\Exceptions\ServerErrorException;
 use App\Mail\GiftAlert;
 use App\Models\User;
@@ -124,6 +125,9 @@ class WebhookRepository
         // If it is a gift, retrieve the user id of the recipient
         $recipient_id = $metadata['recipient_id'];
 
+        // Retrieve the revenue
+        $revenue_id = $metadata['revenue_id'];
+
         // Product will be available in this user's download
         // If it is a gift, owner will be the recipient
         // Else, the buyer
@@ -183,12 +187,12 @@ class WebhookRepository
             }
 
             // Update productize's revenue
-            $this->revenueRepository->create([
-                'user_id' => $owner->id, // They spent the money
-                'activity' => RevenueActivity::PURCHASE->value,
-                'product' => 'Purchase',
-                'amount' => $data['amount'],
-                'commission' => RevenueRepository::SALE_COMMISSION,
+
+             // Fetch the revenue model
+             $revenue = $this->revenueRepository->findById($revenue_id);
+
+            $this->revenueRepository->update($revenue, [
+               'status' => RevenueActivityStatus::COMPLETED->value,
             ]);
         } catch (\Throwable $th) {
             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
@@ -211,6 +215,17 @@ class WebhookRepository
 
         // update user to premium
         $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
+
+         // create revenue record
+         $this->revenueRepository->create([
+            'user_id' => $subscription->user->id,
+            'activity' => RevenueActivity::PURCHASE->value,
+            'product' => 'Purchase',
+            'amount' => SubscriptionRepository::PRICE,
+            'status' => RevenueActivityStatus::COMPLETED->value,
+            'commission' => RevenueRepository::SALE_COMMISSION,
+        ]);
+
     }
 
     private function handleSubscriptionRenewEvent(array $data): void
@@ -232,6 +247,7 @@ class WebhookRepository
             'activity' => RevenueActivity::SUBSCRIPTION_RENEW->value,
             'product' => 'Subscription',
             'amount' => SubscriptionRepository::PRICE,
+            'status' => RevenueActivityStatus::COMPLETED->value,
         ]);
     }
 

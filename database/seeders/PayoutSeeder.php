@@ -18,6 +18,18 @@ class PayoutSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $user = User::where('email', 'tobi.olanitori.binaryartinc@gmail.com')->firstOr(function () {
+            return User::factory()->create([
+                'email' => 'tobi.olanitori.binaryartinc@gmail.com',
+                'full_name' => 'Tobi Olanitori',
+            ]);
+        });
+
+        Payout::factory(10)->create([
+            'account_id' => Account::factory()->create(['user_id' => $user->id]),
+        ]);
+
         Payout::factory()->count(10)->create([
             'account_id' => Account::factory()->create(['user_id' => User::factory()->create()->id]),
         ]);

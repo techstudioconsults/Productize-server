@@ -257,4 +257,41 @@ class OrderController extends Controller
             'avg_order_value' => (int) $avg_order_value,
         ]);
     }
+
+    public function downloadOrder(Request $request)
+    {
+         Auth::user();
+
+         $start_date = $request->start_date;
+         $end_date = $request->end_date;
+         $product_title = $request->product_title;
+
+         $filter = [
+            'product_title' => $product_title,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ];
+
+        $orders = $this->orderRepository->query($filter)->get();
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+        $fileName = "orders_$now.csv";
+
+        $columns = ['Product', 'Price', 'CustomerEmail', 'Date'];
+        $data = [$columns];
+
+        foreach ($orders as $order) {
+            $data[] = [
+                $order->product->title,
+                $order->product->price,
+                $order->user->email,
+                $order->created_at,
+            ];
+        }
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
+
+     }
 }

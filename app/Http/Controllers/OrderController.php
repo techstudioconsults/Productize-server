@@ -260,13 +260,13 @@ class OrderController extends Controller
 
     public function downloadOrder(Request $request)
     {
-         Auth::user();
+        Auth::user();
 
-         $start_date = $request->start_date;
-         $end_date = $request->end_date;
-         $product_title = $request->product_title;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        $product_title = $request->product_title;
 
-         $filter = [
+        $filter = [
             'product_title' => $product_title,
             'start_date' => $start_date,
             'end_date' => $end_date,
@@ -293,5 +293,5 @@ class OrderController extends Controller
 
         return $this->streamFile($filePath, $fileName, 'text/csv');
 
-     }
+    }
 }

@@ -199,7 +199,7 @@ class CartController extends Controller
                 'buyer_id' => $user->id,
                 'products' => $products,
                 'recipient_id' => $recipient ? $recipient->id : null,
-                'revenue_id' => $revenue->id
+                'revenue_id' => $revenue->id,
             ],
         ];
 

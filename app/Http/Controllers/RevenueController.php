@@ -156,12 +156,11 @@ class RevenueController extends Controller
 
         $totalUsers = $this->userRepository->query([])->count();
 
-
         return new JsonResource([
             'total_products' => $totalProducts,
             'total_sales' => $totalSales,
             'total_payouts' => $totalPayouts,
-            'total_users' => $totalUsers
+            'total_users' => $totalUsers,
         ]);
     }
 }

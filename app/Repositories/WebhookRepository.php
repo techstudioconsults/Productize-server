@@ -188,11 +188,11 @@ class WebhookRepository
 
             // Update productize's revenue
 
-             // Fetch the revenue model
-             $revenue = $this->revenueRepository->findById($revenue_id);
+            // Fetch the revenue model
+            $revenue = $this->revenueRepository->findById($revenue_id);
 
             $this->revenueRepository->update($revenue, [
-               'status' => RevenueActivityStatus::COMPLETED->value,
+                'status' => RevenueActivityStatus::COMPLETED->value,
             ]);
         } catch (\Throwable $th) {
             Log::channel('webhook')->critical('ERROR OCCURED', ['error' => $th->getMessage()]);
@@ -216,8 +216,8 @@ class WebhookRepository
         // update user to premium
         $this->userRepository->guardedUpdate($customer['email'], 'account_type', 'premium');
 
-         // create revenue record
-         $this->revenueRepository->create([
+        // create revenue record
+        $this->revenueRepository->create([
             'user_id' => $subscription->user->id,
             'activity' => RevenueActivity::PURCHASE->value,
             'product' => 'Purchase',

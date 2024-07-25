@@ -23,8 +23,7 @@ class PayoutController extends Controller
 {
     public function __construct(
         protected PayoutRepository $payoutRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -118,14 +117,13 @@ class PayoutController extends Controller
         return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 
-      /**
+    /**
      * @author @obajide028 Odesanya Babajide
      *
      * Download a CSV file of the super admin's payouts filtered by the given start and end dates.
      *
      * @return \Illuminate\Http\Response
      */
-
     public function downloadPayout(Request $request)
     {
         $user = Auth::user();

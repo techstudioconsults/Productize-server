@@ -37,7 +37,7 @@ class WebhookRepository
         try {
             switch ($type) {
                 case 'subscription.create':
-                    // $this->handleCreateSubscription($data);
+                    $this->handleCreateSubscription($data);
 
                     break;
 

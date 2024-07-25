@@ -151,4 +151,50 @@ class PayoutControllerTest extends TestCase
 
         $this->withoutExceptionHandling()->get(route('payout.download'));
     }
+
+    public function test_download_unauthenticated_for_superAdmin()
+    {
+        $this->expectException(UnAuthorizedException::class);
+
+        $this->withoutExceptionHandling()->get(route('payout.downloadPayout'));
+    }
+
+    public function test_download_for_superAdmin()
+    {
+        // Create a mock user and authenticate
+        $user = User::where('email', 'tobi.olanitori.binaryartinc@gmail.com')->firstOr(function () {
+            return User::factory()->create([
+                'email' => 'tobi.olanitori.binaryartinc@gmail.com',
+                'full_name' => 'Tobi Olanitori',
+            ]);
+        });
+
+        $this->actingAs($user);
+
+        // Mock the start_date and end_date for the request
+        $start_date = Carbon::now()->subDays(7)->format('Y-m-d');
+        $end_date = Carbon::now()->format('Y-m-d');
+
+        // Mock the payouts data
+        Payout::factory()->count(5)->create([
+            'account_id' => Account::factory()->create(['user_id' => $user->id])->id,
+            'created_at' => Carbon::now()->subDays(3),
+        ]);
+
+        $requestParams = [
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+        ];
+
+        // Make the request to download the CSV file
+        $response = $this->get(route('payout.downloadPayout'), $requestParams);
+
+        // Assert response is successful and CSV headers are correct
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=payouts_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
+
+        // Clean up: Delete the CSV file from storage after testing
+        Storage::disk('local')->delete('csv/payouts_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
+    }
 }

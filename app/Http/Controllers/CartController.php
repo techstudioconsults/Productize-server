@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RevenueActivity;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
@@ -13,6 +14,7 @@ use App\Models\Cart;
 use App\Repositories\CartRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
+use App\Repositories\RevenueRepository;
 use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
@@ -34,6 +36,7 @@ class CartController extends Controller
         protected ProductRepository $productRepository,
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository,
+        protected RevenueRepository $revenueRepository,
     ) {}
 
     /**
@@ -177,6 +180,16 @@ class CartController extends Controller
             throw new BadRequestException('Total amount does not match quantity');
         }
 
+        // create revenue record
+        $revenue = $this->revenueRepository->create([
+            'user_id' => $user->id,
+            'activity' => RevenueActivity::PURCHASE->value,
+            'product' => 'Purchase',
+            'amount' => $totalAmount,
+            'status' => 'Pending',
+            'commission' => RevenueRepository::SALE_COMMISSION,
+        ]);
+
         // Prepare paystack's payload
         $payload = [
             'email' => $user->email,
@@ -186,6 +199,7 @@ class CartController extends Controller
                 'buyer_id' => $user->id,
                 'products' => $products,
                 'recipient_id' => $recipient ? $recipient->id : null,
+                'revenue_id' => $revenue->id
             ],
         ];
 

@@ -20,6 +20,7 @@ class RevenueResource extends JsonResource
             'amount' => $this->amount,
             'activity' => $this->activity,
             'product' => $this->product,
+            'status' => $this->status,
             'created_at' => $this->created_at,
         ];
     }

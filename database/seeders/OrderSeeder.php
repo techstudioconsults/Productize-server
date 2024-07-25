@@ -16,27 +16,25 @@ class OrderSeeder extends Seeder
 
     public function run(): void
     {
-        $user = User::where('email', 'kinxly@gmail.com')->firstOr(function () {
-            return User::factory()->create([
-                'email' => 'kinxly@gmail.com',
-                'full_name' => 'Kingsley Solomon',
-            ]);
-        });
+        // $user = User::where('email', 'kinxly@gmail.com')->firstOr(function () {
+        //     return User::factory()->create([
+        //         'email' => 'kinxly@gmail.com',
+        //         'full_name' => 'Kingsley Solomon',
+        //     ]);
+        // });
 
-        // $user =
+        // $startDate = Carbon::create(2024, 6, 1);
+        // $endDate = Carbon::create(2024, 6, 30);
 
-        $startDate = Carbon::create(2024, 6, 1);
-        $endDate = Carbon::create(2024, 6, 30);
+        // while ($startDate <= $endDate) {
+        //     Order::factory(10)->create([
+        //         'product_id' => Product::factory()->create(['user_id' => $user->id]),
+        //         'created_at' => $startDate,
+        //         'updated_at' => $startDate,
+        //     ]);
 
-        while ($startDate <= $endDate) {
-            Order::factory(10)->create([
-                'product_id' => Product::factory()->create(['user_id' => $user->id]),
-                'created_at' => $startDate,
-                'updated_at' => $startDate,
-            ]);
-
-            $startDate->addDay();
-        }
+        //     $startDate->addDay();
+        // }
 
         Order::factory(10)->create([
             'product_id' => function () {

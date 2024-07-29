@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\RevenueActivity;
+use App\Enums\RevenueActivityStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,6 +24,7 @@ class RevenueFactory extends Factory
             'product' => 'Purchase',
             'amount' => fake()->randomNumber(5),
             'user_id' => User::factory()->create()->id,
+            'status' => RevenueActivityStatus::PENDING->value,
         ];
     }
 }

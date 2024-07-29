@@ -19,7 +19,7 @@ class RevenueRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->repository = new RevenueRepository();
+        $this->repository = new RevenueRepository;
     }
 
     /** @test */

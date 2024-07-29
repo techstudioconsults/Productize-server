@@ -19,4 +19,6 @@ Route::controller(RevenueController::class)
         Route::get('/stats', 'stats')->name('stats');
 
         Route::get('/download', 'download')->name('download');
+
+        Route::get('/allstats', 'allStats')->name('allstats');
     });

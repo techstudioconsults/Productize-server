@@ -22,7 +22,7 @@ class PayoutRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->payoutRepository = new PayoutRepository();
+        $this->payoutRepository = new PayoutRepository;
     }
 
     public function test_Create()

@@ -31,12 +31,12 @@ class PaystackRepositoryTest extends TestCase
         parent::setUp();
 
         // Create an instance of the repository
-        $this->paystackRepository = new PaystackRepository();
+        $this->paystackRepository = new PaystackRepository;
     }
 
     public function test_CreateCustomer_success()
     {
-        $user = new User();
+        $user = new User;
 
         $user->full_name = 'John Doe';
         $user->email = 'john.doe@example.com';
@@ -73,7 +73,7 @@ class PaystackRepositoryTest extends TestCase
     {
         $this->expectException(RequestException::class);
 
-        $user = new User();
+        $user = new User;
         $user->full_name = 'Jane Doe';
         $user->email = 'jane.doe@example.com';
         $user->phone_number = '0987654321';

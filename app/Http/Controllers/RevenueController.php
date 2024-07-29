@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\RevenueActivity;
 use App\Http\Resources\RevenueResource;
 use App\Repositories\OrderRepository;
+use App\Repositories\PayoutRepository;
+use App\Repositories\ProductRepository;
 use App\Repositories\RevenueRepository;
+use App\Repositories\UserRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -24,7 +27,10 @@ class RevenueController extends Controller
 {
     public function __construct(
         protected RevenueRepository $revenueRepository,
-        protected OrderRepository $orderRepository
+        protected OrderRepository $orderRepository,
+        protected PayoutRepository $payoutRepository,
+        protected UserRepository $userRepository,
+        protected ProductRepository $productRepository
     ) {}
 
     /**
@@ -138,5 +144,23 @@ class RevenueController extends Controller
         $filePath = $this->generateCsv($fileName, $data);
 
         return $this->streamFile($filePath, $fileName, 'text/csv');
+    }
+
+    public function allStats()
+    {
+        $totalProducts = $this->productRepository->query([])->count();
+
+        $totalSales = $this->orderRepository->query([])->sum('quantity');
+
+        $totalPayouts = $this->payoutRepository->query([])->sum('amount');
+
+        $totalUsers = $this->userRepository->query([])->count();
+
+        return new JsonResource([
+            'total_products' => $totalProducts,
+            'total_sales' => $totalSales,
+            'total_payouts' => $totalPayouts,
+            'total_users' => $totalUsers,
+        ]);
     }
 }

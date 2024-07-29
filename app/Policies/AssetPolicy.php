@@ -27,9 +27,6 @@ class AssetPolicy
     {
         Response::allow();
 
-        Log::info('User ID: '.$user->id);
-        Log::info('Product User ID: '.$product->user_id);
-
         return $user->id === $product->user->id
             ? Response::allow()
             : throw new ForbiddenException('Access Denied: No permission to access this resource');

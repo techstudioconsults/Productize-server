@@ -51,7 +51,7 @@ class EarningControllerTest extends TestCase
         $this->app->instance(PayoutRepository::class, $this->payoutRepository);
     }
 
-    public function test_index_returns_user_earnings()
+    public function test_returns_user_earnings()
     {
         $earning = Earning::factory()->create(['user_id' => $this->user->id]);
 
@@ -62,7 +62,7 @@ class EarningControllerTest extends TestCase
 
         $expected_json = EarningResource::make($earning)->response()->getData(true);
 
-        $response = $this->withoutExceptionHandling()->get(route('earning.index'));
+        $response = $this->withoutExceptionHandling()->get(route('earning.user'));
 
         $response->assertCreated()
             ->assertExactJson($expected_json, true);

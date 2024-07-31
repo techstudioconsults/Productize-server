@@ -220,7 +220,7 @@ class WebhookRepository
         $this->revenueRepository->create([
             'user_id' => $subscription->user->id,
             'activity' => RevenueActivity::SUBSCRIPTION->value,
-            'product' => 'Purchase',
+            'product' => 'Subscription',
             'amount' => SubscriptionRepository::PRICE,
             'status' => RevenueActivityStatus::COMPLETED->value,
             'commission' => RevenueRepository::SALE_COMMISSION,

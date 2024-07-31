@@ -43,7 +43,7 @@ class EarningController extends Controller
      *
      * Display the total earnings statistics
      *
-     * @return JsonResponse
+     * @return JsonResource
      */
 
     public function index()
@@ -55,10 +55,10 @@ class EarningController extends Controller
         $available_earnings = $total_earnings - $withdrawn_earnings;
 
 
-        return new JsonResponse([
+        return new JsonResource([
             'total_earnings' => $total_earnings,
             'withdrawn_earnings' => $withdrawn_earnings,
-            'available earnings' => $available_earnings
+            'available_earnings' => $available_earnings
         ]);
     }
 

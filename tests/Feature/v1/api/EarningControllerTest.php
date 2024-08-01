@@ -21,7 +21,7 @@ use Tests\TestCase;
 
 class EarningControllerTest extends TestCase
 {
-    use RefreshDatabase, SanctumAuthentication ;
+    use RefreshDatabase, SanctumAuthentication;
 
     protected $user;
 
@@ -56,12 +56,11 @@ class EarningControllerTest extends TestCase
     {
         // $superAdmin = User::factory()->create(['role' => 'super_admin']);
 
-
         // Act as the super admin
         $this->actingAsSuperAdmin();
 
-          // Create a mock query builder
-         $earning = Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
+        // Create a mock query builder
+        $earning = Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
 
         // Mock the EarningRepository methods
         $this->earningRepository->shouldReceive('query')->twice()->with([])->andReturn($earning);
@@ -74,14 +73,13 @@ class EarningControllerTest extends TestCase
         // Assert the response
 
         $response->assertStatus(200)
-             ->assertJson([
+            ->assertJson([
                 'data' => [
                     'total_earnings' => 1000,
                     'withdrawn_earnings' => 300,
-                    'available_earnings' => 700
-                ]
-                ]);
-
+                    'available_earnings' => 700,
+                ],
+            ]);
 
     }
 

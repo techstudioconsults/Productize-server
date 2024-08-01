@@ -34,7 +34,33 @@ class EarningController extends Controller
         protected AccountRepository $accountRepository,
         protected PaystackRepository $paystackRepository,
         protected PayoutRepository $payoutRepository
-    ) {}
+    ) {
+    }
+
+
+    /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Display the total earnings statistics
+     *
+     * @return JsonResource
+     */
+
+    public function index()
+    {
+        $total_earnings = $this->earningRepository->query([])->sum('total_earnings');
+
+        $withdrawn_earnings = $this->earningRepository->query([])->sum('withdrawn_earnings');
+
+        $available_earnings = $total_earnings - $withdrawn_earnings;
+
+
+        return new JsonResource([
+            'total_earnings' => $total_earnings,
+            'withdrawn_earnings' => $withdrawn_earnings,
+            'available_earnings' => $available_earnings
+        ]);
+    }
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -43,13 +69,13 @@ class EarningController extends Controller
      *
      * @return EarningResource
      */
-    public function index()
+    public function user()
     {
         $user = Auth::user();
 
         $earning = $this->earningRepository->findOne(['user_id' => $user->id]);
 
-        if (! $earning) {
+        if (!$earning) {
             return new JsonResource([
                 'id' => '',
                 'user_id' => $user->id,
@@ -85,7 +111,7 @@ class EarningController extends Controller
         $exists = $this->accountRepository->query(['user_id' => $user->id])->exists();
 
         // if yes, throw error
-        if (! $exists) {
+        if (!$exists) {
             throw new BadRequestException('You need to set up your Payout account before requesting a payout.');
         }
 

@@ -219,8 +219,8 @@ class WebhookRepository
         // create revenue record
         $this->revenueRepository->create([
             'user_id' => $subscription->user->id,
-            'activity' => RevenueActivity::PURCHASE->value,
-            'product' => 'Purchase',
+            'activity' => RevenueActivity::SUBSCRIPTION->value,
+            'product' => 'Subscription',
             'amount' => SubscriptionRepository::PRICE,
             'status' => RevenueActivityStatus::COMPLETED->value,
             'commission' => RevenueRepository::SALE_COMMISSION,

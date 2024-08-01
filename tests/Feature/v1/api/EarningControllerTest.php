@@ -14,13 +14,14 @@ use App\Repositories\AccountRepository;
 use App\Repositories\EarningRepository;
 use App\Repositories\PayoutRepository;
 use App\Repositories\PaystackRepository;
+use App\Traits\SanctumAuthentication;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 
 class EarningControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, SanctumAuthentication ;
 
     protected $user;
 
@@ -51,7 +52,40 @@ class EarningControllerTest extends TestCase
         $this->app->instance(PayoutRepository::class, $this->payoutRepository);
     }
 
-    public function test_index_returns_user_earnings()
+    public function test_index_earnings()
+    {
+        // $superAdmin = User::factory()->create(['role' => 'super_admin']);
+
+
+        // Act as the super admin
+        $this->actingAsSuperAdmin();
+
+          // Create a mock query builder
+         $earning = Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
+
+        // Mock the EarningRepository methods
+        $this->earningRepository->shouldReceive('query')->twice()->with([])->andReturn($earning);
+        $earning->shouldReceive('sum')->with('total_earnings')->once()->andReturn(1000);
+        $earning->shouldReceive('sum')->with('withdrawn_earnings')->once()->andReturn(300);
+
+        // make the request
+        $response = $this->getJson(route('earning.index'));
+
+        // Assert the response
+
+        $response->assertStatus(200)
+             ->assertJson([
+                'data' => [
+                    'total_earnings' => 1000,
+                    'withdrawn_earnings' => 300,
+                    'available_earnings' => 700
+                ]
+                ]);
+
+
+    }
+
+    public function test_returns_user_earnings()
     {
         $earning = Earning::factory()->create(['user_id' => $this->user->id]);
 
@@ -62,7 +96,7 @@ class EarningControllerTest extends TestCase
 
         $expected_json = EarningResource::make($earning)->response()->getData(true);
 
-        $response = $this->withoutExceptionHandling()->get(route('earning.index'));
+        $response = $this->withoutExceptionHandling()->get(route('earning.user'));
 
         $response->assertCreated()
             ->assertExactJson($expected_json, true);

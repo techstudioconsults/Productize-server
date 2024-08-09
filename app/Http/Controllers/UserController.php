@@ -13,6 +13,9 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateKycRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use App\Mail\AdminRevokedMail;
+use App\Mail\AdminUpdateMail;
+use App\Mail\AdminWelcomeMail;
 use App\Models\User;
 use App\Repositories\OrderRepository;
 use App\Repositories\PayoutRepository;
@@ -27,6 +30,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Mail;
 use Throwable;
 
 /**
@@ -82,6 +86,14 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Super Admin create a user
+     *
+     * @param StoreUserRequest $request The request containing the user details
+     * @return UserResource The resource containing the new user details
+     */
     public function store(StoreUserRequest $request)
     {
         $data = $request->validated();
@@ -89,6 +101,8 @@ class UserController extends Controller
         $user = $this->userRepository->create($data);
 
         event(new Registered($user));
+
+        Mail::to($data['email'])->send(new AdminWelcomeMail($data));
 
         return new UserResource($user);
     }
@@ -126,7 +140,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -274,6 +288,8 @@ class UserController extends Controller
     {
         $this->userRepository->guardedUpdate($user->email, 'role', Roles::USER->value);
 
+        Mail::to($user->email)->send(new AdminRevokedMail);
+
         return new JsonResource([
             'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.',
         ]);
@@ -342,5 +358,28 @@ class UserController extends Controller
         $notifications->markAsRead();
 
         return new JsonResource(['message' => 'Notifications marked as read']);
+    }
+
+    public function updateAdmin(UpdateUserRequest $request, $id)
+    {
+        $user = $this->userRepository->findById($id);
+
+        $validated = $request->validated();
+
+        try {
+            if (isset($validated['password'])) {
+                $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['password']);
+            }
+            
+            if(!empty($validated)){
+                $user = $this->userRepository->update($user, $validated);
+            }
+
+            Mail::to($user->email)->send(new AdminUpdateMail($validated));
+
+            return new UserResource($user);
+        } catch (Throwable $e) {
+            throw new ApiException($e->getMessage(), $e->getCode());
+        }
     }
 }

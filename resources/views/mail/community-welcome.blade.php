@@ -10,8 +10,4 @@
     <p>
         Here at Productize, we believe in empowering individuals like you to share your passion and creativity with the world.
     </p>
-
-    {{-- <x-mail::button :url="trim($url)" color="#6D5DD3">
-        View Now
-    </x-mail::button> --}}
 </x-mail::message>

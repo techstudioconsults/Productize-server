@@ -27,7 +27,11 @@ Route::group([
 
     Route::patch('/{user}/revoke-admin-role', [UserController::class, 'revokeAdminRole'])
         ->middleware('abilities:role:super_admin')
-        ->name('users.revoke-admin-role');
+        ->name('revoke-admin-role');
+
+    Route::put('/update/{user}', [UserController::class, 'updateAdmin'])
+        ->middleware('abilities:role:super_admin')
+        ->name('updateAdmin');
 
     Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
 

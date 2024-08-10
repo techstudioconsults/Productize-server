@@ -91,7 +91,7 @@ class UserController extends Controller
      *
      * Super Admin create a user
      *
-     * @param StoreUserRequest $request The request containing the user details
+     * @param  StoreUserRequest  $request  The request containing the user details
      * @return UserResource The resource containing the new user details
      */
     public function store(StoreUserRequest $request)
@@ -140,7 +140,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -370,8 +370,8 @@ class UserController extends Controller
             if (isset($validated['password'])) {
                 $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['password']);
             }
-            
-            if(!empty($validated)){
+
+            if (! empty($validated)) {
                 $user = $this->userRepository->update($user, $validated);
             }
 

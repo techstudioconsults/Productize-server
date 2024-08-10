@@ -11,7 +11,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -50,7 +49,7 @@ class AdminUpdateMail extends Mailable
             markdown: 'mail.admin-update',
             with: [
                 'fullname' => $this->data['full_name'],
-                'password' => $this->data['password']
+                'password' => $this->data['password'],
             ]
 
         );

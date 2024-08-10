@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
+use App\Mail\AdminDeletedMail;
 use App\Mail\AdminRevokedMail;
 use App\Mail\AdminUpdateMail;
 use App\Mail\AdminWelcomeMail;
@@ -506,6 +507,44 @@ class UserControllerTest extends TestCase
         // Assert that the mail was sent
         Mail::assertSent(AdminRevokedMail::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
+        });
+
+        // Assert the response
+        $response->assertStatus(200);
+    }
+
+    public function test_super_admin_can_delete_admin()
+    {
+        //create admin user
+        $admin = User::factory()->create([
+            'role' => 'ADMIN'
+        ]);
+
+        //create super admin user
+        $superAdmin = User::factory()->create([
+            'role' => 'SUPER_ADMIN'
+        ]);
+
+        // Mock the user repository
+        $userRepository = $this->createMock(UserRepository::class);
+        $this->app->instance(UserRepository::class, $userRepository);
+
+        $userRepository->expects($this->once())
+            ->method('deleteOne')
+            ->with($this->callback(function ($user) use ($admin) {
+                return $user->id === $admin->id;
+            }));
+
+        // Fake the mail sending
+        Mail::fake();
+
+        // Act as the super admin and call the delete-admin route
+        $response = $this->actingAs($superAdmin)
+            ->deleteJson(route('users.delete-admin', $admin->id));
+
+        // Assert that the mail was sent
+        Mail::assertSent(AdminDeletedMail::class, function ($mail) use ($admin) {
+            return $mail->hasTo($admin->email);
         });
 
         // Assert the response

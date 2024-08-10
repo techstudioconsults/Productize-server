@@ -1,12 +1,5 @@
 <?php
 
-/**
- *  @author @obajide028 Odesanya Babajide
- *
- *  @version 1.0
- *
- *  @since 09-08-2024
- */
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
@@ -16,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AdminRevokedMail extends Mailable
+class AdminDeletedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -34,7 +27,7 @@ class AdminRevokedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Admin Account Has Been Revoked',
+            subject: 'Your Admin Account Has Been Deleted',
         );
     }
 
@@ -44,7 +37,7 @@ class AdminRevokedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.admin-revoked'
+            markdown: 'mail.admin-deleted',
         );
     }
 

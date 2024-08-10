@@ -29,6 +29,10 @@ Route::group([
         ->middleware('abilities:role:super_admin')
         ->name('revoke-admin-role');
 
+    Route::delete('/{user}', [UserController::class, 'deleteAdmin'])
+        ->middleware('abilities:role:super_admin')
+        ->name('delete-admin');
+
     Route::put('/update/{user}', [UserController::class, 'updateAdmin'])
         ->middleware('abilities:role:super_admin')
         ->name('updateAdmin');

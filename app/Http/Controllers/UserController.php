@@ -13,6 +13,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateKycRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use App\Mail\AdminDeletedMail;
 use App\Mail\AdminRevokedMail;
 use App\Mail\AdminUpdateMail;
 use App\Mail\AdminWelcomeMail;
@@ -381,5 +382,16 @@ class UserController extends Controller
         } catch (Throwable $e) {
             throw new ApiException($e->getMessage(), $e->getCode());
         }
+    }
+
+    public function deleteAdmin(User $user)
+    {
+        $this->userRepository->deleteOne($user);
+
+        Mail::to($user->email)->send(new AdminDeletedMail);
+
+        return new JsonResource([
+            'message' => 'Admin account has been deleted',
+        ]);
     }
 }

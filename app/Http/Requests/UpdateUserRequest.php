@@ -18,6 +18,8 @@ class UpdateUserRequest extends FormRequest
         $user = $this->user();
 
         return $user->hasVerifiedEmail();
+
+        return $user->hasRole('super_admin');
     }
 
     /**

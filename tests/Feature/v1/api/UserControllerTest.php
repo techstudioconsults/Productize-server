@@ -2,13 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Roles;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
+use App\Mail\AdminRevokedMail;
+use App\Mail\AdminUpdateMail;
+use App\Mail\AdminWelcomeMail;
 use App\Models\Order;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use App\Traits\SanctumAuthentication;
 use Database\Seeders\PayoutSeeder;
 use Database\Seeders\ProductSeeder;
@@ -18,6 +23,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Mail;
 use Tests\TestCase;
 
 class UserControllerTest extends TestCase
@@ -372,7 +378,8 @@ class UserControllerTest extends TestCase
 
             $this->actingAs($user);
 
-            $data = ['document_type' => $type,
+            $data = [
+                'document_type' => $type,
                 'country' => 'Nigeria',
                 'document_image' => $validFile,
             ];
@@ -384,5 +391,124 @@ class UserControllerTest extends TestCase
                 'document_type' => $type,
             ]);
         }
+    }
+
+    public function test_super_admin_can_create_admin()
+    {
+        Mail::fake();
+
+        // Create a super admin user
+        $superAdmin = User::factory()->create([
+            'role' => 'SUPER_ADMIN',
+        ]);
+
+        // Act as the super admin
+        $this->actingAs($superAdmin, 'web');
+
+        // Define the user data to create
+        $userData = [
+            'email' => 'obajide028@gmail.com',
+            'full_name' => 'Babajide Odesanya',
+            'password' => 'Babajide1.',
+            'password_confirmation' => 'Babajide1.',
+            'role' => 'ADMIN',
+        ];
+
+        // Send a POST request to the users.store route
+        $response = $this->postJson(route('users.store'), $userData);
+
+        $response->assertStatus(201);
+
+        Mail::assertSent(AdminWelcomeMail::class, function ($mail) use ($userData) {
+            return $mail->hasTo($userData['email']);
+        });
+    }
+
+    public function test_regular_user_cannot_create_Admin()
+    {
+        $this->actingAsAdmin();
+
+        // Define the user data to create
+        $userData = [
+            'email' => 'obajide028@gmail.com',
+            'full_name' => 'Babajide Odesanya',
+            'password' => 'Babajide1.',
+            'password_confirmation' => 'Babajide1.',
+            'role' => 'ADMIN',
+        ];
+
+        // Send a POST request to the users.store route
+        $response = $this->postJson(route('users.store'), $userData);
+
+        // Assert the response
+        $response->assertStatus(403);
+    }
+
+    public function test_Super_admin_can_update_user()
+    {
+        Mail::fake();
+
+        // create user
+        $user = User::factory()->create([
+            'email' => 'obajide028@gmail.com',
+            'full_name' => 'Babajide Odesanya',
+            'password' => 'Babajide1.',
+        ]);
+
+        // create a super admin
+        $superAdmin = User::factory()->create([
+            'role' => 'SUPER_ADMIN',
+        ]);
+
+        $this->actingAs($superAdmin, 'web');
+
+        $updatedData = [
+            'password' => 'May1234567..',
+        ];
+
+        // Send a PUT request to the updateAdmin endpoint
+        $response = $this->putJson(route('users.updateAdmin', $user->id), $updatedData);
+
+        // Assert the response
+        $response->assertStatus(200);
+
+        // Assert that the email was sent
+        Mail::assertSent(AdminUpdateMail::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+    }
+
+    public function test_revoke_admin_role()
+    {
+        // Mock the user repository
+        $userRepository = $this->createMock(UserRepository::class);
+        $this->app->instance(UserRepository::class, $userRepository);
+
+        // create a user with admin role
+        $user = User::factory()->create([
+            'role' => 'ADMIN',
+        ]);
+
+        // Expect the guardedUpdate method to be called once with the right arguments
+        $userRepository->expects($this->once())
+            ->method('guardedUpdate')
+            ->with($user->email, 'role', Roles::USER->value);
+
+        // Fake the mail sending
+        Mail::fake();
+
+        // Call the revokeAdminRole method
+        $response = $this->actingAs($user)->patch(route('users.revoke-admin-role', $user->id));
+
+        // Assert that the role was updated
+        $this->assertTrue(true);
+
+        // Assert that the mail was sent
+        Mail::assertSent(AdminRevokedMail::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+
+        // Assert the response
+        $response->assertStatus(200);
     }
 }

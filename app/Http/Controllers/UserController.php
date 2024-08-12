@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\AdminDto;
+use App\Dtos\AdminUpdateDto;
 use App\Enums\AccountEnum;
 use App\Enums\PayoutStatus;
 use App\Enums\Roles;
@@ -101,9 +103,14 @@ class UserController extends Controller
 
         $user = $this->userRepository->create($data);
 
+        $adminDTO = new AdminDto(
+            $user->email,
+            $data['password'] ?? null
+        );
+
         event(new Registered($user));
 
-        Mail::to($data['email'])->send(new AdminWelcomeMail($data));
+        Mail::to($data['email'])->send(new AdminWelcomeMail($adminDTO));
 
         return new UserResource($user);
     }
@@ -368,15 +375,21 @@ class UserController extends Controller
         $validated = $request->validated();
 
         try {
+            $adminUpdateDTO = new AdminUpdateDto(
+                $user->full_name,
+                $user->email,
+                $validated['password'] ?? null
+            );
+
             if (isset($validated['password'])) {
                 $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['password']);
             }
-            
-            if(!empty($validated)){
+
+            if (!empty($validated)) {
                 $user = $this->userRepository->update($user, $validated);
             }
 
-            Mail::to($user->email)->send(new AdminUpdateMail($validated));
+            Mail::to($user->email)->send(new AdminUpdateMail($adminUpdateDTO));
 
             return new UserResource($user);
         } catch (Throwable $e) {
@@ -393,5 +406,32 @@ class UserController extends Controller
         return new JsonResource([
             'message' => 'Admin account has been deleted',
         ]);
+    }
+
+    public function downloadAdmin()
+    {
+        $filter = [
+            'role' => 'ADMIN',
+        ];
+
+        $admin_users = $this->userRepository->query($filter)->get();
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+        $fileName = "admin_users_$now.csv";
+
+        $columns = ['User Name', 'User Email', 'Date'];
+        $data = [$columns];
+
+        foreach ($admin_users as $user) {
+            $data[] = [
+                $user->full_name,
+                $user->email,
+                $user->updated_at,
+            ];
+        }
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 }

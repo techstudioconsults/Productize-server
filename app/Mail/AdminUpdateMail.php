@@ -10,6 +10,7 @@
 
 namespace App\Mail;
 
+use App\Dtos\AdminUpdateDto;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -21,14 +22,14 @@ class AdminUpdateMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    private $data;
+    public $adminUpdate;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(array $data)
+    public function __construct(AdminUpdateDto $adminUpdate)
     {
-        $this->data = $data;
+        $this->adminUpdate = $adminUpdate;
     }
 
     /**
@@ -49,8 +50,8 @@ class AdminUpdateMail extends Mailable
         return new Content(
             markdown: 'mail.admin-update',
             with: [
-                'fullname' => $this->data['full_name'],
-                'password' => $this->data['password']
+                'fullname' => $this->adminUpdate->full_name,
+                'password' => $this->adminUpdate->password,
             ]
 
         );

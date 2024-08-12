@@ -550,4 +550,20 @@ class UserControllerTest extends TestCase
         // Assert the response
         $response->assertStatus(200);
     }
+
+    public function test_can_download_admin_csv_as_super_admin()
+    {
+        $this->actingAsSuperAdmin();
+
+        // Create some users
+        $this->seed(UserSeeder::class);
+
+        // Call the download endpoint
+        $response = $this->withoutExceptionHandling()->get(route('users.download-admin'));
+
+        // Assert response is successful and CSV headers are correct
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=admin_users_' . now()->format('d_F_Y') . '.csv');
+    }
 }

@@ -284,7 +284,7 @@ class UserControllerTest extends TestCase
         // Assert response is successful and CSV headers are correct
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=users_' . now()->format('d_F_Y') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=users_'.now()->format('d_F_Y').'.csv');
     }
 
     public function test_update_user_kyc_information()
@@ -487,7 +487,7 @@ class UserControllerTest extends TestCase
 
         // create a user with admin role
         $user = User::factory()->create([
-            'role' => "ADMIN"
+            'role' => 'ADMIN',
         ]);
 
         // Expect the guardedUpdate method to be called once with the right arguments

@@ -94,7 +94,7 @@ class UserController extends Controller
      *
      * Super Admin create a user
      *
-     * @param StoreUserRequest $request The request containing the user details
+     * @param  StoreUserRequest  $request  The request containing the user details
      * @return UserResource The resource containing the new user details
      */
     public function store(StoreUserRequest $request)
@@ -148,7 +148,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }

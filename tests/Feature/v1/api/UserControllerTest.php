@@ -519,34 +519,39 @@ class UserControllerTest extends TestCase
         $admin = User::factory()->create([
             'role' => 'ADMIN'
         ]);
-
+    
         //create super admin user
         $superAdmin = User::factory()->create([
             'role' => 'SUPER_ADMIN'
         ]);
-
+    
         // Mock the user repository
         $userRepository = $this->createMock(UserRepository::class);
         $this->app->instance(UserRepository::class, $userRepository);
-
+    
+        $userRepository->expects($this->once())
+            ->method('findById')
+            ->with($admin->id)
+            ->willReturn($admin);
+    
         $userRepository->expects($this->once())
             ->method('deleteOne')
             ->with($this->callback(function ($user) use ($admin) {
                 return $user->id === $admin->id;
             }));
-
+    
         // Fake the mail sending
         Mail::fake();
-
+    
         // Act as the super admin and call the delete-admin route
         $response = $this->actingAs($superAdmin)
             ->deleteJson(route('users.delete-admin', $admin->id));
-
+    
         // Assert that the mail was sent
         Mail::assertSent(AdminDeletedMail::class, function ($mail) use ($admin) {
             return $mail->hasTo($admin->email);
         });
-
+    
         // Assert the response
         $response->assertStatus(200);
     }

@@ -386,15 +386,27 @@ class UserController extends Controller
         return new JsonResource(['message' => 'Notifications marked as read']);
     }
 
-    public function deleteAdmin(User $user)
+    public function deleteAdmin($id)
     {
-        $this->userRepository->deleteOne($user);
+        try {
+            $user = $this->userRepository->findById($id);
 
-        Mail::to($user->email)->send(new AdminDeletedMail);
+            if (!$user) {
+                return new JsonResource([
+                    'message' => "User not found"
+                ]);
+            }
 
-        return new JsonResource([
-            'message' => 'Admin account has been deleted',
-        ]);
+            $this->userRepository->deleteOne($user);
+
+            Mail::to($user->email)->send(new AdminDeletedMail);
+
+            return new JsonResource([
+                'message' => 'Admin account has been deleted',
+            ]);
+        } catch (\Throwable $e) {
+            throw new ApiException($e->getMessage(), $e->getCode());
+        }
     }
 
     public function downloadAdmin()

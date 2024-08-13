@@ -130,9 +130,10 @@ class UserController extends Controller
      * @throws \App\Exceptions\ServerErrorException If an error occurs while uploading the logo.
      * @throws \App\Exceptions\ApiException If an error occurs during the update process.
      */
-    public function update(UpdateUserRequest $request)
+    public function update(UpdateUserRequest $request,  $id = null)
     {
-        $user = Auth::user();
+        $adminUpdate = $id !== null;
+        $user = $adminUpdate ? $this->userRepository->findById($id) : Auth::user();
 
         $validated = $request->validated();
 
@@ -148,7 +149,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -156,11 +157,28 @@ class UserController extends Controller
             $validated['logo'] = $logoUrl;
         }
 
+        $userUpdateDTO = new AdminUpdateDto(
+            $user->full_name ?? $validated['full_name'],
+            $user->email,
+            $validated['password'] ?? null,
+        );
+
+        if (isset($validated['password'])) {
+            $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['password']);
+        }
+
         try {
             $user = $this->userRepository->update($user, $validated);
 
             // Check for profile completion
-            $this->userRepository->profileCompletedAt($user);
+            if (!$adminUpdate) {
+                $this->userRepository->profileCompletedAt($user);
+            }
+
+            // Send email notification for admin updates
+            if ($adminUpdate) {
+                Mail::to($user->email)->send(new AdminUpdateMail($userUpdateDTO));
+            }
 
             return new UserResource($user);
         } catch (Throwable $e) {
@@ -366,35 +384,6 @@ class UserController extends Controller
         $notifications->markAsRead();
 
         return new JsonResource(['message' => 'Notifications marked as read']);
-    }
-
-    public function updateAdmin(UpdateUserRequest $request, $id)
-    {
-        $user = $this->userRepository->findById($id);
-
-        $validated = $request->validated();
-
-        try {
-            $adminUpdateDTO = new AdminUpdateDto(
-                $user->full_name,
-                $user->email,
-                $validated['password'] ?? null
-            );
-
-            if (isset($validated['password'])) {
-                $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['password']);
-            }
-
-            if (!empty($validated)) {
-                $user = $this->userRepository->update($user, $validated);
-            }
-
-            Mail::to($user->email)->send(new AdminUpdateMail($adminUpdateDTO));
-
-            return new UserResource($user);
-        } catch (Throwable $e) {
-            throw new ApiException($e->getMessage(), $e->getCode());
-        }
     }
 
     public function deleteAdmin(User $user)

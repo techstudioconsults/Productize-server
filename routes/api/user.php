@@ -33,7 +33,7 @@ Route::group([
         ->middleware('abilities:role:super_admin')
         ->name('delete-admin');
 
-    Route::put('/update/{user}', [UserController::class, 'updateAdmin'])
+    Route::put('/update/{user}', [UserController::class, 'update'])
         ->middleware('abilities:role:super_admin')
         ->name('updateAdmin');
 

@@ -13,17 +13,17 @@ Route::controller(OrderController::class)
         'can:premium,App\Models\Order',
     ])
     ->group(function () {
-        Route::get('/', 'index')->middleware('abilities:role:super_admin')
+        Route::get('/', 'index')->middleware('abilities:role:super_admin,role:admin')
             ->withoutMiddleware('can:premium,App\Models\Order')->name('index');
 
-        Route::get('/download/superadmin', 'downloadOrder')->middleware('abilities:role:super_admin')
+        Route::get('/download/superadmin', 'downloadOrder')->middleware('abilities:role:super_admin,role:admin')
             ->withoutMiddleware('can:premium,App\Models\Order')->name('downloadOrder');
 
         Route::get('/user', 'user')->name('user');
 
         Route::get('/download', 'downloadList');
 
-        Route::get('/stats', 'stats')->middleware('abilities:role:super_admin')->name('stats');
+        Route::get('/stats', 'stats')->middleware('abilities:role:super_admin,role:admin')->name('stats');
 
         Route::get('/{order}', 'show')->middleware('can:view,order')->name('show');
 

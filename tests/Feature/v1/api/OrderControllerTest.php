@@ -48,6 +48,34 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_access_index()
+    {
+        $this->actingAsAdmin();
+
+        // Create orders for testing
+        $this->seed(OrderSeeder::class);
+
+        //Get the first page orders assuming 15 per page
+        $orders = Order::latest()->paginate(15);
+
+        $expected_json = OrderResource::collection($orders)->response()->getData(true);
+
+        // Call the index endpoint
+        $response = $this->withoutExceptionHandling()->get(route('order.index'));
+
+        // Assert response is successful
+        $response->assertOk();
+
+        // Assert response structure
+        $response->assertJsonStructure([
+            'data' => [
+                '*' => ['id', 'reference_no', 'quantity', 'total_amount', 'product', 'customer', 'created_at'],
+            ],
+            'links',
+            'meta',
+        ]);
+    }
+
     public function test_non_super_admin_cannot_access_index()
     {
         $this->actingAsRegularUser();
@@ -62,6 +90,37 @@ class OrderControllerTest extends TestCase
     public function test_index_with_filters()
     {
         $this->actingAsSuperAdmin();
+
+        // Create orders for testing
+        $orders = Order::factory()->count(2)->create([
+            'product_id' => Product::factory()->create(['title' => 'Product A']),
+            'created_at' => now()->subDays(5),
+        ]);
+
+        Order::factory()->create([
+            'product_id' => Product::factory()->create(['title' => 'Product B']),
+            'created_at' => now()->subDays(10),
+        ]);
+
+        $expected_json = OrderResource::collection($orders)->response()->getData(true);
+
+        // Call the index endpoint with filters
+        $response = $this->get(route('order.index', [
+            'product_title' => 'Product A',
+            'start_date' => now()->subDays(6)->toDateString(),
+            'end_date' => now()->subDays(4)->toDateString(),
+        ]));
+
+        // Assert response is successful
+        $response->assertOk()->assertJson($expected_json, true);
+
+        // Assert the filtered orders are returned
+        $response->assertJsonCount(2, 'data');
+    }
+
+    public function test_admin_index_with_filters()
+    {
+        $this->actingAsAdmin();
 
         // Create orders for testing
         $orders = Order::factory()->count(2)->create([
@@ -275,6 +334,30 @@ class OrderControllerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_view_order_stats()
+    {
+        $this->actingAsAdmin();
+
+        // Create orders for testing
+        Order::factory()->create(['total_amount' => 100]);
+        Order::factory()->create(['total_amount' => 200]);
+
+        // Call the stats endpoint
+        $response = $this->get(route('order.stats'));
+
+        // Assert response is successful
+        $response->assertOk();
+
+        // Assert response structure and values
+        $response->assertJson([
+            'data' => [
+                'total_orders' => 2,
+                'total_orders_revenue' => 300,
+                'avg_order_value' => 150,
+            ],
+        ]);
+    }
+
     public function test_non_super_admin_cannot_view_order_stats()
     {
         $this->actingAsRegularUser();
@@ -289,6 +372,24 @@ class OrderControllerTest extends TestCase
     public function test_order_stats_with_no_orders()
     {
         $this->actingAsSuperAdmin();
+
+        // Call the stats endpoint
+        $response = $this->get(route('order.stats'));
+
+        // Assert response is successful and values are zero
+        $response->assertOk();
+        $response->assertJson([
+            'data' => [
+                'total_orders' => 0,
+                'total_orders_revenue' => 0,
+                'avg_order_value' => 0,
+            ],
+        ]);
+    }
+
+    public function test_admin_order_stats_with_no_orders()
+    {
+        $this->actingAsAdmin();
 
         // Call the stats endpoint
         $response = $this->get(route('order.stats'));

@@ -9,13 +9,13 @@ Route::group([
     'prefix' => 'users',
     'middleware' => ['auth:sanctum', 'can:verified,App\Models\User'],
 ], function () {
-    Route::get('/', [UserController::class, 'index'])->middleware('abilities:role:super_admin')->name('index');
+    Route::get('/', [UserController::class, 'index'])->middleware('abilities:role:super_admin,role:admin')->name('index');
 
-    Route::get('/stats/admin', [UserController::class, 'stats'])->middleware('abilities:role:super_admin')->name('stats.admin');
+    Route::get('/stats/admin', [UserController::class, 'stats'])->middleware('abilities:role:super_admin,role:admin')->name('stats.admin');
 
     Route::get('/me', [UserController::class, 'show'])->withoutMiddleware('can:verified,App\Models\User');
 
-    Route::get('/download', [UserController::class, 'download'])->middleware('abilities:role:super_admin')->name('download');
+    Route::get('/download', [UserController::class, 'download'])->middleware('abilities:role:super_admin,role:admin')->name('download');
 
     Route::get('/notifications', [UserController::class, 'notifications'])->name('notifications');
 

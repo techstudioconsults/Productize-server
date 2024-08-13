@@ -55,9 +55,26 @@ class UserControllerTest extends TestCase
         $this->assertCount($expected_count, $response->json('data')); // Default pagination count
     }
 
+    public function test_index_with_admin()
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->actingAsAdmin();
+
+        $expected_count = 10; // 9 from the seeder + 1 sanctum generated super admin - Ensure it is 10 cause of pagination
+
+        $expected_json = UserResource::collection(User::all())->response()->getData(true);
+
+        $response = $this->withoutExceptionHandling()->get(route('users.index'));
+
+        $response->assertOk()->assertJson($expected_json, true);
+        $response->assertJsonStructure(['data', 'links', 'meta']);
+        $this->assertCount($expected_count, $response->json('data')); // Default pagination count
+    }
+
     public function test_index_with_user_not_super_admin()
     {
-        $this->actingAsAdmin();
+        $this->actingAsRegularUser();
 
         $this->expectException(ForbiddenException::class);
 
@@ -262,9 +279,39 @@ class UserControllerTest extends TestCase
         ]);
     }
 
-    public function test_stat_without_super_admin()
+    
+    public function test_stat_with_admin(): void
     {
         $this->actingAsAdmin();
+
+        $this->seed([
+            UserSeeder::class,
+            ProductSeeder::class,
+            PayoutSeeder::class,
+        ]);
+
+        Order::factory()->count(10)->create();
+
+        $response = $this->withoutExceptionHandling()->get(route('users.stats.admin'));
+
+        $response->assertOk();
+
+        $response->assertJsonStructure([
+            'data' => [
+                'total_products',
+                'total_sales',
+                'total_payouts',
+                'total_users',
+                'total_subscribed_users',
+                'total_trial_users',
+                'conversion_rate',
+            ],
+        ]);
+    }
+
+    public function test_stat_without_super_admin()
+    {
+        $this->actingAsRegularUser();
 
         $this->expectException(ForbiddenException::class);
 

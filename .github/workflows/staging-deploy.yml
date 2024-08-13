@@ -45,14 +45,14 @@ jobs:
       - name: Generate storage link
         run: php artisan storage:link
 
-      - name: Migrate Database
-        run: php artisan migrate:fresh --force
+      # - name: Migrate Database
+      #   run: php artisan migrate:fresh --force
 
       # - name: Database Seed
       #   run: php artisan db:seed
 
-      - name: Prune sanctum
-        run: php artisan sanctum:prune-expired
+      # - name: Prune sanctum
+      #   run: php artisan sanctum:prune-expired
 
       - name: Give permissions
         run: |

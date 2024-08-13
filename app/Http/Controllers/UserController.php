@@ -27,6 +27,7 @@ use App\Repositories\UserRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
@@ -112,7 +113,9 @@ class UserController extends Controller
 
         Mail::to($data['email'])->send(new AdminWelcomeMail($adminDTO));
 
-        return new UserResource($user);
+        $response = ['user' => new UserResource($user), 'message' => 'Success'];
+
+        return new JsonResponse($response, 201);
     }
 
     /**

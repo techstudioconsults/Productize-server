@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
+use App\Mail\AdminDeletedMail;
 use App\Mail\AdminRevokedMail;
 use App\Mail\AdminUpdateMail;
 use App\Mail\AdminWelcomeMail;
@@ -54,9 +55,26 @@ class UserControllerTest extends TestCase
         $this->assertCount($expected_count, $response->json('data')); // Default pagination count
     }
 
+    public function test_index_with_admin()
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->actingAsAdmin();
+
+        $expected_count = 10; // 9 from the seeder + 1 sanctum generated super admin - Ensure it is 10 cause of pagination
+
+        $expected_json = UserResource::collection(User::all())->response()->getData(true);
+
+        $response = $this->withoutExceptionHandling()->get(route('users.index'));
+
+        $response->assertOk()->assertJson($expected_json, true);
+        $response->assertJsonStructure(['data', 'links', 'meta']);
+        $this->assertCount($expected_count, $response->json('data')); // Default pagination count
+    }
+
     public function test_index_with_user_not_super_admin()
     {
-        $this->actingAsAdmin();
+        $this->actingAsRegularUser();
 
         $this->expectException(ForbiddenException::class);
 
@@ -261,9 +279,38 @@ class UserControllerTest extends TestCase
         ]);
     }
 
-    public function test_stat_without_super_admin()
+    public function test_stat_with_admin(): void
     {
         $this->actingAsAdmin();
+
+        $this->seed([
+            UserSeeder::class,
+            ProductSeeder::class,
+            PayoutSeeder::class,
+        ]);
+
+        Order::factory()->count(10)->create();
+
+        $response = $this->withoutExceptionHandling()->get(route('users.stats.admin'));
+
+        $response->assertOk();
+
+        $response->assertJsonStructure([
+            'data' => [
+                'total_products',
+                'total_sales',
+                'total_payouts',
+                'total_users',
+                'total_subscribed_users',
+                'total_trial_users',
+                'conversion_rate',
+            ],
+        ]);
+    }
+
+    public function test_stat_without_super_admin()
+    {
+        $this->actingAsRegularUser();
 
         $this->expectException(ForbiddenException::class);
 
@@ -510,5 +557,64 @@ class UserControllerTest extends TestCase
 
         // Assert the response
         $response->assertStatus(200);
+    }
+
+    public function test_super_admin_can_delete_admin()
+    {
+        //create admin user
+        $admin = User::factory()->create([
+            'role' => 'ADMIN',
+        ]);
+
+        //create super admin user
+        $superAdmin = User::factory()->create([
+            'role' => 'SUPER_ADMIN',
+        ]);
+
+        // Mock the user repository
+        $userRepository = $this->createMock(UserRepository::class);
+        $this->app->instance(UserRepository::class, $userRepository);
+
+        $userRepository->expects($this->once())
+            ->method('findById')
+            ->with($admin->id)
+            ->willReturn($admin);
+
+        $userRepository->expects($this->once())
+            ->method('deleteOne')
+            ->with($this->callback(function ($user) use ($admin) {
+                return $user->id === $admin->id;
+            }));
+
+        // Fake the mail sending
+        Mail::fake();
+
+        // Act as the super admin and call the delete-admin route
+        $response = $this->actingAs($superAdmin)
+            ->deleteJson(route('users.delete-admin', $admin->id));
+
+        // Assert that the mail was sent
+        Mail::assertSent(AdminDeletedMail::class, function ($mail) use ($admin) {
+            return $mail->hasTo($admin->email);
+        });
+
+        // Assert the response
+        $response->assertStatus(200);
+    }
+
+    public function test_can_download_admin_csv_as_super_admin()
+    {
+        $this->actingAsSuperAdmin();
+
+        // Create some users
+        $this->seed(UserSeeder::class);
+
+        // Call the download endpoint
+        $response = $this->withoutExceptionHandling()->get(route('users.download-admin'));
+
+        // Assert response is successful and CSV headers are correct
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=admin_users_'.now()->format('d_F_Y').'.csv');
     }
 }

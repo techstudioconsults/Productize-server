@@ -17,7 +17,7 @@ Route::group([
 ], function () {
     Route::post('/', [ProductController::class, 'store'])->name('store');
 
-    Route::get('/', [ProductController::class, 'index'])->middleware('abilities:role:super_admin')->name('index');
+    Route::get('/', [ProductController::class, 'index'])->middleware('abilities:role:super_admin,role:admin')->name('index');
 
     Route::get('/external', [ProductController::class, 'external'])->withoutMiddleware([
         'auth:sanctum',
@@ -35,7 +35,7 @@ Route::group([
     Route::get('/records', [ProductController::class, 'records'])->name('records');
 
     Route::get('/records/admin', [ProductController::class, 'adminRecords'])
-        ->middleware('abilities:role:super_admin')
+        ->middleware('abilities:role:super_admin,role:admin')
         ->name('records.admin');
 
     Route::get('/purchased', [ProductController::class, 'purchased'])->name('purchased');
@@ -45,7 +45,7 @@ Route::group([
     ])->name('top-products');
 
     Route::get('/top-products/admin', [ProductController::class, 'bestSelling'])
-        ->middleware('abilities:role:super_admin')
+        ->middleware('abilities:role:super_admin,role:admin')
         ->name('top-product.admin');
 
     Route::get('/tags', [ProductController::class, 'tags'])->withoutMiddleware([
@@ -60,7 +60,7 @@ Route::group([
 
     Route::get('/search', [ProductController::class, 'basedOnSearch'])->withoutMiddleware('auth:sanctum')->name('search.get');
 
-    Route::get('/stats/admin', [ProductController::class, 'stats'])->middleware('abilities:role:super_admin')->name('stats');
+    Route::get('/stats/admin', [ProductController::class, 'stats'])->middleware('abilities:role:super_admin,role:admin')->name('stats');
 
     Route::get('/types', [ProductController::class, 'types'])->withoutMiddleware('auth:sanctum')->name('types');
 

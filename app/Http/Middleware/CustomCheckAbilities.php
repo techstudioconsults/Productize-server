@@ -32,10 +32,16 @@ class CustomCheckAbilities
             throw new UnAuthorizedException('Unauthorized access: You must be logged in and possess a valid access token to perform this action.');
         }
 
+        $hasAbility = false;
         foreach ($abilities as $ability) {
-            if (! $request->user()->tokenCan($ability)) {
-                throw new ForbiddenException("Access denied: You do not have the required ability '{$ability}' to perform this action. Please contact support if you believe this is an error.");
+            if ($request->user()->tokenCan($ability)) {
+                $hasAbility = true;
+                break;
             }
+        }
+
+        if (! $hasAbility) {
+            throw new ForbiddenException("Access denied: You do not have the required ability ${ability} to perform this action. Please contact support if you believe this is an error.");
         }
 
         return $next($request);

@@ -26,7 +26,7 @@ Route::controller(ComplaintController::class)
 
         Route::post('/', 'store')->name('store')->withoutMiddleware('abilities:role:super_admin,role:admin');
 
-        Route::post('/contact-us', 'contactUs')->name('contactUs')->withoutMiddleware(['auth:sanctum', 'abilities:role:super_admin']);
+        Route::post('/contact-us', 'contactUs')->name('contactUs')->withoutMiddleware(['auth:sanctum', 'abilities:role:super_admin,role:admin']);
     });
 
 Route::controller(ComplaintController::class)

@@ -279,7 +279,6 @@ class UserControllerTest extends TestCase
         ]);
     }
 
-    
     public function test_stat_with_admin(): void
     {
         $this->actingAsAdmin();
@@ -564,41 +563,41 @@ class UserControllerTest extends TestCase
     {
         //create admin user
         $admin = User::factory()->create([
-            'role' => 'ADMIN'
+            'role' => 'ADMIN',
         ]);
-    
+
         //create super admin user
         $superAdmin = User::factory()->create([
-            'role' => 'SUPER_ADMIN'
+            'role' => 'SUPER_ADMIN',
         ]);
-    
+
         // Mock the user repository
         $userRepository = $this->createMock(UserRepository::class);
         $this->app->instance(UserRepository::class, $userRepository);
-    
+
         $userRepository->expects($this->once())
             ->method('findById')
             ->with($admin->id)
             ->willReturn($admin);
-    
+
         $userRepository->expects($this->once())
             ->method('deleteOne')
             ->with($this->callback(function ($user) use ($admin) {
                 return $user->id === $admin->id;
             }));
-    
+
         // Fake the mail sending
         Mail::fake();
-    
+
         // Act as the super admin and call the delete-admin route
         $response = $this->actingAs($superAdmin)
             ->deleteJson(route('users.delete-admin', $admin->id));
-    
+
         // Assert that the mail was sent
         Mail::assertSent(AdminDeletedMail::class, function ($mail) use ($admin) {
             return $mail->hasTo($admin->email);
         });
-    
+
         // Assert the response
         $response->assertStatus(200);
     }
@@ -616,6 +615,6 @@ class UserControllerTest extends TestCase
         // Assert response is successful and CSV headers are correct
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $response->assertHeader('Content-Disposition', 'attachment; filename=admin_users_' . now()->format('d_F_Y') . '.csv');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=admin_users_'.now()->format('d_F_Y').'.csv');
     }
 }

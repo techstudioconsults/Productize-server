@@ -40,7 +40,7 @@ class CustomCheckAbilities
             }
         }
 
-        if(!$hasAbility){
+        if (! $hasAbility) {
             throw new ForbiddenException("Access denied: You do not have the required ability ${ability} to perform this action. Please contact support if you believe this is an error.");
         }
 

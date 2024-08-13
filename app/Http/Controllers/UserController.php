@@ -130,7 +130,7 @@ class UserController extends Controller
      * @throws \App\Exceptions\ServerErrorException If an error occurs while uploading the logo.
      * @throws \App\Exceptions\ApiException If an error occurs during the update process.
      */
-    public function update(UpdateUserRequest $request,  $id = null)
+    public function update(UpdateUserRequest $request, $id = null)
     {
         $adminUpdate = $id !== null;
         $user = $adminUpdate ? $this->userRepository->findById($id) : Auth::user();
@@ -149,7 +149,7 @@ class UserController extends Controller
             try {
                 $path = Storage::putFileAs('avatars', $logo, $originalName);
 
-                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+                $logoUrl = config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
             } catch (\Throwable $th) {
                 throw new ServerErrorException($th->getMessage());
             }
@@ -171,7 +171,7 @@ class UserController extends Controller
             $user = $this->userRepository->update($user, $validated);
 
             // Check for profile completion
-            if (!$adminUpdate) {
+            if (! $adminUpdate) {
                 $this->userRepository->profileCompletedAt($user);
             }
 
@@ -391,9 +391,9 @@ class UserController extends Controller
         try {
             $user = $this->userRepository->findById($id);
 
-            if (!$user) {
+            if (! $user) {
                 return new JsonResource([
-                    'message' => "User not found"
+                    'message' => 'User not found',
                 ]);
             }
 

@@ -49,8 +49,8 @@ class AdminWelcomeMail extends Mailable
         return new Content(
             markdown: 'mail.admin-welcome',
             with: [
-                'email' =>$this->adminDto->email,
-                'password' =>$this->adminDto->password,
+                'email' => $this->adminDto->email,
+                'password' => $this->adminDto->password,
             ]
         );
     }

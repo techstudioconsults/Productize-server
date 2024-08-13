@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     name: Build and Deploy
-    runs-on: [productize-server-staging]
+    runs-on: [staging]
 
     strategy:
       matrix:

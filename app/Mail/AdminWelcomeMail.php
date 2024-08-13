@@ -10,6 +10,7 @@
 
 namespace App\Mail;
 
+use App\Dtos\AdminDto;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -20,14 +21,14 @@ class AdminWelcomeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    private $data;
+    private $adminDto;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(array $data)
+    public function __construct(AdminDto $adminDto)
     {
-        $this->data = $data;
+        $this->adminDto = $adminDto;
     }
 
     /**
@@ -48,8 +49,8 @@ class AdminWelcomeMail extends Mailable
         return new Content(
             markdown: 'mail.admin-welcome',
             with: [
-                'email' => $this->data['email'],
-                'password' => $this->data['password'],
+                'email' =>$this->adminDto->email,
+                'password' =>$this->adminDto->password,
             ]
         );
     }

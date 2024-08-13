@@ -34,7 +34,7 @@ class AdminRevokedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Admin Account Has Been Deleted',
+            subject: 'Your Admin Account Has Been Revoked',
         );
     }
 

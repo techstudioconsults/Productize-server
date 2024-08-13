@@ -1,34 +1,24 @@
 <?php
 
-/**
- *  @author @obajide028 Odesanya Babajide
- *
- *  @version 1.0
- *
- *  @since 09-08-2024
- */
-
 namespace App\Mail;
 
-use App\Dtos\AdminUpdateDto;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AdminUpdateMail extends Mailable
+class AdminDeletedMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public $adminUpdate;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(AdminUpdateDto $adminUpdate)
+    public function __construct()
     {
-        $this->adminUpdate = $adminUpdate;
+        //
     }
 
     /**
@@ -37,7 +27,7 @@ class AdminUpdateMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Admin Account Details Update',
+            subject: 'Your Admin Account Has Been Deleted',
         );
     }
 
@@ -47,12 +37,7 @@ class AdminUpdateMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.admin-update',
-            with: [
-                'fullname' => $this->adminUpdate->full_name,
-                'password' => $this->adminUpdate->password,
-            ]
-
+            markdown: 'mail.admin-deleted',
         );
     }
 

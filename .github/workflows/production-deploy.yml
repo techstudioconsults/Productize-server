@@ -1,13 +1,64 @@
-name: Productize CI/CD Pipeline
+name: Production CI/CD Workflow
 
 on:
+  pull_request:
+    branches: ["main"]
   push:
     branches: ["main"]
 
 jobs:
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: productize_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: 123456
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-scripts --no-progress --optimize-autoloader
+
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
+
+      - name: Generate APP_KEY
+        run: php artisan key:generate
+
+      - name: Create testing database
+        run: |
+          mysql -h 127.0.0.1 -u test -p123456 -e 'CREATE DATABASE IF NOT EXISTS productize_test;'
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing
+
+      - name: Run tests
+        run: vendor/bin/phpunit
+
   build:
+    if: github.event_name == 'push'
     name: Build and Deploy
-    runs-on: self-hosted
+    runs-on: [production]
 
     strategy:
       matrix:

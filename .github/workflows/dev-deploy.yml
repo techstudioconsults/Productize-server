@@ -54,10 +54,42 @@ jobs:
       - name: Run tests
         run: php artisan test
 
+  lint:
+    if: ${{ github.event_name == 'push' }}
+    name: Fix Code Style
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.3]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, dom, curl, libxml, mbstring
+          coverage: none
+
+      - name: Install Pint
+        run: composer global require laravel/pint
+
+      - name: Run Pint
+        run: pint
+
+      - name: Commit linted files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Fixes coding style"
+
   build:
     if: ${{ github.event_name == 'push' }}
     name: Build and Deploy
-    needs: test
+    needs: lint
     runs-on: [development]
 
     strategy:
@@ -111,34 +143,3 @@ jobs:
           sudo chown -R www-data.www-data /var/www/dev/_work/Productize-server/Productize-server/bootstrap/cache
           sudo chmod -R 777 /var/www/dev/_work/Productize-server/Productize-server/storage
           sudo chmod -R 777 /var/www/dev/_work/Productize-server/Productize-server/bootstrap/cache
-
-  lint:
-    if: ${{ github.event_name == 'push' }}
-    name: Fix Code Style
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        php: [8.3]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: json, dom, curl, libxml, mbstring
-          coverage: none
-
-      - name: Install Pint
-        run: composer global require laravel/pint
-
-      - name: Run Pint
-        run: pint
-
-      - name: Commit linted files
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Fixes coding style"

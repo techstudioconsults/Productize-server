@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Productize</title>
 
     <!-- Fonts -->
@@ -13,13 +12,11 @@
 
     <!-- Styles -->
     <style>
-        /* ! tailwindcss v3.2.4 | MIT License | https://tailwindcss.com */
-
     </style>
 </head>
 
 <body class="antialiased">
-    Welcome to productize
+    <p>Welcome to productize {{ $environment }} branch</p>
 </body>
 
 </html>

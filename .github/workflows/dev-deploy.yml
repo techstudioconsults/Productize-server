@@ -57,6 +57,7 @@ jobs:
   build:
     if: ${{ github.event_name == 'push' }}
     name: Build and Deploy
+    needs: test
     runs-on: [development]
 
     strategy:

@@ -7,7 +7,6 @@ use App\Models\Asset;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Log;
 
 class AssetPolicy
 {

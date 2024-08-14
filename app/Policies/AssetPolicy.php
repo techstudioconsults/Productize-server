@@ -7,7 +7,6 @@ use App\Models\Asset;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Log;
 
 class AssetPolicy
 {
@@ -26,9 +25,6 @@ class AssetPolicy
     public function viewByProduct(User $user, Product $product)
     {
         Response::allow();
-
-        Log::info('User ID: '.$user->id);
-        Log::info('Product User ID: '.$product->user_id);
 
         return $user->id === $product->user->id
             ? Response::allow()

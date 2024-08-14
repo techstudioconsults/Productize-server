@@ -13,7 +13,11 @@ Route::controller(EarningController::class)
         'can:subscribed,App\Models\Earning',
     ])
     ->group(function () {
-        Route::get('/', 'index')->name('index');
+
+        Route::get('/superadmin', 'index')->name('index')->middleware('abilities:role:super_admin')
+            ->withoutMiddleware('can:subscribed,App\Models\Payout');
+
+        Route::get('/', 'user')->name('user');
 
         Route::post('/withdraw', 'withdraw')->name('withdraw');
     });

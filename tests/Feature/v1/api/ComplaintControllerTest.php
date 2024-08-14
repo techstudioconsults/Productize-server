@@ -43,9 +43,35 @@ class ComplaintControllerTest extends TestCase
         ]);
     }
 
-    public function test_non_super_admin_cannot_view_complaints()
+    public function test_admin_can_view_complaints()
     {
         $this->actingAsAdmin();
+
+        $this->seed(ComplaintSeeder::class);
+
+        $expected_count = 10; // check seeder. must be 10 so it doesnt affect the test pagination.
+
+        $expected_json = ComplaintResource::collection(Complaint::all())->response()->getData(true);
+
+        $response = $this->withoutExceptionHandling()->get(route('complaints.index'));
+
+        $response->assertOk()->assertJson($expected_json, true);
+        $this->assertCount($expected_count, $response->json('data'));
+
+        $response->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'id', 'subject', 'message', 'email', 'created_at', 'user',
+                ],
+            ],
+            'links',
+            'meta',
+        ]);
+    }
+
+    public function test_non_super_admin_cannot_view_complaints()
+    {
+        $this->actingAsRegularUser();
 
         $response = $this->get(route('complaints.index'));
 

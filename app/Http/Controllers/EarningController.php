@@ -37,13 +37,35 @@ class EarningController extends Controller
     ) {}
 
     /**
+     * @author @obajide028 Odesanya Babajide
+     *
+     * Display the total earnings statistics
+     *
+     * @return JsonResource
+     */
+    public function index()
+    {
+        $total_earnings = $this->earningRepository->query([])->sum('total_earnings');
+
+        $withdrawn_earnings = $this->earningRepository->query([])->sum('withdrawn_earnings');
+
+        $available_earnings = $total_earnings - $withdrawn_earnings;
+
+        return new JsonResource([
+            'total_earnings' => $total_earnings,
+            'withdrawn_earnings' => $withdrawn_earnings,
+            'available_earnings' => $available_earnings,
+        ]);
+    }
+
+    /**
      * @author @Intuneteq Tobi Olanitori
      *
      * Display the authenticated user's earnings.
      *
      * @return EarningResource
      */
-    public function index()
+    public function user()
     {
         $user = Auth::user();
 

@@ -2,13 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Roles;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Resources\UserResource;
+use App\Mail\AdminDeletedMail;
+use App\Mail\AdminRevokedMail;
+use App\Mail\AdminUpdateMail;
+use App\Mail\AdminWelcomeMail;
 use App\Models\Order;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use App\Traits\SanctumAuthentication;
 use Database\Seeders\PayoutSeeder;
 use Database\Seeders\ProductSeeder;
@@ -18,6 +24,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Mail;
 use Tests\TestCase;
 
 class UserControllerTest extends TestCase
@@ -48,9 +55,26 @@ class UserControllerTest extends TestCase
         $this->assertCount($expected_count, $response->json('data')); // Default pagination count
     }
 
+    public function test_index_with_admin()
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->actingAsAdmin();
+
+        $expected_count = 10; // 9 from the seeder + 1 sanctum generated super admin - Ensure it is 10 cause of pagination
+
+        $expected_json = UserResource::collection(User::all())->response()->getData(true);
+
+        $response = $this->withoutExceptionHandling()->get(route('users.index'));
+
+        $response->assertOk()->assertJson($expected_json, true);
+        $response->assertJsonStructure(['data', 'links', 'meta']);
+        $this->assertCount($expected_count, $response->json('data')); // Default pagination count
+    }
+
     public function test_index_with_user_not_super_admin()
     {
-        $this->actingAsAdmin();
+        $this->actingAsRegularUser();
 
         $this->expectException(ForbiddenException::class);
 
@@ -255,9 +279,38 @@ class UserControllerTest extends TestCase
         ]);
     }
 
-    public function test_stat_without_super_admin()
+    public function test_stat_with_admin(): void
     {
         $this->actingAsAdmin();
+
+        $this->seed([
+            UserSeeder::class,
+            ProductSeeder::class,
+            PayoutSeeder::class,
+        ]);
+
+        Order::factory()->count(10)->create();
+
+        $response = $this->withoutExceptionHandling()->get(route('users.stats.admin'));
+
+        $response->assertOk();
+
+        $response->assertJsonStructure([
+            'data' => [
+                'total_products',
+                'total_sales',
+                'total_payouts',
+                'total_users',
+                'total_subscribed_users',
+                'total_trial_users',
+                'conversion_rate',
+            ],
+        ]);
+    }
+
+    public function test_stat_without_super_admin()
+    {
+        $this->actingAsRegularUser();
 
         $this->expectException(ForbiddenException::class);
 
@@ -372,7 +425,8 @@ class UserControllerTest extends TestCase
 
             $this->actingAs($user);
 
-            $data = ['document_type' => $type,
+            $data = [
+                'document_type' => $type,
                 'country' => 'Nigeria',
                 'document_image' => $validFile,
             ];
@@ -384,5 +438,183 @@ class UserControllerTest extends TestCase
                 'document_type' => $type,
             ]);
         }
+    }
+
+    public function test_super_admin_can_create_admin()
+    {
+        Mail::fake();
+
+        // Create a super admin user
+        $superAdmin = User::factory()->create([
+            'role' => 'SUPER_ADMIN',
+        ]);
+
+        // Act as the super admin
+        $this->actingAs($superAdmin, 'web');
+
+        // Define the user data to create
+        $userData = [
+            'email' => 'obajide028@gmail.com',
+            'full_name' => 'Babajide Odesanya',
+            'password' => 'Babajide1.',
+            'password_confirmation' => 'Babajide1.',
+            'role' => 'ADMIN',
+        ];
+
+        // Send a POST request to the users.store route
+        $response = $this->postJson(route('users.store'), $userData);
+
+        $response->assertStatus(201);
+
+        Mail::assertSent(AdminWelcomeMail::class, function ($mail) use ($userData) {
+            return $mail->hasTo($userData['email']);
+        });
+    }
+
+    public function test_regular_user_cannot_create_Admin()
+    {
+        $this->actingAsAdmin();
+
+        // Define the user data to create
+        $userData = [
+            'email' => 'obajide028@gmail.com',
+            'full_name' => 'Babajide Odesanya',
+            'password' => 'Babajide1.',
+            'password_confirmation' => 'Babajide1.',
+            'role' => 'ADMIN',
+        ];
+
+        // Send a POST request to the users.store route
+        $response = $this->postJson(route('users.store'), $userData);
+
+        // Assert the response
+        $response->assertStatus(403);
+    }
+
+    public function test_Super_admin_can_update_user()
+    {
+        Mail::fake();
+
+        // create user
+        $user = User::factory()->create([
+            'email' => 'obajide028@gmail.com',
+            'full_name' => 'Babajide Odesanya',
+            'password' => 'Babajide1.',
+        ]);
+
+        // create a super admin
+        $superAdmin = User::factory()->create([
+            'role' => 'SUPER_ADMIN',
+        ]);
+
+        $this->actingAs($superAdmin, 'web');
+
+        $updatedData = [
+            'password' => 'May1234567..',
+        ];
+
+        // Send a PUT request to the updateAdmin endpoint
+        $response = $this->putJson(route('users.updateAdmin', $user->id), $updatedData);
+
+        // Assert the response
+        $response->assertStatus(200);
+
+        // Assert that the email was sent
+        Mail::assertSent(AdminUpdateMail::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+    }
+
+    public function test_revoke_admin_role()
+    {
+        // Mock the user repository
+        $userRepository = $this->createMock(UserRepository::class);
+        $this->app->instance(UserRepository::class, $userRepository);
+
+        // create a user with admin role
+        $user = User::factory()->create([
+            'role' => 'ADMIN',
+        ]);
+
+        // Expect the guardedUpdate method to be called once with the right arguments
+        $userRepository->expects($this->once())
+            ->method('guardedUpdate')
+            ->with($user->email, 'role', Roles::USER->value);
+
+        // Fake the mail sending
+        Mail::fake();
+
+        // Call the revokeAdminRole method
+        $response = $this->actingAs($user)->patch(route('users.revoke-admin-role', $user->id));
+
+        // Assert that the role was updated
+        $this->assertTrue(true);
+
+        // Assert that the mail was sent
+        Mail::assertSent(AdminRevokedMail::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+
+        // Assert the response
+        $response->assertStatus(200);
+    }
+
+    public function test_super_admin_can_delete_admin()
+    {
+        //create admin user
+        $admin = User::factory()->create([
+            'role' => 'ADMIN',
+        ]);
+
+        //create super admin user
+        $superAdmin = User::factory()->create([
+            'role' => 'SUPER_ADMIN',
+        ]);
+
+        // Mock the user repository
+        $userRepository = $this->createMock(UserRepository::class);
+        $this->app->instance(UserRepository::class, $userRepository);
+
+        $userRepository->expects($this->once())
+            ->method('findById')
+            ->with($admin->id)
+            ->willReturn($admin);
+
+        $userRepository->expects($this->once())
+            ->method('deleteOne')
+            ->with($this->callback(function ($user) use ($admin) {
+                return $user->id === $admin->id;
+            }));
+
+        // Fake the mail sending
+        Mail::fake();
+
+        // Act as the super admin and call the delete-admin route
+        $response = $this->actingAs($superAdmin)
+            ->deleteJson(route('users.delete-admin', $admin->id));
+
+        // Assert that the mail was sent
+        Mail::assertSent(AdminDeletedMail::class, function ($mail) use ($admin) {
+            return $mail->hasTo($admin->email);
+        });
+
+        // Assert the response
+        $response->assertStatus(200);
+    }
+
+    public function test_can_download_admin_csv_as_super_admin()
+    {
+        $this->actingAsSuperAdmin();
+
+        // Create some users
+        $this->seed(UserSeeder::class);
+
+        // Call the download endpoint
+        $response = $this->withoutExceptionHandling()->get(route('users.download-admin'));
+
+        // Assert response is successful and CSV headers are correct
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=admin_users_'.now()->format('d_F_Y').'.csv');
     }
 }

@@ -17,16 +17,16 @@ Route::controller(ComplaintController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
-        'abilities:role:super_admin',
+        'abilities:role:super_admin,role:admin',
     ])
     ->group(function () {
         Route::get('/', 'index')->name('index');
 
         Route::get('/{complaint}', 'show')->name('show');
 
-        Route::post('/', 'store')->name('store')->withoutMiddleware('abilities:role:super_admin');
+        Route::post('/', 'store')->name('store')->withoutMiddleware('abilities:role:super_admin,role:admin');
 
-        Route::post('/contact-us', 'contactUs')->name('contactUs')->withoutMiddleware(['auth:sanctum', 'abilities:role:super_admin']);
+        Route::post('/contact-us', 'contactUs')->name('contactUs')->withoutMiddleware(['auth:sanctum', 'abilities:role:super_admin,role:admin']);
     });
 
 Route::controller(ComplaintController::class)

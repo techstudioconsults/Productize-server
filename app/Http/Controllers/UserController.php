@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\AdminDto;
+use App\Dtos\AdminUpdateDto;
 use App\Enums\AccountEnum;
 use App\Enums\PayoutStatus;
 use App\Enums\Roles;
@@ -13,6 +15,10 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateKycRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use App\Mail\AdminDeletedMail;
+use App\Mail\AdminRevokedMail;
+use App\Mail\AdminUpdateMail;
+use App\Mail\AdminWelcomeMail;
 use App\Models\User;
 use App\Repositories\OrderRepository;
 use App\Repositories\PayoutRepository;
@@ -21,12 +27,14 @@ use App\Repositories\UserRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Mail;
 use Throwable;
 
 /**
@@ -82,15 +90,32 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
+    /**
+     * @author @Intuneteq Tobi Olanitori
+     *
+     * Super Admin create a user
+     *
+     * @param  StoreUserRequest  $request  The request containing the user details
+     * @return UserResource The resource containing the new user details
+     */
     public function store(StoreUserRequest $request)
     {
         $data = $request->validated();
 
         $user = $this->userRepository->create($data);
 
+        $adminDTO = new AdminDto(
+            $user->email,
+            $data['password'] ?? null
+        );
+
         event(new Registered($user));
 
-        return new UserResource($user);
+        Mail::to($data['email'])->send(new AdminWelcomeMail($adminDTO));
+
+        $response = ['user' => new UserResource($user), 'message' => 'Success'];
+
+        return new JsonResponse($response, 201);
     }
 
     /**
@@ -108,9 +133,10 @@ class UserController extends Controller
      * @throws \App\Exceptions\ServerErrorException If an error occurs while uploading the logo.
      * @throws \App\Exceptions\ApiException If an error occurs during the update process.
      */
-    public function update(UpdateUserRequest $request)
+    public function update(UpdateUserRequest $request, $id = null)
     {
-        $user = Auth::user();
+        $adminUpdate = $id !== null;
+        $user = $adminUpdate ? $this->userRepository->findById($id) : Auth::user();
 
         $validated = $request->validated();
 
@@ -134,11 +160,28 @@ class UserController extends Controller
             $validated['logo'] = $logoUrl;
         }
 
+        $userUpdateDTO = new AdminUpdateDto(
+            $user->full_name ?? $validated['full_name'],
+            $user->email,
+            $validated['password'] ?? null,
+        );
+
+        if (isset($validated['password'])) {
+            $user = $this->userRepository->guardedUpdate($user->email, 'password', $validated['password']);
+        }
+
         try {
             $user = $this->userRepository->update($user, $validated);
 
             // Check for profile completion
-            $this->userRepository->profileCompletedAt($user);
+            if (! $adminUpdate) {
+                $this->userRepository->profileCompletedAt($user);
+            }
+
+            // Send email notification for admin updates
+            if ($adminUpdate) {
+                Mail::to($user->email)->send(new AdminUpdateMail($userUpdateDTO));
+            }
 
             return new UserResource($user);
         } catch (Throwable $e) {
@@ -274,6 +317,8 @@ class UserController extends Controller
     {
         $this->userRepository->guardedUpdate($user->email, 'role', Roles::USER->value);
 
+        Mail::to($user->email)->send(new AdminRevokedMail);
+
         return new JsonResource([
             'message' => 'Admin role has been successfully revoked, and user role has been updated to regular user.',
         ]);
@@ -342,5 +387,55 @@ class UserController extends Controller
         $notifications->markAsRead();
 
         return new JsonResource(['message' => 'Notifications marked as read']);
+    }
+
+    public function deleteAdmin($id)
+    {
+        try {
+            $user = $this->userRepository->findById($id);
+
+            if (! $user) {
+                return new JsonResource([
+                    'message' => 'User not found',
+                ]);
+            }
+
+            $this->userRepository->deleteOne($user);
+
+            Mail::to($user->email)->send(new AdminDeletedMail);
+
+            return new JsonResource([
+                'message' => 'Admin account has been deleted',
+            ]);
+        } catch (\Throwable $e) {
+            throw new ApiException($e->getMessage(), $e->getCode());
+        }
+    }
+
+    public function downloadAdmin()
+    {
+        $filter = [
+            'role' => 'ADMIN',
+        ];
+
+        $admin_users = $this->userRepository->query($filter)->get();
+
+        $now = Carbon::today()->isoFormat('DD_MMMM_YYYY');
+        $fileName = "admin_users_$now.csv";
+
+        $columns = ['User Name', 'User Email', 'Date'];
+        $data = [$columns];
+
+        foreach ($admin_users as $user) {
+            $data[] = [
+                $user->full_name,
+                $user->email,
+                $user->updated_at,
+            ];
+        }
+
+        $filePath = $this->generateCsv($fileName, $data);
+
+        return $this->streamFile($filePath, $fileName, 'text/csv');
     }
 }

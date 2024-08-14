@@ -83,9 +83,66 @@ class ProductControllerTest extends TestCase
         $response->assertJsonCount($expected_count, 'data');
     }
 
+    public function test_index_with_date_filters_for_admin()
+    {
+        $this->actingAsAdmin();
+
+        $expected_count = 4; // Ensure it matches the paginated count in controller
+
+        // Create products for testing
+        $products = Product::factory()->count($expected_count)
+            ->create([
+                'user_id' => User::factory()->create()->id,
+                'created_at' => now()->subDays(10),
+            ]);
+
+        // create products out of date range
+        Product::factory()->count($expected_count)
+            ->create([
+                'user_id' => User::factory()->create()->id,
+                'created_at' => now()->subDays(20),
+            ]);
+
+        // Convert the products to ProductResource
+        $expected_json = ProductResource::collection($products)->response()->getData(true);
+
+        // Call the index endpoint with date filters
+        $response = $this->withoutExceptionHandling()->get(route('product.index', [
+            'start_date' => now()->subDays(15)->format('Y-m-d'),
+            'end_date' => now()->format('Y-m-d'),
+        ]));
+
+        $response->assertOk()->assertJson($expected_json, true);
+
+        // Assert that the response contains the correct number of products
+        $response->assertJsonCount($expected_count, 'data');
+    }
+
     public function test_index_without_filters()
     {
         $this->actingAsSuperAdmin();
+
+        $expected_count = 4; // Ensure it matches the paginated count in controller
+
+        // Create products for testing
+        $products = Product::factory()->count($expected_count)->create();
+
+        // Convert the products to ProductResource
+        $expected_json = ProductResource::collection($products)->response()->getData(true);
+
+        // Call the index endpoint without filters
+        $response = $this->get(route('product.index'));
+
+        // Assert response is successful
+        $response->assertOk()->assertJson($expected_json, true);
+
+        // Assert that the response contains the correct number of products
+        $response->assertJsonCount($expected_count, 'data');
+    }
+
+    public function test_index_without_filters_for_admin()
+    {
+        $this->actingAsAdmin();
 
         $expected_count = 4; // Ensure it matches the paginated count in controller
 
@@ -865,9 +922,45 @@ class ProductControllerTest extends TestCase
         $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
+    public function test_admin_can_export_products_with_date_filters()
+    {
+        $this->actingAsAdmin();
+
+        // Create products for testing
+        Product::factory()->create(['title' => 'Product 1', 'price' => 100, 'created_at' => now()->subDays(10)]);
+        Product::factory()->create(['title' => 'Product 2', 'price' => 200, 'created_at' => now()->subDays(5)]);
+
+        // Call the adminRecords endpoint with date filters
+        $response = $this->withoutExceptionHandling()->get(route('product.records.admin', [
+            'start_date' => now()->subDays(7)->format('Y-m-d'),
+            'end_date' => now()->format('Y-m-d'),
+        ]));
+
+        // Assert response is successful and file is streamed
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
+    }
+
     public function test_super_admin_can_export_all_products_without_filters()
     {
         $this->actingAsSuperAdmin();
+
+        // Create products for testing
+        Product::factory()->count(3)->create();
+
+        // Call the adminRecords endpoint without filters
+        $response = $this->withoutExceptionHandling()->get(route('product.records.admin'));
+
+        // Assert response is successful and file is streamed
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=products_'.Carbon::today()->isoFormat('DD_MMMM_YYYY').'.csv');
+    }
+
+    public function test_admin_can_export_all_products_without_filters()
+    {
+        $this->actingAsAdmin();
 
         // Create products for testing
         Product::factory()->count(3)->create();
@@ -1024,9 +1117,46 @@ class ProductControllerTest extends TestCase
         $response->assertJsonCount(5, 'data');
     }
 
+    public function test_admin_can_retrieve_best_selling_products_with_date_filters()
+    {
+        $this->actingAsAdmin();
+
+        $this->seed(ProductSeeder::class);
+
+        Product::factory()->count(5)->has(Order::factory()->count(5), 'orders')->create([
+            'user_id' => User::factory()->create()->id,
+            'created_at' => now()->subYear(5),
+        ]);
+
+        // Call the bestSelling endpoint with date filters
+        $response = $this->get(route('product.top-product.admin', [
+            'start_date' => now()->subYear(6)->format('Y-m-d'),
+            'end_date' => now()->subYear(4)->format('Y-m-d'),
+        ]));
+
+        // Assert response is successful and contains the expected products
+        $response->assertOk();
+        $response->assertJsonCount(5, 'data');
+    }
+
     public function test_super_admin_can_retrieve_best_selling_products_without_filters()
     {
         $this->actingAsSuperAdmin();
+
+        // Create products for testing
+        $this->seed(ProductSeeder::class);
+
+        // Call the bestSelling endpoint without filters
+        $response = $this->get(route('product.top-product.admin'));
+
+        // Assert response is successful and contains the expected products
+        $response->assertOk();
+        $response->assertJsonCount(5, 'data');
+    }
+
+    public function test_admin_can_retrieve_best_selling_products_without_filters()
+    {
+        $this->actingAsAdmin();
 
         // Create products for testing
         $this->seed(ProductSeeder::class);

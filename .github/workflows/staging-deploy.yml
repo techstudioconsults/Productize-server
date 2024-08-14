@@ -1,0 +1,62 @@
+name: Staging CI/CD Pipeline
+
+on:
+  push:
+    branches: ["staging"]
+
+jobs:
+  build:
+    name: Build and Deploy
+    runs-on: [staging]
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Give checkout permission
+        run: sudo chmod -R 777 /var/www/staging
+
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+
+      - name: Setup Enviroment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+        env:
+          runner: self-hosted
+
+      - name: Copy env files from client config folder
+        run: cp /var/www/config-staging/.env /var/www/staging/_work/Productize-server/Productize-server/
+
+      - name: Install Packages
+        run: composer install --optimize-autoloader --no-dev
+
+      - name: Autoload
+        run: composer dump-autoload
+
+      - name: Clear caches
+        run: php artisan optimize:clear
+
+      - name: Generate new Cache
+        run: php artisan optimize
+
+      - name: Generate storage link
+        run: php artisan storage:link
+
+      # - name: Migrate Database
+      #   run: php artisan migrate:fresh --force
+
+      # - name: Database Seed
+      #   run: php artisan db:seed
+
+      # - name: Prune sanctum
+      #   run: php artisan sanctum:prune-expired
+
+      - name: Give permissions
+        run: |
+          sudo chown -R www-data.www-data /var/www/staging/_work/Productize-server/Productize-server/storage
+          sudo chown -R www-data.www-data /var/www/staging/_work/Productize-server/Productize-server/bootstrap/cache
+          sudo chmod -R 777 /var/www/staging/_work/Productize-server/Productize-server/storage
+          sudo chmod -R 777 /var/www/staging/_work/Productize-server/Productize-server/bootstrap/cache

@@ -16,7 +16,7 @@
 </head>
 
 <body class="antialiased">
-    <p>Welcome to productize {{ $environment }} branch</p>
+    <p>Welcome to productize {{ config('app.env') }} branch</p>
 </body>
 
 </html>

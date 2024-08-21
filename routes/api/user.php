@@ -17,7 +17,8 @@ Route::group([
 
     Route::get('/download', [UserController::class, 'download'])->middleware('abilities:role:super_admin,role:admin')->name('download');
 
-    Route::get('/notifications', [UserController::class, 'notifications'])->name('notifications');
+    Route::get('/notifications', [UserController::class, 'notifications'])->name('notifications')
+        ->withoutMiddleware('can:verified,App\Models\User');
 
     Route::post('/', [UserController::class, 'store'])->middleware('abilities:role:super_admin')->name('store');
 

@@ -17,7 +17,8 @@ Route::group([
 
     Route::get('/download', [UserController::class, 'download'])->middleware('abilities:role:super_admin,role:admin')->name('download');
 
-    Route::get('/notifications', [UserController::class, 'notifications'])->name('notifications');
+    Route::get('/notifications', [UserController::class, 'notifications'])->name('notifications')
+        ->withoutMiddleware('can:verified,App\Models\User');
 
     Route::post('/', [UserController::class, 'store'])->middleware('abilities:role:super_admin')->name('store');
 
@@ -39,8 +40,8 @@ Route::group([
 
     Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
 
-    Route::post('/notifications', [UserController::class, 'readNotifications'])->name('notifications.read');
+    Route::post('/notifications', [UserController::class, 'readNotifications'])->name('notifications.read')
+        ->withoutMiddleware('can:verified,App\Models\User');
 
     Route::get('/admin/download', [UserController::class, 'downloadAdmin'])->middleware('abilities:role:super_admin')->name('download-admin');
-
 });

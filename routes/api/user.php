@@ -39,8 +39,8 @@ Route::group([
 
     Route::post('/kyc', [UserController::class, 'updateKyc'])->name('kyc');
 
-    Route::post('/notifications', [UserController::class, 'readNotifications'])->name('notifications.read');
+    Route::post('/notifications', [UserController::class, 'readNotifications'])->name('notifications.read')
+        ->withoutMiddleware('can:verified,App\Models\User');
 
     Route::get('/admin/download', [UserController::class, 'downloadAdmin'])->middleware('abilities:role:super_admin')->name('download-admin');
-
 });

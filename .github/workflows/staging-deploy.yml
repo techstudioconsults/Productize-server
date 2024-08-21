@@ -78,8 +78,9 @@ jobs:
         env:
           runner: self-hosted
 
-      - name: Copy env files from client config folder
-        run: cp /var/www/config-staging/.env /var/www/staging/_work/Productize-server/Productize-server/
+      - name: Create .env file
+        run: |
+            echo "${{ secrets.ENV_STAGING }}" > .env
 
       - name: Install Packages
         run: composer install --optimize-autoloader --no-dev

@@ -78,8 +78,9 @@ jobs:
         env:
           runner: self-hosted
 
-      - name: Copy env files from client config folder
-        run: cp /var/www/config/.env /var/www/productize/_work/Productize-server/Productize-server/
+      - name: Create .env file
+        run: |
+          echo "${{ secrets.ENV_PRODUCTION }}" > .env
 
       - name: Install Packages
         run: composer install --optimize-autoloader --no-dev
@@ -100,8 +101,8 @@ jobs:
         run: php artisan sanctum:prune-expired
 
       - name: Give permissions
-        run:  |
-         sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/storage
-         sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache
-         sudo chmod -R 777 /var/www/productize/_work/Productize-server/Productize-server/storage
-         sudo chmod -R 777 /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache
+        run: |
+          sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/storage
+          sudo chown -R www-data.www-data /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache
+          sudo chmod -R 777 /var/www/productize/_work/Productize-server/Productize-server/storage
+          sudo chmod -R 777 /var/www/productize/_work/Productize-server/Productize-server/bootstrap/cache

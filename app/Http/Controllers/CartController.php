@@ -77,7 +77,7 @@ class CartController extends Controller
         // Validate cart exists
         $exists = $this->cartRepository->query([
             'product_slug' => $payload['product_slug'],
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ])->exists();
 
         // Throw exception, if duplicate

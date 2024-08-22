@@ -257,7 +257,7 @@ class AuthController extends Controller
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url') . '/dashboard/home';
+        $redirectUrl = config('app.client_url').'/dashboard/home';
 
         return redirect($redirectUrl);
     }

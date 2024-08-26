@@ -55,6 +55,36 @@ class ReviewControllerTest extends TestCase
         ]);
     }
 
+    public function test_storeReview_without_comment(): void
+    {
+        // Create a user
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        //create product
+        $product = Product::factory()->create();
+
+        // Generate new data for creating the review
+        $reviewData = [
+            'product_id' => $product->id,
+            'user_id' => $user->id,
+            'rating' => 4,
+        ];
+
+        // Send a POST request to store the review
+        $response = $this->post('api/reviews/products/'.$product->id, $reviewData);
+
+        // Assert that the request was successful (status code 201)
+        $response->assertStatus(201);
+
+        // Assert that the review was stored in the database with the provided data
+        $this->assertDatabaseHas('reviews', [
+            'rating' => $reviewData['rating'],
+            'product_id' => $reviewData['product_id'],
+            'user_id' => $reviewData['user_id'],
+        ]);
+    }
+
     public function test_findByProductId(): void
     {
         // Create a user

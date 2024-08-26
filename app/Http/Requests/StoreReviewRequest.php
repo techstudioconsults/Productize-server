@@ -31,7 +31,7 @@ class StoreReviewRequest extends FormRequest
     {
         return [
             'rating' => 'required|integer|between:1,5',
-            'comment' => 'required|string',
+            'comment' => 'string',
         ];
     }
 }

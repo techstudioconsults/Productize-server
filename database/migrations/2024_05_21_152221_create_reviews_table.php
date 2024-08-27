@@ -20,7 +20,7 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->text('comment');
+            $table->text('comment')->nullable();
             $table->integer('rating');
             $table->foreignIdFor(\App\Models\User::class, 'user_id')->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Product::class, 'product_id')->cascadeOnDelete();

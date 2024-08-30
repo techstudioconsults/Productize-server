@@ -487,6 +487,7 @@ class ProductController extends Controller
                 'slug' => $product->slug,
                 'publisher' => $product->user->full_name,
                 'price' => $product->price,
+                'product_type' => $product->product_type,
             ];
         });
 

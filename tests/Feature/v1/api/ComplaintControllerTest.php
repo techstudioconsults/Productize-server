@@ -194,7 +194,7 @@ class ComplaintControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['Message' => 'Your message has been sent.']);
 
-        Mail::assertSent(ContactUsMail::class, function ($mail) use ($formData) {
+        Mail::assertSent(ContactUsMail::class, function ($mail) {
             return $mail->hasTo(env('CONTACT_EMAIL', 'info@trybytealley.com'));
         });
 

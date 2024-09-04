@@ -21,7 +21,9 @@ class ContactUsMail extends Mailable
     use Queueable, SerializesModels;
 
     private $data;
+
     private $recipientEmail;
+
     /**
      * Create a new message instance.
      */
@@ -38,7 +40,7 @@ class ContactUsMail extends Mailable
     {
         return new Envelope(
             subject: 'Contact Us Mail',
-            to:  $this->recipientEmail
+            to: $this->recipientEmail
         );
     }
 

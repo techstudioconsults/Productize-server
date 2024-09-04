@@ -26,7 +26,9 @@ class TransferDto implements IDtoFactory
         private string $amount,
         private string $code,
         private string $created_at
-    ) {}
+    ) {
+        $this->amount = (string) ((int) $this->amount * 100);
+    }
 
     /**
      * Get the amount of the transfer.

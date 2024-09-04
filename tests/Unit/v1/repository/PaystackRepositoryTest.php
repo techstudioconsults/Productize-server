@@ -534,6 +534,7 @@ class PaystackRepositoryTest extends TestCase
     public function test_initiateTransfer_success()
     {
         $amount = '5000';
+        $expectedAmount = '500000';
         $recipientCode = 'RCP_m7ljkv8leesep7p';
         $transfer_code = 'TRF_1ptvuv321ahaa7q';
 
@@ -552,7 +553,7 @@ class PaystackRepositoryTest extends TestCase
         $transferDto = $this->paystackRepository->initiateTransfer($amount, $recipientCode, $recipientCode);
 
         $this->assertInstanceOf(TransferDto::class, $transferDto);
-        $this->assertEquals($amount, $transferDto->getAmount());
+        $this->assertEquals($expectedAmount, $transferDto->getAmount());
         $this->assertEquals($transfer_code, $transferDto->getCode());
     }
 

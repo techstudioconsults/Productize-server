@@ -125,8 +125,8 @@ class EarningController extends Controller
         // Do we have enough on paystack ?
         $ptBalanceIsSufficient = $this->paystackRepository->checkPTBalanceIsSufficient($amount);
 
-        if (!$ptBalanceIsSufficient) {
-            throw new ApiException("Service Not Availabe, Please Try Again", 503);
+        if (! $ptBalanceIsSufficient) {
+            throw new ApiException('Service Not Availabe, Please Try Again', 503);
         }
 
         // Retrieve active payout account.

@@ -122,6 +122,13 @@ class EarningController extends Controller
             throw new BadRequestException('Insufficient balance. You cannot withdraw more than your current balance.');
         }
 
+        // Do we have enough on paystack ?
+        $ptBalanceIsSufficient = $this->paystackRepository->checkPTBalanceIsSufficient($amount);
+
+        if (! $ptBalanceIsSufficient) {
+            throw new ApiException('Service Not Availabe, Please Try Again', 503);
+        }
+
         // Retrieve active payout account.
         $account = $this->accountRepository->findActive(['user_id' => $user->id]);
 

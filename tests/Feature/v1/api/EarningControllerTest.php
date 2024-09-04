@@ -80,7 +80,6 @@ class EarningControllerTest extends TestCase
                     'available_earnings' => 700,
                 ],
             ]);
-
     }
 
     public function test_returns_user_earnings()
@@ -123,6 +122,11 @@ class EarningControllerTest extends TestCase
             ->once()
             ->with($earning)
             ->andReturn(10000);
+
+        $this->paystackRepository->shouldReceive('checkPTBalanceIsSufficient')
+            ->once()
+            ->with(5000)
+            ->andReturn(true);
 
         $this->paystackRepository->shouldReceive('initiateTransfer')
             ->once()

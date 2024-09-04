@@ -393,6 +393,42 @@ class PaystackRepository
     }
 
     /**
+     * Check the current PT balance against the amount to be withdrawn.
+     *
+     * @param  int  $amount  The withdrawal amount initiated
+     * @return bool True when there is sufficient balance, false otherwise
+     */
+    public function checkPTBalanceIsSufficient(int $amount): bool
+    {
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer '.$this->secret_key,
+        ])->get("{$this->baseUrl}/balance");
+
+        if ($response->failed()) {
+            Log::error('Error Checking PT Balance', [
+                'code' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body(),
+            ]);
+
+            return false;
+        }
+
+        $balance = $response['data'][0]['balance'];
+
+        $isSufficent = $balance > $amount;
+
+        if (! $isSufficent) {
+            Log::alert('INSUFFICIENT PT BALANCE', [
+                'Amount Initiated' => $amount,
+                'PT BALANCE' => $balance,
+            ]);
+        }
+
+        return $balance > $amount;
+    }
+
+    /**
      * Create a transfer recipient on Paystack.
      *
      * @param  string  $name  Bank account name

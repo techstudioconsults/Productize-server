@@ -75,9 +75,9 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json',
-        ])->post($this->baseUrl.'/customer', $payload)->throw()->json();
+        ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
 
         return CustomerDto::create($response['data']);
     }
@@ -93,10 +93,10 @@ class PaystackRepository
      */
     public function fetchCustomer(string $email): ?CustomerDto
     {
-        $url = $this->baseUrl."/customer/$email";
+        $url = $this->baseUrl . "/customer/$email";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get($url);
 
         if ($response->notFound()) {
@@ -126,7 +126,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            'callback_url' => $this->client_url.'/dashboard/home',
+            'callback_url' => $this->client_url . '/dashboard/home',
         ];
 
         if ($isSubscription) {
@@ -134,7 +134,7 @@ class PaystackRepository
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload);
@@ -163,11 +163,11 @@ class PaystackRepository
     public function initializePurchaseTransaction(mixed $payload)
     {
         $payload = array_merge($payload, [
-            'callback_url' => $this->client_url.'/dashboard/downloads#all-downloads',
+            'callback_url' => $this->client_url . '/dashboard/downloads#all-downloads',
         ]);
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload);
@@ -203,7 +203,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Content-Type' => 'application/json',
         ])->post($this->subscriptionEndpoint, $payload);
 
@@ -233,7 +233,7 @@ class PaystackRepository
         $url = "{$this->baseUrl}/subscription/{$subscriptionId}/manage/link";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get($url);
 
         if ($response->failed()) {
@@ -260,7 +260,7 @@ class PaystackRepository
     public function fetchSubscription(string $subscriptionId): ?SubscriptionDto
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
 
         if ($response->failed()) {
@@ -293,7 +293,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
@@ -318,7 +318,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/disable", $payload)->throw()->json();
@@ -348,7 +348,7 @@ class PaystackRepository
     public function getBankList(): ?Collection
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
         ])->get("{$this->baseUrl}/bank?country=nigeria");
 
         if ($response->failed()) {
@@ -376,8 +376,8 @@ class PaystackRepository
     public function validateAccountNumber(string $account_number, string $bank_code): bool
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
-        ])->get("{$this->baseUrl}/bank/resolve?account_number=".$account_number.'&bank_code='.$bank_code);
+            'Authorization' => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . '&bank_code=' . $bank_code);
 
         if ($response->failed()) {
             Log::error('Error Validating Account Number', [
@@ -390,6 +390,42 @@ class PaystackRepository
         }
 
         return $response['status'];
+    }
+
+    /**
+     * Check the current PT balance against the amount to be withdrawn.
+     *
+     * @param  int  $amount  The withdrawal amount initiated
+     * @return bool True when there is sufficient balance, false otherwise
+     */
+    public function checkPTBalanceIsSufficient(int $amount): bool
+    {
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->secret_key,
+        ])->get("{$this->baseUrl}/balance");
+
+        if ($response->failed()) {
+            Log::error('Error Checking PT Balance', [
+                'code' => $response->status(),
+                'message' => $response->reason(),
+                'body' => $response->body(),
+            ]);
+
+            return false;
+        }
+
+        $balance = $response['data'][0]['balance'];
+
+        $isSufficent = $balance > $amount;
+
+        if (!$isSufficent) {
+            Log::alert('INSUFFICIENT PT BALANCE', [
+                'Amount Initiated' => $amount,
+                'PT BALANCE' => $balance,
+            ]);
+        }
+
+        return $balance > $amount;
     }
 
     /**
@@ -412,7 +448,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transferrecipient", $payload);
@@ -450,7 +486,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$this->secret_key,
+            'Authorization' => 'Bearer ' . $this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transfer", $payload);

@@ -18,7 +18,7 @@ class SkillSellingResource extends JsonResource
             'id' => $this->id,
             'category' => $this->category,
             'link' => $this->link,
-            'resource_link' => $this->resource_link,
+            'resource_link' => $this->resource_link, 
             'product' => [
                 'id' => $this->product->id,
                 'thumbnail' => $this->product->thumbnail,

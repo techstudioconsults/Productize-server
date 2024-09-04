@@ -21,13 +21,14 @@ class ContactUsMail extends Mailable
     use Queueable, SerializesModels;
 
     private $data;
-
+    private $recipientEmail;
     /**
      * Create a new message instance.
      */
     public function __construct(array $data)
     {
         $this->data = $data;
+        $this->recipientEmail = env('CONTACT_EMAIL', 'info@trybytealley.com');
     }
 
     /**
@@ -37,7 +38,7 @@ class ContactUsMail extends Mailable
     {
         return new Envelope(
             subject: 'Contact Us Mail',
-            to: 'obajide028@gmail.com'
+            to:  $this->recipientEmail
         );
     }
 

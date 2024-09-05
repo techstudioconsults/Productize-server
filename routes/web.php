@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     $environment = env('APP_ENV', 'production');
 
-    return view('welcome', compact('environment'));
+    return view('pages.home', compact('environment'));
 });
 
 /**

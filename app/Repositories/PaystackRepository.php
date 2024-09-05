@@ -480,7 +480,7 @@ class PaystackRepository
         $payload = [
             'source' => 'balance',
             'reason' => 'Payout',
-            'amount' => $amount,
+            'amount' => $amount * 100,
             'recipient' => $recipient_code,
             'reference' => $reference,
         ];

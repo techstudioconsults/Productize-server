@@ -4,7 +4,7 @@
     <h1>Your Withdrawal Request has Failed</h1>
 
     <p>
-        We regret to inform you that the withdrawal payment associated with your <b>PRODUCTIZE</b> account has been reversed.
+        We regret to inform you that the withdrawal payment associated with your <b>BYTEALLEY</b> account has been reversed.
     </p>
 
     <p>

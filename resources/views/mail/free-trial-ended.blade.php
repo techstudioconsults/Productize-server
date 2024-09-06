@@ -4,7 +4,7 @@
     <h1>Your Free Trial Has Ended</h1>
 
     <p>
-        We hope you enjoyed exploring <b>PRODUCTIZE</b> during your free trial. As of today, your trial period has come to an end.
+        We hope you enjoyed exploring <b>BYTEALLEY</b> during your free trial. As of today, your trial period has come to an end.
     </p>
 
     <p>

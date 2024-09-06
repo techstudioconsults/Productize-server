@@ -6,7 +6,7 @@
     <p>Hello {{ $name }},</p>
 
     <p>
-        We wanted to inform you that your password has been successfully changed on Productize. If you initiated this change, there's no need to worry. Your account is now secure with the updated credentials.
+        We wanted to inform you that your password has been successfully changed on Bytealley. If you initiated this change, there's no need to worry. Your account is now secure with the updated credentials.
     </p>
 
     <p>
@@ -14,13 +14,13 @@
     </p>
 
     <p>
-        Thank you for using Productize, and please feel free to reach out if you have any further questions or concerns.
+        Thank you for using Bytealley, and please feel free to reach out if you have any further questions or concerns.
     </p>
 
     <p class="text-left">
         Best regards,
         <br>
-        The Productize Team
+        The Bytealley Team
     </p>
 
 </x-mail::message>

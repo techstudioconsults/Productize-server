@@ -4,7 +4,7 @@
     <h1>Congratulations, a product has been gifted to you!</h1>
 
     <p>
-        We are excited to inform you that {{ $buyer_email }} has gifted you a digital product on Productize! To access your gifted course and start learning, please login.
+        We are excited to inform you that {{ $buyer_email }} has gifted you a digital product on Bytealley! To access your gifted course and start learning, please login.
     </p>
 
     <x-mail::button :url="trim($url)" color="#6D5DD3">

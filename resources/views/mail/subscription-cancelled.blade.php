@@ -4,7 +4,7 @@
     <h1>Your Subscription Has Been Cancelled</h1>
 
     <p>
-        We hope you enjoyed exploring <b>PRODUCTIZE</b> during your subscription. As of today, your subscription has been canceled.
+        We hope you enjoyed exploring <b>BYTEALLEY</b> during your subscription. As of today, your subscription has been canceled.
     </p>
 
     <p>

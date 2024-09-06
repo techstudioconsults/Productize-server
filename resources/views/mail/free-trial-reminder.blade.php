@@ -4,7 +4,7 @@
     <h1>Important Reminder!! 3 Days To left In Your Free Trial</h1>
 
     <p>
-        We hope you're enjoying your experience with PRODUCTIZE during your free trial! This is a friendly reminder that you have just 3 days remaining before your trial period concludes. We want to ensure you have ample time to explore all the features and benefits available to you.
+        We hope you're enjoying your experience with BYTEALLEY during your free trial! This is a friendly reminder that you have just 3 days remaining before your trial period concludes. We want to ensure you have ample time to explore all the features and benefits available to you.
     </p>
 
     <p>

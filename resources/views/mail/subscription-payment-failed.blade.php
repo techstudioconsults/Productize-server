@@ -4,7 +4,7 @@
     <h1>Your Subscription Payment Has Failed</h1>
 
     <p>
-        We're sorry to inform you that we couldn't process your payment for your <b>PRODUCTIZE</b> subscription. Your access to premium features may be temporarily disrupted.
+        We're sorry to inform you that we couldn't process your payment for your <b>BYTEALLEY</b> subscription. Your access to premium features may be temporarily disrupted.
     </p>
 
     <p>

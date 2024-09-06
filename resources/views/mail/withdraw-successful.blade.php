@@ -8,7 +8,7 @@
     </p>
 
     <p>
-        We're pleased to inform you that your withdrawal request from <b>PRODUCTIZE</b> has been successfully processed.
+        We're pleased to inform you that your withdrawal request from <b>BYTEALLEY</b> has been successfully processed.
         The funds have been transferred to your designated account, and you should see them reflected shortly.
     </p>
 </x-mail::message>

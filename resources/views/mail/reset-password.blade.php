@@ -18,12 +18,12 @@
     </p>
 
     <p>
-        Thank you for being a part of Productize. If you have any further questions or concerns, please don't hesitate to reach out to us.
+        Thank you for being a part of Bytealley. If you have any further questions or concerns, please don't hesitate to reach out to us.
     </p>
 
     <p class="text-left">
         Best regards,
         <br>
-        The Productize Team"
+        The Bytealley Team"
     </p>
 </x-mail::message>

@@ -225,7 +225,6 @@ class WebhookRepository
             'status' => RevenueActivityStatus::COMPLETED->value,
             'commission' => RevenueRepository::SALE_COMMISSION,
         ]);
-
     }
 
     private function handleSubscriptionRenewEvent(array $data): void
@@ -303,7 +302,7 @@ class WebhookRepository
 
             $earnings = $this->earningRepository->findOne(['user_id' => $user->id]);
 
-            $new_withdrawn_earnings = $earnings->withdrawn_earnings + $data['amount'];
+            $new_withdrawn_earnings = $earnings->withdrawn_earnings + ($data['amount'] / 100);
 
             $this->earningRepository->update($earnings, [
                 'withdrawn_earnings' => $new_withdrawn_earnings,

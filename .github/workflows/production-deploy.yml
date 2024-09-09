@@ -97,6 +97,9 @@ jobs:
       - name: Generate storage link
         run: php artisan storage:link
 
+      - name: Seed Faq
+        run: php artisan db:seed --class=FaqSeeder --force
+
       - name: Prune sanctum
         run: php artisan sanctum:prune-expired
 

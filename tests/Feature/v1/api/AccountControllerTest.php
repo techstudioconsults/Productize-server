@@ -9,10 +9,12 @@ use App\Exceptions\UnAuthorizedException;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Models\User;
+use App\Repositories\AccountRepository;
 use App\Repositories\PaystackRepository;
 use App\Traits\SanctumAuthentication;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Mockery;
 use Tests\TestCase;
 
 class AccountControllerTest extends TestCase
@@ -211,5 +213,27 @@ class AccountControllerTest extends TestCase
 
         // Assert response is successful and returns an empty array
         $response->assertStatus(200)->assertExactJson([]);
+    }
+
+    public function test_deleteAccount_success()
+    {
+        $user = User::factory()->create();
+        $account = Account::factory()->create(['user_id' => $user->id]);
+
+        $this->actingAs($user);
+
+        $accountRepositoryMock = Mockery::mock(AccountRepository::class);
+        $this->app->instance(AccountRepository::class, $accountRepositoryMock);
+
+        $accountRepositoryMock->shouldReceive('deleteOne')
+            ->once()
+            ->with(Mockery::on(function ($arg) use ($account) {
+                return $arg instanceof Account && $arg->id === $account->id;
+            }))
+            ->andReturn(true);
+
+        $response = $this->delete(route('account.delete', $account->id));
+
+        $response->assertStatus(200);
     }
 }

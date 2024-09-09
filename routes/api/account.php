@@ -20,4 +20,6 @@ Route::controller(AccountController::class)
         Route::get('/bank-list', 'bankList')->name('bank-list');
 
         Route::patch('/{account}', 'update')->middleware('can:update,account')->name('update');
+
+        Route::delete('/delete/{account}', 'deleteAccount')->middleware('can:delete,account')->name('delete');
     });

@@ -22,14 +22,14 @@ class FaqSeeder extends Seeder
     {
         Faq::factory()->create([
             'title' => 'General Question',
-            'question' => 'What is Productize?',
-            'answer' => 'Productize is a digital marketplace where creators can sell their products, such as art, design, resources, eBooks and more.',
+            'question' => 'What is Bytealley?',
+            'answer' => 'Bytealley is a digital marketplace where creators can sell their products, such as art, design, resources, eBooks and more.',
         ]);
 
         Faq::factory()->create([
             'title' => 'General Question',
             'question' => 'How do I get started as creator?',
-            'answer' => 'To start selling on Productize, sign up for an account, create your seller/buyer profile, and begin uploading/buying your products.',
+            'answer' => 'To start selling on Bytealley, sign up for an account, create your seller/buyer profile, and begin uploading/buying your products.',
         ]);
 
         Faq::factory()->create([
@@ -45,19 +45,19 @@ class FaqSeeder extends Seeder
         ]);
 
         Faq::factory()->create([
-            'title' => 'Selling on Productize',
+            'title' => 'Selling on Bytealley',
             'question' => 'How do I set the price for my digital products?',
             'answer' => 'You have the flexibility to set your prices, as well as discounted prices. We recommend researching the market and pricing competitively.',
         ]);
 
         Faq::factory()->create([
-            'title' => 'Selling on Productize',
+            'title' => 'Selling on Bytealley',
             'question' => 'How and when do I get paid for my sales?',
             'answer' => 'You will receive payments through your chosen payment account via paystack. Detailed information can be found in your account dashboard.',
         ]);
 
         Faq::factory()->create([
-            'title' => 'Selling on Productize',
+            'title' => 'Selling on Bytealley',
             'question' => 'Is there a limit on the number of products I can sell?',
             'answer' => 'No, there are no restrictions on the number of products you can sell. Create as many as you like!',
         ]);

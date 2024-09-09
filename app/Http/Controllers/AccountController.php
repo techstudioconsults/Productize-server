@@ -26,6 +26,8 @@ use App\Repositories\UserRepository;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Log;
 use Mail;
 
 /**
@@ -194,5 +196,20 @@ class AccountController extends Controller
         });
 
         return new JsonResponse($response, 200);
+    }
+
+
+    public function deleteAccount (Account $account)
+    {
+        try{
+          $this->accountRepository->deleteOne($account);
+
+          return new JsonResource([
+            'message' => 'Account Deleted',
+        ]);
+            
+        }catch(\Throwable $e) {
+            throw new ApiException($e->getMessage(), $e->getCode());
+        }
     }
 }

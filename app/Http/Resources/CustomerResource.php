@@ -40,6 +40,7 @@ class CustomerResource extends JsonResource
             'total_transactions' => $total_purchase_amount,
             'latest_purchase_title' => $this->order->product->title,
             'latest_purchase_price' => $this->order->product->price,
+            'latest_purchase_discount_price' => $this->order->product->discount_price,
             'latest_purchase_date' => $this->order->updated_at,
             'joined' => $total_purchase->first()->created_at,
         ];

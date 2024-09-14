@@ -24,6 +24,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Enum;
@@ -191,7 +192,8 @@ class AuthController extends Controller
         try {
             $oauthUser = Socialite::driver($validated['provider'])->stateless()->user();
         } catch (\Throwable $th) {
-            throw new BadRequestException($th->getMessage());
+            Log::alert('Social Auth Failure', ['message' => $th->getMessage()]);
+            throw new BadRequestException("Authentication Error");
         }
 
         $user = User::firstWhere('email', $oauthUser->email);
@@ -257,7 +259,7 @@ class AuthController extends Controller
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url').'/dashboard/home';
+        $redirectUrl = config('app.client_url') . '/dashboard/home';
 
         return redirect($redirectUrl);
     }

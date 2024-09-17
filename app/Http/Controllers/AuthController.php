@@ -193,7 +193,7 @@ class AuthController extends Controller
             $oauthUser = Socialite::driver($validated['provider'])->stateless()->user();
         } catch (\Throwable $th) {
             Log::alert('Social Auth Failure', ['message' => $th->getMessage()]);
-            throw new BadRequestException("Authentication Error");
+            throw new BadRequestException('Authentication Error');
         }
 
         $user = User::firstWhere('email', $oauthUser->email);
@@ -259,7 +259,7 @@ class AuthController extends Controller
             $user->markEmailAsVerified();
         }
 
-        $redirectUrl = config('app.client_url') . '/dashboard/home';
+        $redirectUrl = config('app.client_url').'/dashboard/home';
 
         return redirect($redirectUrl);
     }

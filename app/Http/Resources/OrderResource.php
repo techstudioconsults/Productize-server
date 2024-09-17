@@ -22,7 +22,7 @@ class OrderResource extends JsonResource
             'product' => [
                 'title' => $this->product->title,
                 'price' => $this->product->price,
-                'discount_price'=> $this->product->discount_price,
+                'discount_price' => $this->product->discount_price,
                 'thumbnail' => $this->product->thumbnail,
                 'total_orders' => $this->product->totalOrder(),
                 'total_sales' => $this->product->totalSales(),

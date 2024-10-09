@@ -45,12 +45,33 @@ class RevenueControllerTest extends TestCase
         $this->assertCount(10, $response->json('data')); // Default pagination count
     }
 
+    public function admin_can_list_revenues()
+    {
+        $this->actingAsAdmin();
+
+        // Ensure to keep pagination count, else test fails
+        $revenues = Revenue::factory()->count(10)->create([
+            'created_at' => now()->subDay()->toDateString(),
+        ]);
+
+        $expected_json = RevenueResource::collection($revenues)->response()->getData(true);
+
+        $response = $this->withoutExceptionHandling()->get(route('revenue.index', [
+            'start_date' => now()->subMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]));
+
+        $response->assertOk()->assertJson($expected_json, true);
+        $response->assertJsonStructure(['data', 'links', 'meta']);
+        $this->assertCount(10, $response->json('data')); // Default pagination count
+    }
+
     /** @test */
     public function non_super_admin_cannot_list_revenues()
     {
         $this->expectException(ForbiddenException::class);
 
-        $this->actingAsAdmin();
+        $this->actingAsRegularUser();
 
         Revenue::factory()->count(15)->create();
 
@@ -95,7 +116,7 @@ class RevenueControllerTest extends TestCase
     {
         $this->expectException(ForbiddenException::class);
 
-        $this->actingAsAdmin();
+        $this->actingAsRegularUser();
 
         Revenue::factory()->create([
             'activity' => RevenueActivity::PURCHASE->value,
@@ -125,11 +146,28 @@ class RevenueControllerTest extends TestCase
     }
 
     /** @test */
+    public function admin_can_download_revenues_as_csv()
+    {
+        $this->actingAsAdmin();
+
+        $this->seed(RevenueSeeder::class); // Seed the database with test data
+
+        $response = $this->withoutExceptionHandling()->get(route('revenue.download', [
+            'start_date' => now()->subMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_'.now()->isoFormat('DD_MMMM_YYYY').'.csv');
+    }
+
+    /** @test */
     public function non_super_admin_cannot_download_revenues_as_csv()
     {
         $this->expectException(ForbiddenException::class);
 
-        $this->actingAsAdmin();
+        $this->actingAsRegularUser();
 
         Revenue::factory()->count(10)->create();
 
@@ -159,11 +197,30 @@ class RevenueControllerTest extends TestCase
     }
 
     /** @test */
+    public function admin_handles_no_revenues_for_given_filter_in_download()
+    {
+        $this->actingAsAdmin();
+
+        // Seed the database with test data
+        $this->seed(RevenueSeeder::class);
+
+        // Specify a date range that doesn't overlap with seeded data
+        $response = $this->get(route('revenue.download', [
+            'start_date' => '2023-01-01',
+            'end_date' => '2023-01-31',
+        ]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $this->assertEquals('', $response->getContent()); // Assert that response content is empty
+    }
+
+    /** @test */
     public function non_super_admin_handles_no_revenues_for_given_filter_in_download()
     {
         $this->expectException(ForbiddenException::class);
 
-        $this->actingAsAdmin();
+        $this->actingAsRegularUser();
 
         $this->withoutExceptionHandling()->get(route('revenue.download', [
             'start_date' => now()->subMonth()->toDateString(),

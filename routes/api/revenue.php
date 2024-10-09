@@ -9,14 +9,14 @@ Route::controller(RevenueController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
-        'abilities:role:super_admin',
+        'abilities:role:super_admin,role:admin',
     ])
     ->group(function () {
         Route::get('/', 'index')->name('index');
 
-        Route::get('/daily', 'daily')->name('daily')->withoutMiddleware('abilities:role:super_admin');
+        Route::get('/daily', 'daily')->name('daily')->withoutMiddleware('abilities:role:super_admin,role:admin');
 
-        Route::get('/stats', 'stats')->name('stats');
+        Route::get('/stats', 'stats')->name('stats')->withoutMiddleware('abilities:role:admin');
 
         Route::get('/download', 'download')->name('download');
 

@@ -66,7 +66,6 @@ class RevenueControllerTest extends TestCase
         $this->assertCount(10, $response->json('data')); // Default pagination count
     }
 
-
     /** @test */
     public function non_super_admin_cannot_list_revenues()
     {
@@ -146,22 +145,22 @@ class RevenueControllerTest extends TestCase
         $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_'.now()->isoFormat('DD_MMMM_YYYY').'.csv');
     }
 
-     /** @test */
-     public function admin_can_download_revenues_as_csv()
-     {
-         $this->actingAsAdmin();
- 
-         $this->seed(RevenueSeeder::class); // Seed the database with test data
- 
-         $response = $this->withoutExceptionHandling()->get(route('revenue.download', [
-             'start_date' => now()->subMonth()->toDateString(),
-             'end_date' => now()->toDateString(),
-         ]));
- 
-         $response->assertOk();
-         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-         $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_'.now()->isoFormat('DD_MMMM_YYYY').'.csv');
-     }
+    /** @test */
+    public function admin_can_download_revenues_as_csv()
+    {
+        $this->actingAsAdmin();
+
+        $this->seed(RevenueSeeder::class); // Seed the database with test data
+
+        $response = $this->withoutExceptionHandling()->get(route('revenue.download', [
+            'start_date' => now()->subMonth()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Disposition', 'attachment; filename=revenues_'.now()->isoFormat('DD_MMMM_YYYY').'.csv');
+    }
 
     /** @test */
     public function non_super_admin_cannot_download_revenues_as_csv()
@@ -197,24 +196,24 @@ class RevenueControllerTest extends TestCase
         $this->assertEquals('', $response->getContent()); // Assert that response content is empty
     }
 
-     /** @test */
-     public function admin_handles_no_revenues_for_given_filter_in_download()
-     {
-         $this->actingAsAdmin();
- 
-         // Seed the database with test data
-         $this->seed(RevenueSeeder::class);
- 
-         // Specify a date range that doesn't overlap with seeded data
-         $response = $this->get(route('revenue.download', [
-             'start_date' => '2023-01-01',
-             'end_date' => '2023-01-31',
-         ]));
- 
-         $response->assertOk();
-         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-         $this->assertEquals('', $response->getContent()); // Assert that response content is empty
-     }
+    /** @test */
+    public function admin_handles_no_revenues_for_given_filter_in_download()
+    {
+        $this->actingAsAdmin();
+
+        // Seed the database with test data
+        $this->seed(RevenueSeeder::class);
+
+        // Specify a date range that doesn't overlap with seeded data
+        $response = $this->get(route('revenue.download', [
+            'start_date' => '2023-01-01',
+            'end_date' => '2023-01-31',
+        ]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $this->assertEquals('', $response->getContent()); // Assert that response content is empty
+    }
 
     /** @test */
     public function non_super_admin_handles_no_revenues_for_given_filter_in_download()

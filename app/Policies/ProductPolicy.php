@@ -26,7 +26,7 @@ class ProductPolicy
 
     public function view(User $user, Product $product)
     {
-        if ($user->role === Roles::SUPER_ADMIN->value) {
+        if ($user->role === Roles::SUPER_ADMIN->value || $user->role === Roles::ADMIN->value) {
             return Response::allow();
         }
 

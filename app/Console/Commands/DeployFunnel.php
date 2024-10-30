@@ -6,7 +6,6 @@ use App\Exceptions\FunnelDeployException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Log;
-use Storage;
 use Symfony\Component\Process\Process;
 
 class DeployFunnel extends Command

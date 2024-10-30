@@ -40,6 +40,6 @@ return [
 
     'digitalocean' => [
         'token' => env('DIGITAL_OCEAN_ACCESS_TOKEN'),
-        'ip' => env('DIGITAL_OCEAN_SERVER_IP')
-    ]
+        'ip' => env('DIGITAL_OCEAN_SERVER_IP'),
+    ],
 ];

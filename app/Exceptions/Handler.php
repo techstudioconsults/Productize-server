@@ -60,7 +60,7 @@ class Handler extends ExceptionHandler
      */
     protected function handleNotFound($request, NotFoundHttpException $exception)
     {
-        $message = 'The route ' . $request->path() . ' could not be found.';
+        $message = 'The route '.$request->path().' could not be found.';
         $ipAddress = $request->ip();
         $userAgent = $request->header('User-Agent');
 
@@ -89,8 +89,8 @@ class Handler extends ExceptionHandler
      */
     protected function handleOtherExceptions($request, Throwable $exception)
     {
-        $message = 'The route ' . $request->path() . ' could not be found.';
-        Log::error($message, ["context" => $exception]);
+        $message = 'The route '.$request->path().' could not be found.';
+        Log::error($message, ['context' => $exception]);
 
         if ($request->acceptsJson()) {
             throw new ServerErrorException($exception->getMessage());

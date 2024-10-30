@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Exceptions\FunnelDeployException;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Log;
 use Storage;
 use Symfony\Component\Process\Process;
 
@@ -56,6 +57,18 @@ class DeployFunnel extends Command
         $this->certifyWithCertbot($sub_domain, $email);
 
         $this->info("Deployment for {$sub_domain} completed successfully!");
+    }
+
+    protected function getCurrentUser()
+    {
+        $process = new Process(['whoami']);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new FunnelDeployException("Failed to determine the current user: " . $process->getErrorOutput());
+        }
+
+        Log::channel('webhook')->debug("whoami result", ['context' => $process->getOutput()]);
     }
 
     public function copyHtmlToDestinationDir(string $page, string $root_path)
@@ -169,7 +182,7 @@ class DeployFunnel extends Command
         ])->post("https://api.digitalocean.com/v2/domains/trybytealley.com/records", $payload);
 
         if (!$response->successful()) {
-            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean>>>>>>>>>>>>>>>>>>>>'.$response->reason());
+            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean>>>>>>>>>>>>>>>>>>>>' . $response->reason());
         }
 
         $this->info("Subdomain {$sub_domain} created in DigitalOcean");

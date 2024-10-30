@@ -29,11 +29,7 @@ class Handler extends ExceptionHandler
 
             Log::channel('webhook')->debug($e->getMessage(), ['context' => $e]);
 
-            return false; // stop laravel from default logging
-        });
-
-        $this->reportable(function (NotFoundException $e) {
-            return false; // stop laravel from default logging
+            // return false; // stop laravel from default logging
         });
     }
 
@@ -51,10 +47,6 @@ class Handler extends ExceptionHandler
             return $this->handleNotFound($request, $exception);
         }
 
-        if (!$exception instanceof ApiException) {
-            return $this->handleOtherExceptions($request, $exception);
-        }
-
         return parent::render($request, $exception);
     }
 
@@ -69,16 +61,16 @@ class Handler extends ExceptionHandler
     protected function handleNotFound($request, NotFoundHttpException $exception)
     {
         $message = 'The route ' . $request->path() . ' could not be found.';
-        // $ipAddress = $request->ip();
-        // $userAgent = $request->header('User-Agent');
+        $ipAddress = $request->ip();
+        $userAgent = $request->header('User-Agent');
 
-        // // Log additional information
-        // Log::error($message, [
-        //     'ip' => $ipAddress,
-        //     'user_agent' => $userAgent,
-        //     'url' => $request->fullUrl(),
-        //     'exception_message' => $exception->getMessage(),
-        // ]);
+        // Log additional information
+        Log::error($message, [
+            'ip' => $ipAddress,
+            'user_agent' => $userAgent,
+            'url' => $request->fullUrl(),
+            'exception_message' => $exception->getMessage(),
+        ]);
 
         if ($request->acceptsJson()) {
             throw new NotFoundException($message);

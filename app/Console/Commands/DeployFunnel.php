@@ -66,11 +66,11 @@ class DeployFunnel extends Command
         $process = new Process(['whoami']);
         $process->run();
 
-        if (!$process->isSuccessful()) {
-            throw new FunnelDeployException("Failed to determine the current user: " . $process->getErrorOutput());
+        if (! $process->isSuccessful()) {
+            throw new FunnelDeployException('Failed to determine the current user: '.$process->getErrorOutput());
         }
 
-        Log::channel('webhook')->debug("whoami result", ['context' => $process->getOutput()]);
+        Log::channel('webhook')->debug('whoami result', ['context' => $process->getOutput()]);
     }
 
     public function copyHtmlToDestinationDir(string $page, string $root_path)

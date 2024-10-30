@@ -35,6 +35,8 @@ class DeployFunnel extends Command
         $sub_domain = "{$page}.trybytealley.com";
         $email = 'info@trybytealley.com';
 
+        $this->getCurrentUser();
+
         // Step 1: Copy HTML file to destination directory
         $this->copyHtmlToDestinationDir($page, $root_path);
 
@@ -73,8 +75,8 @@ class DeployFunnel extends Command
 
     public function copyHtmlToDestinationDir(string $page, string $root_path)
     {
-        if (!Storage::disk('local')->exists("funnels/{$page}.html")) {
-            throw new FunnelDeployException("Funnel HTML Page not found");
+        if (! Storage::disk('local')->exists("funnels/{$page}.html")) {
+            throw new FunnelDeployException('Funnel HTML Page not found');
         }
 
         Storage::disk('local')->copy("funnels/{$page}.html", "{$root_path}/index.html");
@@ -83,8 +85,6 @@ class DeployFunnel extends Command
     /**
      * Generate NGINX config from stub.
      *
-     * @param string $server_name
-     * @param string $root_path
      * @return string
      */
     protected function generateNginxConfig(string $server_name, string $root_path)
@@ -107,8 +107,8 @@ class DeployFunnel extends Command
         $process->run();
 
         // Check if the command was successful
-        if (!$process->isSuccessful()) {
-            throw new FunnelDeployException("Failed to write NGINX config: " . $process->getErrorOutput());
+        if (! $process->isSuccessful()) {
+            throw new FunnelDeployException('Failed to write NGINX config: '.$process->getErrorOutput());
         }
 
         $this->info("NGINX config created for {$file_name}");
@@ -117,8 +117,9 @@ class DeployFunnel extends Command
     /**
      * Create a symbolic link in NGINX's sites-enabled directory.
      *
-     * @param string $file_name
+     * @param  string  $file_name
      * @return void
+     *
      * @throws FunnelDeployException
      */
     protected function createNginxSymlink($file_name)
@@ -127,8 +128,8 @@ class DeployFunnel extends Command
         $process = Process::fromShellCommandline($command);
         $process->run();
 
-        if (!$process->isSuccessful()) {
-            throw new FunnelDeployException("Failed to create symlink: " . $process->getErrorOutput());
+        if (! $process->isSuccessful()) {
+            throw new FunnelDeployException('Failed to create symlink: '.$process->getErrorOutput());
         }
 
         $this->info("Symlink created for {$file_name} in sites-enabled");
@@ -138,9 +139,8 @@ class DeployFunnel extends Command
     {
         $processReload = new Process(['sudo', 'systemctl', 'reload', 'nginx']);
         $processReload->run();
-        $this->checkProcess($processReload, "NGINX reloaded");
+        $this->checkProcess($processReload, 'NGINX reloaded');
     }
-
 
     /**
      * Get the stub file for the nginx configuration
@@ -177,12 +177,12 @@ class DeployFunnel extends Command
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.digitalocean.token'),
+            'Authorization' => 'Bearer '.config('services.digitalocean.token'),
             'Content-Type' => 'application/json',
-        ])->post("https://api.digitalocean.com/v2/domains/trybytealley.com/records", $payload);
+        ])->post('https://api.digitalocean.com/v2/domains/trybytealley.com/records', $payload);
 
-        if (!$response->successful()) {
-            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean>>>>>>>>>>>>>>>>>>>>' . $response->reason());
+        if (! $response->successful()) {
+            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean>>>>>>>>>>>>>>>>>>>>'.$response->reason());
         }
 
         $this->info("Subdomain {$sub_domain} created in DigitalOcean");

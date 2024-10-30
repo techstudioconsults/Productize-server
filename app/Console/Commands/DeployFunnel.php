@@ -191,7 +191,7 @@ class DeployFunnel extends Command
 
     protected function checkProcess(Process $process, $message)
     {
-        if (!$process->isSuccessful()) {
+        if (! $process->isSuccessful()) {
             throw new FunnelDeployException($process->getErrorOutput());
         }
         

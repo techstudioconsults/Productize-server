@@ -77,7 +77,7 @@ class DeployFunnel extends Command
     {
 
         // Path to the source file within the Laravel project directory
-        $sourcePath = storage_path("funnels/{$page}.html");
+        $sourcePath = storage_path("app/funnels/{$page}.html");
 
         $destinationPath = "{$root_path}/index.html";
 

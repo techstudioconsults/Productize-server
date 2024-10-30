@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ServerErrorException;
 use Artisan;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -25,8 +26,12 @@ class FunnelController extends Controller
         // Step 2: copy it into  storage
         Storage::disk('local')->put('funnels/'.$page_name.'.html', $html);
 
+        try {
+            Artisan::call('deploy:funnel', ['page' => $page_name]);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
         // run artisan scripts
-        Artisan::call('deploy:funnel', ['page' => $page_name]);
 
         $url = "https://{$page_name}.trybytealley.com";
 

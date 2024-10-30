@@ -75,14 +75,9 @@ class DeployFunnel extends Command
 
     public function copyHtmlToDestinationDir(string $page, string $root_path)
     {
-        // if (! Storage::disk('local')->exists("funnels/{$page}.html")) {
-        //     throw new FunnelDeployException('Funnel HTML Page not found');
-        // }
-
-        // Storage::disk('local')->copy("funnels/{$page}.html", "{$root_path}/index.html");
 
         // Path to the source file within the Laravel project directory
-        $sourcePath = base_path("funnels/{$page}.html");
+        $sourcePath = storage_path("funnels/{$page}.html");
 
         $destinationPath = "{$root_path}/index.html";
 

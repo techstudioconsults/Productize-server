@@ -139,6 +139,7 @@ class DeployFunnel extends Command
     {
         $processReload = new Process(['sudo', 'systemctl', 'reload', 'nginx']);
         $processReload->run();
+
         $this->checkProcess($processReload, 'NGINX reloaded');
     }
 
@@ -186,5 +187,13 @@ class DeployFunnel extends Command
         }
 
         $this->info("Subdomain {$sub_domain} created in DigitalOcean");
+    }
+
+    protected function checkProcess(Process $process, $message)
+    {
+        if (!$process->isSuccessful()) {
+            throw new FunnelDeployException($process->getErrorOutput());
+        }
+        $this->info($message);
     }
 }

@@ -232,6 +232,6 @@ class DeployFunnel extends Command
         $processCertbot = new Process(['sudo', 'certbot', '--nginx', '-d', $sub_domain, '--non-interactive', '--agree-tos', '-m', $email]);
         $processCertbot->run();
 
-        $this->checkProcess($processCertbot, "SSL certificate applied");
+        $this->checkProcess($processCertbot, 'SSL certificate applied');
     }
 }

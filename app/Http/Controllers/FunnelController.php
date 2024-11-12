@@ -67,11 +67,9 @@ class FunnelController extends Controller
             return new FunnelResource($funnel);
         }
 
-        $url = $this->funnelRepository->publish($funnel);
+        $this->funnelRepository->publish($funnel);
 
-        return (new FunnelResource($funnel))->additional([
-            'url' => $url
-        ]);
+        return new FunnelResource($funnel);
     }
 
     public function update(Funnel $funnel, UpdateFunnelRequest $request)

@@ -42,8 +42,12 @@ class DropFunnel extends Command
         // delete subdomain from digital ocean
         $this->deleteSubDomain($page);
 
+        $this->reloadNginx();
+
         // undo certbot
         $this->deleteCertbotCertificate($sub_domain);
+
+        $this->reloadNginx();
 
         // delete the funnel
         $this->deleteFunnel($root_path);
@@ -59,7 +63,7 @@ class DropFunnel extends Command
             throw new FunnelDeployException('Failed to delete config and symlink: ' . $process->getErrorOutput());
         }
 
-        $this->info("Symlink created for {$file_name} in sites-enabled");
+        $this->info("config and symlynk deleted for {$file_name}");
     }
 
     /**

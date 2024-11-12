@@ -156,10 +156,6 @@ class FunnelRepository extends Repository
 
     public function publish(Funnel $funnel)
     {
-        // save funnel status to published
-        $funnel->status = ProductStatusEnum::Published->value;
-        $funnel->save();
-
         // dont call artisan command in local env
         if (env('APP_ENV') === 'local') {
             return;
@@ -170,14 +166,14 @@ class FunnelRepository extends Repository
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
+
+        // save funnel status to published
+        $funnel->status = ProductStatusEnum::Published->value;
+        $funnel->save();
     }
 
     public function drop(Funnel $funnel)
     {
-        // save funnel status to published
-        $funnel->status = ProductStatusEnum::Draft->value;
-        $funnel->save();
-
         // dont call artisan command in local env
         if (env('APP_ENV') === 'local') {
             return;
@@ -188,6 +184,10 @@ class FunnelRepository extends Repository
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
+
+        // save funnel status to published
+        $funnel->status = ProductStatusEnum::Draft->value;
+        $funnel->save();
     }
 
     public function saveTemplate(Funnel $funnel, string $template)

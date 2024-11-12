@@ -7,7 +7,7 @@ Route::group([
     'as' => 'funnels.',
     'namespace' => "\App\Http\Controllers",
     'prefix' => 'funnels',
-    'middleware' => ['auth:sanctum']
+    'middleware' => ['auth:sanctum'],
 ], function () {
     Route::get('/me', [FunnelController::class, 'user']);
     Route::get('/{funnel}', [FunnelController::class, 'show']);

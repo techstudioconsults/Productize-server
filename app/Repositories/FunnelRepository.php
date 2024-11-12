@@ -35,7 +35,6 @@ class FunnelRepository extends Repository
      * Create a new funnel with the provided entity.
      *
      * @param  array  $entity  The funnel data.
-     *
      * @return Funnel The newly created funnel.
      */
     public function create(array $entity): Funnel
@@ -119,14 +118,14 @@ class FunnelRepository extends Repository
     public function update(Model $entity, array $updates): Funnel
     {
         // Ensure that the provided entity is an instance of Funnel
-        if (!$entity instanceof Funnel) {
+        if (! $entity instanceof Funnel) {
             throw new ModelCastException('Funnel', get_class($entity));
         }
 
         $entity->update($updates);
+
         return $entity;
     }
-
 
     /**
      * @author @Intuneteq Tobi Olanitori
@@ -151,7 +150,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     public function publish(Funnel $funnel)
@@ -196,6 +195,6 @@ class FunnelRepository extends Repository
         $html = view('funnels.template', ['template' => $template])->render();
 
         // Save the template locally
-        Storage::disk('local')->put('funnels/' . $funnel->slug . '.html', $html);
+        Storage::disk('local')->put('funnels/'.$funnel->slug.'.html', $html);
     }
 }

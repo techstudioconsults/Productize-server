@@ -22,7 +22,7 @@ class FunnelResource extends JsonResource
             'thumbnail' => $this->thumbnail,
             'slug' => $this->slug,
             'url' => $this->when($this->status === ProductStatusEnum::Published->value, "https://{$this->slug}.trybytealley.com"),
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
         ];
     }
 }

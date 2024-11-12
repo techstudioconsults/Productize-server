@@ -60,7 +60,7 @@ class DropFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to delete config and symlink: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to delete config and symlink: '.$process->getErrorOutput());
         }
 
         $this->info("config and symlynk deleted for {$file_name}");
@@ -83,17 +83,17 @@ class DropFunnel extends Command
     {
         $sub_domain_id = Funnel::where('slug', $sub_domain)->first()->sub_domain_id;
 
-        if (!$sub_domain_id) {
+        if (! $sub_domain_id) {
             throw new FunnelDeployException('Failed to delete subdomain in DigitalOcean. subdomain not found');
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.digitalocean.token'),
+            'Authorization' => 'Bearer '.config('services.digitalocean.token'),
             'Content-Type' => 'application/json',
-        ])->delete('https://api.digitalocean.com/v2/domains/trybytealley.com/records/' . $sub_domain_id);
+        ])->delete('https://api.digitalocean.com/v2/domains/trybytealley.com/records/'.$sub_domain_id);
 
         if (! $response->successful()) {
-            throw new FunnelDeployException('Failed to delete subdomain in DigitalOcean' . $response->reason());
+            throw new FunnelDeployException('Failed to delete subdomain in DigitalOcean'.$response->reason());
         }
 
         $this->info("Subdomain {$sub_domain} deleted in DigitalOcean");
@@ -114,17 +114,18 @@ class DropFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to delete funnel from root path: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to delete funnel from root path: '.$process->getErrorOutput());
         }
 
-        $this->info("Funnel successfully deleted");
+        $this->info('Funnel successfully deleted');
     }
 
     /**
      * Checks if the process executed successfully, and throws an exception if not.
      *
-     * @param Process $process The process to check
-     * @param string $message The success message to display
+     * @param  Process  $process  The process to check
+     * @param  string  $message  The success message to display
+     *
      * @throws FunnelDeployException
      */
     protected function checkProcess(Process $process, $message)

@@ -63,7 +63,7 @@ class FunnelController extends Controller
 
         $this->funnelRepository->saveTemplate($funnel, $template);
 
-        if ($payload['status'] === ProductStatusEnum::Draft->value || env('APP_ENV') === "local") {
+        if ($payload['status'] === ProductStatusEnum::Draft->value || env('APP_ENV') === 'local') {
             return new FunnelResource($funnel);
         }
 
@@ -92,7 +92,7 @@ class FunnelController extends Controller
             $this->funnelRepository->publish($funnel); // publish the funnel
 
             // It is previously published and want to draft it
-        } else if (isset($payload['status']) && $payload['status'] !== $funnel->status && $funnel->status === ProductStatusEnum::Published->value) {
+        } elseif (isset($payload['status']) && $payload['status'] !== $funnel->status && $funnel->status === ProductStatusEnum::Published->value) {
             //bring down the server and delete the subdomain
             $this->funnelRepository->drop($funnel);
         }

@@ -24,8 +24,8 @@ use Symfony\Component\Process\Process;
  *
  * NOTE: ONLY RUN IN A UNIX SERVER
  *
- * @package App\Console\Commands
  * @version 1.0
+ *
  * @since 30-10-2024
  */
 class DeployFunnel extends Command
@@ -84,6 +84,7 @@ class DeployFunnel extends Command
      * Logs the current system user running the command.
      *
      * @return void
+     *
      * @throws FunnelDeployException
      */
     protected function getCurrentUser()
@@ -92,7 +93,7 @@ class DeployFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to determine the current user: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to determine the current user: '.$process->getErrorOutput());
         }
 
         Log::channel('webhook')->debug('whoami result', ['context' => $process->getOutput()]);
@@ -101,8 +102,9 @@ class DeployFunnel extends Command
     /**
      * Copies the HTML page to the specified NGINX root directory.
      *
-     * @param string $page The name of the funnel page
-     * @param string $root_path The root path for the page
+     * @param  string  $page  The name of the funnel page
+     * @param  string  $root_path  The root path for the page
+     *
      * @throws FunnelDeployException
      */
     public function moveHtmlToDestinationDir(string $page, string $root_path)
@@ -141,8 +143,8 @@ class DeployFunnel extends Command
     /**
      * Generates the NGINX configuration based on a stub template.
      *
-     * @param string $server_name The server name (subdomain) for the configuration
-     * @param string $root_path The root path for the server
+     * @param  string  $server_name  The server name (subdomain) for the configuration
+     * @param  string  $root_path  The root path for the server
      * @return string The generated NGINX configuration
      */
     protected function generateNginxConfig(string $server_name, string $root_path)
@@ -159,8 +161,9 @@ class DeployFunnel extends Command
     /**
      * Writes the generated NGINX configuration to the sites-available directory.
      *
-     * @param string $config_content The NGINX configuration content
-     * @param string $file_name The filename for the NGINX configuration
+     * @param  string  $config_content  The NGINX configuration content
+     * @param  string  $file_name  The filename for the NGINX configuration
+     *
      * @throws FunnelDeployException
      */
     protected function writeNginxConfig(string $config_content, string $file_name)
@@ -173,7 +176,7 @@ class DeployFunnel extends Command
 
         // Check if the command was successful
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to write NGINX config: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to write NGINX config: '.$process->getErrorOutput());
         }
 
         $this->info("NGINX config created for {$file_name}");
@@ -194,7 +197,7 @@ class DeployFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to create symlink: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to create symlink: '.$process->getErrorOutput());
         }
 
         $this->info("Symlink created for {$file_name} in sites-enabled");
@@ -236,7 +239,8 @@ class DeployFunnel extends Command
     /**
      * Creates a subdomain record in DigitalOcean DNS for the funnel page.
      *
-     * @param string $sub_domain The subdomain name to create
+     * @param  string  $sub_domain  The subdomain name to create
+     *
      * @throws FunnelDeployException
      */
     protected function createDigitalOceanSubdomain($sub_domain)
@@ -254,12 +258,12 @@ class DeployFunnel extends Command
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.digitalocean.token'),
+            'Authorization' => 'Bearer '.config('services.digitalocean.token'),
             'Content-Type' => 'application/json',
         ])->post('https://api.digitalocean.com/v2/domains/trybytealley.com/records', $payload);
 
         if (! $response->successful()) {
-            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean' . $response->reason());
+            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean'.$response->reason());
         }
 
         // save domainId in db
@@ -273,8 +277,9 @@ class DeployFunnel extends Command
     /**
      * Checks if the process executed successfully, and throws an exception if not.
      *
-     * @param Process $process The process to check
-     * @param string $message The success message to display
+     * @param  Process  $process  The process to check
+     * @param  string  $message  The success message to display
+     *
      * @throws FunnelDeployException
      */
     protected function checkProcess(Process $process, $message)
@@ -289,8 +294,9 @@ class DeployFunnel extends Command
     /**
      * Requests an SSL certificate for the subdomain using Certbot.
      *
-     * @param string $sub_domain The subdomain to certify
-     * @param string $email The email for certbot notifications
+     * @param  string  $sub_domain  The subdomain to certify
+     * @param  string  $email  The email for certbot notifications
+     *
      * @throws FunnelDeployException
      */
     public function certifyWithCertbot(string $sub_domain, string $email)

@@ -326,7 +326,7 @@ class ProductRepository extends Repository
 
             $path = Storage::putFileAs(self::COVER_PHOTOS_PATH, $file, $original_name);
 
-            return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $path;
+            return config('filesystems.disks.spaces.cdn_endpoint').'/'.$path;
         })->all();
     }
 
@@ -353,7 +353,7 @@ class ProductRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     /**
@@ -411,11 +411,11 @@ class ProductRepository extends Repository
             $product = $this->query(['slug' => $slug])->first();
 
             if (! $product) {
-                throw new BadRequestException('Product with slug ' . $slug . ' not found');
+                throw new BadRequestException('Product with slug '.$slug.' not found');
             }
 
             if ($product->status !== 'published') {
-                throw new BadRequestException('Product with slug ' . $slug . ' not published');
+                throw new BadRequestException('Product with slug '.$slug.' not published');
             }
 
             $price = $product->price;

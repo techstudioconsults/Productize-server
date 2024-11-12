@@ -2,39 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ServerErrorException;
-use Artisan;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Enums\ProductStatusEnum;
+use App\Http\Requests\StoreFunnelRequest;
+use App\Http\Resources\FunnelResource;
+use App\Repositories\FunnelRepository;
+use Auth;
 use Storage;
 
 class FunnelController extends Controller
 {
-    public function store(Request $request)
+    public function __construct(
+        protected FunnelRepository $funnelRepository
+    ) {}
+
+    public function store(StoreFunnelRequest $request)
     {
-        $payload = $request->only('page_name', 'content');
+        $user = Auth::user();
 
-        $page_name = $payload['page_name'];
+        $payload = $request->validated();
 
-        // check it page name exist
+        $template = $payload['template'];
+        $thumbnail = $payload['thumbnail'];
 
-        $content = $payload['content'];
+        unset($payload['template']);
 
-        // Step 1: create the html
-        $html = view('funnels.template', ['data' => $content])->render();
+        $payload['thumbnail'] = $this->funnelRepository->uploadThumbnail($thumbnail);
 
-        // Step 2: copy it into  storage
-        Storage::disk('local')->put('funnels/'.$page_name.'.html', $html);
+        $payload['user_id'] = $user->id;
 
-        try {
-            Artisan::call('deploy:funnel', ['page' => $page_name]);
-        } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+        $funnel = $this->funnelRepository->create($payload);
+
+        // Create the template html file
+        $html = view('funnels.template', ['template' => $template])->render();
+
+        // Save the template locally
+        Storage::disk('local')->put('funnels/' . $funnel->slug . '.html', $html);
+
+        if ($payload['status'] === ProductStatusEnum::Draft->value || env('APP_ENV') === "local") {
+            return new FunnelResource($funnel);
         }
-        // run artisan scripts
 
-        $url = "https://{$page_name}.trybytealley.com";
+        $url = $this->funnelRepository->publish($funnel);
 
-        return new JsonResource(['url' => $url]);
+        return (new FunnelResource($funnel))->additional([
+            'url' => $url
+        ]);
     }
 }

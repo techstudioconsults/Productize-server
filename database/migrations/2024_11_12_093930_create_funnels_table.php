@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('status', array_column(ProductStatusEnum::cases(), 'value'))->default(ProductStatusEnum::Draft->value);
             $table->string('thumbnail');
             $table->string('slug');
+            $table->softDeletes('deleted_at', 0);
             $table->timestamps();
         });
     }

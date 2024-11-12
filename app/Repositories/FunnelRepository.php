@@ -2,10 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Enums\ProductStatusEnum;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ModelCastException;
 use App\Exceptions\ServerErrorException;
 use App\Models\Funnel;
+use App\Traits\HasStatusFilter;
 use Artisan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,6 +25,8 @@ use Storage;
  */
 class FunnelRepository extends Repository
 {
+    use HasStatusFilter;
+    
     const THUMBNAIL_PATH = 'funnels-thumbnail';
 
     /**
@@ -53,6 +57,8 @@ class FunnelRepository extends Repository
 
         // Apply date filter
         $this->applyDateFilters($query, $filter);
+
+        $this->applyStatusFilter($query, $filter);
 
         // Apply other filters
         $query->where($filter);
@@ -150,6 +156,11 @@ class FunnelRepository extends Repository
 
     public function publish(Funnel $funnel)
     {
+        // save funnel status to published
+        $funnel->status = ProductStatusEnum::Published->value;
+        $funnel->save();
+
+        // dont call artisan command in local env
         if (env('APP_ENV') === 'local') {
             return "https://{$funnel->slug}.trybytealley.com";
         }
@@ -159,7 +170,16 @@ class FunnelRepository extends Repository
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
-        
+
         return "https://{$funnel->slug}.trybytealley.com";
+    }
+
+    public function saveTemplate(Funnel $funnel, string $template)
+    {
+        // Create the template html file
+        $html = view('funnels.template', ['template' => $template])->render();
+
+        // Save the template locally
+        Storage::disk('local')->put('funnels/' . $funnel->slug . '.html', $html);
     }
 }

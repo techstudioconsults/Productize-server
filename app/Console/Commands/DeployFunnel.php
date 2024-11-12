@@ -56,7 +56,7 @@ class DeployFunnel extends Command
         $email = 'info@trybytealley.com';
 
         // Step 1: Copy HTML file to destination directory
-        $this->copyHtmlToDestinationDir($page, $root_path);
+        $this->moveHtmlToDestinationDir($page, $root_path);
 
         // Step 2: Generate NGINX configuration file
         $nginx_config = $this->generateNginxConfig($sub_domain, $root_path);
@@ -104,7 +104,7 @@ class DeployFunnel extends Command
      * @param string $root_path The root path for the page
      * @throws FunnelDeployException
      */
-    public function copyHtmlToDestinationDir(string $page, string $root_path)
+    public function moveHtmlToDestinationDir(string $page, string $root_path)
     {
 
         // Path to the source file within the Laravel project directory
@@ -125,8 +125,8 @@ class DeployFunnel extends Command
             throw new FunnelDeployException("Failed to create destination directory: {$makeDirCommand->getErrorOutput()}");
         }
 
-        // Copy the file with sudo cp
-        $copyCommand = new Process(['sudo', 'cp', $sourcePath, $destinationPath]);
+        // Move the file with sudo mv
+        $copyCommand = new Process(['sudo', 'mv', $sourcePath, $destinationPath]);
 
         $copyCommand->run();
 

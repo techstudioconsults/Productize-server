@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
 class Funnel extends Model
 {
-    use HasFactory, HasSlug, HasUuids;
+    use HasFactory, HasSlug, HasUuids, SoftDeletes;
 
     protected $primaryKey = 'id';
 

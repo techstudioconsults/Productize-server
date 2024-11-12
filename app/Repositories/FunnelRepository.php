@@ -26,7 +26,7 @@ use Storage;
 class FunnelRepository extends Repository
 {
     use HasStatusFilter;
-    
+
     const THUMBNAIL_PATH = 'funnels-thumbnail';
 
     /**
@@ -162,7 +162,7 @@ class FunnelRepository extends Repository
 
         // dont call artisan command in local env
         if (env('APP_ENV') === 'local') {
-            return "https://{$funnel->slug}.trybytealley.com";
+            return;
         }
 
         try {
@@ -170,8 +170,24 @@ class FunnelRepository extends Repository
         } catch (\Throwable $th) {
             throw new ServerErrorException($th->getMessage());
         }
+    }
 
-        return "https://{$funnel->slug}.trybytealley.com";
+    public function drop(Funnel $funnel)
+    {
+        // save funnel status to published
+        $funnel->status = ProductStatusEnum::Draft->value;
+        $funnel->save();
+
+        // dont call artisan command in local env
+        if (env('APP_ENV') === 'local') {
+            return;
+        }
+
+        try {
+            Artisan::call('drop:funnel', ['page' => $funnel->slug]);
+        } catch (\Throwable $th) {
+            throw new ServerErrorException($th->getMessage());
+        }
     }
 
     public function saveTemplate(Funnel $funnel, string $template)

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Exceptions\FunnelDeployException;
+use App\Models\Funnel;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Log;
@@ -41,7 +42,7 @@ class DeployFunnel extends Command
      *
      * @var string
      */
-    protected $description = 'Deploy a product funnel landing page with NGINX and request SSL certification using certbot';
+    protected $description = 'Deploy a funnel landing page with NGINX and request SSL certification using certbot';
 
     /**
      * Execute the console command.
@@ -260,6 +261,11 @@ class DeployFunnel extends Command
         if (! $response->successful()) {
             throw new FunnelDeployException('Failed to create subdomain in DigitalOcean' . $response->reason());
         }
+
+        // save domainId in db
+        $funnel = Funnel::where('slug', $sub_domain)->update(['sub_domain_id' => $response['domain_record']['id']]);
+
+        Log::channel('webhook')->debug('Funnel Update result', ['context' => $funnel]);
 
         $this->info("Subdomain {$sub_domain} created in DigitalOcean");
     }

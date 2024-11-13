@@ -31,6 +31,13 @@ class Handler extends ExceptionHandler
 
             // return false; // stop laravel from default logging
         });
+
+        $this->reportable(function (DropFunnelException $e) {
+
+            Log::channel('webhook')->debug($e->getMessage(), ['context' => $e]);
+
+            // return false; // stop laravel from default logging
+        });
     }
 
     /**

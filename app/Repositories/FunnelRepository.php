@@ -15,11 +15,9 @@ use Illuminate\Database\Eloquent\Model;
 use Storage;
 
 /**
- * @author
+ * @author Tobi Olanitori
  *
  * @version 1.0
- *
- * @since
  *
  * Repository for Funnel resource
  */
@@ -30,8 +28,6 @@ class FunnelRepository extends Repository
     const THUMBNAIL_PATH = 'funnels-thumbnail';
 
     /**
-     * @author
-     *
      * Create a new funnel with the provided entity.
      *
      * @param  array  $entity  The funnel data.
@@ -43,8 +39,6 @@ class FunnelRepository extends Repository
     }
 
     /**
-     * @author
-     *
      * Query funnel based on the provided filter.
      *
      * @param  array  $filter  The filter criteria to apply.
@@ -66,8 +60,6 @@ class FunnelRepository extends Repository
     }
 
     /**
-     * @author
-     *
      * Find funnels based on the provided filter.
      *
      * @param  array|null  $filter  The filter criteria to apply (optional).
@@ -79,8 +71,6 @@ class FunnelRepository extends Repository
     }
 
     /**
-     * @author
-     *
      * Find a funnel by their ID.
      *
      * @param  string  $id  The ID of the funnel to find.
@@ -92,8 +82,6 @@ class FunnelRepository extends Repository
     }
 
     /**
-     * @author
-     *
      * Find a single funnel based on the provided filter.
      *
      * @param  array  $filter  The filter criteria to apply.
@@ -107,8 +95,6 @@ class FunnelRepository extends Repository
     }
 
     /**
-     * @author
-     *
      * Update an entity in the database.
      *
      * @param  Model  $entity  The funnel to be updated
@@ -128,8 +114,6 @@ class FunnelRepository extends Repository
     }
 
     /**
-     * @author @Intuneteq Tobi Olanitori
-     *
      * Uploads a funnels's thumbnail image and returns its storage path.
      *
      * @param  object  $thumbnail  The thumbnail image file to upload.
@@ -150,9 +134,24 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
     }
 
+    /**
+     * Publishes the given funnel by triggering the deployment command and updating its status.
+     *
+     * This method performs the following:
+     * - Skips the deployment command if the application environment is local.
+     * - Executes the `deploy:funnel` Artisan command with the funnel's slug as the `page` argument.
+     * - Catches any exceptions during deployment, rethrowing them as `ServerErrorException` for centralized error handling.
+     * - Updates the funnel’s status to `Published` and saves the change.
+     *
+     * @param Funnel $funnel The funnel to publish.
+     *
+     * @throws ServerErrorException If the deployment command fails due to any error.
+     *
+     * @return void
+     */
     public function publish(Funnel $funnel)
     {
         // dont call artisan command in local env
@@ -163,7 +162,7 @@ class FunnelRepository extends Repository
         try {
             Artisan::call('deploy:funnel', ['page' => $funnel->slug]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ServerErrorException();
         }
 
         // save funnel status to published
@@ -171,6 +170,18 @@ class FunnelRepository extends Repository
         $funnel->save();
     }
 
+    /**
+     * Drop the specified funnel and update its status to draft.
+     *
+     * This method triggers the `drop:funnel` Artisan command to drop a funnel's resources
+     * based on its slug. In a local environment, the command is skipped.
+     *
+     * @param Funnel $funnel The funnel instance to be dropped.
+     *
+     * @throws ServerErrorException If an error occurs while calling the Artisan command.
+     *
+     * @return void
+     */
     public function drop(Funnel $funnel)
     {
         // dont call artisan command in local env
@@ -181,7 +192,7 @@ class FunnelRepository extends Repository
         try {
             Artisan::call('drop:funnel', ['page' => $funnel->slug]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException($th->getMessage());
+            throw new ServerErrorException();
         }
 
         // save funnel status to published
@@ -189,12 +200,23 @@ class FunnelRepository extends Repository
         $funnel->save();
     }
 
+    /**
+     * Generate and save a funnel template as an HTML file.
+     *
+     * This method renders an HTML view using the specified template data
+     * and saves the generated HTML file to local storage with a filename based on the funnel's slug.
+     *
+     * @param Funnel $funnel The funnel instance for which the template is being saved.
+     * @param string $template The template content to be rendered and saved.
+     *
+     * @return void
+     */
     public function saveTemplate(Funnel $funnel, string $template)
     {
         // Create the template html file
         $html = view('funnels.template', ['template' => $template])->render();
 
         // Save the template locally
-        Storage::disk('local')->put('funnels/'.$funnel->slug.'.html', $html);
+        Storage::disk('local')->put('funnels/' . $funnel->slug . '.html', $html);
     }
 }

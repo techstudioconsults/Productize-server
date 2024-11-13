@@ -17,6 +17,15 @@ class FunnelController extends Controller
         protected FunnelRepository $funnelRepository
     ) {}
 
+    /**
+     * Retrieves and returns a paginated collection of funnels associated with the currently authenticated user,
+     * filtered by status, start date, and end date as provided in the request.
+     *
+     * @param \Illuminate\Http\Request $request The HTTP request instance containing filter parameters.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection A collection of paginated funnels.
+     *
+     * @throws \Illuminate\Validation\ValidationException If the input validation fails for the filters.
+     */
     public function user(Request $request)
     {
         $user = Auth::user();
@@ -39,11 +48,29 @@ class FunnelController extends Controller
         return FunnelResource::collection($paginatedFunnels);
     }
 
+    /**
+     * Displays the details of a specific funnel.
+     *
+     * This method returns a resource representation of the funnel, which includes all its attributes and relationships.
+     * The `FunnelResource` will format and return the funnel data for API responses.
+     *
+     * @param \App\Models\Funnel $funnel The funnel model to display.
+     * @return \App\Http\Resources\FunnelResource The resource representation of the funnel.
+     */
     public function show(Funnel $funnel)
     {
         return new FunnelResource($funnel);
     }
 
+    /**
+     * Handles the creation of a new funnel, including uploading the thumbnail, associating a template,
+     * and setting the funnel's status. If the environment is not local, the funnel is published after creation.
+     *
+     * @param \App\Http\Requests\StoreFunnelRequest $request The request containing validated funnel data.
+     * @return \App\Http\Resources\FunnelResource The resource representation of the newly created funnel.
+     *
+     * @throws \App\Exceptions\ServerErrorException If there is an error while uploading the thumbnail or publishing the funnel.
+     */
     public function store(StoreFunnelRequest $request)
     {
         $user = Auth::user();
@@ -72,6 +99,19 @@ class FunnelController extends Controller
         return new FunnelResource($funnel);
     }
 
+    /**
+     * Update the details of a specific funnel.
+     *
+     * This method allows updating a funnel's attributes, including the thumbnail and template.
+     * It also handles specific business logic for changing the funnel's status between 'Draft' and 'Published' states.
+     * If the status is being changed, and the funnel is in 'Draft' or 'Published' state, additional operations like publishing or dropping the funnel are performed.
+     *
+     * @param \App\Models\Funnel $funnel The funnel model to update.
+     * @param \App\Http\Requests\UpdateFunnelRequest $request The validated request data.
+     * @return \App\Http\Resources\FunnelResource The resource representation of the updated funnel.
+     *
+     * @throws \App\Exceptions\ServerErrorException If any errors occur during the update or publishing process.
+     */
     public function update(Funnel $funnel, UpdateFunnelRequest $request)
     {
         $payload = $request->validated();
@@ -103,6 +143,17 @@ class FunnelController extends Controller
         return new FunnelResource($funnel);
     }
 
+    /**
+     * Delete a specific funnel.
+     *
+     * This method performs the deletion of a funnel. If the funnel is currently published, it first brings down the server by calling the drop method on the repository to handle any necessary cleanup (such as removing the subdomain and server settings).
+     * Then, the funnel's status is updated to 'draft', the funnel is soft deleted, and the updated funnel is returned as a resource.
+     *
+     * @param \App\Models\Funnel $funnel The funnel model to delete.
+     * @return \App\Http\Resources\FunnelResource The resource representation of the deleted funnel.
+     *
+     * @throws \App\Exceptions\ServerErrorException If any errors occur during the deletion process.
+     */
     public function delete(Funnel $funnel)
     {
         // If it is currently published, bring down the server

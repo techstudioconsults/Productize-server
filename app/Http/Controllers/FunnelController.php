@@ -21,7 +21,7 @@ class FunnelController extends Controller
      * Retrieves and returns a paginated collection of funnels associated with the currently authenticated user,
      * filtered by status, start date, and end date as provided in the request.
      *
-     * @param \Illuminate\Http\Request $request The HTTP request instance containing filter parameters.
+     * @param  \Illuminate\Http\Request  $request  The HTTP request instance containing filter parameters.
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection A collection of paginated funnels.
      *
      * @throws \Illuminate\Validation\ValidationException If the input validation fails for the filters.
@@ -54,7 +54,7 @@ class FunnelController extends Controller
      * This method returns a resource representation of the funnel, which includes all its attributes and relationships.
      * The `FunnelResource` will format and return the funnel data for API responses.
      *
-     * @param \App\Models\Funnel $funnel The funnel model to display.
+     * @param  \App\Models\Funnel  $funnel  The funnel model to display.
      * @return \App\Http\Resources\FunnelResource The resource representation of the funnel.
      */
     public function show(Funnel $funnel)
@@ -66,7 +66,7 @@ class FunnelController extends Controller
      * Handles the creation of a new funnel, including uploading the thumbnail, associating a template,
      * and setting the funnel's status. If the environment is not local, the funnel is published after creation.
      *
-     * @param \App\Http\Requests\StoreFunnelRequest $request The request containing validated funnel data.
+     * @param  \App\Http\Requests\StoreFunnelRequest  $request  The request containing validated funnel data.
      * @return \App\Http\Resources\FunnelResource The resource representation of the newly created funnel.
      *
      * @throws \App\Exceptions\ServerErrorException If there is an error while uploading the thumbnail or publishing the funnel.
@@ -106,8 +106,8 @@ class FunnelController extends Controller
      * It also handles specific business logic for changing the funnel's status between 'Draft' and 'Published' states.
      * If the status is being changed, and the funnel is in 'Draft' or 'Published' state, additional operations like publishing or dropping the funnel are performed.
      *
-     * @param \App\Models\Funnel $funnel The funnel model to update.
-     * @param \App\Http\Requests\UpdateFunnelRequest $request The validated request data.
+     * @param  \App\Models\Funnel  $funnel  The funnel model to update.
+     * @param  \App\Http\Requests\UpdateFunnelRequest  $request  The validated request data.
      * @return \App\Http\Resources\FunnelResource The resource representation of the updated funnel.
      *
      * @throws \App\Exceptions\ServerErrorException If any errors occur during the update or publishing process.
@@ -149,7 +149,7 @@ class FunnelController extends Controller
      * This method performs the deletion of a funnel. If the funnel is currently published, it first brings down the server by calling the drop method on the repository to handle any necessary cleanup (such as removing the subdomain and server settings).
      * Then, the funnel's status is updated to 'draft', the funnel is soft deleted, and the updated funnel is returned as a resource.
      *
-     * @param \App\Models\Funnel $funnel The funnel model to delete.
+     * @param  \App\Models\Funnel  $funnel  The funnel model to delete.
      * @return \App\Http\Resources\FunnelResource The resource representation of the deleted funnel.
      *
      * @throws \App\Exceptions\ServerErrorException If any errors occur during the deletion process.

@@ -53,10 +53,10 @@ class DropFunnel extends Command
      * - Deletes the SSL certificate associated with the subdomain.
      * - Removes the funnel's directory and its contents from the server.
      *
-     * @throws DropFunnelException if any of the operations fail, such as deleting the Nginx configuration,
-     *         reloading Nginx, removing the subdomain, deleting the SSL certificate, or removing the funnel directory.
-     *
      * @return void
+     *
+     * @throws DropFunnelException if any of the operations fail, such as deleting the Nginx configuration,
+     *                             reloading Nginx, removing the subdomain, deleting the SSL certificate, or removing the funnel directory.
      */
     public function handle()
     {
@@ -94,13 +94,12 @@ class DropFunnel extends Command
      * from the sites-enabled directory. If the deletion is unsuccessful,
      * an exception is thrown with the relevant error output.
      *
-     * @param string $file_name The base name of the Nginx configuration file
-     *                          (without the `.conf` extension).
+     * @param  string  $file_name  The base name of the Nginx configuration file
+     *                             (without the `.conf` extension).
+     * @return void
      *
      * @throws DropFunnelException if the deletion of the configuration file
      *                             or symlink fails.
-     *
-     * @return void
      */
     protected function deleteNginxConfig(string $file_name)
     {
@@ -109,7 +108,7 @@ class DropFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new DropFunnelException('Failed to delete config and symlink: ' . $process->getErrorOutput());
+            throw new DropFunnelException('Failed to delete config and symlink: '.$process->getErrorOutput());
         }
 
         $this->info("config and symlynk deleted for {$file_name}");
@@ -137,12 +136,11 @@ class DropFunnel extends Command
      * corresponding DNS record in DigitalOcean. If the subdomain ID is not found
      * or the API request fails, an exception is thrown.
      *
-     * @param string $sub_domain The slug representing the subdomain to delete.
+     * @param  string  $sub_domain  The slug representing the subdomain to delete.
+     * @return void
      *
      * @throws DropFunnelException if the subdomain ID is not found in the database
      *                             or if the DigitalOcean API request is unsuccessful.
-     *
-     * @return void
      */
     protected function deleteSubDomain(string $sub_domain)
     {
@@ -153,12 +151,12 @@ class DropFunnel extends Command
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.digitalocean.token'),
+            'Authorization' => 'Bearer '.config('services.digitalocean.token'),
             'Content-Type' => 'application/json',
-        ])->delete('https://api.digitalocean.com/v2/domains/trybytealley.com/records/' . $sub_domain_id);
+        ])->delete('https://api.digitalocean.com/v2/domains/trybytealley.com/records/'.$sub_domain_id);
 
         if (! $response->successful()) {
-            throw new DropFunnelException('Failed to delete subdomain in DigitalOcean' . $response->reason());
+            throw new DropFunnelException('Failed to delete subdomain in DigitalOcean'.$response->reason());
         }
 
         $this->info("Subdomain {$sub_domain} deleted in DigitalOcean");
@@ -172,11 +170,10 @@ class DropFunnel extends Command
      * `--cert-name` option set to the provided subdomain. If the process fails,
      * an exception is thrown by calling the `checkProcess` helper method.
      *
-     * @param string $sub_domain The name of the subdomain whose SSL certificate should be deleted. e.g example.trybytealley.com
+     * @param  string  $sub_domain  The name of the subdomain whose SSL certificate should be deleted. e.g example.trybytealley.com
+     * @return void
      *
      * @throws DropFunnelException if the Certbot command process fails.
-     *
-     * @return void
      */
     protected function deleteCertbotCertificate(string $sub_domain)
     {
@@ -193,11 +190,10 @@ class DropFunnel extends Command
      * by executing a `sudo rm -rf` command targeting the specified root path. If the
      * deletion fails, an exception is thrown containing the error message.
      *
-     * @param string $root_path The absolute path of the directory to be deleted.
+     * @param  string  $root_path  The absolute path of the directory to be deleted.
+     * @return void
      *
      * @throws DropFunnelException if the command to delete the directory fails.
-     *
-     * @return void
      */
     protected function deleteFunnel(string $root_path)
     {
@@ -206,7 +202,7 @@ class DropFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new DropFunnelException('Failed to delete funnel from root path: ' . $process->getErrorOutput());
+            throw new DropFunnelException('Failed to delete funnel from root path: '.$process->getErrorOutput());
         }
 
         $this->info('Funnel successfully deleted');

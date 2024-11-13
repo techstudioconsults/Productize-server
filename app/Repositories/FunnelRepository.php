@@ -134,7 +134,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     /**
@@ -146,11 +146,10 @@ class FunnelRepository extends Repository
      * - Catches any exceptions during deployment, rethrowing them as `ServerErrorException` for centralized error handling.
      * - Updates the funnel’s status to `Published` and saves the change.
      *
-     * @param Funnel $funnel The funnel to publish.
+     * @param  Funnel  $funnel  The funnel to publish.
+     * @return void
      *
      * @throws ServerErrorException If the deployment command fails due to any error.
-     *
-     * @return void
      */
     public function publish(Funnel $funnel)
     {
@@ -162,7 +161,7 @@ class FunnelRepository extends Repository
         try {
             Artisan::call('deploy:funnel', ['page' => $funnel->slug]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException();
+            throw new ServerErrorException;
         }
 
         // save funnel status to published
@@ -176,11 +175,10 @@ class FunnelRepository extends Repository
      * This method triggers the `drop:funnel` Artisan command to drop a funnel's resources
      * based on its slug. In a local environment, the command is skipped.
      *
-     * @param Funnel $funnel The funnel instance to be dropped.
+     * @param  Funnel  $funnel  The funnel instance to be dropped.
+     * @return void
      *
      * @throws ServerErrorException If an error occurs while calling the Artisan command.
-     *
-     * @return void
      */
     public function drop(Funnel $funnel)
     {
@@ -192,7 +190,7 @@ class FunnelRepository extends Repository
         try {
             Artisan::call('drop:funnel', ['page' => $funnel->slug]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException();
+            throw new ServerErrorException;
         }
 
         // save funnel status to published
@@ -206,9 +204,8 @@ class FunnelRepository extends Repository
      * This method renders an HTML view using the specified template data
      * and saves the generated HTML file to local storage with a filename based on the funnel's slug.
      *
-     * @param Funnel $funnel The funnel instance for which the template is being saved.
-     * @param string $template The template content to be rendered and saved.
-     *
+     * @param  Funnel  $funnel  The funnel instance for which the template is being saved.
+     * @param  string  $template  The template content to be rendered and saved.
      * @return void
      */
     public function saveTemplate(Funnel $funnel, string $template)
@@ -217,6 +214,6 @@ class FunnelRepository extends Repository
         $html = view('funnels.template', ['template' => $template])->render();
 
         // Save the template locally
-        Storage::disk('local')->put('funnels/' . $funnel->slug . '.html', $html);
+        Storage::disk('local')->put('funnels/'.$funnel->slug.'.html', $html);
     }
 }

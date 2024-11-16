@@ -80,8 +80,6 @@ class FunnelController extends Controller
         $template = $payload['template'];
         $thumbnail = $payload['thumbnail'];
 
-        unset($payload['template']);
-
         $payload['thumbnail'] = $this->funnelRepository->uploadThumbnail($thumbnail);
 
         $payload['user_id'] = $user->id;
@@ -124,7 +122,6 @@ class FunnelController extends Controller
         if (isset($payload['template'])) {
             $template = $payload['template'];
             $this->funnelRepository->saveTemplate($funnel, $template);
-            unset($payload['template']);
         }
 
         // user is updating the status and the current status is draft - so they want to publish or funnel is currently published but the template was changed

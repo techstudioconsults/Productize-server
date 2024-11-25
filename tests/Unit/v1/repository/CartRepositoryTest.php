@@ -19,7 +19,7 @@ class CartRepositoryTest extends TestCase
 
     private CartRepository $cartRepository;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -127,7 +127,7 @@ class CartRepositoryTest extends TestCase
         $this->assertEquals($user->id, $results->first()->user_id);
     }
 
-    public function test_queryRelation_with_empty_filter_returns_original_relation(): void
+    public function test_query_relation_with_empty_filter_returns_original_relation(): void
     {
         // Arrange: Create a user with carts
         $user = User::factory()->hasCarts(3)->create();
@@ -141,7 +141,7 @@ class CartRepositoryTest extends TestCase
         $this->assertCount(3, $result->get());
     }
 
-    public function test_queryRelation_with_valid_filter_returns_filtered_relation(): void
+    public function test_query_relation_with_valid_filter_returns_filtered_relation(): void
     {
         // Arrange: Create a user with carts
         $user = User::factory()->create();
@@ -163,7 +163,7 @@ class CartRepositoryTest extends TestCase
         $this->assertEquals(1, $carts->first()->quantity);
     }
 
-    public function test_queryRelation_with_date_filter_applies_date_filter(): void
+    public function test_query_relation_with_date_filter_applies_date_filter(): void
     {
         // Arrange: Create a user with carts
         $user = User::factory()->create();
@@ -182,7 +182,7 @@ class CartRepositoryTest extends TestCase
         $this->assertEquals($cart1->id, $carts->first()->id);
     }
 
-    public function test_queryRelation_with_invalid_date_filter_throws_exception(): void
+    public function test_query_relation_with_invalid_date_filter_throws_exception(): void
     {
         // Arrange: Create a user with carts
         $user = User::factory()->create();

@@ -33,7 +33,7 @@ class UserControllerTest extends TestCase
     use SanctumAuthentication;
     use WithFaker;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
     }
@@ -471,7 +471,7 @@ class UserControllerTest extends TestCase
         });
     }
 
-    public function test_regular_user_cannot_create_Admin()
+    public function test_regular_user_cannot_create_admin()
     {
         $this->actingAsAdmin();
 
@@ -491,7 +491,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_Super_admin_can_update_user()
+    public function test_super_admin_can_update_user()
     {
         Mail::fake();
 

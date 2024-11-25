@@ -20,7 +20,7 @@ class AccountControllerTest extends TestCase
     use RefreshDatabase;
     use SanctumAuthentication, WithFaker;
 
-    public function test_Index()
+    public function test_index()
     {
         $user = User::factory()->create();
 
@@ -89,7 +89,7 @@ class AccountControllerTest extends TestCase
             ->assertJsonStructure(['data' => ['id', 'name', 'account_number', 'bank_name']]);
     }
 
-    public function test_StoreDuplicateAccount()
+    public function test_store_duplicate_account()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -121,7 +121,7 @@ class AccountControllerTest extends TestCase
             ->assertJson(['message' => 'Duplicate Account']);
     }
 
-    public function testStoreInvalidAccount()
+    public function test_store_invalid_account()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -147,7 +147,7 @@ class AccountControllerTest extends TestCase
             ->assertJson(['message' => 'Invalid Account Number']);
     }
 
-    public function test_Update()
+    public function test_update()
     {
         $user = User::factory()->create();
         $account = Account::factory()->create(['user_id' => $user->id]);
@@ -164,7 +164,7 @@ class AccountControllerTest extends TestCase
             ->assertJson(['data' => ['active' => false]]);
     }
 
-    public function testBankListSuccess()
+    public function test_bank_list_success()
     {
         $this->actingAsRegularUser();
 
@@ -197,7 +197,7 @@ class AccountControllerTest extends TestCase
             ->assertJsonFragment(['name' => 'Bank B', 'code' => '002']);
     }
 
-    public function testBankListEmpty()
+    public function test_bank_list_empty()
     {
         $this->actingAsRegularUser();
 

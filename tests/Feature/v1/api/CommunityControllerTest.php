@@ -17,14 +17,14 @@ use Tests\TestCase;
 
 class CommunityControllerTest extends TestCase
 {
-    public function test_getAllCommunity(): void
+    public function test_get_all_community(): void
     {
         $response = $this->get('api/community');
 
         $response->assertStatus(200);
     }
 
-    public function test_storeCommunity(): void
+    public function test_store_community(): void
     {
         Mail::fake();
         $faker = Faker::create();

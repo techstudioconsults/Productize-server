@@ -224,7 +224,7 @@ class SkillSellingControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function testCategories()
+    public function test_categories()
     {
         $response = $this->getJson('/api/skillSellings/categories');
 

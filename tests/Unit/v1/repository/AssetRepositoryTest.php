@@ -18,7 +18,7 @@ class AssetRepositoryTest extends TestCase
 
     private AssetRepository $assetRepository;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->assetRepository = new AssetRepository;

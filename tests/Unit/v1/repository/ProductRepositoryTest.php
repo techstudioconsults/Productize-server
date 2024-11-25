@@ -28,7 +28,7 @@ class ProductRepositoryTest extends TestCase
 
     private ProductRepository $productRepository;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -335,7 +335,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertEquals(20, $topProducts->first()->total_sales);
     }
 
-    public function test_topProducts_with_date_filter()
+    public function test_top_products_with_date_filter()
     {
         // Create products
         $products = Product::factory()
@@ -392,7 +392,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertEquals(10, $topProducts->first()->total_sales);
     }
 
-    public function test_topProducts_returns_empty_when_no_orders()
+    public function test_top_products_returns_empty_when_no_orders()
     {
         // Create products without orders
         Product::factory()->count(3)->create(['user_id' => $this->user->id]);
@@ -723,7 +723,7 @@ class ProductRepositoryTest extends TestCase
         $this->productRepository->uploadCoverPhoto($uploads);
     }
 
-    public function test_isSearchedproduct_with_valid_cookie()
+    public function test_is_searchedproduct_with_valid_cookie()
     {
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
@@ -735,7 +735,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function test_isSearchedproduct_with_empty_cookie()
+    public function test_is_searchedproduct_with_empty_cookie()
     {
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
@@ -747,7 +747,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_isSearchedproduct_with_invalid_cookie()
+    public function test_is_searchedproduct_with_invalid_cookie()
     {
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
@@ -759,7 +759,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_isSearchedProduct_with_null_cookie()
+    public function test_is_searched_product_with_null_cookie()
     {
         $product = Product::factory()->create([
             'user_id' => $this->user->id,
@@ -795,7 +795,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_prepareProducts_valid_data()
+    public function test_prepare_products_valid_data()
     {
         // Arrange
         $product = Product::factory()->create(['price' => 1000, 'status' => 'published', 'discount_price' => 900]);
@@ -826,7 +826,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function test_prepareProducts_valid_data_no_discount()
+    public function test_prepare_products_valid_data_no_discount()
     {
         // Arrange
         $product = Product::factory()->create([
@@ -859,7 +859,7 @@ class ProductRepositoryTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function test_prepareProducts_invalid_data()
+    public function test_prepare_products_invalid_data()
     {
         // Arrange
         $cart = [
@@ -873,7 +873,7 @@ class ProductRepositoryTest extends TestCase
         $this->productRepository->prepareProducts($cart);
     }
 
-    public function test_prepareProducts_product_not_found()
+    public function test_prepare_products_product_not_found()
     {
         // Arrange
         $cart = [
@@ -888,7 +888,7 @@ class ProductRepositoryTest extends TestCase
         $this->productRepository->prepareProducts($cart);
     }
 
-    public function test_prepareProducts_product_not_published()
+    public function test_prepare_products_product_not_published()
     {
         // Arrange
         $product = Product::factory()->create(['price' => 1000, 'status' => 'draft']);

@@ -102,7 +102,7 @@ class CartControllerTest extends TestCase
         ]);
     }
 
-    public function test_store_method_if_inavlid_payload_throw_UnprocessableException(): void
+    public function test_store_method_if_inavlid_payload_throw_unprocessable_exception(): void
     {
         $this->expectException(UnprocessableException::class);
 
@@ -124,7 +124,7 @@ class CartControllerTest extends TestCase
         $this->post(route('cart.store'), $payload);
     }
 
-    public function test_store_method_if_cart_exist_throw_ConflictException()
+    public function test_store_method_if_cart_exist_throw_conflict_exception()
     {
         // Prevent the exception from being handled automatically
         $this->withoutExceptionHandling();
@@ -189,7 +189,7 @@ class CartControllerTest extends TestCase
         ]);
     }
 
-    public function test_show_unauthenticated_user_throws_UnAuthorizedException(): void
+    public function test_show_unauthenticated_user_throws_un_authorized_exception(): void
     {
         $this->expectException(UnAuthorizedException::class);
 
@@ -207,7 +207,7 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->get(route('cart.show', ['cart' => $cart->id]));
     }
 
-    public function test_show_method_invalid_cart_id_throw_ModelNotFoundException(): void
+    public function test_show_method_invalid_cart_id_throw_model_not_found_exception(): void
     {
         $this->expectException(ModelNotFoundException::class);
 
@@ -221,7 +221,7 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->get(route('cart.show', ['cart' => $cart_id]));
     }
 
-    public function test_show_forbidden_user_throws_ForbiddenException(): void
+    public function test_show_forbidden_user_throws_forbidden_exception(): void
     {
         $this->expectException(ForbiddenException::class);
 
@@ -280,7 +280,7 @@ class CartControllerTest extends TestCase
         ]);
     }
 
-    public function test_update_method_unauthenticated_user_throw_UnAuthorizedException(): void
+    public function test_update_method_unauthenticated_user_throw_un_authorized_exception(): void
     {
         $this->expectException(UnAuthorizedException::class);
 
@@ -302,7 +302,7 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->patch(route('cart.update', ['cart' => $cart->id]), $payload);
     }
 
-    public function test_update_method_forbidden_user_throw_ForbiddenException(): void
+    public function test_update_method_forbidden_user_throw_forbidden_exception(): void
     {
         $this->expectException(ForbiddenException::class);
 
@@ -329,7 +329,7 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->patch(route('cart.update', ['cart' => $cart->id]), $payload);
     }
 
-    public function test_update_method_invalid_cart_id_throw_ModelNotFoundException(): void
+    public function test_update_method_invalid_cart_id_throw_model_not_found_exception(): void
     {
         $this->expectException(ModelNotFoundException::class);
 
@@ -348,7 +348,7 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->patch(route('cart.update', ['cart' => $cart_id]), $payload);
     }
 
-    public function test_update_method_invalid_payload_throw_UnprocessableEntityException(): void
+    public function test_update_method_invalid_payload_throw_unprocessable_entity_exception(): void
     {
         $this->expectException(UnprocessableException::class);
 
@@ -399,7 +399,7 @@ class CartControllerTest extends TestCase
         $this->assertDatabaseMissing('carts', ['id' => $cart->id]);
     }
 
-    public function test_delete_method_unauthenticated_user_throw_UnAuthorizedException(): void
+    public function test_delete_method_unauthenticated_user_throw_un_authorized_exception(): void
     {
         $this->expectException(UnAuthorizedException::class);
 
@@ -417,7 +417,7 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart->id]));
     }
 
-    public function test_delete_method_forbidden_user_throw_ForbiddenException(): void
+    public function test_delete_method_forbidden_user_throw_forbidden_exception(): void
     {
         $this->expectException(ForbiddenException::class);
 
@@ -439,7 +439,7 @@ class CartControllerTest extends TestCase
         $this->withoutExceptionHandling()->delete(route('cart.delete', ['cart' => $cart->id]));
     }
 
-    public function test_delete_method_invalid_cart_id_throw_ModelNotFoundExeption(): void
+    public function test_delete_method_invalid_cart_id_throw_model_not_found_exeption(): void
     {
         $this->expectException(ModelNotFoundException::class);
 

@@ -29,6 +29,7 @@ class StoreFunnelRequest extends FormRequest
             'title' => 'required|string',
             'thumbnail' => 'required|file|image', // 2000 kilobytes
             'template' => 'required|string',
+            'asset' => 'file',
             'status' => ['required', new Enum(ProductStatusEnum::class)],
         ];
     }

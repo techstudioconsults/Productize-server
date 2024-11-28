@@ -18,14 +18,14 @@ class FaqControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_getAllFaq(): void
+    public function test_get_all_faq(): void
     {
         $response = $this->get('api/faqs');
 
         $response->assertStatus(200);
     }
 
-    public function test_getAllFaq_whenNoFaqsExist(): void
+    public function test_get_all_faq_when_no_faqs_exist(): void
     {
         $response = $this->getJson('api/faqs');
 
@@ -33,7 +33,7 @@ class FaqControllerTest extends TestCase
             ->assertJsonCount(0, 'data');
     }
 
-    public function test_storeFaq(): void
+    public function test_store_faq(): void
     {
         // Generate new data for creating the faq
         $faqData = [
@@ -56,7 +56,7 @@ class FaqControllerTest extends TestCase
         ]);
     }
 
-    public function test_updateFaq(): void
+    public function test_update_faq(): void
     {
         // Create a faq
         $faqData = Faq::factory()->create([
@@ -87,7 +87,7 @@ class FaqControllerTest extends TestCase
         ]);
     }
 
-    public function test_destroyFaq(): void
+    public function test_destroy_faq(): void
     {
         // create a faq
         $faq = Faq::factory()->create([
@@ -108,7 +108,7 @@ class FaqControllerTest extends TestCase
         ]);
     }
 
-    public function test_updateFaq_withInvalidData(): void
+    public function test_update_faq_with_invalid_data(): void
     {
         $faq = Faq::factory()->create();
 
@@ -124,7 +124,7 @@ class FaqControllerTest extends TestCase
             ->assertJsonValidationErrors(['title', 'question', 'answer']);
     }
 
-    public function test_updateFaq_nonExistentFaq(): void
+    public function test_update_faq_non_existent_faq(): void
     {
         $nonExistentId = 2345; // Assuming this ID doesn't exist
 
@@ -137,7 +137,7 @@ class FaqControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_destroyFaq_nonExistentFaq(): void
+    public function test_destroy_faq_non_existent_faq(): void
     {
         $nonExistentId = 657876; // Assuming this ID doesn't exist
 

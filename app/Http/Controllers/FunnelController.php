@@ -10,7 +10,6 @@ use App\Models\Funnel;
 use App\Repositories\FunnelRepository;
 use Auth;
 use Illuminate\Http\Request;
-use Log;
 
 class FunnelController extends Controller
 {
@@ -135,7 +134,6 @@ class FunnelController extends Controller
             $asset = $payload['asset'];
             $payload['asset'] = $this->funnelRepository->uploadAsset($asset);
         }
-
 
         // user is updating the status and the current status is draft - so they want to publish or funnel is currently published but the template was changed
         if ((isset($payload['status']) && $payload['status'] !== $funnel->status && $funnel->status === ProductStatusEnum::Draft->value) || (isset($payload['template']) && $funnel->status === ProductStatusEnum::Published->value)) {

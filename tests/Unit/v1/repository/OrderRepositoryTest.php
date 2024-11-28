@@ -18,7 +18,7 @@ class OrderRepositoryTest extends TestCase
 
     private OrderRepository $orderRepository;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->orderRepository = app(OrderRepository::class);
@@ -178,7 +178,7 @@ class OrderRepositoryTest extends TestCase
         $this->orderRepository->query($filter);
     }
 
-    public function test_query_with_product_title_filter_applies_whereHas(): void
+    public function test_query_with_product_title_filter_applies_where_has(): void
     {
         $product_title = 'Sample Product';
 
@@ -277,7 +277,7 @@ class OrderRepositoryTest extends TestCase
         $this->orderRepository->queryRelation($relation, $filter);
     }
 
-    public function test_queryrelation_with_product_title_filter_applies_whereHas(): void
+    public function test_queryrelation_with_product_title_filter_applies_where_has(): void
     {
         $product_title = 'Sample Product';
 
@@ -320,7 +320,7 @@ class OrderRepositoryTest extends TestCase
         $this->assertEquals($expected_result->toArray(), $actualResult);
     }
 
-    public function test_queryRelation_with_all_filters_applies_correctly(): void
+    public function test_query_relation_with_all_filters_applies_correctly(): void
     {
         // Define the date range
         $start_date = Carbon::create(2024, 1, 1, 0);

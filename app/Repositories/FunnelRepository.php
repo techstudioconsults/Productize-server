@@ -27,6 +27,7 @@ class FunnelRepository extends Repository
     use HasStatusFilter;
 
     const THUMBNAIL_PATH = 'funnels-thumbnail';
+
     const ASSET_PATH = 'funnels-asset';
 
     /**
@@ -136,7 +137,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     public function uploadAsset(object $asset): string
@@ -152,7 +153,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $asset->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     /**
@@ -233,6 +234,6 @@ class FunnelRepository extends Repository
         $html = view('funnels.template', ['template' => $template])->render();
 
         // Save the template locally
-        Storage::disk('local')->put('funnels/' . $funnel->slug . '.html', $html);
+        Storage::disk('local')->put('funnels/'.$funnel->slug.'.html', $html);
     }
 }

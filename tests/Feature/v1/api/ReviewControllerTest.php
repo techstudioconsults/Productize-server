@@ -16,14 +16,14 @@ class ReviewControllerTest extends TestCase
 
     protected $reviewRepository;
 
-    public function test_getAllReviews(): void
+    public function test_get_all_reviews(): void
     {
         $response = $this->get('api/reviews');
 
         $response->assertStatus(200);
     }
 
-    public function test_storeReview(): void
+    public function test_store_review(): void
     {
         // Create a user
         $user = User::factory()->create();
@@ -55,7 +55,7 @@ class ReviewControllerTest extends TestCase
         ]);
     }
 
-    public function test_storeReview_without_comment(): void
+    public function test_store_review_without_comment(): void
     {
         // Create a user
         $user = User::factory()->create();
@@ -85,7 +85,7 @@ class ReviewControllerTest extends TestCase
         ]);
     }
 
-    public function test_findByProductId(): void
+    public function test_find_by_product_id(): void
     {
         // Create a user
         $user = User::factory()->create();
@@ -108,7 +108,7 @@ class ReviewControllerTest extends TestCase
         $response->assertJsonCount(2, 'data');
     }
 
-    public function test_storeReview_unauthenticated()
+    public function test_store_review_unauthenticated()
     {
         $product = Product::factory()->create();
 
@@ -118,7 +118,7 @@ class ReviewControllerTest extends TestCase
             ->post('/api/reviews/products/'.$product->id);
     }
 
-    public function testFindByProductWithNoReviews()
+    public function test_find_by_product_with_no_reviews()
     {
         $product = Product::factory()->create();
 
@@ -128,7 +128,7 @@ class ReviewControllerTest extends TestCase
             ->assertJsonCount(0, 'data');
     }
 
-    public function testDuplicateReviewPrevention()
+    public function test_duplicate_review_prevention()
     {
         $user = User::factory()->create();
         $product = Product::factory()->create();
@@ -153,7 +153,7 @@ class ReviewControllerTest extends TestCase
             ]);
     }
 
-    public function testReviewForNonExistentProduct()
+    public function test_review_for_non_existent_product()
     {
         $user = User::factory()->create();
         $nonExistentProductId = 1334; // Assuming this ID doesn't exist

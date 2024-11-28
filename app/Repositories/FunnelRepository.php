@@ -12,6 +12,7 @@ use Artisan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Log;
 use Storage;
 
 /**
@@ -178,7 +179,8 @@ class FunnelRepository extends Repository
         try {
             Artisan::call('deploy:funnel', ['page' => $funnel->slug]);
         } catch (\Throwable $th) {
-            throw new ServerErrorException;
+            Log::channel('webhook')->debug('Deploy error', ['context' => $th->getMessage()]);
+            throw new ServerErrorException();
         }
 
         // save funnel status to published

@@ -181,7 +181,7 @@ class FunnelRepository extends Repository
             Artisan::call('deploy:funnel', ['page' => $funnel->slug]);
         } catch (\Throwable $th) {
             Log::channel('webhook')->debug('Deploy error', ['context' => $th->getMessage()]);
-            throw new ServerErrorException();
+            throw new ServerErrorException;
         }
 
         // save funnel status to published

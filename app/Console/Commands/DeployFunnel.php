@@ -192,7 +192,7 @@ class DeployFunnel extends Command
      */
     protected function createNginxSymlink($file_name)
     {
-        $command = "sudo ln -s /etc/nginx/sites-available/{$file_name}.conf /etc/nginx/sites-enabled/{$file_name}.conf";
+        $command = "sudo ln -sf /etc/nginx/sites-available/{$file_name}.conf /etc/nginx/sites-enabled/{$file_name}.conf";
         $process = Process::fromShellCommandline($command);
         $process->run();
 

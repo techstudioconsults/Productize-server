@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Funnel;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -20,4 +21,8 @@ Broadcast::channel('users.{id}', function (User $user, $id) {
 
 Broadcast::channel('order-created.{userId}', function (User $user, $userId) {
     return $user->id === $userId;
+});
+
+Broadcast::channel('funnels.{funnelId}', function (User $user, int $funnelId) {
+    return $user->id === Funnel::findOrNew($funnelId)->user_id;
 });

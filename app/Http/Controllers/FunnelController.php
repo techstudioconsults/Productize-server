@@ -180,7 +180,7 @@ class FunnelController extends Controller
     public function restore(Funnel $funnel)
     {
         $funnel->restore();
-        
+
         return new FunnelResource($funnel);
     }
 }

@@ -18,7 +18,7 @@ class FunnelResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'status' => $this->status,
+            'status' => $this->deleted_at ? 'deleted' : $this->status,
             'thumbnail' => $this->thumbnail,
             'slug' => $this->slug,
             'url' => $this->when($this->status === ProductStatusEnum::Published->value, "https://{$this->slug}.trybytealley.com"),

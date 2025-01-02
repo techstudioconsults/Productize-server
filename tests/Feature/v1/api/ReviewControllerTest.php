@@ -29,7 +29,7 @@ class ReviewControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        //create product
+        // create product
         $product = Product::factory()->create();
 
         // Generate new data for creating the review
@@ -61,7 +61,7 @@ class ReviewControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        //create product
+        // create product
         $product = Product::factory()->create();
 
         // Generate new data for creating the review
@@ -93,7 +93,7 @@ class ReviewControllerTest extends TestCase
         // Create a product
         $product = Product::factory()->create();
 
-        //create review for the product
+        // create review for the product
         Review::factory()->count(3)->create([
             'user_id' => $user->id,
             'product_id' => $product->id,

@@ -383,7 +383,7 @@ class UserControllerTest extends TestCase
 
         Storage::fake('spaces');
 
-        //create a file that's exactly 2048 KB
+        // create a file that's exactly 2048 KB
         $validFile = UploadedFile::fake()->create('avatar.jpg', 2048);
 
         $response = $this->postJson(route('users.kyc'), [
@@ -420,7 +420,7 @@ class UserControllerTest extends TestCase
 
             Storage::fake('spaces');
 
-            //create a file that's exactly 2048 KB
+            // create a file that's exactly 2048 KB
             $validFile = UploadedFile::fake()->create('avatar.jpg', 2048);
 
             $this->actingAs($user);
@@ -561,12 +561,12 @@ class UserControllerTest extends TestCase
 
     public function test_super_admin_can_delete_admin()
     {
-        //create admin user
+        // create admin user
         $admin = User::factory()->create([
             'role' => 'ADMIN',
         ]);
 
-        //create super admin user
+        // create super admin user
         $superAdmin = User::factory()->create([
             'role' => 'SUPER_ADMIN',
         ]);

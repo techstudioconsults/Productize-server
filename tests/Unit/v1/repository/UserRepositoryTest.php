@@ -528,7 +528,7 @@ class UserRepositoryTest extends TestCase
     {
         $expected_user = User::factory()->create();
 
-        //Fake spaces storage
+        // Fake spaces storage
         Storage::fake('spaces');
 
         $user = $this->userRepository->update($expected_user, [
@@ -541,7 +541,7 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals($user->country, 'Nigeria');
         $this->assertEquals($user->document_type, 'National Id card');
 
-        //Assert that the document image was stored
+        // Assert that the document image was stored
         $this->assertNotEmpty($user->document_image);
 
         // Extract the file path from the full URL

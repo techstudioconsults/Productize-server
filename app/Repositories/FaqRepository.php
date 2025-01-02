@@ -69,7 +69,7 @@ class FaqRepository extends Repository
     {
         $query = Faq::query();
 
-        //apply date filter
+        // apply date filter
         $this->applyDateFilters($query, $filter);
 
         // apply other filters

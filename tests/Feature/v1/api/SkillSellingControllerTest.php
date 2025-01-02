@@ -122,7 +122,7 @@ class SkillSellingControllerTest extends TestCase
         // Create a user
         $user = $this->actingAsRegularUser();
 
-        //create product
+        // create product
         $product = Product::factory()->create(
             ['user_id' => $user->id]
         );
@@ -180,7 +180,7 @@ class SkillSellingControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        //create product
+        // create product
         $product = Product::factory()->create();
 
         // Create a skillselling

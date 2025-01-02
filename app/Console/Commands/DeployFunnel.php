@@ -57,7 +57,7 @@ class DeployFunnel extends Command
         $email = 'info@trybytealley.com';
 
         // Step 1: Copy HTML file to destination directory
-        $this->moveHtmlToDestinationDir($page, $root_path);
+        $this->moveFunnelToDestinationDir($page, $root_path);
 
         // Step 2: Generate NGINX configuration file
         $nginx_config = $this->generateNginxConfig($sub_domain, $root_path);
@@ -107,37 +107,40 @@ class DeployFunnel extends Command
      *
      * @throws FunnelDeployException
      */
-    public function moveHtmlToDestinationDir(string $page, string $root_path)
+    public function moveFunnelToDestinationDir(string $page, string $root_path)
     {
+        // Path to the source directory within the Laravel project directory
+        $sourcePath = storage_path("app/funnels/{$page}");
 
-        // Path to the source file within the Laravel project directory
-        $sourcePath = storage_path("app/funnels/{$page}.html");
-
-        $destinationPath = "{$root_path}/index.html";
-
-        if (! file_exists($sourcePath)) {
-            throw new FunnelDeployException("Funnel HTML page not found at {$sourcePath}");
+        if (!is_dir($sourcePath)) {
+            throw new FunnelDeployException("Funnel directory not found at {$sourcePath}");
         }
 
         // Ensure the destination directory exists
         $makeDirCommand = new Process(['sudo', 'mkdir', '-p', $root_path]);
-
         $makeDirCommand->run();
 
-        if (! $makeDirCommand->isSuccessful()) {
+        if (!$makeDirCommand->isSuccessful()) {
             throw new FunnelDeployException("Failed to create destination directory: {$makeDirCommand->getErrorOutput()}");
         }
 
-        // Move the file with sudo mv
-        $copyCommand = new Process(['sudo', 'mv', $sourcePath, $destinationPath]);
+        // Move the entire directory with sudo mv
+        $moveCommand = new Process(['sudo', 'mv', $sourcePath.'/*', $root_path.'/']);
+        $moveCommand->run();
 
-        $copyCommand->run();
-
-        if (! $copyCommand->isSuccessful()) {
-            throw new FunnelDeployException("Failed to copy HTML page: {$copyCommand->getErrorOutput()}");
+        if (!$moveCommand->isSuccessful()) {
+            throw new FunnelDeployException("Failed to move funnel files: {$moveCommand->getErrorOutput()}");
         }
 
-        $this->info("Funnel HTML page copied to {$destinationPath}");
+        // Remove the empty source directory
+        $removeCommand = new Process(['sudo', 'rmdir', $sourcePath]);
+        $removeCommand->run();
+
+        if (!$removeCommand->isSuccessful()) {
+            $this->warn("Note: Could not remove empty source directory: {$removeCommand->getErrorOutput()}");
+        }
+
+        $this->info("Funnel files moved to {$root_path}");
     }
 
     /**
@@ -192,7 +195,7 @@ class DeployFunnel extends Command
      */
     protected function createNginxSymlink($file_name)
     {
-        $command = "sudo ln -s /etc/nginx/sites-available/{$file_name}.conf /etc/nginx/sites-enabled/{$file_name}.conf";
+        $command = "sudo ln -sf /etc/nginx/sites-available/{$file_name}.conf /etc/nginx/sites-enabled/{$file_name}.conf";
         $process = Process::fromShellCommandline($command);
         $process->run();
 
@@ -227,7 +230,7 @@ class DeployFunnel extends Command
             server {
                 listen 80;
                 server_name {{server_name}};
-                root {{root_path}};
+                root {{root_path}}/index.html;
 
                 location / {
                 try_files $uri $uri/ =404;

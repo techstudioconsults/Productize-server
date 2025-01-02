@@ -176,4 +176,11 @@ class FunnelController extends Controller
 
         return new FunnelResource($funnel);
     }
+
+    public function restore(Funnel $funnel)
+    {
+        $funnel->restore();
+
+        return new FunnelResource($funnel);
+    }
 }

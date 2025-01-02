@@ -12,6 +12,7 @@ use Artisan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Log;
 use Storage;
 
@@ -137,7 +138,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
     }
 
     public function uploadAsset(object $asset): string
@@ -153,7 +154,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $asset->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
     }
 
     /**
@@ -225,15 +226,19 @@ class FunnelRepository extends Repository
      * and saves the generated HTML file to local storage with a filename based on the funnel's slug.
      *
      * @param  Funnel  $funnel  The funnel instance for which the template is being saved.
-     * @param  string  $template  The template content to be rendered and saved.
+     * @param  array  $template  The template content to be rendered and saved.
      * @return void
      */
-    public function saveTemplate(Funnel $funnel, string $template)
+    public function saveTemplate(Funnel $funnel, array $template)
     {
-        // Create the template html file
-        $html = view('funnels.template', ['template' => $template])->render();
+        foreach ($template as $key => $value) {
+            // Create the template html file
+            $html = view('funnels.template', ['template' => $value['content']])->render();
 
-        // Save the template locally
-        Storage::disk('local')->put('funnels/'.$funnel->slug.'.html', $html);
+            $name = $key === 0 ? 'index' : $value['name'];
+
+            // Save the template locally
+            Storage::disk('local')->put('funnels/' . $funnel->slug . '/' . $name . '.html', $html);
+        }
     }
 }

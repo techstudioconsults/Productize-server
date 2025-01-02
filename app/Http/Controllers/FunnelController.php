@@ -77,7 +77,7 @@ class FunnelController extends Controller
 
         $payload = $request->validated();
 
-        $template = $payload['template'];
+        // $template = $payload['template'];
         $thumbnail = $payload['thumbnail'];
 
         if (isset($payload['asset'])) {
@@ -92,7 +92,7 @@ class FunnelController extends Controller
 
         $funnel = $this->funnelRepository->create($payload);
 
-        $this->funnelRepository->saveTemplate($funnel, $template);
+        $this->funnelRepository->saveTemplate($funnel, $request->getParsedTemplate());
 
         if ($payload['status'] === ProductStatusEnum::Draft->value || env('APP_ENV') === 'local') {
             return new FunnelResource($funnel);
@@ -126,8 +126,7 @@ class FunnelController extends Controller
         }
 
         if (isset($payload['template'])) {
-            $template = $payload['template'];
-            $this->funnelRepository->saveTemplate($funnel, $template);
+            $this->funnelRepository->saveTemplate($funnel, $this->getParsedTemplate());
         }
 
         if (isset($payload['asset'])) {

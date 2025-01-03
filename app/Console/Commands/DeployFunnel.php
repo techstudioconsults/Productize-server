@@ -57,7 +57,7 @@ class DeployFunnel extends Command
         $email = 'info@trybytealley.com';
 
         // Step 1: Copy HTML file to destination directory
-        $this->moveFunnelToDestinationDir($page, $root_path);
+        $this->moveFunnelToDestinationDir($page);
 
         // Step 2: Generate NGINX configuration file
         $nginx_config = $this->generateNginxConfig($sub_domain, $root_path);
@@ -107,7 +107,7 @@ class DeployFunnel extends Command
      *
      * @throws FunnelDeployException
      */
-    public function moveFunnelToDestinationDir(string $page, string $root_path)
+    public function moveFunnelToDestinationDir(string $page)
     {
         // Path to the source directory within the Laravel project directory
         $sourcePath = storage_path("app/funnels/{$page}");
@@ -117,16 +117,17 @@ class DeployFunnel extends Command
         }
 
         // Ensure the destination directory exists
-        $makeDirCommand = new Process(['sudo', 'mkdir', '-p', $root_path]);
-        $makeDirCommand->run();
+        // $makeDirCommand = new Process(['sudo', 'mkdir', '-p', $root_path]);
+        // $makeDirCommand->run();
 
-        if (! $makeDirCommand->isSuccessful()) {
-            throw new FunnelDeployException("Failed to create destination directory: {$makeDirCommand->getErrorOutput()}");
-        }
+        // if (! $makeDirCommand->isSuccessful()) {
+        //     throw new FunnelDeployException("Failed to create destination directory: {$makeDirCommand->getErrorOutput()}");
+        // }
+
+        $root_path = '/var/www/funnels';
 
         // Move the entire directory with sudo mv
-        // $moveCommand = new Process(['sudo', 'cp', '-r',  $sourcePath, $root_path.'/']);
-        $moveCommand = new Process(['sudo', 'bash', '-c', "cp -r {$sourcePath}/* {$root_path}/"]);
+        $moveCommand = new Process(['sudo', 'cp', '-r', $sourcePath, $root_path.'/']);
         $moveCommand->run();
 
         if (! $moveCommand->isSuccessful()) {

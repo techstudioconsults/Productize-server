@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('title');
             $table->enum('status', array_column(ProductStatusEnum::cases(), 'value'))->default(ProductStatusEnum::Draft->value);
             $table->string('thumbnail');
-            $table->string('asset');
+            $table->string('asset')->nullable();
             $table->string('slug');
             $table->longText('template');
             $table->string('sub_domain_id')->nullable();

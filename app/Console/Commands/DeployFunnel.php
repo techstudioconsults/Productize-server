@@ -93,7 +93,7 @@ class DeployFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to determine the current user: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to determine the current user: '.$process->getErrorOutput());
         }
 
         Log::channel('webhook')->debug('whoami result', ['context' => $process->getOutput()]);
@@ -179,7 +179,7 @@ class DeployFunnel extends Command
 
         // Check if the command was successful
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to write NGINX config: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to write NGINX config: '.$process->getErrorOutput());
         }
 
         $this->info("NGINX config created for {$file_name}");
@@ -200,7 +200,7 @@ class DeployFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to create symlink: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to create symlink: '.$process->getErrorOutput());
         }
 
         $this->info("Symlink created for {$file_name} in sites-enabled");
@@ -263,12 +263,12 @@ class DeployFunnel extends Command
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.digitalocean.token'),
+            'Authorization' => 'Bearer '.config('services.digitalocean.token'),
             'Content-Type' => 'application/json',
         ])->post('https://api.digitalocean.com/v2/domains/trybytealley.com/records', $payload);
 
         if (! $response->successful()) {
-            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean' . $response->reason());
+            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean'.$response->reason());
         }
 
         // save domainId in db

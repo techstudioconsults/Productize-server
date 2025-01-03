@@ -136,7 +136,6 @@ class DeployFunnel extends Command
 
         // give file permission
 
-
         // Remove the empty source directory
         $removeCommand = new Process(['sudo', 'rmdir', $sourcePath]);
         $removeCommand->run();

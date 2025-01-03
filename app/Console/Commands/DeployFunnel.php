@@ -126,7 +126,7 @@ class DeployFunnel extends Command
 
         // Move the entire directory with sudo mv
         // $moveCommand = new Process(['sudo', 'cp', '-r',  $sourcePath, $root_path.'/']);
-        $moveCommand = new Process(['sudo', 'cp', '-r', "{$sourcePath}/*", $root_path . '/']);
+        $moveCommand = new Process(['sudo', 'cp', '-r', "{$sourcePath}/*", $root_path.'/']);
         $moveCommand->run();
 
         if (! $moveCommand->isSuccessful()) {

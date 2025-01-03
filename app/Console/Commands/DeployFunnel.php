@@ -124,14 +124,6 @@ class DeployFunnel extends Command
             throw new FunnelDeployException("Failed to move funnel files: {$moveCommand->getErrorOutput()}");
         }
 
-        // Run chown to change ownership
-        $chownCommand = new Process(['sudo', 'chown', '-R', 'www-data:www-data', $root_path]);
-        $chownCommand->run();
-
-        if (! $chownCommand->isSuccessful()) {
-            throw new FunnelDeployException("Failed to change ownership of files: {$chownCommand->getErrorOutput()}");
-        }
-
         // Remove the empty source directory
         $removeCommand = new Process(['sudo', 'rmdir', $sourcePath]);
         $removeCommand->run();

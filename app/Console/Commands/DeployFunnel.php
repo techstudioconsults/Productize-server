@@ -112,7 +112,7 @@ class DeployFunnel extends Command
         // Path to the source directory within the Laravel project directory
         $sourcePath = storage_path("app/funnels/{$page}");
 
-        if (!is_dir($sourcePath)) {
+        if (! is_dir($sourcePath)) {
             throw new FunnelDeployException("Funnel directory not found at {$sourcePath}");
         }
 
@@ -120,7 +120,7 @@ class DeployFunnel extends Command
         $makeDirCommand = new Process(['sudo', 'mkdir', '-p', $root_path]);
         $makeDirCommand->run();
 
-        if (!$makeDirCommand->isSuccessful()) {
+        if (! $makeDirCommand->isSuccessful()) {
             throw new FunnelDeployException("Failed to create destination directory: {$makeDirCommand->getErrorOutput()}");
         }
 
@@ -129,7 +129,7 @@ class DeployFunnel extends Command
         $moveCommand = new Process(['sudo', 'bash', '-c', "cp -r {$sourcePath}/* {$root_path}/"]);
         $moveCommand->run();
 
-        if (!$moveCommand->isSuccessful()) {
+        if (! $moveCommand->isSuccessful()) {
             throw new FunnelDeployException("Failed to move funnel files: {$moveCommand->getErrorOutput()}");
         }
 
@@ -137,7 +137,7 @@ class DeployFunnel extends Command
         $removeCommand = new Process(['sudo', 'rmdir', $sourcePath]);
         $removeCommand->run();
 
-        if (!$removeCommand->isSuccessful()) {
+        if (! $removeCommand->isSuccessful()) {
             $this->warn("Note: Could not remove empty source directory: {$removeCommand->getErrorOutput()}");
         }
 

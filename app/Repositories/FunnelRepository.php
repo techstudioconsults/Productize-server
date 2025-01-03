@@ -12,7 +12,6 @@ use Artisan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use Log;
 use Storage;
 
@@ -138,7 +137,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $thumbnail->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     public function uploadAsset(object $asset): string
@@ -154,7 +153,7 @@ class FunnelRepository extends Repository
             str_replace(' ', '', $asset->getClientOriginalName())
         );
 
-        return config('filesystems.disks.spaces.cdn_endpoint') . '/' . $thumbnailPath;
+        return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
     }
 
     /**
@@ -238,7 +237,7 @@ class FunnelRepository extends Repository
             $name = $key === 0 ? 'index' : $value['name'];
 
             // Save the template locally
-            Storage::disk('local')->put('funnels/' . $funnel->slug . '/' . $name . '.html', $html);
+            Storage::disk('local')->put('funnels/'.$funnel->slug.'/'.$name.'.html', $html);
         }
     }
 }

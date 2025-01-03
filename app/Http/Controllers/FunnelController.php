@@ -140,7 +140,7 @@ class FunnelController extends Controller
 
             // It is previously published and want to draft it
         } elseif (isset($payload['status']) && $payload['status'] !== $funnel->status && $funnel->status === ProductStatusEnum::Published->value) {
-            //bring down the server and delete the subdomain
+            // bring down the server and delete the subdomain
             $this->funnelRepository->drop($funnel);
         }
 

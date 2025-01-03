@@ -27,7 +27,7 @@ class OrderControllerTest extends TestCase
         // Create orders for testing
         $this->seed(OrderSeeder::class);
 
-        //Get the first page orders assuming 15 per page
+        // Get the first page orders assuming 15 per page
         $orders = Order::latest()->paginate(15);
 
         $expected_json = OrderResource::collection($orders)->response()->getData(true);
@@ -55,7 +55,7 @@ class OrderControllerTest extends TestCase
         // Create orders for testing
         $this->seed(OrderSeeder::class);
 
-        //Get the first page orders assuming 15 per page
+        // Get the first page orders assuming 15 per page
         $orders = Order::latest()->paginate(15);
 
         $expected_json = OrderResource::collection($orders)->response()->getData(true);

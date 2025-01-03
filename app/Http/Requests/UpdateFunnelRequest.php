@@ -32,22 +32,23 @@ class UpdateFunnelRequest extends FormRequest
             'template' => ['string', 'json', function ($attribute, $value, $fail) {
                 $decoded = json_decode($value, true);
 
-                if (!isset($decoded['pages']) || !is_array($decoded['pages'])) {
+                if (! isset($decoded['pages']) || ! is_array($decoded['pages'])) {
                     $fail('The template must contain a "pages" array.');
+
                     return;
                 }
 
                 foreach ($decoded['pages'] as $index => $page) {
-                    if (!isset($page['id'])) {
+                    if (! isset($page['id'])) {
                         $fail("Page {$index} is missing the required 'id' field.");
                     }
-                    if (!isset($page['name'])) {
+                    if (! isset($page['name'])) {
                         $fail("Page {$index} is missing the required 'name' field.");
                     }
-                    if (!isset($page['content'])) {
+                    if (! isset($page['content'])) {
                         $fail("Page {$index} is missing the required 'content' field.");
                     }
-                    if (!isset($page['style'])) {
+                    if (! isset($page['style'])) {
                         $fail("Page {$index} is missing the required 'style' field.");
                     }
                 }
@@ -60,10 +61,8 @@ class UpdateFunnelRequest extends FormRequest
         throw new UnprocessableException($validator->errors()->first());
     }
 
-     /**
+    /**
      * Get the parsed template data.
-     *
-     * @return array
      */
     public function getParsedTemplate(): array
     {

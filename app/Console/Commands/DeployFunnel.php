@@ -93,7 +93,7 @@ class DeployFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to determine the current user: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to determine the current user: '.$process->getErrorOutput());
         }
 
         Log::channel('webhook')->debug('whoami result', ['context' => $process->getOutput()]);
@@ -117,14 +117,14 @@ class DeployFunnel extends Command
         }
 
         // Create directory if it doesn't exist
-        if (!is_dir($root_path)) {
-            if (!mkdir($root_path, 0775, true)) {
-                throw new FunnelDeployException("Failed to create destination directory");
+        if (! is_dir($root_path)) {
+            if (! mkdir($root_path, 0775, true)) {
+                throw new FunnelDeployException('Failed to create destination directory');
             }
         }
 
         // Copy files
-        $copyCommand = new Process(['cp', '-r', $sourcePath . '/.', $root_path]);
+        $copyCommand = new Process(['cp', '-r', $sourcePath.'/.', $root_path]);
         $copyCommand->run();
 
         if (! $copyCommand->isSuccessful()) {
@@ -136,7 +136,7 @@ class DeployFunnel extends Command
         $removeCommand->run();
 
         if (! $removeCommand->isSuccessful()) {
-            $this->warn("Note: Could not remove source directory: " . $removeCommand->getErrorOutput());
+            $this->warn('Note: Could not remove source directory: '.$removeCommand->getErrorOutput());
         }
 
         $this->info("Funnel files moved to {$root_path}");
@@ -178,7 +178,7 @@ class DeployFunnel extends Command
 
         // Check if the command was successful
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to write NGINX config: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to write NGINX config: '.$process->getErrorOutput());
         }
 
         $this->info("NGINX config created for {$file_name}");
@@ -199,7 +199,7 @@ class DeployFunnel extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            throw new FunnelDeployException('Failed to create symlink: ' . $process->getErrorOutput());
+            throw new FunnelDeployException('Failed to create symlink: '.$process->getErrorOutput());
         }
 
         $this->info("Symlink created for {$file_name} in sites-enabled");
@@ -281,12 +281,12 @@ class DeployFunnel extends Command
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.digitalocean.token'),
+            'Authorization' => 'Bearer '.config('services.digitalocean.token'),
             'Content-Type' => 'application/json',
         ])->post('https://api.digitalocean.com/v2/domains/trybytealley.com/records', $payload);
 
         if (! $response->successful()) {
-            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean' . $response->reason());
+            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean'.$response->reason());
         }
 
         // save domainId in db

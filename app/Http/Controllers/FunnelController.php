@@ -126,7 +126,7 @@ class FunnelController extends Controller
         }
 
         if (isset($payload['template'])) {
-            $this->funnelRepository->saveTemplate($funnel, $this->getParsedTemplate());
+            $this->funnelRepository->saveTemplate($funnel, $request->getParsedTemplate());
         }
 
         if (isset($payload['asset'])) {

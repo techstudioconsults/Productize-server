@@ -183,4 +183,3 @@ class FunnelController extends Controller
         return new FunnelResource($funnel);
     }
 }
-

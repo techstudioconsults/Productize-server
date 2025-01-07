@@ -224,10 +224,29 @@ class DeployFunnel extends Command
                 server_name {{server_name}};
                 root {{root_path}};
 
+                # Add access and error logs
+                access_log /var/log/nginx/{{server_name}}.access.log;
+                error_log /var/log/nginx/{{server_name}}.error.log;
+
                 index index.html;
 
                 location / {
-                try_files $uri /index.html =404;
+                    try_files $uri $uri/ /index.html;
+
+                    # Add security headers
+                    add_header X-Frame-Options "SAMEORIGIN";
+                    add_header X-XSS-Protection "1; mode=block";
+                    add_header X-Content-Type-Options "nosniff";
+                }
+
+                # Handle HTML files
+                location ~ \.html$ {
+                    try_files $uri =404;
+                }
+
+                # Deny access to hidden files
+                location ~ /\. {
+                    deny all;
                 }
             }
             STUB;

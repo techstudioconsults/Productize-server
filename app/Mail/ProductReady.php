@@ -41,7 +41,7 @@ class ProductReady extends Mailable
             markdown: 'mail.product-ready',
             with: [
                 'funnel_thumbnail' => $this->funnel->thumbnail,
-                // 'product_owner' => $this->funnel->user->fullname,
+                'product_owner' => $this->funnel->user->full_name,
             ],
         );
     }

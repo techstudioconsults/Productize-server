@@ -162,4 +162,9 @@ class User extends Authenticatable implements CanResetPassword
     {
         return ! is_null($this->country) && ! is_null($this->document_type) && ! is_null($this->document_image);
     }
+
+    public function funnels()
+    {
+        return $this->hasMany(Funnel::class);
+    }
 }

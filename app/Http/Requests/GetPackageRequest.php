@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\UnprocessableException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class GetPackageRequest extends FormRequest
@@ -33,5 +35,10 @@ class GetPackageRequest extends FormRequest
             'email.required' => 'An email address is required',
             'fullname.required' => 'Full name is required',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new UnprocessableException($validator->errors()->first());
     }
 }

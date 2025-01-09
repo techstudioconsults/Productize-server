@@ -186,16 +186,15 @@ class FunnelController extends Controller
         return new FunnelResource($funnel);
     }
 
-    public function sendFunnelAsset(GetPackageRequest $request, Funnel $funnel){
-       
+    public function sendFunnelAsset(GetPackageRequest $request, Funnel $funnel)
+    {
+
         $validated = $request->validated();
 
         Mail::to($validated['email'])
-           ->send(new ProductReady($funnel, $validated));
+            ->send(new ProductReady($funnel, $validated));
 
         return response()->json(['message' => 'Email sent successfully'], 200);
 
     }
-
-
 }

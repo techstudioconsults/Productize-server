@@ -22,8 +22,8 @@ class GetPackageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'=> 'required|email',
-            'fullname'=> 'required|string',
+            'email' => 'required|email',
+            'fullname' => 'required|string',
         ];
     }
 

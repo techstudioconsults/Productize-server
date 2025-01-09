@@ -20,7 +20,7 @@ class ProductReady extends Mailable
      */
     public function __construct(
         protected Funnel $funnel
-        ) {}
+    ) {}
 
     /**
      * Get the message envelope.
@@ -49,14 +49,14 @@ class ProductReady extends Mailable
     public function attachments(): array
     {
 
-        if(!$this->funnel->asset){
+        if (! $this->funnel->asset) {
             return [];
         }
 
-        // Get the file content 
+        // Get the file content
         $response = Http::get($this->funnel->asset);
 
-        if(!$response->successful()){
+        if (! $response->successful()) {
             return [];
         }
 
@@ -65,8 +65,8 @@ class ProductReady extends Mailable
 
         return [
             Attachment::fromPath($tempFile)
-                   ->as('package.'.pathinfo($this->funnel->asset, PATHINFO_EXTENSION))
-                   ->withMime($response->header('Content-Type')),
+                ->as('package.'.pathinfo($this->funnel->asset, PATHINFO_EXTENSION))
+                ->withMime($response->header('Content-Type')),
         ];
     }
 }

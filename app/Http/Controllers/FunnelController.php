@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProductStatusEnum;
+use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreFunnelRequest;
 use App\Http\Requests\UpdateFunnelRequest;
 use App\Http\Resources\FunnelResource;
+use App\Mail\ProductReady;
 use App\Models\Funnel;
 use App\Repositories\FunnelRepository;
 use Auth;
 use Illuminate\Http\Request;
+use Mail;
 
 class FunnelController extends Controller
 {
@@ -182,4 +185,18 @@ class FunnelController extends Controller
 
         return new FunnelResource($funnel);
     }
+
+    public function sendProductEmail(GetPackageRequest $request, Funnel $funnel){
+       
+        $validated = $request->validated();
+
+
+        Mail::to($validated['email'])
+           ->send(new ProductReady($funnel, $validated));
+
+        return response()->json(['message' => 'Email sent successfully'], 200);
+
+    }
+
+
 }

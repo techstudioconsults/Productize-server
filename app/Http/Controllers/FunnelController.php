@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EmailMarketingProvider;
 use App\Enums\ProductStatusEnum;
 use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreFunnelRequest;
@@ -10,6 +11,7 @@ use App\Http\Resources\FunnelResource;
 use App\Mail\ProductReady;
 use App\Models\Funnel;
 use App\Repositories\FunnelRepository;
+use App\Services\EmailMarketingProviders\EmailMarketingFactory;
 use Auth;
 use Illuminate\Http\Request;
 use Mail;
@@ -17,7 +19,8 @@ use Mail;
 class FunnelController extends Controller
 {
     public function __construct(
-        protected FunnelRepository $funnelRepository
+        protected FunnelRepository $funnelRepository,
+        protected EmailMarketingProvider $emailMarketingProvider
     ) {}
 
     /**
@@ -188,13 +191,15 @@ class FunnelController extends Controller
 
     public function sendFunnelAsset(GetPackageRequest $request, Funnel $funnel)
     {
-
+        $email = $request->input('email');
         $validated = $request->validated();
+
+        // Add to email list subscriber
+        // EmailMarketingFactory::addSubscriber($)
 
         Mail::to($validated['email'])
             ->send(new ProductReady($funnel, $validated));
 
         return response()->json(['message' => 'Email sent successfully'], 200);
-
     }
 }

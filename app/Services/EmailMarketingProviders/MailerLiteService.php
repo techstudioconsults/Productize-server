@@ -2,19 +2,21 @@
 
 namespace App\Services\EmailMarketingProviders;
 
+use App\Enums\EmailMarketingProvider;
+
 class MailerLiteService implements EmailMarketingServiceContract
 {
-    public function addSubscriber(array $data): bool
+    static function addSubscriber(string $email, string $fullname, string $token, EmailMarketingProvider $provider): bool
     {
         return true;
     }
 
-    public function removeSubscriber(string $email): bool
+    static function removeSubscriber(string $email): bool
     {
         return true;
     }
 
-    public function getSubscribers(): array
+    static function getSubscribers(): array
     {
         return [];
     }

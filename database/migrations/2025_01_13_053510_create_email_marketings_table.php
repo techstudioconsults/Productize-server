@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\User::class, 'user_id');
             $table->enum('provider', array_column(EmailMarketingProvider::cases(), 'value'));
             $table->longText('token');
+            $table->unique(['user_id', 'provider']);
             $table->timestamps();
         });
     }

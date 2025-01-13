@@ -2,11 +2,13 @@
 
 namespace App\Services\EmailMarketingProviders;
 
+use App\Enums\EmailMarketingProvider;
+
 interface EmailMarketingServiceContract
 {
-    public function addSubscriber(array $data): bool;
+    static function addSubscriber(string $email, string $fullname, string $token, EmailMarketingProvider $provider): bool;
 
-    public function removeSubscriber(string $email): bool;
+    static public function removeSubscriber(string $email): bool;
 
-    public function getSubscribers(): array;
+    static function getSubscribers(): array;
 }

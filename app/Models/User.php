@@ -150,7 +150,7 @@ class User extends Authenticatable implements CanResetPassword
      */
     public function receivesBroadcastNotificationsOn(): string
     {
-        return 'users.'.$this->id;
+        return 'users.' . $this->id;
     }
 
     /**
@@ -166,5 +166,10 @@ class User extends Authenticatable implements CanResetPassword
     public function funnels()
     {
         return $this->hasMany(Funnel::class);
+    }
+
+    public function emailMarkertings()
+    {
+        return $this->hasMany(EmailMarketing::class);
     }
 }

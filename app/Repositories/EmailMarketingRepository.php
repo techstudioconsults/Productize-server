@@ -30,7 +30,15 @@ class EmailMarketingRepository extends Repository
      */
     public function create(array $entity): EmailMarketing
     {
-        return EmailMarketing::create($entity);
+        return EmailMarketing::updateOrCreate(
+            [
+                'user_id' => $entity['user_id'],
+                'provider' => $entity['provider'],
+            ],
+            [
+                'token' => $entity['token'],
+            ]
+        );
     }
 
     /**

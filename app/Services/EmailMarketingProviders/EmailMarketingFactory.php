@@ -7,7 +7,7 @@ use App\Exceptions\ServerErrorException;
 
 class EmailMarketingFactory implements EmailMarketingServiceContract
 {
-    static function addSubscriber(string $email, string $fullname, string $token, EmailMarketingProvider $provider): bool
+    static function addSubscriber(string $email, array $fullname, string $token, EmailMarketingProvider $provider): bool
     {
         switch ($provider) {
             case EmailMarketingProvider::MailerLite->value:

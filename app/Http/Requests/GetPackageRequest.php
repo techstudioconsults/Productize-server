@@ -25,15 +25,9 @@ class GetPackageRequest extends FormRequest
     {
         return [
             'email' => 'required|email',
-            'fullname' => 'required|string',
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'email.required' => 'An email address is required',
-            'fullname.required' => 'Full name is required',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'maillist_permission' => 'required|boolean'
         ];
     }
 

@@ -6,7 +6,7 @@ use App\Enums\EmailMarketingProvider;
 
 class MailchimpService implements EmailMarketingServiceContract
 {
-    static function addSubscriber(string $email, string $fullname, string $token, EmailMarketingProvider $provider): bool
+    static function addSubscriber(string $email, array $fullname, string $token, EmailMarketingProvider $provider): bool
     {
         return true;
     }

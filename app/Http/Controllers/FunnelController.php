@@ -8,6 +8,7 @@ use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreFunnelRequest;
 use App\Http\Requests\UpdateFunnelRequest;
 use App\Http\Resources\FunnelResource;
+use App\Jobs\AddToFunnelSubscribers;
 use App\Mail\ProductReady;
 use App\Models\Funnel;
 use App\Repositories\FunnelRepository;
@@ -191,11 +192,22 @@ class FunnelController extends Controller
 
     public function sendFunnelAsset(GetPackageRequest $request, Funnel $funnel)
     {
+
         $email = $request->input('email');
+        $first_name = $request->input('first_name');
+        $last_name = $request->input('last_name');
+        $maillist_permission = $request->input('maillist_permission');
+
         $validated = $request->validated();
 
         // Add to email list subscriber
-        // EmailMarketingFactory::addSubscriber($)
+        AddToFunnelSubscribers::dispatchIf($maillist_permission, $funnel->user(), [
+            'email' => $email,
+            'fullname' => [
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+            ]
+        ]);
 
         Mail::to($validated['email'])
             ->send(new ProductReady($funnel, $validated));

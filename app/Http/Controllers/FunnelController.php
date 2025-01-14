@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EmailMarketingProvider;
 use App\Enums\ProductStatusEnum;
 use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreFunnelRequest;
@@ -21,7 +20,6 @@ class FunnelController extends Controller
 {
     public function __construct(
         protected FunnelRepository $funnelRepository,
-        protected EmailMarketingProvider $emailMarketingProvider
     ) {}
 
     /**

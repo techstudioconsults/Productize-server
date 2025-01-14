@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EmailMarketingProvider;
 use App\Enums\ProductStatusEnum;
 use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreFunnelRequest;
 use App\Http\Requests\UpdateFunnelRequest;
 use App\Http\Resources\FunnelResource;
+use App\Jobs\AddToFunnelSubscribers;
+use App\Jobs\CreateFunnelCampaignList;
+use App\Jobs\FunnelCampaignSubscriber;
 use App\Mail\ProductReady;
 use App\Models\Funnel;
 use App\Repositories\FunnelRepository;
+use App\Services\EmailMarketingProviders\EmailMarketingFactory;
 use Auth;
 use Illuminate\Http\Request;
 use Mail;
@@ -17,7 +22,8 @@ use Mail;
 class FunnelController extends Controller
 {
     public function __construct(
-        protected FunnelRepository $funnelRepository
+        protected FunnelRepository $funnelRepository,
+        protected EmailMarketingProvider $emailMarketingProvider
     ) {}
 
     /**
@@ -96,6 +102,8 @@ class FunnelController extends Controller
         $funnel = $this->funnelRepository->create($payload);
 
         $this->funnelRepository->saveTemplate($funnel, $request->getParsedTemplate());
+
+        CreateFunnelCampaignList::dispatch($funnel);
 
         if ($payload['status'] === ProductStatusEnum::Draft->value || env('APP_ENV') === 'local') {
             return new FunnelResource($funnel);
@@ -189,12 +197,25 @@ class FunnelController extends Controller
     public function sendFunnelAsset(GetPackageRequest $request, Funnel $funnel)
     {
 
+        $email = $request->input('email');
+        $first_name = $request->input('first_name');
+        $last_name = $request->input('last_name');
+        $maillist_permission = $request->input('maillist_permission');
+
         $validated = $request->validated();
+
+        // Add to email list subscriber
+        FunnelCampaignSubscriber::dispatchIf($maillist_permission, $funnel, [
+            'email' => $email,
+            'fullname' => [
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+            ]
+        ]);
 
         Mail::to($validated['email'])
             ->send(new ProductReady($funnel, $validated));
 
         return response()->json(['message' => 'Email sent successfully'], 200);
-
     }
 }

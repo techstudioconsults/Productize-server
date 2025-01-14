@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\EmailMarketing;
 
+use App\Enums\EmailMarketingProvider;
 use App\Exceptions\UnprocessableException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
-class GetPackageRequest extends FormRequest
+class UploadTokenRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +26,8 @@ class GetPackageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'maillist_permission' => 'required|boolean'
+            'provider' => ['required', new Enum(EmailMarketingProvider::class)],
+            'token' => 'required|string'
         ];
     }
 

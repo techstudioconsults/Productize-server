@@ -7,14 +7,28 @@ use App\Exceptions\ServerErrorException;
 
 class EmailMarketingFactory implements EmailMarketingServiceContract
 {
-    static function addSubscriber(string $email, array $fullname, string $token, EmailMarketingProvider $provider): bool
+    static function createCampaign(array $data): string
     {
-        switch ($provider) {
+        switch ($data['provider']) {
             case EmailMarketingProvider::MailerLite->value:
-                return MailerLiteService::addSubscriber($email, $fullname, $token, $provider);
+                return MailerLiteService::createCampaign($data);
 
             case EmailMarketingProvider::MailChimp->value:
-                return MailchimpService::addSubscriber($email, $fullname, $token, $provider);
+                return MailchimpService::createCampaign($data);
+
+            default:
+                throw new ServerErrorException("invalid email provider");
+        }
+    }
+
+    static function addSubscriber(array $data): bool
+    {
+        switch ($data['provider']) {
+            case EmailMarketingProvider::MailerLite->value:
+                return MailerLiteService::addSubscriber($data);
+
+            case EmailMarketingProvider::MailChimp->value:
+                return MailchimpService::addSubscriber($data);
 
             default:
                 throw new ServerErrorException("invalid email provider");

@@ -9,6 +9,8 @@ use App\Http\Requests\StoreFunnelRequest;
 use App\Http\Requests\UpdateFunnelRequest;
 use App\Http\Resources\FunnelResource;
 use App\Jobs\AddToFunnelSubscribers;
+use App\Jobs\CreateFunnelCampaignList;
+use App\Jobs\FunnelCampaignSubscriber;
 use App\Mail\ProductReady;
 use App\Models\Funnel;
 use App\Repositories\FunnelRepository;
@@ -100,6 +102,8 @@ class FunnelController extends Controller
         $funnel = $this->funnelRepository->create($payload);
 
         $this->funnelRepository->saveTemplate($funnel, $request->getParsedTemplate());
+
+        CreateFunnelCampaignList::dispatch($funnel);
 
         if ($payload['status'] === ProductStatusEnum::Draft->value || env('APP_ENV') === 'local') {
             return new FunnelResource($funnel);
@@ -201,7 +205,7 @@ class FunnelController extends Controller
         $validated = $request->validated();
 
         // Add to email list subscriber
-        AddToFunnelSubscribers::dispatchIf($maillist_permission, $funnel->user(), [
+        FunnelCampaignSubscriber::dispatchIf($maillist_permission, $funnel, [
             'email' => $email,
             'fullname' => [
                 'first_name' => $first_name,

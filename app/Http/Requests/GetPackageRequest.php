@@ -27,7 +27,7 @@ class GetPackageRequest extends FormRequest
             'email' => 'required|email',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'maillist_permission' => 'required|boolean'
+            'maillist_permission' => 'required|boolean',
         ];
     }
 

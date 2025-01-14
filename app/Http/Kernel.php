@@ -40,7 +40,7 @@ class Kernel extends HttpKernel
 
         'api' => [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             // \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             // \App\Http\Middleware\EncryptCookies::class,
@@ -68,6 +68,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'abilities' => \App\Http\Middleware\CustomCheckAbilities::class, // Use custom middleware
         'ability' => \App\Http\Middleware\CustomCheckForAnyAbility::class, // Use custom middleware
-        'premium' => \App\Http\Middleware\EnsureUserIsSubscribed::class
+        'premium' => \App\Http\Middleware\EnsureUserIsSubscribed::class,
     ];
 }

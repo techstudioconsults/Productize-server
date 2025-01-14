@@ -25,7 +25,6 @@ class EmailMarketingRepository extends Repository
      * Create a new emailMarketing with the provided entity.
      *
      * @param  array  $entity  The emailMarketing data.
-     *
      * @return EmailMarketing The newly created emailMarketing.
      */
     public function create(array $entity): EmailMarketing
@@ -115,11 +114,12 @@ class EmailMarketingRepository extends Repository
     public function update(Model $entity, array $updates): EmailMarketing
     {
         // Ensure that the provided entity is an instance of EmailMarketing
-        if (!$entity instanceof EmailMarketing) {
+        if (! $entity instanceof EmailMarketing) {
             throw new ModelCastException('EmailMarketing', get_class($entity));
         }
 
         $entity->update($updates);
+
         return $entity;
     }
 }

@@ -9,7 +9,7 @@ Route::controller(EmailMarketingController::class)
     ->namespace("\App\Http\Controllers")
     ->middleware([
         'auth:sanctum',
-        'premium'
+        'premium',
     ])
     ->group(function () {
         Route::post('/token', 'token')->name('token');

@@ -8,13 +8,11 @@ use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreFunnelRequest;
 use App\Http\Requests\UpdateFunnelRequest;
 use App\Http\Resources\FunnelResource;
-use App\Jobs\AddToFunnelSubscribers;
 use App\Jobs\CreateFunnelCampaignList;
 use App\Jobs\FunnelCampaignSubscriber;
 use App\Mail\ProductReady;
 use App\Models\Funnel;
 use App\Repositories\FunnelRepository;
-use App\Services\EmailMarketingProviders\EmailMarketingFactory;
 use Auth;
 use Illuminate\Http\Request;
 use Mail;
@@ -210,7 +208,7 @@ class FunnelController extends Controller
             'fullname' => [
                 'first_name' => $first_name,
                 'last_name' => $last_name,
-            ]
+            ],
         ]);
 
         Mail::to($validated['email'])

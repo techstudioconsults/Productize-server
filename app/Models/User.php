@@ -150,7 +150,7 @@ class User extends Authenticatable implements CanResetPassword
      */
     public function receivesBroadcastNotificationsOn(): string
     {
-        return 'users.' . $this->id;
+        return 'users.'.$this->id;
     }
 
     /**

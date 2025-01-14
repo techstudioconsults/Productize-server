@@ -18,6 +18,6 @@ class FunnelCampaign extends Model
     protected $fillable = [
         'funnel_id',
         'list_id',
-        'provider'
+        'provider',
     ];
 }

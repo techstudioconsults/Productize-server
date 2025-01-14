@@ -18,6 +18,6 @@ class EmailMarketing extends Model
     protected $fillable = [
         'user_id',
         'token',
-        'provider'
+        'provider',
     ];
 }

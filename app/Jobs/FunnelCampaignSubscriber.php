@@ -38,7 +38,7 @@ class FunnelCampaignSubscriber implements ShouldQueue
                 'subscriber' => $this->subscriber,
                 'provider' => $campaign->provider,
                 'token' => $em->token,
-                'campaign_id' => $campaign->list_id
+                'campaign_id' => $campaign->list_id,
             ];
 
             EmailMarketingFactory::addSubscriber($data); // data, provider, token, campain_id

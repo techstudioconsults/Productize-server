@@ -19,12 +19,12 @@ class EnsureUserIsSubscribed
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             throw new UnAuthorizedException('UnAuthenticated');
         }
 
-        if (!$user->isPremium()) {
-            throw new ForbiddenException($user->full_name . ' is not a subscribed user');
+        if (! $user->isPremium()) {
+            throw new ForbiddenException($user->full_name.' is not a subscribed user');
         }
 
         return $next($request);

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmailMarketing\UploadTokenRequest;
 use App\Repositories\EmailMarketingRepository;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class EmailMarketingController extends Controller

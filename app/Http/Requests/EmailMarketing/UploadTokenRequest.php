@@ -27,7 +27,7 @@ class UploadTokenRequest extends FormRequest
     {
         return [
             'provider' => ['required', new Enum(EmailMarketingProvider::class)],
-            'token' => 'required|string'
+            'token' => 'required|string',
         ];
     }
 

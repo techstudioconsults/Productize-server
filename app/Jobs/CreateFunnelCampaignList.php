@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\Funnel;
 use App\Models\FunnelCampaign;
-use App\Models\User;
 use App\Services\EmailMarketingProviders\EmailMarketingFactory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

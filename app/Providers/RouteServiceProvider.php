@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Funnel;
 use App\Models\Product;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
@@ -45,6 +46,10 @@ class RouteServiceProvider extends ServiceProvider
             return Product::withTrashed()->findOr($product, function () use ($product) {
                 return Product::withTrashed()->firstWhere('slug', $product);
             });
+        });
+
+        Route::bind('funnel', function ($funnel) {
+            return Funnel::where('slug', $funnel)->firstOrFail();
         });
     }
 }

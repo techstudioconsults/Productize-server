@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('status', array_column(ProductStatusEnum::cases(), 'value'))->default(ProductStatusEnum::Draft->value);
             $table->string('thumbnail');
             $table->string('asset')->nullable();
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->longText('template');
             $table->string('sub_domain_id')->nullable();
             $table->softDeletes('deleted_at', 0);

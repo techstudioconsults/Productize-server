@@ -48,8 +48,12 @@ class RouteServiceProvider extends ServiceProvider
             });
         });
 
-        Route::bind('funnel', function ($funnel) {
-            return Funnel::where('slug', $funnel)->firstOrFail();
+
+        // Bind 'funnel' to allow resolving by either ID or slug
+        Route::bind('funnel', function ($value) {
+            return Funnel::where('id', $value)
+                ->orWhere('slug', $value)
+                ->firstOrFail();
         });
     }
 }

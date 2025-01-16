@@ -48,7 +48,6 @@ class RouteServiceProvider extends ServiceProvider
             });
         });
 
-
         // Bind 'funnel' to allow resolving by either ID or slug
         Route::bind('funnel', function ($value) {
             return Funnel::where('id', $value)

@@ -21,6 +21,10 @@ class Funnel extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'products' => 'array',
+    ];
+
     /**
      * Generate a slug for each funnel entity
      */

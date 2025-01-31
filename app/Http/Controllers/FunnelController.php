@@ -209,6 +209,10 @@ class FunnelController extends Controller
             ],
         ]);
 
+        // get the products attached to the funnel.
+
+        // get the product purchase url of the funnel and send them with the email.
+
         Mail::to($validated['email'])
             ->send(new ProductReady($funnel, $validated));
 

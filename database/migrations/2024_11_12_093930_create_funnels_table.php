@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('slug');
             $table->longText('template');
             $table->string('sub_domain_id')->nullable();
+            $table->jsonb('products');
             $table->softDeletes('deleted_at', 0);
             $table->timestamps();
         });

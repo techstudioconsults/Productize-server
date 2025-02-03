@@ -11,6 +11,7 @@ use App\Jobs\CreateFunnelCampaignList;
 use App\Jobs\FunnelCampaignSubscriber;
 use App\Mail\ProductReady;
 use App\Models\Funnel;
+use App\Models\Product;
 use App\Repositories\FunnelRepository;
 use Auth;
 use Illuminate\Http\Request;
@@ -192,12 +193,10 @@ class FunnelController extends Controller
 
     public function sendFunnelAsset(GetPackageRequest $request, Funnel $funnel)
     {
-
         $email = $request->input('email');
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
         $maillist_permission = $request->input('maillist_permission');
-
         $validated = $request->validated();
 
         // Add to email list subscriber
@@ -210,11 +209,23 @@ class FunnelController extends Controller
         ]);
 
         // get the products attached to the funnel.
+        $productId = null;
+        if (!empty($funnel->products)) {
+            $productId = trim($funnel->products[0], '[]');
+        }
 
         // get the product purchase url of the funnel and send them with the email.
+        $purchaseUrl = '';
+        if ($productId) {
+            $product = Product::find($productId);
+            if ($product) {
+                $purchaseUrl = config('app.client_url') . "/products/{$product->slug}";
+            }
+        }
 
+        // Send email with the product URL
         Mail::to($validated['email'])
-            ->send(new ProductReady($funnel, $validated));
+            ->send(new ProductReady($funnel, $purchaseUrl));
 
         return response()->json(['message' => 'Email sent successfully'], 200);
     }

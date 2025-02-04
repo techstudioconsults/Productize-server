@@ -19,7 +19,8 @@ class ProductReady extends Mailable
      * Create a new message instance.
      */
     public function __construct(
-        protected Funnel $funnel
+        protected Funnel $funnel,
+        protected string $purchaseUrl,
     ) {}
 
     /**
@@ -42,31 +43,8 @@ class ProductReady extends Mailable
             with: [
                 'funnel_thumbnail' => $this->funnel->thumbnail,
                 'product_owner' => $this->funnel->user->full_name,
+                'purchase_url' => $this->purchaseUrl,
             ],
         );
-    }
-
-    public function attachments(): array
-    {
-
-        if (! $this->funnel->asset) {
-            return [];
-        }
-
-        // Get the file content
-        $response = Http::get($this->funnel->asset);
-
-        if (! $response->successful()) {
-            return [];
-        }
-
-        $tempFile = tempnam(sys_get_temp_dir(), 'attachment');
-        file_put_contents($tempFile, $response->body());
-
-        return [
-            Attachment::fromPath($tempFile)
-                ->as('package.'.pathinfo($this->funnel->asset, PATHINFO_EXTENSION))
-                ->withMime($response->header('Content-Type')),
-        ];
     }
 }

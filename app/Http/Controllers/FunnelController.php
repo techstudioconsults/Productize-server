@@ -210,7 +210,7 @@ class FunnelController extends Controller
 
         // get the products attached to the funnel.
         $productId = null;
-        if (!empty($funnel->products)) {
+        if (! empty($funnel->products)) {
             $productId = trim($funnel->products[0], '[]');
         }
 
@@ -219,7 +219,7 @@ class FunnelController extends Controller
         if ($productId) {
             $product = Product::find($productId);
             if ($product) {
-                $purchaseUrl = config('app.client_url') . "/products/{$product->slug}";
+                $purchaseUrl = config('app.client_url')."/products/{$product->slug}";
             }
         }
 

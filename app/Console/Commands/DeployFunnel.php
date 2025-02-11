@@ -286,7 +286,7 @@ class DeployFunnel extends Command
         ])->post('https://api.digitalocean.com/v2/domains/trybytealley.com/records', $payload);
 
         if (! $response->successful()) {
-            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean'.$response->reason());
+            throw new FunnelDeployException('Failed to create subdomain in DigitalOcean with reason: '.$response->reason());
         }
 
         // save domainId in db

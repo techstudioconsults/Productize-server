@@ -32,7 +32,7 @@ class CustomerRepositoryTest extends TestCase
 
     protected $password;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -45,7 +45,7 @@ class CustomerRepositoryTest extends TestCase
         $this->password = 'password123';
     }
 
-    public function test_Create_Customer()
+    public function test_create_customer()
     {
         // Arrange
         $user = User::factory()->create();
@@ -131,7 +131,7 @@ class CustomerRepositoryTest extends TestCase
         $this->assertCount(5, $results);
     }
 
-    public function test_queryRelation_with_valid_filter_returns_filtered_relation(): void
+    public function test_query_relation_with_valid_filter_returns_filtered_relation(): void
     {
         $user = User::factory()->create();
         $product = Product::factory()->create(['user_id' => $user->id]);
@@ -175,7 +175,7 @@ class CustomerRepositoryTest extends TestCase
         $this->assertEquals($user->id, $customers->first()->merchant_id);
     }
 
-    public function test_queryRelation_with_invalid_date_filter_throws_exception(): void
+    public function test_query_relation_with_invalid_date_filter_throws_exception(): void
     {
         $user = User::factory()->create();
         $product = Product::factory()->create(['user_id' => $user->id]);
@@ -256,7 +256,7 @@ class CustomerRepositoryTest extends TestCase
         $this->assertEquals($user->id, $result->first()->merchant_id);
     }
 
-    public function test_Find_Customers_By_Invalid_DateRange_should_throw_unprocessable_exeception()
+    public function test_find_customers_by_invalid_date_range_should_throw_unprocessable_exeception()
     {
         $user = User::factory()->create();
         $product = Product::factory()->create(['user_id' => $user->id]);

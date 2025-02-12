@@ -38,4 +38,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'digitalocean' => [
+        'token' => env('DIGITAL_OCEAN_ACCESS_TOKEN'),
+        'ip' => env('DIGITAL_OCEAN_SERVER_IP'),
+    ],
+
+    'mailerlite' => [
+
+    ],
 ];

@@ -20,13 +20,12 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\ProductSearch;
 use App\Models\User;
+use App\Traits\HasStatusFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rules\Enum;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -35,6 +34,8 @@ use Illuminate\Validation\Rules\Enum;
  */
 class ProductRepository extends Repository
 {
+    use HasStatusFilter;
+
     const COVER_PHOTOS_PATH = 'products-cover-photos';
 
     const THUMBNAIL_PATH = 'products-thumbnail';
@@ -353,40 +354,6 @@ class ProductRepository extends Repository
         );
 
         return config('filesystems.disks.spaces.cdn_endpoint').'/'.$thumbnailPath;
-    }
-
-    /**
-     * @author @Intuneteq Tobi Olanitori
-     *
-     * Apply a status filter to the query based on the provided status value.
-     * It removes the status key and value from the array.
-     *
-     * @param  Builder|Relation  $query  The query builder or relation instance.
-     * @param  array  &$filter  The filter array containing the status key.
-     *
-     * @throws BadRequestException If the status value fails validation.
-     */
-    private function applyStatusFilter(Builder|Relation $query, array &$filter)
-    {
-        if (isset($filter['status'])) {
-            $status = $filter['status'];
-
-            if ($status === 'deleted') {
-                $query->onlyTrashed();
-            } elseif ($status && $status !== null && $status !== 'deleted') {
-                // Validate status
-                $rules = [
-                    'status' => ['required', new Enum(ProductStatusEnum::class)],
-                ];
-
-                if (! $this->isValidated(['status' => $status], $rules)) {
-                    throw new BadRequestException($this->getValidator()->errors()->first());
-                }
-
-                $query->where('status', $status);
-            }
-        }
-        unset($filter['status']);
     }
 
     /**

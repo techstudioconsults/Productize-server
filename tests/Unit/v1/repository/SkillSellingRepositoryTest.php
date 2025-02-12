@@ -90,7 +90,7 @@ class SkillSellingRepositoryTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_findOne()
+    public function test_find_one()
     {
         $product = Product::factory()->create();
 
@@ -108,7 +108,7 @@ class SkillSellingRepositoryTest extends TestCase
         $this->assertEquals($expected->id, $result->id);
     }
 
-    public function test_findOne_returns_null_for_no_match()
+    public function test_find_one_returns_null_for_no_match()
     {
         $filter = ['product_id' => 'invalid-id'];
 

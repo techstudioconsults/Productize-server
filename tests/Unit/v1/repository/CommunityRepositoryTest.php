@@ -23,7 +23,7 @@ class CommunityRepositoryTest extends TestCase
     /**
      * Test the create method
      */
-    public function testCreateCommunity()
+    public function test_create_community()
     {
 
         $data = [
@@ -39,7 +39,7 @@ class CommunityRepositoryTest extends TestCase
     /**
      * Test to find all community members
      */
-    public function testFindCommunityMembers()
+    public function test_find_community_members()
     {
         $count = 10;
 
@@ -68,7 +68,7 @@ class CommunityRepositoryTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function testFindCommunityById()
+    public function test_find_community_by_id()
     {
         $community = Community::factory()->create();
 

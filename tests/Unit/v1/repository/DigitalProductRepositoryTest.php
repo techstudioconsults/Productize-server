@@ -16,7 +16,7 @@ class DigitalProductRepositoryTest extends TestCase
 
     protected DigitalProductRepository $digitalProductRepository;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setup();
         $this->digitalProductRepository = new DigitalProductRepository;
@@ -79,7 +79,7 @@ class DigitalProductRepositoryTest extends TestCase
         $this->assertNull($foundProduct);
     }
 
-    public function test_findOne()
+    public function test_find_one()
     {
         $product = Product::factory()->create();
 
@@ -97,7 +97,7 @@ class DigitalProductRepositoryTest extends TestCase
         $this->assertEquals($expected->id, $result->id);
     }
 
-    public function test_findOne_returns_null_for_no_match()
+    public function test_find_one_returns_null_for_no_match()
     {
         $filter = ['product_id' => 'invalid-id'];
 

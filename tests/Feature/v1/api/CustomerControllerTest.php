@@ -82,7 +82,7 @@ class CustomerControllerTest extends TestCase
         $this->withoutExceptionHandling()->get(route('customer.index'));
     }
 
-    public function test_index_not_premium_user_throw_ForbiddenException(): void
+    public function test_index_not_premium_user_throw_forbidden_exception(): void
     {
         $this->expectException(ForbiddenException::class);
 
@@ -125,7 +125,7 @@ class CustomerControllerTest extends TestCase
             ->assertJsonPath('data.total_order', 2);
     }
 
-    public function test_show_with_unauthenticated_user_throw_UnAuthorizedException(): void
+    public function test_show_with_unauthenticated_user_throw_un_authorized_exception(): void
     {
         $this->expectException(UnAuthorizedException::class);
 

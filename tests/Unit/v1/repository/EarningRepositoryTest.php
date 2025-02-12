@@ -17,7 +17,7 @@ class EarningRepositoryTest extends TestCase
 
     private EarningRepository $earningRepository;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -111,7 +111,7 @@ class EarningRepositoryTest extends TestCase
         $this->assertEquals(2000, $result->total_earnings);
     }
 
-    public function test_update_to_throw_modelCastException()
+    public function test_update_to_throw_model_cast_exception()
     {
 
         $user = User::factory()->create();

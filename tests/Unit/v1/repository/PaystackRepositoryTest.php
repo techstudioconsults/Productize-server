@@ -26,7 +26,7 @@ class PaystackRepositoryTest extends TestCase
 
     protected PaystackRepository $paystackRepository;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -34,7 +34,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository = new PaystackRepository;
     }
 
-    public function test_CreateCustomer_success()
+    public function test_create_customer_success()
     {
         $user = new User;
 
@@ -69,7 +69,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals('CUS_bslevty3j70vk62', $customerDto->getCode());
     }
 
-    public function test_CreateCustomer_failure()
+    public function test_create_customer_failure()
     {
         $this->expectException(RequestException::class);
 
@@ -85,7 +85,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository->createCustomer($user);
     }
 
-    public function test_fetchCustomer_success()
+    public function test_fetch_customer_success()
     {
         $email = 'john.doe@example.com';
 
@@ -116,7 +116,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals('CUS_bslevty3j70vk62', $customerDto->getCode());
     }
 
-    public function test_fetchCustomer_NotFound()
+    public function test_fetch_customer_not_found()
     {
         $email = 'john.doe@example.com';
 
@@ -129,7 +129,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertNull($customerDto);
     }
 
-    public function test_fetchCustomer_failure()
+    public function test_fetch_customer_failure()
     {
         $this->expectException(ApiException::class);
 
@@ -142,7 +142,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository->fetchCustomer($email);
     }
 
-    public function test_initializeTransaction_success()
+    public function test_initialize_transaction_success()
     {
         $email = 'test@example.com';
         $amount = 5000;
@@ -170,7 +170,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals($response['data']['reference'], $transactionInitializationDto->getReference());
     }
 
-    public function test_initializeTransaction_failure()
+    public function test_initialize_transaction_failure()
     {
         $email = 'test@example.com';
         $amount = 5000;
@@ -195,7 +195,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository->initializeTransaction($email, $amount, $isSubscription);
     }
 
-    public function test_initializePurchaseTransaction_success()
+    public function test_initialize_purchase_transaction_success()
     {
         $payload = [
             'email' => 'test@example.com',
@@ -224,7 +224,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals($response['data']['reference'], $transactionInitializationDto->getReference());
     }
 
-    public function test_initializePurchaseTransaction_failure()
+    public function test_initialize_purchase_transaction_failure()
     {
         $payload = [
             'email' => 'test@example.com',
@@ -250,7 +250,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository->initializePurchaseTransaction($payload);
     }
 
-    public function test_createSubscription_success()
+    public function test_create_subscription_success()
     {
         $customerId = 'cus_123456';
 
@@ -281,7 +281,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals($response['data']['createdAt'], $subscriptionDto->getCreatedAt());
     }
 
-    public function test_createSubscription_failure()
+    public function test_create_subscription_failure()
     {
         $customerId = 'cus_123456';
 
@@ -300,7 +300,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository->createSubscription($customerId);
     }
 
-    public function test_manageSubscription_success()
+    public function test_manage_subscription_success()
     {
         $subscriptionId = 'sub_123456';
 
@@ -321,7 +321,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals($response['data'], $manageLink);
     }
 
-    public function test_manageSubscription_failure()
+    public function test_manage_subscription_failure()
     {
         $subscriptionId = 'sub_123456';
 
@@ -345,7 +345,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository->manageSubscription($subscriptionId);
     }
 
-    public function test_fetchSubscription_success()
+    public function test_fetch_subscription_success()
     {
         $subscriptionId = 'sub_123456';
         $response = [
@@ -371,7 +371,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertInstanceOf(SubscriptionDto::class, $subscription);
     }
 
-    public function test_fetchSubscription_NotFound()
+    public function test_fetch_subscription_not_found()
     {
         $subscriptionId = 'sub_123456';
 
@@ -390,7 +390,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertNull($subscription);
     }
 
-    public function test_fetchSubscription_failure()
+    public function test_fetch_subscription_failure()
     {
         $subscriptionId = 'sub_123456';
 
@@ -409,7 +409,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertNull($subscription);
     }
 
-    public function test_getBankList_success()
+    public function test_get_bank_list_success()
     {
         $response = [
             'status' => true,
@@ -432,7 +432,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals('001', $bankList->first()->getCode());
     }
 
-    public function test_getBankList_failure()
+    public function test_get_bank_list_failure()
     {
         Http::fake([
             'https://api.paystack.co/bank?country=nigeria' => Http::response(['message' => 'Server error'], 500),
@@ -449,7 +449,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertNull($bankList);
     }
 
-    public function test_validateAccountNumber_success()
+    public function test_validate_account_number_success()
     {
         $accountNumber = '1234567890';
         $bankCode = '001';
@@ -467,7 +467,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertTrue($isValid);
     }
 
-    public function test_validateAccountNumber_failure()
+    public function test_validate_account_number_failure()
     {
         $accountNumber = '1234567890';
         $bankCode = '001';
@@ -485,7 +485,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertFalse($isValid);
     }
 
-    public function test_createTransferRecipient_success()
+    public function test_create_transfer_recipient_success()
     {
         $name = 'John Doe';
         $accountNumber = '1234567890';
@@ -511,7 +511,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals($recipient_code, $recipientDto->getCode());
     }
 
-    public function test_createTransferRecipient_failure()
+    public function test_create_transfer_recipient_failure()
     {
         $name = 'John Doe';
         $accountNumber = '1234567890';
@@ -531,7 +531,7 @@ class PaystackRepositoryTest extends TestCase
         $this->paystackRepository->createTransferRecipient($name, $accountNumber, $bankCode);
     }
 
-    public function test_initiateTransfer_success()
+    public function test_initiate_transfer_success()
     {
         $amount = '50000';
         $expectedAmount = '500';
@@ -557,7 +557,7 @@ class PaystackRepositoryTest extends TestCase
         $this->assertEquals($transfer_code, $transferDto->getCode());
     }
 
-    public function testInitiateTransferFailure()
+    public function test_initiate_transfer_failure()
     {
         $amount = '5000';
         $recipientCode = 'RC_xxxxxxx';

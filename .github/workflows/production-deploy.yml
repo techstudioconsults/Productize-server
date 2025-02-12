@@ -98,7 +98,7 @@ jobs:
         run: php artisan storage:link
 
       - name: Migrate Database
-        run: php artisan migrate
+        run: php artisan migrate --force
 
       - name: Database Seed
         run: php artisan db:seed --class=ProductionSeeder

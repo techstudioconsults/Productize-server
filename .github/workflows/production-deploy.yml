@@ -100,9 +100,6 @@ jobs:
       - name: Migrate Database
         run: php artisan migrate --force
 
-      - name: Database Seed
-        run: php artisan db:seed --class=ProductionSeeder
-
       - name: Prune sanctum
         run: php artisan sanctum:prune-expired
 

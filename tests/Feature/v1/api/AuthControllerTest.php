@@ -35,7 +35,7 @@ class AuthControllerTest extends TestCase
 
     private $base_url = '/api/auth';
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -127,7 +127,7 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
-    public function test_oAuthRedirect(): void
+    public function test_o_auth_redirect(): void
     {
         // Mock the Socialite driver's behavior
         $provider = 'google'; // Replace with the actual provider
@@ -157,7 +157,7 @@ class AuthControllerTest extends TestCase
             ]);
     }
 
-    public function test_OAuthCallback_unregistered_user(): void
+    public function test_o_auth_callback_unregistered_user(): void
     {
         Event::fake();
 
@@ -202,7 +202,7 @@ class AuthControllerTest extends TestCase
         Event::assertDispatched(Registered::class);
     }
 
-    public function test_OAuthCallback_login_user(): void
+    public function test_o_auth_callback_login_user(): void
     {
         Event::fake();
 
@@ -288,7 +288,7 @@ class AuthControllerTest extends TestCase
         $response = $this->withoutExceptionHandling()->get($url);
     }
 
-    public function test_resendLink()
+    public function test_resend_link()
     {
         Mail::fake();
 
@@ -319,7 +319,7 @@ class AuthControllerTest extends TestCase
         Mail::assertSent(EmailVerification::class);
     }
 
-    public function test_resendLink_to_verified_user()
+    public function test_resend_link_to_verified_user()
     {
         $this->expectException(BadRequestException::class);
 
@@ -334,7 +334,7 @@ class AuthControllerTest extends TestCase
             ->get('/api/auth/email/resend');
     }
 
-    public function test_forgotPassword_success(): void
+    public function test_forgot_password_success(): void
     {
         $user = User::factory()->create([
             'email_verified_at' => now(),
@@ -356,7 +356,7 @@ class AuthControllerTest extends TestCase
         $this->assertJsonStringEqualsJsonString('{"message":"Password reset email sent successfully"}', $response->getContent());
     }
 
-    public function test_forgotPassword_user_not_found(): void
+    public function test_forgot_password_user_not_found(): void
     {
         // Expect a NotFoundException to be thrown
         $this->expectException(NotFoundException::class);
@@ -376,7 +376,7 @@ class AuthControllerTest extends TestCase
             ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
     }
 
-    public function test_forgotPassword_reset_throttled(): void
+    public function test_forgot_password_reset_throttled(): void
     {
         // Expect a NotFoundException to be thrown
         $this->expectException(TooManyRequestException::class);
@@ -396,7 +396,7 @@ class AuthControllerTest extends TestCase
             ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
     }
 
-    public function test_forgotPassword_server_error(): void
+    public function test_forgot_password_server_error(): void
     {
         // Expect a NotFoundException to be thrown
         $this->expectException(ServerErrorException::class);
@@ -416,7 +416,7 @@ class AuthControllerTest extends TestCase
             ->postJson('/api/auth/forgot-password', ['email' => $user->email]);
     }
 
-    public function test_resetPassword_success(): void
+    public function test_reset_password_success(): void
     {
         $user = User::factory()->create([
             'email_verified_at' => now(),
@@ -439,7 +439,7 @@ class AuthControllerTest extends TestCase
         $this->assertJsonStringEqualsJsonString('{"message":"Password Reset Successful"}', $response->getContent());
     }
 
-    public function test_resetPassword_invalid_token(): void
+    public function test_reset_password_invalid_token(): void
     {
         // Expect an UnAuthorizedException to be thrown
         $this->expectException(UnAuthorizedException::class);
@@ -462,7 +462,7 @@ class AuthControllerTest extends TestCase
             ->postJson('/api/auth/reset-password', $credentials);
     }
 
-    public function test_resetPassword_failure(): void
+    public function test_reset_password_failure(): void
     {
         // Expect an BadRequestException to be thrown
         $this->expectException(BadRequestException::class);

@@ -25,7 +25,7 @@ class FaqRepositoryTest extends TestCase
     /**
      * Test the create method.
      */
-    public function testCreateFaq()
+    public function test_create_faq()
     {
         $data = [
             'title' => 'General Question',
@@ -44,7 +44,7 @@ class FaqRepositoryTest extends TestCase
     /**
      * Test the find method.
      */
-    public function testFindFaqs()
+    public function test_find_faqs()
     {
         $count = 10;
 
@@ -60,7 +60,7 @@ class FaqRepositoryTest extends TestCase
     /**
      * Test the findById method.
      */
-    public function testFindFaqById()
+    public function test_find_faq_by_id()
     {
         $faq = Faq::factory()->create();
 
@@ -73,7 +73,7 @@ class FaqRepositoryTest extends TestCase
     /**
      * Test the update method.
      */
-    public function testUpdateFaq()
+    public function test_update_faq()
     {
         $faq = Faq::factory()->create();
 
@@ -93,7 +93,7 @@ class FaqRepositoryTest extends TestCase
     /**
      * Test the delete method.
      */
-    public function testDeleteFaq()
+    public function test_delete_faq()
     {
         $faq = Faq::factory()->create();
 
@@ -160,7 +160,7 @@ class FaqRepositoryTest extends TestCase
         $this->faqRepository->update($product, $updates);
     }
 
-    public function testQueryWithNonExistentFaqTitle()
+    public function test_query_with_non_existent_faq_title()
     {
         Faq::factory()->count(3)->create();
 
@@ -170,7 +170,7 @@ class FaqRepositoryTest extends TestCase
         $this->assertCount(0, $results);
     }
 
-    public function testQueryAndFind()
+    public function test_query_and_find()
     {
         Faq::factory()->count(5)->create(['title' => 'Common Title']);
         Faq::factory()->count(3)->create();

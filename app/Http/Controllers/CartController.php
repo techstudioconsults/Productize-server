@@ -178,7 +178,7 @@ class CartController extends Controller
         // Calculate the total amount for products in the cart
         $totalAmount = $this->cartRepository->calculateTotalAmount($products);
 
-        //Validate that the total amount declared in the request payload matches that which was calculated
+        // Validate that the total amount declared in the request payload matches that which was calculated
         if ($totalAmount !== $validated['amount']) {
             throw new BadRequestException('Total amount does not match quantity');
         }

@@ -152,14 +152,14 @@ class PayoutControllerTest extends TestCase
         $this->withoutExceptionHandling()->get(route('payout.download'));
     }
 
-    public function test_download_unauthenticated_for_superAdmin()
+    public function test_download_unauthenticated_for_super_admin()
     {
         $this->expectException(UnAuthorizedException::class);
 
         $this->withoutExceptionHandling()->get(route('payout.downloadPayout'));
     }
 
-    public function test_download_for_superAdmin()
+    public function test_download_for_super_admin()
     {
         // Create a mock user and authenticate
         $user = User::where('email', 'tobi.olanitori.binaryartinc@gmail.com')->firstOr(function () {

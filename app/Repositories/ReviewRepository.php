@@ -101,11 +101,11 @@ class ReviewRepository extends Repository
         // Apply date filter
         $this->applyDateFilters($query, $filter);
 
-        //Filter by product title
+        // Filter by product title
         if (isset($filter['product_title'])) {
             $product_title = $filter['product_title'];
 
-            //remove product title from the filter array
+            // remove product title from the filter array
             unset($filter['product_title']);
 
             $query->whereHas('product', function (Builder $productQuery) use ($product_title) {

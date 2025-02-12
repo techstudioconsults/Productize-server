@@ -32,7 +32,7 @@ class UserRepositoryTest extends TestCase
 
     protected $password;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -78,7 +78,7 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals('free_trial', $user->account_type);
     }
 
-    public function test_create_user_with_no_email_throws_BadRequestException()
+    public function test_create_user_with_no_email_throws_bad_request_exception()
     {
         $this->expectException(BadRequestException::class);
 
@@ -173,7 +173,7 @@ class UserRepositoryTest extends TestCase
         $this->userRepository->guardedUpdate($user->email, 'email', 'updated@email');
     }
 
-    public function test_guarded_update_column_not_found_should_throw_UnprocessableException()
+    public function test_guarded_update_column_not_found_should_throw_unprocessable_exception()
     {
         $this->expectException(UnprocessableException::class);
 
@@ -182,7 +182,7 @@ class UserRepositoryTest extends TestCase
         $this->userRepository->guardedUpdate($user->email, 'doesnt_exit', 'unprocessable');
     }
 
-    public function test_guarded_update_email_not_found_should_throw_NotFoundException()
+    public function test_guarded_update_email_not_found_should_throw_not_found_exception()
     {
         $this->expectException(NotFoundException::class);
 
@@ -246,7 +246,7 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals($expectedTotalSales, $totalSales);
     }
 
-    public function test_get_total_sales_with_invalid_date_range_should_throw_UnprocessableException()
+    public function test_get_total_sales_with_invalid_date_range_should_throw_unprocessable_exception()
     {
         // Arrange
         $user = User::factory()->create();
@@ -343,7 +343,7 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals($expected_result, $result);
     }
 
-    public function test_get_revenue_throw_UnprocessableException_for_invalid_date_range()
+    public function test_get_revenue_throw_unprocessable_exception_for_invalid_date_range()
     {
         // Arrange
         $user = User::factory()->create();
@@ -464,7 +464,7 @@ class UserRepositoryTest extends TestCase
         $this->userRepository->getTotalCustomers($user, $filter);
     }
 
-    public function test_firstOrCreate_user_already_exists()
+    public function test_first_or_create_user_already_exists()
     {
         // Arrange: Create a user with the given email
         $email = 'existing@example.com';
@@ -480,7 +480,7 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals($name, $user->full_name);
     }
 
-    public function test_firstOrCreate_user_does_not_exist()
+    public function test_first_or_create_user_does_not_exist()
     {
         // Arrange: Define the email and name for a new user
         $email = 'new@example.com';
@@ -528,7 +528,7 @@ class UserRepositoryTest extends TestCase
     {
         $expected_user = User::factory()->create();
 
-        //Fake spaces storage
+        // Fake spaces storage
         Storage::fake('spaces');
 
         $user = $this->userRepository->update($expected_user, [
@@ -541,7 +541,7 @@ class UserRepositoryTest extends TestCase
         $this->assertEquals($user->country, 'Nigeria');
         $this->assertEquals($user->document_type, 'National Id card');
 
-        //Assert that the document image was stored
+        // Assert that the document image was stored
         $this->assertNotEmpty($user->document_image);
 
         // Extract the file path from the full URL

@@ -27,7 +27,7 @@ class ReviewRepositoryTest extends TestCase
     /**
      *  Test the create method
      */
-    public function testCreateReview()
+    public function test_create_review()
     {
         $user = User::factory()->create();
         $product = Product::factory()->create();
@@ -50,7 +50,7 @@ class ReviewRepositoryTest extends TestCase
     /**
      * Test the find method.
      */
-    public function testFindReviews()
+    public function test_find_reviews()
     {
         $count = 10;
 
@@ -63,7 +63,7 @@ class ReviewRepositoryTest extends TestCase
         $this->assertCount(10, $reviews);
     }
 
-    public function testQueryReviewsByProductTitle()
+    public function test_query_reviews_by_product_title()
     {
         $product1 = Product::factory()->create(['title' => 'Product 1']);
         $product2 = Product::factory()->create(['title' => 'Product 2']);
@@ -105,7 +105,7 @@ class ReviewRepositoryTest extends TestCase
         $this->assertEquals($updates['comment'], $updatedReview->comment);
     }
 
-    public function testQueryByProductTitle()
+    public function test_query_by_product_title()
     {
         $product1 = Product::factory()->create(['title' => 'Amazing Product']);
         $product2 = Product::factory()->create(['title' => 'Ordinary Product']);
@@ -120,7 +120,7 @@ class ReviewRepositoryTest extends TestCase
         $this->assertEquals($product1->id, $results->first()->product_id);
     }
 
-    public function test_Create_Review_With_Invalid_Rating()
+    public function test_create_review_with_invalid_rating()
     {
         $user = User::factory()->create();
         $product = Product::factory()->create();
@@ -164,7 +164,7 @@ class ReviewRepositoryTest extends TestCase
         $this->reviewRepository->update($user, $updates);
     }
 
-    public function testQueryWithNonExistentProductTitle()
+    public function test_query_with_non_existent_product_title()
     {
         Review::factory()->count(3)->create();
 
@@ -174,7 +174,7 @@ class ReviewRepositoryTest extends TestCase
         $this->assertCount(0, $results);
     }
 
-    public function testQueryWithProductTitleAndOtherFilters()
+    public function test_query_with_product_title_and_other_filters()
     {
         $product1 = Product::factory()->create(['title' => 'Fancy Product']);
         $product2 = Product::factory()->create(['title' => 'Another Fancy Product']);
@@ -190,7 +190,7 @@ class ReviewRepositoryTest extends TestCase
         $this->assertEquals($product2->id, $results->first()->product_id);
     }
 
-    public function testGetAverageRatingForProduct()
+    public function test_get_average_rating_for_product()
     {
         $product = Product::factory()->create();
 

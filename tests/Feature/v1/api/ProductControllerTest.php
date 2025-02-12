@@ -39,7 +39,7 @@ class ProductControllerTest extends TestCase
 
     private User $user;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->productRepository = app(ProductRepository::class);
@@ -1633,7 +1633,7 @@ class ProductControllerTest extends TestCase
         $response->assertJson($expected_json);
     }
 
-    public function test_basedOnSearch_returns_empty_collection_for_unauthenticated_user()
+    public function test_based_on_search_returns_empty_collection_for_unauthenticated_user()
     {
         $response = $this->get(route('product.search.get'));
 
@@ -1643,7 +1643,7 @@ class ProductControllerTest extends TestCase
         );
     }
 
-    public function testSendCongratulations()
+    public function test_send_congratulations()
     {
         $this->actingAsSuperAdmin();
 

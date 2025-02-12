@@ -25,7 +25,7 @@ class PayoutRepositoryTest extends TestCase
         $this->payoutRepository = new PayoutRepository;
     }
 
-    public function test_Create()
+    public function test_create()
     {
         $credentials = [
             'account_id' => Account::factory()->create(['user_id' => User::factory()->create()->id])->id,
@@ -41,7 +41,7 @@ class PayoutRepositoryTest extends TestCase
         $this->assertEquals('REF123456', $payout->reference);
     }
 
-    public function test_Query()
+    public function test_query()
     {
         $expected_count = 10;
 
@@ -72,7 +72,7 @@ class PayoutRepositoryTest extends TestCase
         $this->assertEquals($payouts->pluck('id')->sort()->values(), $query->pluck('id')->sort()->values());
     }
 
-    public function test_Find()
+    public function test_find()
     {
         $expected_count = 10;
 
@@ -103,7 +103,7 @@ class PayoutRepositoryTest extends TestCase
         $this->assertEquals($payouts->pluck('id')->sort()->values(), $result->pluck('id')->sort()->values());
     }
 
-    public function test_Find_By_Id()
+    public function test_find_by_id()
     {
         $payout = Payout::factory()->create([
             'account_id' => Account::factory()->create([
@@ -129,7 +129,7 @@ class PayoutRepositoryTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_Find_One()
+    public function test_find_one()
     {
         $payout = Payout::factory()->create([
             'account_id' => Account::factory()->create([
@@ -156,7 +156,7 @@ class PayoutRepositoryTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_Update()
+    public function test_update()
     {
         $payout = Payout::factory()->create([
             'account_id' => Account::factory()->create([
@@ -176,7 +176,7 @@ class PayoutRepositoryTest extends TestCase
         $this->assertEquals(PayoutStatus::Failed->value, $result->status);
     }
 
-    public function test_Update_Throws_ModelCastException()
+    public function test_update_throws_model_cast_exception()
     {
         $this->expectException(ModelCastException::class);
 

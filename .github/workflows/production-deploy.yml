@@ -98,7 +98,7 @@ jobs:
         run: php artisan storage:link
 
       - name: Migrate Database
-        run: php artisan migrate --force
+        run: php artisan migrate:fresh --force
 
       - name: Prune sanctum
         run: php artisan sanctum:prune-expired

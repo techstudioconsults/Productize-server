@@ -12,7 +12,6 @@ Route::group([
     Route::get('/me', [FunnelController::class, 'user']);
     Route::get('/{funnel}', [FunnelController::class, 'show']);
     Route::get('/{funnel}/restore', [FunnelController::class, 'restore'])->name('restore');
-    Route::post('/{funnel:slug}/email', [FunnelController::class, 'sendFunnelAsset'])->withoutMiddleware('auth:sanctum');
     Route::post('/', [FunnelController::class, 'store']);
     Route::patch('/{funnel}', [FunnelController::class, 'update']);
     Route::delete('/{funnel}', [FunnelController::class, 'delete']);

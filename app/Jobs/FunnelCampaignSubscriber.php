@@ -11,6 +11,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class FunnelCampaignSubscriber implements ShouldQueue
 {
@@ -23,6 +25,13 @@ class FunnelCampaignSubscriber implements ShouldQueue
         public Funnel $funnel,
         public array $subscriber // email, fullname => first_name, last_name
     ) {}
+
+    /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 1;
 
     /**
      * Execute the job.
@@ -43,5 +52,14 @@ class FunnelCampaignSubscriber implements ShouldQueue
 
             EmailMarketingFactory::addSubscriber($data); // data, provider, token, campain_id
         }
+    }
+
+    public function failed(?Throwable $exception): void
+    {
+        Log::critical('Email Marketing Campaign on Funnel Create Threw An Error', [
+            'context' => $exception->getMessage()
+        ]);
+
+        $this->fail($exception);
     }
 }

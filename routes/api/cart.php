@@ -17,6 +17,8 @@ Route::controller(CartController::class)
 
         Route::post('/clear', 'clear')->name('clear');
 
+        Route::post('/funnel', 'funnel')->name('funnel')->withoutMiddleware('auth:sanctum');
+
         Route::get('/{cart}', 'show')->middleware('can:view,cart')->name('show');
 
         Route::patch('/{cart}', 'update')->middleware('can:update,cart')->name('update');

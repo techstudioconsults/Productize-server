@@ -45,7 +45,7 @@ class EmailMarketingFactory implements EmailMarketingServiceContract
         return [];
     }
 
-    public static function validateToken(array $data):bool
+    public static function validateToken(array $data): bool
     {
         $provider = $data['provider'];
 

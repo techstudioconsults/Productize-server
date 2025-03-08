@@ -23,7 +23,6 @@ use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Log;
 use Str;
 
 /**
@@ -228,27 +227,29 @@ class CartController extends Controller
         $email = $request->input('email');
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
-        $full_name = $first_name . " " . $last_name;
+        $full_name = $first_name.' '.$last_name;
         $maillist_permission = $request->input('maillist_permission');
         $funnel = $this->funnelRepository->findById($request->input('funnel_id'));
 
-        if (!$funnel) throw new NotFoundException('funnel not found');
+        if (! $funnel) {
+            throw new NotFoundException('funnel not found');
+        }
 
         FunnelCampaignSubscriber::dispatchIf($maillist_permission, $funnel, [
             'email' => $email,
             'fullname' => [
                 'first_name' => $first_name,
-                'last_name' => $last_name
-            ]
+                'last_name' => $last_name,
+            ],
         ]);
 
         $user = $this->userRepository->findOne(['email' => $email]);
 
-        if (!$user) {
+        if (! $user) {
             $user = $this->userRepository->create([
                 'email' => $email,
                 'full_name' => $full_name,
-                'password' => Str::random(8)
+                'password' => Str::random(8),
             ]);
         }
 
@@ -257,7 +258,7 @@ class CartController extends Controller
             [
                 'product_slug' => $funnel->product->slug,
                 'quantity' => 1,
-            ]
+            ],
         ]);
 
         $revenue = $this->revenueRepository->create([

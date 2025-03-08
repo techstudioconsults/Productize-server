@@ -57,7 +57,7 @@ class FunnelCampaignSubscriber implements ShouldQueue
     public function failed(?Throwable $exception): void
     {
         Log::critical('Email Marketing Campaign on Funnel Create Threw An Error', [
-            'context' => $exception->getMessage()
+            'context' => $exception->getMessage(),
         ]);
 
         $this->fail($exception);

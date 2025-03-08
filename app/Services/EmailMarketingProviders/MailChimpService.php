@@ -37,7 +37,7 @@ class MailchimpService implements EmailMarketingServiceContract
         // ]);
 
         // return $response['id'];
-        return "";
+        return '';
     }
 
     // data => subscriber, provider, token, campaign_id

@@ -45,7 +45,7 @@ class CreateFunnelCampaignList implements ShouldQueue
             ];
 
             $id = EmailMarketingFactory::createCampaign($data);
-            
+
             FunnelCampaign::create([
                 'funnel_id' => $this->funnel->id,
                 'provider' => $emailMarketing->provider,
@@ -54,14 +54,13 @@ class CreateFunnelCampaignList implements ShouldQueue
         }
     }
 
-
     /**
      * Handle a job failure.
      */
     public function failed(?Throwable $exception): void
     {
         Log::critical('Email Marketing Campaign on Funnel Create Threw An Error', [
-            'context' => $exception->getMessage()
+            'context' => $exception->getMessage(),
         ]);
 
         $this->fail($exception);

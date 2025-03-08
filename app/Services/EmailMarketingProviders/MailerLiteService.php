@@ -31,7 +31,7 @@ class MailerLiteService implements EmailMarketingServiceContract
                 'name' => $data['subscriber']['fullname']['first_name'],
                 'last_name' => $data['subscriber']['fullname']['last_name'],
             ],
-            'groups'[$data['campaign_id']],
+            'groups' => [$data['campaign_id']],
         ];
 
         Http::withHeaders([

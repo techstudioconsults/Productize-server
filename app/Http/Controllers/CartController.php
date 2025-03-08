@@ -7,6 +7,7 @@ use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
 use App\Http\Requests\ClearCartRequest;
+use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
@@ -214,5 +215,10 @@ class CartController extends Controller
         } catch (\Throwable $th) {
             throw new ApiException($th->getMessage(), $th->getCode());
         }
+    }
+
+    public function buyFromFunnel(GetPackageRequest $request)
+    {
+
     }
 }

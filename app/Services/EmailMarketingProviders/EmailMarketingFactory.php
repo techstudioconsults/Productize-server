@@ -44,4 +44,20 @@ class EmailMarketingFactory implements EmailMarketingServiceContract
     {
         return [];
     }
+
+    public static function validateToken(array $data):bool
+    {
+        $provider = $data['provider'];
+
+        switch ($provider) {
+            case EmailMarketingProvider::MailerLite->value:
+                return MailerLiteService::validateToken($data);
+
+            case EmailMarketingProvider::MailChimp->value:
+                return MailchimpService::validateToken($data);
+
+            default:
+                throw new ServerErrorException('invalid provider');
+        }
+    }
 }

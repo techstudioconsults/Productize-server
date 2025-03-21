@@ -23,6 +23,7 @@ use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Log;
 use Str;
 
 /**
@@ -229,7 +230,7 @@ class CartController extends Controller
         $last_name = $request->input('last_name');
         $full_name = $first_name.' '.$last_name;
         $maillist_permission = $request->input('maillist_permission');
-        $funnel = $this->funnelRepository->findOne(['slug', $request->input('funnel_slug')]);
+        $funnel = $this->funnelRepository->findOne(['slug' => $request->input('funnel_slug')]);
 
         if (! $funnel) {
             throw new NotFoundException('funnel not found');
@@ -280,7 +281,7 @@ class CartController extends Controller
                 'revenue_id' => $revenue->id,
             ],
         ];
-
+        
         try {
             // Initialize payment
             $response = $this->paystackRepository->initializePurchaseTransaction($payload);

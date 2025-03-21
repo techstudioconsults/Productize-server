@@ -22,7 +22,9 @@ class EmailMarketingController extends Controller
         // validate token
         $isValid = EmailMarketingFactory::validateToken($payload);
 
-        if (!$isValid) throw new BadRequestException("Bad Provider Token");
+        if (! $isValid) {
+            throw new BadRequestException('Bad Provider Token');
+        }
 
         $this->emailMarketingRepository->create($payload);
 

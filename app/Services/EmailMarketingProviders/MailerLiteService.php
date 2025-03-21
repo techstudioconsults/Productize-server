@@ -55,7 +55,7 @@ class MailerLiteService implements EmailMarketingServiceContract
 
     public static function validateToken(array $data): bool
     {
-      $response =  Http::withHeaders([
+        $response = Http::withHeaders([
             'Authorization' => 'Bearer '.$data['token'],
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',

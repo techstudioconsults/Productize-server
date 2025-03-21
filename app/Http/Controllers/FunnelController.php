@@ -15,7 +15,6 @@ use App\Models\Product;
 use App\Repositories\FunnelRepository;
 use Auth;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Mail;
 
 class FunnelController extends Controller
@@ -100,7 +99,7 @@ class FunnelController extends Controller
         $funnel = $this->funnelRepository->create($payload);
 
         $this->funnelRepository->saveTemplate($funnel, $request->getParsedTemplate());
-      
+
         CreateFunnelCampaignList::dispatch($funnel);
 
         if ($payload['status'] === ProductStatusEnum::Draft->value || env('APP_ENV') === 'local') {

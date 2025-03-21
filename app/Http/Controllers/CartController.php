@@ -230,7 +230,7 @@ class CartController extends Controller
         $last_name = $request->input('last_name');
         $full_name = $first_name . " " . $last_name;
         $maillist_permission = $request->input('maillist_permission');
-        $funnel = $this->funnelRepository->findById($request->input('funnel_id'));
+        $funnel = $this->funnelRepository->findOne(['slug', $request->input('funnel_slug')]);
 
         if (!$funnel) throw new NotFoundException('funnel not found');
 

@@ -27,7 +27,7 @@ class GetPackageRequest extends FormRequest
             'email' => 'required|email',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'funnel_id' => 'required|string|exists:funnels,id',
+            'funnel_slug' => 'required|string|exists:funnels,slug',
             'maillist_permission' => 'required|boolean',
         ];
     }

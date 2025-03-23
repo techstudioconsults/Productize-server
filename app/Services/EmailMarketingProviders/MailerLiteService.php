@@ -31,7 +31,7 @@ class MailerLiteService implements EmailMarketingServiceContract
                 'name' => $data['subscriber']['fullname']['first_name'],
                 'last_name' => $data['subscriber']['fullname']['last_name'],
             ],
-            'groups'[$data['campaign_id']],
+            'groups' => [$data['campaign_id']],
         ];
 
         Http::withHeaders([
@@ -51,5 +51,16 @@ class MailerLiteService implements EmailMarketingServiceContract
     public static function getSubscribers(): array
     {
         return [];
+    }
+
+    public static function validateToken(array $data): bool
+    {
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer '.$data['token'],
+            'Cache-Control' => 'no-cache',
+            'Content-Type' => 'application/json',
+        ])->get('https://connect.mailerlite.com/api/subscribers');
+
+        return $response->successful();
     }
 }

@@ -54,8 +54,7 @@ class StoreFunnelRequest extends FormRequest
             }],
             'asset' => 'file',
             'status' => ['required', new Enum(ProductStatusEnum::class)],
-            'products' => ['required', 'array'],
-            'products*' => 'string|required',
+            'product_id' => ['required', 'exists:products,id'],
         ];
     }
 

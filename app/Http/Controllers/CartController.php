@@ -24,7 +24,6 @@ use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Log;
 use Mail;
 use Str;
 

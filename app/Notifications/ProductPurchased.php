@@ -2,12 +2,14 @@
 
 namespace App\Notifications;
 
+use App\Models\Funnel;
 use App\Models\Product;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class ProductPurchased extends Notification implements ShouldQueue
 {
@@ -18,7 +20,7 @@ class ProductPurchased extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(public Product $product)
+    public function __construct(public Product $product, public ?Funnel $funnel = null)
     {
         $this->afterCommit();
     }
@@ -59,9 +61,20 @@ class ProductPurchased extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
+        if ($this->funnel != null) {
+            return (new MailMessage)
+                ->markdown('mail.product-purchased-via-funnel', [
+                    'url' => config('app.client_url') . '/dashboard/downloads#all-downloads',
+                    'title' => $this->product->title,
+                    'thumbnail' => $this->product->thumbnail,
+                    'button' => config('app.client_url') . '/products/' . $this->product->slug
+                ])
+                ->subject('Your Package is here!')->attach('/funnels-asset/CoursePic3.png');
+        }
+
         return (new MailMessage)
             ->markdown('mail.product-purchased', [
-                'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
+                'url' => config('app.client_url') . '/dashboard/downloads#all-downloads',
                 'title' => $this->product->title,
             ])
             ->subject('Product Purchased');

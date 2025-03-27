@@ -131,6 +131,25 @@ small {
     line-height: 1.5rem;
 }
 
+.naked-button {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0;
+    text-align: center;
+    text-decoration: none;
+    background-color: #FFFFFF;
+
+    color: #1D1C20;
+    font-size: 1rem;
+    font-style: normal;
+    line-height: 1.5rem;
+    font-weight: 700;
+    border-radius: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .bottom {
     margin-bottom: 30px;
     border: 1px solid red;

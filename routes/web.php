@@ -22,10 +22,10 @@ Route::get('/', function () {
     return view('pages.home', compact('environment'));
 });
 
-Route::get('/mail', function() {
-    $funnel = Funnel::find('9e61941d-e97d-45d7-9df5-317ff6128c4d');
-    return (new ProductPurchased($funnel->product, $funnel))->toMail($funnel->product->user);
-});
+// Route::get('/mail', function() {
+//     $funnel = Funnel::find('9e61941d-e97d-45d7-9df5-317ff6128c4d');
+//     return (new ProductPurchased($funnel->product, $funnel))->toMail($funnel->product->user);
+// });
 
 /**
  * @Intuneteq

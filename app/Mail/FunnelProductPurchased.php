@@ -21,7 +21,7 @@ class FunnelProductPurchased extends Mailable implements ShouldQueue
         $this->afterCommit();
     }
 
-     /**
+    /**
      * The number of times the job may be attempted.
      *
      * @var int
@@ -62,7 +62,7 @@ class FunnelProductPurchased extends Mailable implements ShouldQueue
             with: [
                 'email' => 'tobiolanitori@gmail.com',
                 'password' => '12345',
-                'url' => 'https://tobiolanitori.com'
+                'url' => 'https://tobiolanitori.com',
             ]
         );
     }

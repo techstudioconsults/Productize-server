@@ -1,6 +1,5 @@
 <?php
 
-use App\Mail\AccountCreated;
 use App\Models\Funnel;
 use App\Notifications\ProductPurchased;
 use Illuminate\Support\Facades\Route;

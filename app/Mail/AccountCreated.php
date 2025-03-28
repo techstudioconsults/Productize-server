@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -63,7 +62,7 @@ class AccountCreated extends Mailable implements ShouldQueue
             with: [
                 'url' => config('app.client_url').'/auth/login',
                 'email' => $this->email,
-                'password' => $this->password
+                'password' => $this->password,
             ]
         );
     }

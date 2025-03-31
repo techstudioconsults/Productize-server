@@ -13,6 +13,7 @@ use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
 use App\Jobs\FunnelCampaignSubscriber;
+use App\Mail\AccountCreated;
 use App\Models\Cart;
 use App\Repositories\CartRepository;
 use App\Repositories\FunnelRepository;
@@ -23,6 +24,7 @@ use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Mail;
 use Str;
 
 /**
@@ -209,6 +211,8 @@ class CartController extends Controller
                 'products' => $products,
                 'recipient_id' => $recipient ? $recipient->id : null,
                 'revenue_id' => $revenue->id,
+                'funnel_id' => null,
+                'is_new_user' => false,
             ],
         ];
 
@@ -246,11 +250,15 @@ class CartController extends Controller
         $user = $this->userRepository->findOne(['email' => $email]);
 
         if (! $user) {
+            $password = Str::random(8);
+
             $user = $this->userRepository->create([
                 'email' => $email,
                 'full_name' => $full_name,
-                'password' => Str::random(8),
+                'password' => $password,
             ]);
+
+            Mail::to($user)->queue(new AccountCreated($email, $password));
         }
 
         // Prepare products for the paystack transaction
@@ -278,6 +286,8 @@ class CartController extends Controller
                 'buyer_id' => $user->id,
                 'products' => $products,
                 'revenue_id' => $revenue->id,
+                'funnel_id' => $funnel->id,
+                'recipient_id' => null,
             ],
         ];
 

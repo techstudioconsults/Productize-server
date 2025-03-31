@@ -29,7 +29,8 @@ class WebhookRepository
         protected EarningRepository $earningRepository,
         protected PayoutRepository $payoutRepository,
         protected RevenueRepository $revenueRepository,
-        protected PaystackRepository $paystackRepository
+        protected PaystackRepository $paystackRepository,
+        protected FunnelRepository $funnelRepository,
     ) {}
 
     public function paystack(string $type, $data)
@@ -128,6 +129,8 @@ class WebhookRepository
         // Retrieve the revenue
         $revenue_id = $metadata['revenue_id'];
 
+        $funnel_id = $metadata['funnel_id'];
+
         // Product will be available in this user's download
         // If it is a gift, owner will be the recipient
         // Else, the buyer
@@ -163,8 +166,14 @@ class WebhookRepository
                 // Trigger Order created Event
                 $user->notify(new OrderCreated($order));
 
+                $funnel = null;
+
+                if ($funnel_id) {
+                    $funnel = $this->funnelRepository->findById($funnel_id);
+                }
+
                 // Notify owner of this product availability in download
-                $owner->notify(new ProductPurchased($product_saved));
+                $owner->notify(new ProductPurchased($product_saved, $funnel));
 
                 $this->customerRepository->create([
                     'user_id' => $order->user->id,

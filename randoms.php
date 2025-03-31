@@ -75,7 +75,7 @@ stopwaitsecs=3600
 // sudo supervisorctl update
 // sudo supervisorctl start "laravel-worker:*"
 
-// php artisan queue:work
+// php artisan queue:work - default,broadcast,mail
 
 /**
  * Rendering mailables in browser

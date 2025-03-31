@@ -6,12 +6,17 @@ use App\Enums\RevenueActivity;
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ConflictException;
+use App\Exceptions\NotFoundException;
 use App\Http\Requests\ClearCartRequest;
+use App\Http\Requests\GetPackageRequest;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
+use App\Jobs\FunnelCampaignSubscriber;
+use App\Mail\AccountCreated;
 use App\Models\Cart;
 use App\Repositories\CartRepository;
+use App\Repositories\FunnelRepository;
 use App\Repositories\PaystackRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\RevenueRepository;
@@ -19,6 +24,8 @@ use App\Repositories\UserRepository;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Mail;
+use Str;
 
 /**
  * @author @Intuneteq Tobi Olanitori
@@ -37,6 +44,7 @@ class CartController extends Controller
         protected PaystackRepository $paystackRepository,
         protected UserRepository $userRepository,
         protected RevenueRepository $revenueRepository,
+        protected FunnelRepository $funnelRepository
     ) {}
 
     /**
@@ -203,6 +211,83 @@ class CartController extends Controller
                 'products' => $products,
                 'recipient_id' => $recipient ? $recipient->id : null,
                 'revenue_id' => $revenue->id,
+                'funnel_id' => null,
+                'is_new_user' => false,
+            ],
+        ];
+
+        try {
+            // Initialize payment
+            $response = $this->paystackRepository->initializePurchaseTransaction($payload);
+
+            return new JsonResource($response->toArray());
+        } catch (\Throwable $th) {
+            throw new ApiException($th->getMessage(), $th->getCode());
+        }
+    }
+
+    public function funnel(GetPackageRequest $request)
+    {
+        $email = $request->input('email');
+        $first_name = $request->input('first_name');
+        $last_name = $request->input('last_name');
+        $full_name = $first_name.' '.$last_name;
+        $maillist_permission = $request->input('maillist_permission');
+        $funnel = $this->funnelRepository->findOne(['slug' => $request->input('funnel_slug')]);
+
+        if (! $funnel) {
+            throw new NotFoundException('funnel not found');
+        }
+
+        FunnelCampaignSubscriber::dispatchIf($maillist_permission, $funnel, [
+            'email' => $email,
+            'fullname' => [
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+            ],
+        ]);
+
+        $user = $this->userRepository->findOne(['email' => $email]);
+
+        if (! $user) {
+            $password = Str::random(8);
+
+            $user = $this->userRepository->create([
+                'email' => $email,
+                'full_name' => $full_name,
+                'password' => $password,
+            ]);
+
+            Mail::to($user)->queue(new AccountCreated($email, $password));
+        }
+
+        // Prepare products for the paystack transaction
+        $products = $this->productRepository->prepareProducts([
+            [
+                'product_slug' => $funnel->product->slug,
+                'quantity' => 1,
+            ],
+        ]);
+
+        $revenue = $this->revenueRepository->create([
+            'user_id' => $user->id,
+            'activity' => RevenueActivity::PURCHASE->value,
+            'product' => 'Purchase',
+            'amount' => $funnel->product->price,
+            'status' => 'Pending',
+            'commission' => RevenueRepository::SALE_COMMISSION,
+        ]);
+
+        $payload = [
+            'email' => $user->email,
+            'amount' => $funnel->product->price * 100,
+            'metadata' => [
+                'isPurchase' => true,
+                'buyer_id' => $user->id,
+                'products' => $products,
+                'revenue_id' => $revenue->id,
+                'funnel_id' => $funnel->id,
+                'recipient_id' => null,
             ],
         ];
 

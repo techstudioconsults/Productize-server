@@ -13,4 +13,7 @@ interface EmailMarketingServiceContract
 
     // data => token, provider, name
     public static function createCampaign(array $data): string;
+
+    // data => token, provider
+    public static function validateToken(array $data): bool;
 }

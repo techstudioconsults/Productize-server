@@ -72,12 +72,12 @@ class Handler extends ExceptionHandler
         $userAgent = $request->header('User-Agent');
 
         // Log additional information
-        Log::error($message, [
-            'ip' => $ipAddress,
-            'user_agent' => $userAgent,
-            'url' => $request->fullUrl(),
-            'exception_message' => $exception->getMessage(),
-        ]);
+        // Log::error($message, [
+        //     'ip' => $ipAddress,
+        //     'user_agent' => $userAgent,
+        //     'url' => $request->fullUrl(),
+        //     'exception_message' => $exception->getMessage(),
+        // ]);
 
         if ($request->acceptsJson()) {
             throw new NotFoundException($message);

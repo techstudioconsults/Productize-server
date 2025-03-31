@@ -231,7 +231,7 @@ class CartController extends Controller
         $email = $request->input('email');
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
-        $full_name = $first_name . ' ' . $last_name;
+        $full_name = $first_name.' '.$last_name;
         $maillist_permission = $request->input('maillist_permission');
         $funnel = $this->funnelRepository->findOne(['slug' => $request->input('funnel_slug')]);
 
@@ -287,7 +287,7 @@ class CartController extends Controller
                 'products' => $products,
                 'revenue_id' => $revenue->id,
                 'funnel_id' => $funnel->id,
-                'recipient_id' => null
+                'recipient_id' => null,
             ],
         ];
 

@@ -4,7 +4,7 @@ namespace App\Services\EmailMarketingProviders;
 
 use MailchimpMarketing\ApiClient;
 
-class MailchimpService implements EmailMarketingServiceContract
+class MailChimpService implements EmailMarketingServiceContract
 {
     // data => token, provider, name
     public static function createCampaign(array $data): string

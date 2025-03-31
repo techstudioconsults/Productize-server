@@ -187,10 +187,12 @@ class AuthController extends Controller
     public function oAuthCallback(OAuthRequest $request)
     {
         $validated = $request->validated();
+        $code = $validated['code'];
+        $provider = $validated['provider'];
 
-        $oauthUser = null;
         try {
-            $oauthUser = Socialite::driver($validated['provider'])->stateless()->user();
+            // Exchange the authorization code for an access token
+            $oauthUser = Socialite::driver($provider)->stateless()->userFromToken($code); 
         } catch (\Throwable $th) {
             Log::alert('Social Auth Failure', ['message' => $th->getMessage()]);
             throw new BadRequestException('Authentication Error');

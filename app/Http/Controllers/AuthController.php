@@ -184,15 +184,13 @@ class AuthController extends Controller
      *
      * @throws \App\Exceptions\BadRequestException If an error occurs during the OAuth authentication process.
      */
-    public function oAuthCallback(OAuthRequest $request)
+    public function oAuthCallback(Request $request)
     {
-        $validated = $request->validated();
-        $code = $validated['code'];
-        $provider = $validated['provider'];
+        $provider = $request->input('provider');
 
         try {
             // Exchange the authorization code for an access token
-            $oauthUser = Socialite::driver($provider)->stateless()->userFromToken($code); 
+            $oauthUser = Socialite::driver($provider)->stateless()->user();
         } catch (\Throwable $th) {
             Log::alert('Social Auth Failure', ['message' => $th->getMessage()]);
             throw new BadRequestException('Authentication Error');

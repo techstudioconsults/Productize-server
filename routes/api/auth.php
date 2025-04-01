@@ -13,7 +13,7 @@ Route::group([
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
     Route::get('/oauth/redirect', [AuthController::class, 'oAuthRedirect']);
-    Route::post('/oauth/callback', [AuthController::class, 'oAuthCallback']);
+    Route::get('/oauth/callback', [AuthController::class, 'oAuthCallback']);
 
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.email');
     Route::post('/reset-password', [AuthController::class, 'ResetPassword'])->name('password.update');

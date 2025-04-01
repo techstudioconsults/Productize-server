@@ -178,10 +178,7 @@ class AuthControllerTest extends TestCase
                 'email' => $this->email,
             ]);
 
-        $response = $this->postJson('/api/auth/oauth/callback', [
-            'provider' => $provider,
-            'code' => '123',
-        ]);
+        $response = $this->get('/api/auth/oauth/callback?provider='.$provider . '&code=12345');
 
         // Assert the response
         $response
@@ -229,10 +226,7 @@ class AuthControllerTest extends TestCase
                 'email' => $this->email,
             ]);
 
-        $response = $this->postJson('/api/auth/oauth/callback', [
-            'provider' => $provider,
-            'code' => '123',
-        ]);
+        $response = $this->get('/api/auth/oauth/callback?provider='.$provider . '&code=12345');
 
         // Create an instance of UserResource
         $userResource = new UserResource($user);

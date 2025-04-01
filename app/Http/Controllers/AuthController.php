@@ -11,7 +11,6 @@ use App\Exceptions\UnAuthorizedException;
 use App\Exceptions\UnprocessableException;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\LoginRequest;
-use App\Http\Requests\OAuthRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
@@ -184,13 +183,13 @@ class AuthController extends Controller
      *
      * @throws \App\Exceptions\BadRequestException If an error occurs during the OAuth authentication process.
      */
-    public function oAuthCallback(OAuthRequest $request)
+    public function oAuthCallback(Request $request)
     {
-        $validated = $request->validated();
+        $provider = $request->input('provider');
 
-        $oauthUser = null;
         try {
-            $oauthUser = Socialite::driver($validated['provider'])->stateless()->user();
+            // Exchange the authorization code for an access token
+            $oauthUser = Socialite::driver($provider)->stateless()->user();
         } catch (\Throwable $th) {
             Log::alert('Social Auth Failure', ['message' => $th->getMessage()]);
             throw new BadRequestException('Authentication Error');

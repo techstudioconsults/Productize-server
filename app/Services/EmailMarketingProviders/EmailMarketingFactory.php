@@ -14,7 +14,7 @@ class EmailMarketingFactory implements EmailMarketingServiceContract
                 return MailerLiteService::createCampaign($data);
 
             case EmailMarketingProvider::MailChimp->value:
-                return MailchimpService::createCampaign($data);
+                return MailChimpService::createCampaign($data);
 
             default:
                 throw new ServerErrorException('invalid email provider');
@@ -28,7 +28,7 @@ class EmailMarketingFactory implements EmailMarketingServiceContract
                 return MailerLiteService::addSubscriber($data);
 
             case EmailMarketingProvider::MailChimp->value:
-                return MailchimpService::addSubscriber($data);
+                return MailChimpService::addSubscriber($data);
 
             default:
                 throw new ServerErrorException('invalid email provider');
@@ -54,7 +54,7 @@ class EmailMarketingFactory implements EmailMarketingServiceContract
                 return MailerLiteService::validateToken($data);
 
             case EmailMarketingProvider::MailChimp->value:
-                return MailchimpService::validateToken($data);
+                return MailChimpService::validateToken($data);
 
             default:
                 throw new ServerErrorException('invalid provider');

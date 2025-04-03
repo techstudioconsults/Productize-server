@@ -185,8 +185,7 @@ class AuthController extends Controller
      */
     public function oAuthCallback(Request $request)
     {
-        // update
-        $provider = $request->input('provider');
+        $provider = $request->query('provider');
 
         try {
             // Exchange the authorization code for an access token

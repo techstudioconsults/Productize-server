@@ -162,8 +162,10 @@ class PaystackRepository
      */
     public function initializePurchaseTransaction(mixed $payload)
     {
+        $buyer_id = $payload['metadata']['buyer_id'];
+
         $payload = array_merge($payload, [
-            'callback_url' => $this->client_url.'/dashboard/downloads#all-downloads',
+            'callback_url' => $this->client_url.'/dashboard/'.$buyer_id.'/downloads',
         ]);
 
         $response = Http::withHeaders([

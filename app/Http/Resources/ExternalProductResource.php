@@ -19,7 +19,10 @@ class ExternalProductResource extends JsonResource
             'thumbnail' => $this->thumbnail,
             'price' => (int) $this->price,
             'discount_price' => (int) $this->discount_price,
-            'publisher' => $this->user->full_name,
+            'publisher' => [
+                'name' => $this->user->full_name,
+                'avatar' => $this->user->avatar,
+            ],
             'slug' => $this->slug,
             'highlights' => $this->highlights,
             'product_type' => $this->product_type,
@@ -32,7 +35,7 @@ class ExternalProductResource extends JsonResource
                     'id' => $asset->id,
                     'name' => $asset->name,
                     'mime_type' => $asset->mime_type,
-                    'size' => round($asset->size / 1048576, 3).'MB', // Convert byte to MB
+                    'size' => round($asset->size / 1048576, 3).'MB',
                     'extension' => $asset->extension,
                 ];
             }),

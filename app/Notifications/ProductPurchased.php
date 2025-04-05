@@ -63,7 +63,7 @@ class ProductPurchased extends Notification implements ShouldQueue
         if ($this->funnel != null) {
             return (new MailMessage)
                 ->markdown('mail.product-purchased-via-funnel', [
-                    'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
+                    'url' => config('app.client_url').'/dashboard/'.$notifiable->id.'/downloads',
                     'title' => $this->product->title,
                     'thumbnail' => $this->product->thumbnail,
                     'button' => config('app.client_url').'/products/'.$this->product->slug,
@@ -73,7 +73,7 @@ class ProductPurchased extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->markdown('mail.product-purchased', [
-                'url' => config('app.client_url').'/dashboard/downloads#all-downloads',
+                'url' => config('app.client_url').'/dashboard/'.$notifiable->id.'/downloads',
                 'title' => $this->product->title,
             ])
             ->subject('Product Purchased');

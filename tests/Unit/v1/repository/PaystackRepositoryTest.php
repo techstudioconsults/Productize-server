@@ -197,9 +197,19 @@ class PaystackRepositoryTest extends TestCase
 
     public function test_initialize_purchase_transaction_success()
     {
+
         $payload = [
             'email' => 'test@example.com',
             'amount' => 5000,
+            'metadata' => [
+                'isPurchase' => true,
+                'buyer_id' => '12345',
+                'products' => [],
+                'recipient_id' => null,
+                'revenue_id' => '12345',
+                'funnel_id' => null,
+                'is_new_user' => false,
+            ],
         ];
 
         $response = [
@@ -229,6 +239,15 @@ class PaystackRepositoryTest extends TestCase
         $payload = [
             'email' => 'test@example.com',
             'amount' => 5000,
+            'metadata' => [
+                'isPurchase' => true,
+                'buyer_id' => '12345',
+                'products' => [],
+                'recipient_id' => null,
+                'revenue_id' => '12345',
+                'funnel_id' => null,
+                'is_new_user' => false,
+            ],
         ];
 
         $errorResponse = [

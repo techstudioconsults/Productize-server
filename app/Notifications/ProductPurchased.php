@@ -66,17 +66,17 @@ class ProductPurchased extends Notification implements ShouldQueue
 
             return (new MailMessage)
                 ->markdown('mail.product-purchased-via-funnel', [
-                    'url' => config('app.client_url') . '/dashboard/' . $notifiable->id . '/downloads',
+                    'url' => config('app.client_url').'/dashboard/'.$notifiable->id.'/downloads',
                     'title' => $this->product->title,
                     'thumbnail' => $this->product->thumbnail,
-                    'button' => config('app.client_url') . '/products/' . $this->product->slug,
+                    'button' => config('app.client_url').'/products/'.$this->product->slug,
                 ])
                 ->subject('Your Package is here!')->attach(Attachment::fromStorage($asset_path));
         }
 
         return (new MailMessage)
             ->markdown('mail.product-purchased', [
-                'url' => config('app.client_url') . '/dashboard/' . $notifiable->id . '/downloads',
+                'url' => config('app.client_url').'/dashboard/'.$notifiable->id.'/downloads',
                 'title' => $this->product->title,
             ])
             ->subject('Product Purchased');

@@ -75,9 +75,9 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Content-Type' => 'application/json',
-        ])->post($this->baseUrl . '/customer', $payload)->throw()->json();
+        ])->post($this->baseUrl.'/customer', $payload)->throw()->json();
 
         return CustomerDto::create($response['data']);
     }
@@ -93,10 +93,10 @@ class PaystackRepository
      */
     public function fetchCustomer(string $email): ?CustomerDto
     {
-        $url = $this->baseUrl . "/customer/$email";
+        $url = $this->baseUrl."/customer/$email";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get($url);
 
         if ($response->notFound()) {
@@ -126,7 +126,7 @@ class PaystackRepository
         $payload = [
             'email' => $email,
             'amount' => $amount,
-            'callback_url' => $this->client_url . '/dashboard/home',
+            'callback_url' => $this->client_url.'/dashboard/home',
         ];
 
         if ($isSubscription) {
@@ -134,7 +134,7 @@ class PaystackRepository
         }
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload);
@@ -165,11 +165,11 @@ class PaystackRepository
         $buyer_id = $payload['metadata']['buyer_id'];
 
         $payload = array_merge($payload, [
-            'callback_url' => $this->client_url . '/dashboard/' . $buyer_id . '/downloads',
+            'callback_url' => $this->client_url.'/dashboard/'.$buyer_id.'/downloads',
         ]);
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post($this->initializeTransactionUrl, $payload);
@@ -205,7 +205,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Content-Type' => 'application/json',
         ])->post($this->subscriptionEndpoint, $payload);
 
@@ -235,7 +235,7 @@ class PaystackRepository
         $url = "{$this->baseUrl}/subscription/{$subscriptionId}/manage/link";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get($url);
 
         if ($response->failed()) {
@@ -262,7 +262,7 @@ class PaystackRepository
     public function fetchSubscription(string $subscriptionId): ?SubscriptionDto
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get("{$this->baseUrl}/subscription/{$subscriptionId}");
 
         if ($response->failed()) {
@@ -295,7 +295,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/enable", $payload)->throw()->json();
@@ -320,7 +320,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/subscription/disable", $payload)->throw()->json();
@@ -350,7 +350,7 @@ class PaystackRepository
     public function getBankList(): ?Collection
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get("{$this->baseUrl}/bank?country=nigeria");
 
         if ($response->failed()) {
@@ -378,8 +378,8 @@ class PaystackRepository
     public function validateAccountNumber(string $account_number, string $bank_code): bool
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
-        ])->get("{$this->baseUrl}/bank/resolve?account_number=" . $account_number . '&bank_code=' . $bank_code);
+            'Authorization' => 'Bearer '.$this->secret_key,
+        ])->get("{$this->baseUrl}/bank/resolve?account_number=".$account_number.'&bank_code='.$bank_code);
 
         if ($response->failed()) {
             Log::error('Error Validating Account Number', [
@@ -403,7 +403,7 @@ class PaystackRepository
     public function checkPTBalanceIsSufficient(int $amount): bool
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
         ])->get("{$this->baseUrl}/balance");
 
         if ($response->failed()) {
@@ -450,7 +450,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transferrecipient", $payload);
@@ -488,7 +488,7 @@ class PaystackRepository
         ];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->secret_key,
+            'Authorization' => 'Bearer '.$this->secret_key,
             'Cache-Control' => 'no-cache',
             'Content-Type' => 'application/json',
         ])->post("{$this->baseUrl}/transfer", $payload);

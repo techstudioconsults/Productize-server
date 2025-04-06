@@ -21,7 +21,7 @@ class ExternalProductResource extends JsonResource
             'discount_price' => (int) $this->discount_price,
             'publisher' => [
                 'name' => $this->user->full_name,
-                'avatar' => $this->user->avatar
+                'avatar' => $this->user->avatar,
             ],
             'slug' => $this->slug,
             'highlights' => $this->highlights,
@@ -35,7 +35,7 @@ class ExternalProductResource extends JsonResource
                     'id' => $asset->id,
                     'name' => $asset->name,
                     'mime_type' => $asset->mime_type,
-                    'size' => round($asset->size / 1048576, 3) . 'MB',
+                    'size' => round($asset->size / 1048576, 3).'MB',
                     'extension' => $asset->extension,
                 ];
             }),

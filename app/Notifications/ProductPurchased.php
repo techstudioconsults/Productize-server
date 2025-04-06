@@ -6,6 +6,7 @@ use App\Models\Funnel;
 use App\Models\Product;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -61,6 +62,8 @@ class ProductPurchased extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         if ($this->funnel != null) {
+            $asset_path = str_replace(config('filesystems.disks.spaces.cdn_endpoint'), '', $this->funnel->asset);
+
             return (new MailMessage)
                 ->markdown('mail.product-purchased-via-funnel', [
                     'url' => config('app.client_url') . '/dashboard/' . $notifiable->id . '/downloads',
@@ -68,7 +71,7 @@ class ProductPurchased extends Notification implements ShouldQueue
                     'thumbnail' => $this->product->thumbnail,
                     'button' => config('app.client_url') . '/products/' . $this->product->slug,
                 ])
-                ->subject('Your Package is here!')->attach('/funnels-asset/CoursePic3.png');
+                ->subject('Your Package is here!')->attach(Attachment::fromStorage($asset_path));
         }
 
         return (new MailMessage)

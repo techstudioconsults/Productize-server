@@ -282,7 +282,7 @@ class CartController extends Controller
 
         $payload = [
             'email' => $user->email,
-            'amount' => $totalAmount,
+            'amount' => $totalAmount * 100,
             'metadata' => [
                 'isPurchase' => true,
                 'buyer_id' => $user->id,

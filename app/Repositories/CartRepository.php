@@ -136,6 +136,6 @@ class CartRepository extends Repository
      */
     public function calculateTotalAmount(array $products)
     {
-        return array_reduce($products, fn ($total_amount, $product) => $total_amount + $product['amount'], 0);
+        return array_reduce($products, fn($total_amount, $product) => $total_amount + $product['amount'], 0);
     }
 }

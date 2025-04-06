@@ -278,9 +278,11 @@ class CartController extends Controller
             'commission' => RevenueRepository::SALE_COMMISSION,
         ]);
 
+        $totalAmount = $this->cartRepository->calculateTotalAmount($products);
+
         $payload = [
             'email' => $user->email,
-            'amount' => $funnel->product->price * 100,
+            'amount' => $totalAmount,
             'metadata' => [
                 'isPurchase' => true,
                 'buyer_id' => $user->id,

@@ -30,7 +30,7 @@ class ProductResource extends JsonResource
             'stock_count' => (bool) $this->stock_count,
             'choose_quantity' => (bool) $this->choose_quantity,
             'show_sales_count' => (bool) $this->show_sales_count,
-            'link' => config('app.client_url')."/products/$this->slug",
+            'link' => config('app.client_url')."/explore/product/$this->slug",
             'status' => $this->status ?? 'draft',
             'slug' => $this->slug,
             'total_order' => $this->totalOrder(),

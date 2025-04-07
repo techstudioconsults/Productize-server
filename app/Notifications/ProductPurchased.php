@@ -61,8 +61,9 @@ class ProductPurchased extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $asset_path = str_replace(config('filesystems.disks.spaces.cdn_endpoint'), '', $this->funnel->asset);
+
         if ($this->funnel != null) {
-            $asset_path = str_replace(config('filesystems.disks.spaces.cdn_endpoint'), '', $this->funnel->asset);
 
             return (new MailMessage)
                 ->markdown('mail.product-purchased-via-funnel', [
@@ -74,12 +75,12 @@ class ProductPurchased extends Notification implements ShouldQueue
                 ->subject('Your Package is here!')->attach(Attachment::fromStorage($asset_path));
         }
 
-        return (new MailMessage)
+        else return (new MailMessage)
             ->markdown('mail.product-purchased', [
                 'url' => config('app.client_url').'/dashboard/'.$notifiable->id.'/downloads',
                 'title' => $this->product->title,
             ])
-            ->subject('Product Purchased');
+            ->subject('Product Purchased')->attach(Attachment::fromStorage($asset_path));
     }
 
     /**

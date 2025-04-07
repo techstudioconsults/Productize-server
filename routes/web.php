@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Funnel;
+use App\Models\User;
 use App\Notifications\ProductPurchased;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,8 @@ Route::get('/', function () {
 
 // Route::get('/mail', function() {
 //     $funnel = Funnel::find('9e61941d-e97d-45d7-9df5-317ff6128c4d');
+//     $user = User::find('9e61934c-729a-40be-803e-51a380e25ed3');
+//     $user->notify(new ProductPurchased($funnel->product, $funnel));
 //     return (new ProductPurchased($funnel->product, $funnel))->toMail($funnel->product->user);
 // });
 
